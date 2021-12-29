@@ -26,15 +26,6 @@ Everything has been developed in C#, and support Net5, a downgrade to NetFramewo
 
 > ZXing.net (Desktop wallet only, need a replacement later to erase this library).
 
-
-<h3>How to setup your own Blockchain</h3>
-
-> https://github.com/SamSegura/segurachain/wiki/Setup-your-own-Blockchain
-
-<h3>How to make your own binaries</h3>
-
-> https://github.com/SamSegura/segurachain/wiki/Compilation-command-lines-for-Linux-and-others-OS-support
-
   
 <h3>To do list:</h3>
 
