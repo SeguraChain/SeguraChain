@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+  	<ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net5.0;net48</TargetFrameworks>
+    <RootNamespace>SeguraChain_Test_Tool</RootNamespace>
+    <StartupObject>SeguraChain_Test_Tool.Program</StartupObject>
+    <Configurations>Debug;Release</Configurations>
+  </PropertyGroup>
+
+   <PropertyGroup Condition=" '$(TargetFramework)' == 'net5.0-windows'">
+        <DefineConstant>NET5</DefineConstant>
+    </PropertyGroup>
+	
+	<PropertyGroup Condition=" '$(TargetFramework)' == 'net48'">
+        <DefineConstant>NET48</DefineConstant>
+    </PropertyGroup>
+	
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Net48|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Optimize>true</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SeguraChain-Lib\SeguraChain-Lib.csproj" />
+  </ItemGroup>
+
+</Project>

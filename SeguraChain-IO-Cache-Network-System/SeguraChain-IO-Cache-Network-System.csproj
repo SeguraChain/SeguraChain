@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>SeguraChain_IO_Cache_Network_System</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SeguraChain-Lib\SeguraChain-Lib.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Command\Object\" />
+  </ItemGroup>
+
+</Project>
