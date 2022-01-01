@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using SeguraChain_Lib.Blockchain.Setting;
@@ -66,10 +66,8 @@ namespace SeguraChain_Lib.Algorithm
         /// <returns></returns>
         public static bool EncryptionProcess(byte[] content, byte[] key, byte[] iv, out byte[] result)
         {
-#if DEBUG
             try
             {
-#endif
                 if (content != null)
                 {
                     using (RijndaelManaged aesObject = new RijndaelManaged())
@@ -89,12 +87,12 @@ namespace SeguraChain_Lib.Algorithm
                     }
                 }
             }
-#if DEBUG
             catch (Exception error)
             {
+#if DEBUG
                 Debug.WriteLine("Error on encrypt content. Exception: " + error.Message);
-            }
 #endif
+            }
             result = null;
             return false;
         }
@@ -109,10 +107,10 @@ namespace SeguraChain_Lib.Algorithm
         /// <returns></returns>
         public static bool DecryptionProcess(byte[] content, byte[] key, byte[] iv, out byte[] result)
         {
-#if DEBUG
+
             try
             {
-#endif
+
                 if (content != null)
                 {
                     using (RijndaelManaged aesObject = new RijndaelManaged())
@@ -132,12 +130,13 @@ namespace SeguraChain_Lib.Algorithm
                     }
                 }
             }
-#if DEBUG
+
             catch (Exception error)
             {
+#if DEBUG
                 Debug.WriteLine("Error on decrypt content. Exception: " + error.Message);
-            }
 #endif
+            }
 
             result = null;
             return false;
