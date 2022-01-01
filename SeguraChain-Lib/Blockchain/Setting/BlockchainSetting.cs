@@ -189,7 +189,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int PeerDefaultPort = 2400;
         public static readonly Dictionary<string, Dictionary<string, int>> BlockchainStaticPeerList = new Dictionary<string, Dictionary<string, int>>()
         {
-            {"66.70.227.204", new Dictionary<string, int>(){ { "06221A905CD80AB8DDAA43E016589370E5985D2DE62091F3506DAAD7BE9ABCE6D1ED4119F3284E79775A15D5738F251BC1ADCCD849D2717888E7C71BF07D941A", PeerDefaultPort } }}
+            {"127.0.0.1", new Dictionary<string, int>(){ { "06221A905CD80AB8DDAA43E016589370E5985D2DE62091F3506DAAD7BE9ABCE6D1ED4119F3284E79775A15D5738F251BC1ADCCD849D2717888E7C71BF07D941A", PeerDefaultPort } }}
         }; // This is a static peer list who can't be updated, it's usually used once a peer don't have any peer list saved.
 
 
