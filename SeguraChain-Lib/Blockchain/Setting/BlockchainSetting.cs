@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Numerics;
 using SeguraChain_Lib.Blockchain.Mining.Object;
 using SeguraChain_Lib.Blockchain.Setting.Function;
@@ -94,14 +94,14 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public static BigInteger BlockRewardWithDevFee(long blockHeight) => (BlockReward(blockHeight) - BlockDevFee(blockHeight));
 
 
-        public const string BlockRewardName = "XIRO"; // Block reward transaction name.
+        public const string BlockRewardName = "BLOCK"; // Block reward transaction name.
         public const int BlockTime = 60; // The block time scheduled in seconds.
         public const int BlockExpectedPerDay = (int)((24 * 60d) / (BlockTime /60d)); // The average of blocks calculated from the scheduled Block Time and the amount of minutes in a single day.
         public const int BlockDifficultyRangeCalculation = BlockExpectedPerDay / 3; // Use previous blocks for generate the new block difficulty.
         public const int BlockDifficultyPrecision = 100_000; // The precision put on the difficulty factor calculated.
         public const int GenesisBlockHeight = 1; // The genesis block height.
         public static readonly BigInteger GenesisBlockAmount = 2_973_370 * CoinDecimal; // The genesis block amount reward has pre-mining.
-        public const string GenesisBlockFinalTransactionHash = "075A5CF00BA8FD2BE123A02C93057042B8B5341CF4F0C8D8F0A1F74106CA5E090FC1799A7BBDE5F649548C5D951B598AE1565640D6F9B508E0F074EA5AF1271D"; // The mandatory final block transaction hash to retrieve back from tx's contained inside the genesis block.
+        public const string GenesisBlockFinalTransactionHash = "B518C0F1B530C9314875B63C9CA2BC0ACDA10BC09053C7217E4E1FFFCB85201EB38FCBD1C8E4831E26B802420127B6F7436425EA30E56D52C3C6E50FA0508B05"; // The mandatory final block transaction hash to retrieve back from tx's contained inside the genesis block.
         public const int GenesisBlockTransactionCount = 1; // The maximum of transaction inserted on the genesis block.
         public const int BlockAmountNetworkConfirmations = 2; // The minimum amount of network checks on blocks to do with peers, before to enable the task of confirmations on the block.
         public const int BlockAmountSlowNetworkConfirmations = 5; // This amount increment another amount of network checks, once this one is reach, the network counter increment and this one return back to 0.
@@ -111,8 +111,8 @@ namespace SeguraChain_Lib.Blockchain.Setting
         /// <summary>
         /// Blockchain Properties.
         /// </summary>
-        public const string CoinName = "XIROPHYTE";
-        public const string CoinMinName = "XIRO";
+        public const string CoinName = "XENOPHYTE";
+        public const string CoinMinName = "XENOP";
         public const string BlockchainVersion = "01"; // Version of the blockchain used on Base58.
         public const int BlockchainChecksum = 16; // Checksum size used on Base58.
 
@@ -189,7 +189,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int PeerDefaultPort = 2400;
         public static readonly Dictionary<string, Dictionary<string, int>> BlockchainStaticPeerList = new Dictionary<string, Dictionary<string, int>>()
         {
-            {"127.0.0.1", new Dictionary<string, int>(){ { "F6B426571EBD02EF4B45045EFEA743F2DA75E114AC57E2DADCB8AE976BC07544D28DCA7FA6CD38FA960E19AE85C9A7828EE211F64570AD7338AC1C1B20C0D2EC", PeerDefaultPort } }},
+            {"66.70.227.204", new Dictionary<string, int>(){ { "06221A905CD80AB8DDAA43E016589370E5985D2DE62091F3506DAAD7BE9ABCE6D1ED4119F3284E79775A15D5738F251BC1ADCCD849D2717888E7C71BF07D941A", PeerDefaultPort } }}
         }; // This is a static peer list who can't be updated, it's usually used once a peer don't have any peer list saved.
 
 
