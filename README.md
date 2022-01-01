@@ -37,7 +37,7 @@ Everything has been developed in C#, and support Net5, a downgrade to NetFramewo
 
 > Complete Desktop Wallet features and options. (90% done)
 
-> Develop the IO Cache Network mode. (0% done)
+> Develop the IO Cache Network mode. (5% done)
 
 > Develop the RPC Wallet. (50% done)
 
