@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -261,9 +261,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
             {
                 bool cancelled = false;
 
-#if DEBUG
                 long totalTxUpdated = 0;
-#endif
 
                 if (DatabaseSyncCache[walletAddress].CountBlockHeight > 0)
                 {
