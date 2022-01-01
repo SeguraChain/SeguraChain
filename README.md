@@ -47,6 +47,10 @@ Everything has been developed in C#, and support Net5, a downgrade to NetFramewo
 
 > Develop a block explorer page inside of the node API. (10% done)
 
+<h3>Setup:</h3>
+
+A simple wiki page who explain how to setup your Blockchain:
+https://github.com/SeguraChain/SeguraChain/wiki/Setup-your-own-Blockchain
 
 <h3>Contacts</h3>
   
