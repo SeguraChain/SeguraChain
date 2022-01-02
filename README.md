@@ -31,9 +31,10 @@ Everything has been developed in C#, and support Net5, a downgrade to NetFramewo
 
 > Implement an option to convert the BTC Blockchain database and merge it into the Genesis Block data. (0% done)
 
-> Whitepaper progress. (70% done)
- > English (100%)
- > French (100%)
+> Whitepaper progress. (70% done):
+
+  - English (100%)
+  - French (100%)
 
 > Complete wallets balance checkpoint disk cache process. (40% done)
 
