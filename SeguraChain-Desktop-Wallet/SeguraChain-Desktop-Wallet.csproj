@@ -7,16 +7,12 @@
   
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net6.0-windows;net5.0-windows;net48</TargetFrameworks>
+    <TargetFrameworks>net5.0-windows;net48</TargetFrameworks>
     <RootNamespace>SeguraChain_Desktop_Wallet</RootNamespace>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>logo.ico</ApplicationIcon>
     <StartupObject>SeguraChain_Desktop_Wallet.Program</StartupObject>
   </PropertyGroup>
-
-	<PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0-windows'">
-		<DefineConstant>NET6</DefineConstant>
-	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(TargetFramework)' == 'net5.0-windows'">
         <DefineConstant>NET5</DefineConstant>

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>SeguraChain_IO_Cache_Network_System</RootNamespace>
   </PropertyGroup>
 
