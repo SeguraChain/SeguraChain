@@ -543,7 +543,7 @@ namespace SeguraChain_Lib.Utility
         {
             long currentTimestamp = GetCurrentTimestampInSecond();
 
-            return timestampPacket + maxDelay >= currentTimestamp && timestampPacket <= currentTimestamp + earlierDelay ? false : true;
+            return timestampPacket + maxDelay < currentTimestamp || (timestampPacket >= currentTimestamp && timestampPacket - earlierDelay > currentTimestamp) ? false : true;
         }
 
         /// <summary>
