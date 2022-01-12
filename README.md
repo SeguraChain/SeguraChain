@@ -66,7 +66,7 @@ Every devs and potential users can send me their returns about the project, pote
 
 > Curecoin: B6V6mSNRDFzmDgiPcQKYhBer6GgbM5XJeR
 
-> Monero: 44TSVkQ2k9TVns4AdKpP1bSPQ5ZgHU9sULZZwBrWye82fa6MpLgFFi66mjLMtQEZ7xPXGLz5LPktfH71tFqdX36HCbE3DvU
+> Monero: 42D44q7CMG4G73EZqzmH3FW6GntGmEd4r1TaMt3VQg939s4B73EJ3twFoLwnwLkMUQeRsLAuXoFLdaFFQ54Pbseb8u1EEka
 
 > Litecoin: MCBC7r7WWBULBhRyYj4XzVco3XQMzM4URt
 
