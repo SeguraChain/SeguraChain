@@ -696,7 +696,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
                             }
                         }
                     }
-                    bool blockUnlockValid = int.Parse(blockObjectLineSplit[(int)ClassBlockEnumSplitData.INDEX_BLOCK_UNLOCK_VALID]) == 1;
+                    bool blockUnlockValid = long.Parse(blockObjectLineSplit[(int)ClassBlockEnumSplitData.INDEX_BLOCK_UNLOCK_VALID]) == 1;
                     long blockLastChangeTimestamp = long.Parse(blockObjectLineSplit[(int)ClassBlockEnumSplitData.INDEX_BLOCK_LAST_CHANGE_TIMESTAMP]);
                     bool blockTransactionConfirmationTaskDone = int.Parse(blockObjectLineSplit[(int)ClassBlockEnumSplitData.INDEX_BLOCK_TRANSACTION_CONFIRMATION_TASK_DONE]) == 1;
 

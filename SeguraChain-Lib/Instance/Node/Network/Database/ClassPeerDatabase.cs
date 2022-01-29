@@ -93,13 +93,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
                                                 if (DictionaryPeerDataObject.ContainsKey(peerObject.PeerIp))
                                                 {
                                                     if (!DictionaryPeerDataObject[peerObject.PeerIp].ContainsKey(peerObject.PeerUniqueId))
-                                                    {
                                                         DictionaryPeerDataObject[peerObject.PeerIp].TryAdd(peerObject.PeerUniqueId, peerObject);
-                                                    }
                                                     else
-                                                    {
                                                         DictionaryPeerDataObject[peerObject.PeerIp][peerObject.PeerUniqueId] = peerObject;
-                                                    }
+                                                   
                                                 }
                                                 else
                                                 {
@@ -109,13 +106,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
 
                                                 #region Peer encryption streams.
                                                 if (peerObject.PeerClientPacketEncryptionKey != null && peerObject.PeerClientPacketEncryptionKeyIv != null)
-                                                {
                                                     DictionaryPeerDataObject[peerObject.PeerIp][peerObject.PeerUniqueId].GetClientCryptoStreamObject = new ClassPeerCryptoStreamObject(peerObject.PeerClientPacketEncryptionKey, peerObject.PeerClientPacketEncryptionKeyIv, peerObject.PeerClientPublicKey, peerObject.PeerInternPrivateKey, new CancellationTokenSource());
-                                                }
+
                                                 if (peerObject.PeerInternPacketEncryptionKey != null && peerObject.PeerInternPacketEncryptionKeyIv != null)
-                                                {
                                                     DictionaryPeerDataObject[peerObject.PeerIp][peerObject.PeerUniqueId].GetInternCryptoStreamObject = new ClassPeerCryptoStreamObject(peerObject.PeerInternPacketEncryptionKey, peerObject.PeerInternPacketEncryptionKeyIv, peerObject.PeerInternPublicKey, peerObject.PeerInternPrivateKey, new CancellationTokenSource());
-                                                }
+                                                
                                                 #endregion
 
                                                 totalPeerRead++;
@@ -136,9 +131,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
                 ClassLog.WriteLine(totalPeerRead + " peers read successfully.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Magenta);
             }
             else
-            {
                 File.Create(_peerDataFilePath).Close();
-            }
+
             return true;
         }
 
@@ -170,9 +164,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
             try
             {
                 if (!Directory.Exists(_peerDataDirectoryPath))
-                {
                     Directory.CreateDirectory(_peerDataDirectoryPath);
-                }
 
                 if (fullSave)
                 {
@@ -253,19 +245,18 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
         public static int GetPeerPort(string peerKey, string peerUniqueId)
         {
             if (!peerKey.IsNullOrEmpty(out _))
-            {
-                if (DictionaryPeerDataObject.ContainsKey(peerKey))
-                {
-                    if (DictionaryPeerDataObject[peerKey].ContainsKey(peerUniqueId))
-                    {
-                        if (DictionaryPeerDataObject[peerKey][peerUniqueId].PeerPort >= BlockchainSetting.PeerMinPort && DictionaryPeerDataObject[peerKey][peerUniqueId].PeerPort <= BlockchainSetting.PeerMaxPort)
-                        {
-                            return DictionaryPeerDataObject[peerKey][peerUniqueId].PeerPort;
-                        }
-                    }
-                }
-            }
-            return BlockchainSetting.PeerDefaultPort;
+                return BlockchainSetting.PeerDefaultPort;
+
+            if (!DictionaryPeerDataObject.ContainsKey(peerKey))
+                return BlockchainSetting.PeerDefaultPort;
+
+            if (!DictionaryPeerDataObject[peerKey].ContainsKey(peerUniqueId))
+                return BlockchainSetting.PeerDefaultPort;
+
+            if (DictionaryPeerDataObject[peerKey][peerUniqueId].PeerPort < BlockchainSetting.PeerMinPort || DictionaryPeerDataObject[peerKey][peerUniqueId].PeerPort > BlockchainSetting.PeerMaxPort)
+                return BlockchainSetting.PeerDefaultPort;
+
+            return DictionaryPeerDataObject[peerKey][peerUniqueId].PeerPort;
         }
 
         /// <summary>
@@ -407,14 +398,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
         /// <returns></returns>
         public static bool ContainsPeer(string peerIp, string peerUniqueId)
         {
-            if (!peerUniqueId.IsNullOrEmpty(out _))
-            {
-                if (DictionaryPeerDataObject.ContainsKey(peerIp))
-                {
-                    return DictionaryPeerDataObject[peerIp].ContainsKey(peerUniqueId);
-                }
-            }
-            return false;
+            if (peerUniqueId.IsNullOrEmpty(out _))
+                return false;
+
+            if (!DictionaryPeerDataObject.ContainsKey(peerIp))
+                return false;
+
+            return DictionaryPeerDataObject[peerIp].ContainsKey(peerUniqueId);
         }
 
         #endregion

@@ -268,8 +268,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         /// <returns></returns>
         public bool ContainsKey(long blockHeight)
         {
-            return blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight;
+            if (blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight)
+                return _dictionaryBlockObjectMemory.ContainsKey(blockHeight);
 
+            return false;
         }
 
         /// <summary>
@@ -314,7 +316,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                 {
                     case CacheBlockMemoryInsertEnumType.INSERT_IN_ACTIVE_MEMORY_OBJECT:
                         {
-                            if (blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight)
+                            if (blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight && ContainsKey(blockHeight))
                             {
                                 _dictionaryBlockObjectMemory[blockHeight].Content = value;
                                 _dictionaryBlockObjectMemory[blockHeight].CacheUpdated = false;
@@ -416,7 +418,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         /// Attempt to remove an element of disk cache, and on memory.
         /// </summary>
         /// <param name="blockHeight"></param>
-        /// <param name="useSemaphore"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
         public async Task<bool> Remove(long blockHeight, CancellationTokenSource cancellation)
@@ -669,7 +670,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         /// <returns></returns>
         public async Task<bool> BlockHeightIsCached(long blockHeight, CancellationTokenSource cancellation)
         {
-            if (blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight)
+            if (ContainsKey(blockHeight))
                 return _dictionaryBlockObjectMemory[blockHeight].Content != null ? true : false;
             
             if (await CheckBlockHeightExistOnMemoryDataCache(blockHeight, cancellation))
@@ -4291,9 +4292,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         public bool ContainBlockHeightMirror(long blockHeight)
         {
             if (blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight)
+            {
                 if (_dictionaryBlockObjectMemory[blockHeight].ContentMirror != null)
                     return true;
-
+            }
             return false;
         }
 

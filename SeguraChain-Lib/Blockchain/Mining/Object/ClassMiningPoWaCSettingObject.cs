@@ -108,18 +108,18 @@ namespace SeguraChain_Lib.Blockchain.Mining.Object
                 ClassMiningPoWaCEnumInstructions.DO_NONCE_IV,
                 ClassMiningPoWaCEnumInstructions.DO_NONCE_IV_XOR,
                 ClassMiningPoWaCEnumInstructions.DO_NONCE_IV_EASY_SQUARE_MATH,
-                ClassMiningPoWaCEnumInstructions.DO_LZ4_COMPRESS_NONCE_IV,
-                ClassMiningPoWaCEnumInstructions.DO_NONCE_IV_XOR,
                 ClassMiningPoWaCEnumInstructions.DO_NONCE_IV,
                 ClassMiningPoWaCEnumInstructions.DO_LZ4_COMPRESS_NONCE_IV,
+                ClassMiningPoWaCEnumInstructions.DO_LZ4_COMPRESS_NONCE_IV,
+                ClassMiningPoWaCEnumInstructions.DO_NONCE_IV_XOR,
                 ClassMiningPoWaCEnumInstructions.DO_NONCE_IV_ITERATIONS,
                 ClassMiningPoWaCEnumInstructions.DO_ENCRYPTED_POC_SHARE,
             };
 
-            MiningSettingTimestamp = 1634227922;
-            MiningSettingContentHash = "2D32BBCBE366EABF6DEC9225AB64BC9C8CF6B49025D73670C9E257CCE093C5687971E1D77796C8361F6C3861B575912CFABC62B797670441122424543263E98A";
-            MiningSettingContentHashSignature = "MIGUAkgCknCRCK1LlT2mVL8B0M7ib8YCJeQS9PyqR/rDgFqFU5+MvmfxzH/+1hPBDLjyAIipMxJ42u9xzReOFWe0oeGuD+R8NtGeirwCSALfSw9u7KkTmQvWsqRZLt7IyQAs5RJhpy3X7Lgg4OsS8CkiA3Dn8eit4ZLoTYrWMDu+8E9hUMdCAMt4edjUr2GX052dAMTTEQ==";
-            MiningSettingContentDevPublicKey = "YAaNzZ97xDfTQSCBDr9fQiQAY3nrFisepSUXB5uqSVMGWpC4HJ1gcwmubsrKoLkLbcUB8tyxgQkbhqAW3cfi7g9R1vUBNtVBWKVdf56eMoZkKjK8PJwY66cNyfoxcfetp2NHZga5mPxT1E5rScfrCfTV7aHD9g6HZaq9WyNvLMFrn3tLq3g5ndZ3VeLTdKg8ZJQ1eZ8oAE1GUzRrr3WBnSaqn6T";
+            MiningSettingTimestamp = 1643482108;
+            MiningSettingContentHash = "E20FF5686F5450232E6688CA7F516A591E62C89FA97DBFA02942A463CEB7BB9683BCC426F89B725C747DF4B47C4C17B49A64591212A42D43EFC4EF431A00F862";
+            MiningSettingContentHashSignature = "MIGUAkgAltJV5Yk74Tw1t8UbT7hu8oR9MR8YMmF6LcDwwsbpzio7VcgNcd3fVa5xZWZ10PgBCJLR7tl7Gy/0c1vVmNw7XjukYmSOMrwCSACNno4cGI9e+IaLXEd+3VhQwM1XxI7W6i9wMzWdVTeuv13ugyF3L5ElhvlVjwce/fD/iFkSmDdaEazR1aF9EJWcul2TiO8PpA==";
+            MiningSettingContentDevPublicKey = "YMBT7sXubw9ksQfJNYWxZvqAzyNob3yM3HvoReNBvJ8nYK7HeVAKVRfaqi1douAkmsPC3Tc1gFZjXrCzc2iGSn7jCtiiaGMm3n9k2eMsx3y2x4tQQCyfM876q83H8EdC9y9sL7WUGqZaHxsZnwNJ9TrFqvTj58y4FnaSxZAu3aiPXvjB7rYJF9ckX8BKTAJZ9reMrZ92Wun1Y34eG2wkK8dzoph";
         }
     }
 }

@@ -525,9 +525,12 @@ namespace SeguraChain_Desktop_Wallet
         {
             MethodInvoker invoke = () =>
             {
-                panelQrCodeWalletAddress.BackgroundImage = ClassWalletDataFunction.GenerateBitmapWalletQrCode(ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[_currentWalletFilename].WalletAddress);
-                labelWalletAddressReceiveTransaction.Text = ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[_currentWalletFilename].WalletAddress;
-                labelWalletAddressReceiveTransaction = ClassGraphicsUtility.AutoSetLocationAndResizeControl<Label>(labelWalletAddressReceiveTransaction, this, 50d, false);
+                if (ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData.ContainsKey(_currentWalletFilename))
+                {
+                    panelQrCodeWalletAddress.BackgroundImage = ClassWalletDataFunction.GenerateBitmapWalletQrCode(ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[_currentWalletFilename].WalletAddress);
+                    labelWalletAddressReceiveTransaction.Text = ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[_currentWalletFilename].WalletAddress;
+                    labelWalletAddressReceiveTransaction = ClassGraphicsUtility.AutoSetLocationAndResizeControl<Label>(labelWalletAddressReceiveTransaction, this, 50d, false);
+                }
 
             };
             BeginInvoke(invoke);

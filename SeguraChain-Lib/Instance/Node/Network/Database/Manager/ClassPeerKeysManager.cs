@@ -150,9 +150,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                 }
             }
             else
-            {
                 ClassPeerDatabase.DictionaryPeerDataObject.Add(peerIp, new ConcurrentDictionary<string, ClassPeerObject>());
-            }
 
             if (!peerUniqueIdExist)
             {

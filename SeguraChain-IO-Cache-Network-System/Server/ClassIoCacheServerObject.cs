@@ -67,6 +67,9 @@ namespace SeguraChain_IO_Cache_Network_System.Server
 
                         try
                         {
+                            while (!_tcpListenerIoCacheServer.Pending())
+                                await Task.Delay(1, _cancellationIoNetworkCache.Token);
+
                             TcpClient tcpClient = await _tcpListenerIoCacheServer.AcceptTcpClientAsync();
 
                             if (tcpClient != null)

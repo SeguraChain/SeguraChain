@@ -52,15 +52,18 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
                 switch (miningInstruction)
                 {
                     case ClassMiningPoWaCEnumInstructions.DO_NONCE_IV:
-
-                        for (int i = 0; i < currentMiningSetting.PocRoundShaNonce; i++)
                         {
-                            sha3512Digest.Compute(pocShareIv, out pocShareIv);
-                            sha3512Digest.Reset();
+                            for (int i = 0; i < currentMiningSetting.PocRoundShaNonce; i++)
+                            {
+                                sha3512Digest.Compute(pocShareIv, out pocShareIv);
+                                sha3512Digest.Reset();
+                            }
                         }
                         break;
                     case ClassMiningPoWaCEnumInstructions.DO_NONCE_IV_XOR:
-                        pocShareIv = GetNonceIvXorData(pocShareIv);
+                        {
+                            pocShareIv = GetNonceIvXorData(pocShareIv);
+                        }
                         break;
                     case ClassMiningPoWaCEnumInstructions.DO_NONCE_IV_EASY_SQUARE_MATH:
                         {
@@ -73,13 +76,19 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
                         }
                         break;
                     case ClassMiningPoWaCEnumInstructions.DO_LZ4_COMPRESS_NONCE_IV:
-                        pocShareIv = ClassUtility.CompressDataLz4(pocShareIv);
+                        {
+                            pocShareIv = ClassUtility.CompressDataLz4(pocShareIv);
+                        }
                         break;
                     case ClassMiningPoWaCEnumInstructions.DO_NONCE_IV_ITERATIONS:
-                        pocShareIv = ClassAes.GenerateIv(pocShareIv, currentMiningSetting.PocShareNonceIvIteration);
+                        {
+                            pocShareIv = ClassAes.GenerateIv(pocShareIv, currentMiningSetting.PocShareNonceIvIteration);
+                        }
                         break;
                     case ClassMiningPoWaCEnumInstructions.DO_ENCRYPTED_POC_SHARE:
-                        pocShareData = DoEncryptionPocShare(currentMiningSetting, pocShareData, previousFinalBlockTransactionHashKey, pocShareIv);
+                        {
+                            pocShareData = DoEncryptionPocShare(currentMiningSetting, pocShareData, previousFinalBlockTransactionHashKey, pocShareIv);
+                        }
                         break;
                 }
             }

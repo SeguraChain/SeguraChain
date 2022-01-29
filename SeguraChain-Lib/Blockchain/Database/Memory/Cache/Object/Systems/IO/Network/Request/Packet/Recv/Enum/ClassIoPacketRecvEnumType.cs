@@ -1,4 +1,4 @@
-﻿namespace SeguraChain_Lib.Instance.IoCache.Request.Packet.Recv.Enum
+﻿namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Network.Request.Packet.Recv.Enum
 {
     public enum ClassIoPacketRecvEnumType
     {

@@ -543,7 +543,16 @@ namespace SeguraChain_Lib.Utility
         {
             long currentTimestamp = GetCurrentTimestampInSecond();
 
-            return timestampPacket + maxDelay < currentTimestamp || (timestampPacket >= currentTimestamp && timestampPacket - earlierDelay > currentTimestamp) ? false : true;
+
+#if DEBUG
+            bool isAlive = timestampPacket + maxDelay > currentTimestamp && timestampPacket < currentTimestamp + earlierDelay ? true : false;
+
+            if (!isAlive)
+                Console.WriteLine("Is expired" + (timestampPacket + maxDelay) + "/" + currentTimestamp + " | " + timestampPacket + "/" + (currentTimestamp + earlierDelay));
+            return isAlive;
+#else
+            return timestampPacket + maxDelay > currentTimestamp && timestampPacket < currentTimestamp + earlierDelay ? true : false;
+#endif
         }
 
         /// <summary>
@@ -604,6 +613,7 @@ namespace SeguraChain_Lib.Utility
                 bool isNull = false;
                 try
                 {
+
                     result = JObject.Parse(contentTrimmed).ToObject<T>();
 
                     if (result == null)
@@ -893,7 +903,7 @@ namespace SeguraChain_Lib.Utility
         public static string ConvertBytesToMegabytes(long bytesCount)
         {
             return bytesCount > 0 ? Math.Round((((double)bytesCount / 1024) / 1024), 2) + " MB(s)" : "0 MB(s)";
-        } 
+        }
 
         #endregion
     }
@@ -921,15 +931,12 @@ namespace SeguraChain_Lib.Utility
                 if (ClassBase58.CharacterIsInsideBase58CharacterList(character))
                     base58StringCopy += character;
 
-                if (isWalletAddress)
+                if (isWalletAddress && base58StringCopy.Length >= BlockchainSetting.WalletAddressWifLengthMin && base58StringCopy.Length <= BlockchainSetting.WalletAddressWifLengthMax)
                 {
-                    if (base58StringCopy.Length >= BlockchainSetting.WalletAddressWifLengthMin && base58StringCopy.Length <= BlockchainSetting.WalletAddressWifLengthMax)
+                    if (ClassBase58.DecodeWithCheckSum(base58StringCopy, true) != null)
                     {
-                        if (ClassBase58.DecodeWithCheckSum(base58StringCopy, true) != null)
-                        {
-                            isValid = true;
-                            break;
-                        }
+                        isValid = true;
+                        break;
                     }
                 }
             }
@@ -937,11 +944,8 @@ namespace SeguraChain_Lib.Utility
             if (isValid)
                 return base58StringCopy;
 
-            if (!isWalletAddress)
-            {
-                if (ClassBase58.DecodeWithCheckSum(base58StringCopy, false) != null)
-                    return base58StringCopy;
-            }
+            if (!isWalletAddress && ClassBase58.DecodeWithCheckSum(base58StringCopy, false) != null)
+                return base58StringCopy;
 
             return string.Empty;
         }
@@ -1058,9 +1062,7 @@ namespace SeguraChain_Lib.Utility
     /// </summary>
     public static class ClassUtilityByteArrayExtension
     {
-        private static readonly ASCIIEncoding _asciiEncoding = new ASCIIEncoding();
-        private static readonly UTF8Encoding _utf8Encoding = new UTF8Encoding();
-
+   
         /// <summary>
         /// Get a string from a byte array object.
         /// </summary>
@@ -1068,7 +1070,7 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         public static string GetStringFromByteArrayAscii(this byte[] content)
         {
-            return content != null && content?.Length > 0 ? _asciiEncoding.GetString(content) : null;
+            return content != null && content?.Length > 0 ? new ASCIIEncoding().GetString(content) : null;
         }
 
         /// <summary>
@@ -1078,7 +1080,7 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         public static string GetStringFromByteArrayUtf8(this byte[] content)
         {
-            return content != null && content?.Length > 0 ? _utf8Encoding.GetString(content) : null;
+            return content != null && content?.Length > 0 ? new UTF8Encoding().GetString(content) : null;
         }
 
         /// <summary>
@@ -1111,44 +1113,40 @@ namespace SeguraChain_Lib.Utility
         {
             try
             {
-                if (packetBytesToSend.Length > 0)
+                if (packetBytesToSend.Length >= packetMaxSize && !singleWrite)
                 {
+                    int packetLength = packetBytesToSend.Length;
+                    int countPacketSendLength = 0;
 
-                    if (packetBytesToSend.Length >= packetMaxSize && !singleWrite)
+                    while (!cancellation.Token.IsCancellationRequested)
                     {
-                        int packetLength = packetBytesToSend.Length;
-                        int countPacketSendLength = 0;
+                        cancellation?.Token.ThrowIfCancellationRequested();
 
-                        while (true)
-                        {
-                            cancellation?.Token.ThrowIfCancellationRequested();
+                        int packetSize = packetMaxSize;
 
-                            int packetSize = packetMaxSize;
+                        if (countPacketSendLength + packetSize > packetLength)
+                            packetSize = packetLength - countPacketSendLength;
 
-                            if (countPacketSendLength + packetSize > packetLength)
-                                packetSize = packetLength - countPacketSendLength;
+                        if (packetSize <= 0)
+                            break;
 
-                            if (packetSize <= 0)
-                                break;
+                        byte[] dataBytes = new byte[packetSize];
 
-                            byte[] dataBytes = new byte[packetSize];
+                        Array.Copy(packetBytesToSend, countPacketSendLength, dataBytes, 0, packetSize);
 
-                            Array.Copy(packetBytesToSend, countPacketSendLength, dataBytes, 0, packetSize);
+                        await networkStream.WriteAsync(dataBytes, 0, dataBytes.Length, cancellation.Token);
+                        countPacketSendLength += packetSize;
 
-                            await networkStream.WriteAsync(dataBytes, 0, dataBytes.Length, cancellation.Token);
-                            await networkStream.FlushAsync(cancellation.Token);
-
-                            countPacketSendLength += packetSize;
-
-                            if (countPacketSendLength >= packetLength)
-                                break;
-                        }
+                        if (countPacketSendLength >= packetLength)
+                            break;
                     }
-                    else
-                    {
-                        await networkStream.WriteAsync(packetBytesToSend, 0, packetBytesToSend.Length, cancellation.Token);
-                        await networkStream.FlushAsync(cancellation.Token);
-                    }
+
+                    await networkStream.FlushAsync(cancellation.Token);
+                }
+                else if (packetBytesToSend.Length > 0)
+                {
+                    await networkStream.WriteAsync(packetBytesToSend, 0, packetBytesToSend.Length, cancellation.Token);
+                    await networkStream.FlushAsync(cancellation.Token);
                 }
             }
             catch

@@ -350,9 +350,7 @@ namespace SeguraChain_Lib.Blockchain.Database
                 #region Check blockchain database.
 
                 if (!await CheckBlockchainDatabase(blockchainDatabaseSetting))
-                {
                     return false;
-                }
 
                 #endregion
             }
@@ -372,9 +370,8 @@ namespace SeguraChain_Lib.Blockchain.Database
                 long blockHeightRangeStart = blockHeightRangeEnd - blockchainDatabaseSetting.BlockchainCacheSetting.GlobalMaxBlockCountToKeepInMemory;
 
                 if (blockHeightRangeStart < BlockchainSetting.GenesisBlockHeight)
-                {
                     blockHeightRangeStart = BlockchainSetting.GenesisBlockHeight;
-                }
+                
 
                 try
                 {
@@ -398,11 +395,9 @@ namespace SeguraChain_Lib.Blockchain.Database
 
             #region Enable Blockchain parallel tasks.
 
+            // Enable task who manage the active memory.
             if (blockchainDatabaseSetting.BlockchainCacheSetting.EnableCacheDatabase)
-            {
-                // Enable task who manage the active memory.
                 BlockchainMemoryManagement.StartTaskManageActiveMemory();
-            }
 
             #endregion
 
@@ -413,18 +408,12 @@ namespace SeguraChain_Lib.Blockchain.Database
                 long lastBlockHeight = ClassBlockchainStats.GetLastBlockHeight();
 
                 ClassBlockObject lastBlockObject = BlockchainMemoryManagement[lastBlockHeight, null];
-                if (lastBlockObject != null)
+                if (lastBlockObject != null && lastBlockObject?.BlockStatus == ClassBlockEnumStatus.UNLOCKED && lastBlockHeight == BlockchainSetting.GenesisBlockHeight)
                 {
-                    if (lastBlockObject.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
-                    {
-                        if (lastBlockHeight == BlockchainSetting.GenesisBlockHeight)
-                        {
-                            long newBlockHeight = lastBlockHeight + 1;
+                    long newBlockHeight = lastBlockHeight + 1;
 
-                            if (await GenerateNewMiningBlockObject(lastBlockHeight, newBlockHeight, lastBlockObject.TimestampFound, lastBlockObject.BlockWalletAddressWinner, true, false, _cancellationTokenStopBlockchain))
-                                ClassLog.WriteLine("Generate new block " + newBlockHeight + ". Previous block height: " + lastBlockHeight, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                        }
-                    }
+                    if (await GenerateNewMiningBlockObject(lastBlockHeight, newBlockHeight, lastBlockObject.TimestampFound, lastBlockObject.BlockWalletAddressWinner, true, false, _cancellationTokenStopBlockchain))
+                        ClassLog.WriteLine("Generate new block " + newBlockHeight + ". Previous block height: " + lastBlockHeight, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                 }
             }
 
@@ -454,10 +443,7 @@ namespace SeguraChain_Lib.Blockchain.Database
             #region Create database files if they not exist.
 
             if (!File.Exists(blockchainDatabaseSetting.GetBlockDatabaseFilePath))
-            {
                 File.Create(blockchainDatabaseSetting.GetBlockDatabaseFilePath).Close();
-            }
-
 
             #endregion
 
@@ -468,8 +454,8 @@ namespace SeguraChain_Lib.Blockchain.Database
             if (BlockchainMemoryManagement.Count > 0)
             {
                 long countBlock = BlockchainMemoryManagement.Count;
-                ClassLog.WriteLine("Save " + countBlock + " block(s) file(s)..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
+                ClassLog.WriteLine("Save " + countBlock + " block(s) file(s)..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
                 UTF8Encoding utf8Encoding = new UTF8Encoding(false);
 
@@ -607,13 +593,13 @@ namespace SeguraChain_Lib.Blockchain.Database
                             {
                                 if (checkpointObject != null)
                                 {
-                                    bool result = true;
-                                    if (!DictionaryCheckpointObjects.ContainsKey(checkpointObject.CheckpointType))
-                                        result = DictionaryCheckpointObjects.TryAdd(checkpointObject.CheckpointType, new List<ClassCheckpointObject>());
+                                    bool result = DictionaryCheckpointObjects.ContainsKey(checkpointObject.CheckpointType);
 
-                                    if (result)
-                                        DictionaryCheckpointObjects[checkpointObject.CheckpointType].Add(checkpointObject);
-
+                                    if (!result)
+                                    {
+                                        if (DictionaryCheckpointObjects.TryAdd(checkpointObject.CheckpointType, new List<ClassCheckpointObject>()))
+                                            DictionaryCheckpointObjects[checkpointObject.CheckpointType].Add(checkpointObject);
+                                    }
                                 }
                             }
                         }
@@ -908,13 +894,10 @@ namespace SeguraChain_Lib.Blockchain.Database
 
             try
             {
-                if (!unlockTest)
+                if (!unlockTest && cancellation != null)
                 {
-                    if (cancellation != null)
-                    {
-                        await SemaphoreUnlockBlock.WaitAsync(cancellation.Token);
-                        useSemaphore = true;
-                    }
+                    await SemaphoreUnlockBlock.WaitAsync(cancellation.Token);
+                    useSemaphore = true;
                 }
 
                 if (!BlockchainMemoryManagement.ContainsKey(blockHeight + 1))

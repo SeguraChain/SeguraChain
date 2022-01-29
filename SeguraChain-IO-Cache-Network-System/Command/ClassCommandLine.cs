@@ -29,13 +29,13 @@ namespace SeguraChain_IO_Cache_Network_System.Command
         /// </summary>
         public void EnableCommandLine()
         {
-            new Thread(async () =>
+            new Thread(() =>
             {
-                while(_serverStatus)
+                while (_serverStatus)
                 {
                     string commandLine = Console.ReadLine();
 
-                    switch(commandLine)
+                    switch (commandLine)
                     {
                         case ClassCommandLineEnum.helpCommand:
                             {

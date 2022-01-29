@@ -241,7 +241,7 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Function
 
             #region Check log settings.
 
-            if (!ClassLog.ChangeLogLevel(peerSettingObject.PeerLogSettingObject.LogLevel))
+            if (!ClassLog.ChangeLogLevel(true, peerSettingObject.PeerLogSettingObject.LogLevel))
             {
                 ClassLog.WriteLine("Error, the peer log level is invalid.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 

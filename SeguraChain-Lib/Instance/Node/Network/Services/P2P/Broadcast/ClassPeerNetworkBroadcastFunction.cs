@@ -180,7 +180,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                         while (newListSelected.ContainsKey(indexPeer))
                             indexPeer++;
-                        
+
                         newListSelected.Add(indexPeer, new ClassPeerTargetObject()
                         {
                             PeerNetworkClientSyncObject = new ClassPeerNetworkClientSyncObject(peer.Key, ClassPeerDatabase.DictionaryPeerDataObject[peer.Key][peer.Value].PeerPort, peer.Value, cancellation, peerNetworkSetting, peerFirewallSettingObject)
@@ -218,7 +218,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 {
                     try
                     {
-                        listTask.Add(Task.Factory.StartNew(async () =>
+                        await Task.Factory.StartNew(async () =>
                         {
                             string peerIpTarget = peerValuePair.Value.PeerIpTarget;
                             string peerUniqueIdTarget = peerValuePair.Value.PeerIpTarget;
@@ -247,7 +247,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                                 peerValuePair.Value.PeerNetworkClientSyncObject.DisconnectFromTarget();
                             }
-                        }));
+                        }).ConfigureAwait(false);
                     }
                     catch
                     {
@@ -256,14 +256,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 }
 
                 int totalTask = listTask.Count;
-               
 
-                while(true)
+
+                while (true)
                 {
                     int totalTaskComplete = 0;
                     for (int i = 0; i < listTask.Count; i++)
                     {
-                        if(listTask[i].IsCompleted)
+                        if (listTask[i].IsCompleted)
                             totalTaskComplete++;
                     }
 
@@ -319,7 +319,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             int totalResponseOk = 0;
             int totalAgree = 0;
 
-            using (DisposableDictionary<bool, float> dictionaryMiningShareVoteNormPeer = new DisposableDictionary<bool, float> (0, new Dictionary<bool, float>() { { false, 0 }, { true, 0 } }))
+            using (DisposableDictionary<bool, float> dictionaryMiningShareVoteNormPeer = new DisposableDictionary<bool, float>(0, new Dictionary<bool, float>() { { false, 0 }, { true, 0 } }))
             {
                 using (DisposableDictionary<bool, float> dictionaryMiningShareVoteSeedPeer = new DisposableDictionary<bool, float>(0, new Dictionary<bool, float>() { { false, 0 }, { true, 0 } }))
                 {
@@ -546,7 +546,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                             }
 
 
-                            listTask.GetList.ForEach(task => {
+                            listTask.GetList.ForEach(task =>
+                            {
                                 if (task.IsCanceled || task.IsFaulted || task.IsCompleted)
                                     task.Dispose();
                             });
@@ -778,7 +779,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                             {
                                 try
                                 {
-                                    listTask.Add(Task.Factory.StartNew(async () =>
+                                    await Task.Factory.StartNew(async () =>
                                     {
                                         bool invalidPacket = false;
 
@@ -823,8 +824,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                                 numericPublicKeyOut,
                                                                 cancellationTokenSourceMemPoolTxVote))
                                                                 {
-                                                                // Do not allow multiple seed votes from the same numeric public key.
-                                                                if (!listOfRankedPeerPublicKeySaved.Contains(numericPublicKeyOut))
+                                                                    // Do not allow multiple seed votes from the same numeric public key.
+                                                                    if (!listOfRankedPeerPublicKeySaved.Contains(numericPublicKeyOut))
                                                                     {
                                                                         if (listOfRankedPeerPublicKeySaved.Add(numericPublicKeyOut))
                                                                             peerRanked = true;
@@ -863,8 +864,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                                         dictionaryMemPoolTxVoteNormPeer.Add(transaction.Key, new Dictionary<bool, float>());
                                                                         dictionaryMemPoolTxVoteNormPeer[transaction.Key].Add(false, 0);
                                                                         dictionaryMemPoolTxVoteNormPeer[transaction.Key].Add(true, 0);
-
                                                                     }
+
                                                                     if (dictionaryMemPoolTxVoteNormPeer.ContainsKey(transaction.Key))
                                                                     {
                                                                         if (transaction.Value == ClassTransactionEnumStatus.VALID_TRANSACTION)
@@ -882,8 +883,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                         }
                                         catch
                                         {
-                                        // Ignored.
-                                    }
+                                            // Ignored.
+                                        }
 
                                         if (invalidPacket)
                                             ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIpTarget, peerUniqueIdTarget, peerNetworkSetting, peerFirewallSettingObject);
@@ -891,7 +892,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                                         totalTaskDone++;
 
-                                    }, cancellationTokenSourceMemPoolTxVote.Token));
+                                    }, cancellationTokenSourceMemPoolTxVote.Token).ConfigureAwait(false);
 
                                 }
                                 catch
@@ -917,18 +918,28 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                     {
                                         bool agree = false;
                                         if (dictionaryMemPoolTxVoteNormPeer.GetList.ContainsKey(transaction.TransactionHash))
+                                        {
                                             if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash].ContainsKey(true))
+                                            {
                                                 if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][true] > 0)
                                                 {
                                                     totalAgree++;
                                                     agree = true;
                                                 }
+                                            }
+                                        }
 
                                         if (!agree)
+                                        {
                                             if (dictionaryMemPoolTxVoteSeedPeer.GetList.ContainsKey(transaction.TransactionHash))
+                                            {
                                                 if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash].ContainsKey(true))
+                                                {
                                                     if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][true] > 0)
                                                         totalAgree++;
+                                                }
+                                            }
+                                        }
                                     }
 
                                     if (totalAgree >= listTransactionObject.Count)
@@ -996,13 +1007,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                             if (totalSeedVotes > 0)
                             {
                                 if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash].ContainsKey(true))
+                                {
                                     if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][true] > 0)
                                         percentSeedAgree = (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][true] / totalSeedVotes) * 100f;
-
+                                }
 
                                 if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash].ContainsKey(false))
+                                {
                                     if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][false] > 0)
                                         percentSeedDenied = (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][false] / totalSeedVotes) * 100f;
+                                }
 
                                 seedVoteResult = percentSeedAgree > percentSeedDenied;
                             }
@@ -1010,12 +1024,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                             if (totalNormVotes > 0)
                             {
                                 if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash].ContainsKey(true))
+                                {
                                     if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][true] > 0)
                                         percentNormAgree = (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][true] / totalNormVotes) * 100f;
+                                }
 
                                 if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash].ContainsKey(false))
+                                {
                                     if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][false] > 0)
                                         percentNormDenied = (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][false] / totalNormVotes) * 100f;
+                                }
 
                                 normVoteResult = percentNormAgree > percentNormDenied;
                             }

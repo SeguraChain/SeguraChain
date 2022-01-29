@@ -109,9 +109,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                         else
                         {
                             if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastValidPacket + peerNetworkSettingObject.PeerMaxDelayKeepAliveStats <= ClassUtility.GetCurrentTimestampInSecond())
-                            {
                                 CleanPeerState(peerIp, peerUniqueId, false);
-                            }
                             else if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalAttemptConnection >= peerNetworkSettingObject.PeerMaxAttemptConnection ||
                                      ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalNoPacketConnectionAttempt >= peerNetworkSettingObject.PeerMaxNoPacketPerConnectionOpened)
                             {
@@ -337,10 +335,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// </summary>
         /// <param name="peerIp"></param>
         /// <param name="peerUniqueId"></param>
-        public static void UpdatePeerClientLastPacketReceived(string peerIp, string peerUniqueId)
+        public static void UpdatePeerClientLastPacketReceived(string peerIp, string peerUniqueId, long peerLastTimestampSignatureWhitelist)
         {
             ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastPacketReceivedTimestamp = ClassUtility.GetCurrentTimestampInSecond();
             ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalNoPacketConnectionAttempt = 0;
+            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist > 0)
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist = peerLastTimestampSignatureWhitelist;
         }
 
         #endregion

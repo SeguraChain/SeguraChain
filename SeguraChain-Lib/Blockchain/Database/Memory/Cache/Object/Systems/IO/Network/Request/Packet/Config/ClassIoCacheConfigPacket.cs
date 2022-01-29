@@ -1,4 +1,4 @@
-﻿namespace SeguraChain_Lib.Instance.IoCache.Packet.Config
+﻿namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Network.Request.Config
 {
     public class ClassIoCacheConfigPacket
     {

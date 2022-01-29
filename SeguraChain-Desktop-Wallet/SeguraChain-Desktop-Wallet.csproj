@@ -10,7 +10,7 @@
     <TargetFrameworks>net5.0-windows;net48</TargetFrameworks>
     <RootNamespace>SeguraChain_Desktop_Wallet</RootNamespace>
     <UseWindowsForms>true</UseWindowsForms>
-    <ApplicationIcon>logo.ico</ApplicationIcon>
+    <ApplicationIcon>logo-web-profil.ico</ApplicationIcon>
     <StartupObject>SeguraChain_Desktop_Wallet.Program</StartupObject>
   </PropertyGroup>
 
@@ -28,10 +28,6 @@
     <Optimize>true</Optimize>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Content Include="logo.ico" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="5.0.1" />

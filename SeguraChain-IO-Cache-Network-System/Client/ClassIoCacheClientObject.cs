@@ -2,11 +2,11 @@
 using SeguraChain_IO_Cache_Network_System.Config;
 using SeguraChain_Lib.Blockchain.Block.Object.Structure;
 using SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Main;
-using SeguraChain_Lib.Instance.IoCache.Packet.Config;
-using SeguraChain_Lib.Instance.IoCache.Request.Packet.Recv;
-using SeguraChain_Lib.Instance.IoCache.Request.Packet.Recv.Enum;
-using SeguraChain_Lib.Instance.IoCache.Request.Packet.Recv.Object;
-using SeguraChain_Lib.Instance.IoCache.Request.Packet.Send.Object;
+using SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Network.Request.Config;
+using SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Network.Request.Packet.Recv;
+using SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Network.Request.Packet.Recv.Enum;
+using SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Network.Request.Packet.Recv.Object;
+using SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Network.Request.Packet.Send.Object;
 using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.Utility;
 using System;
@@ -135,7 +135,7 @@ namespace SeguraChain_IO_Cache_Network_System.Client
         {
             try
             {
-                switch(ioCacheBlockRecv.IoPacketRecvType)
+                switch (ioCacheBlockRecv.IoPacketRecvType)
                 {
                     case ClassIoPacketRecvEnumType.GetIoBlockIndexes:
                         {
@@ -164,8 +164,6 @@ namespace SeguraChain_IO_Cache_Network_System.Client
                             }
                         }
                         break;
-
-                   
                 }
             }
             catch

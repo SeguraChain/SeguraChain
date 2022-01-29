@@ -41,6 +41,8 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
             string publicKeyWallet = GenerateWalletPublicKeyFromPrivateKey(privateKeyWallet);
             string walletAddress = GenerateWalletAddressFromPublicKey(publicKeyWallet);
 
+#if DEBUG
+
             walletObject = new ClassWalletGeneratorObject
             {
                 WalletAddress = walletAddress,
@@ -48,11 +50,18 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
                 WalletPrivateKey = privateKeyWallet
             };
 
-#if DEBUG
             Debug.WriteLine("Amount of time spend for generate the whole wallet: " + (ClassUtility.GetCurrentTimestampInMillisecond() - timestampStart) + " ms.");
-#endif
 
             return walletObject;
+#else
+
+            return new ClassWalletGeneratorObject
+            {
+                WalletAddress = walletAddress,
+                WalletPublicKey = publicKeyWallet,
+                WalletPrivateKey = privateKeyWallet
+            };
+#endif
         }
 
         /// <summary>
@@ -63,7 +72,7 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
         /// <returns>Return a private key WIF.</returns>
         public static string GenerateWalletPrivateKey(string baseWords, bool fastGenerator = false)
         {
-            // Not really much secure..
+            // Not really much secure by this way, but much slower.
             if (!fastGenerator)
             {
                 bool useBaseWord = !baseWords.IsNullOrEmpty(out _); // If false, use random word process.
@@ -129,7 +138,7 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
         public static string GenerateWalletPublicKeyFromPrivateKey(string privateKeyWif, bool blockReward = false)
         {
             if (privateKeyWif.IsNullOrEmpty(out _))
-                return null;
+                return String.Empty;
 
             if (!blockReward)
             {
@@ -154,12 +163,8 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
         /// <returns>Return a wallet address WIF.</returns>
         public static string GenerateWalletAddressFromPublicKey(string publicKeyWif)
         {
-            if (publicKeyWif.IsNullOrEmpty(out _))
-                return null;
-
-            if (publicKeyWif.Length != BlockchainSetting.WalletPublicKeyWifLength)
+            if (publicKeyWif.IsNullOrEmpty(out _) || publicKeyWif.Length != BlockchainSetting.WalletPublicKeyWifLength)
                 return string.Empty;
-
 
             byte[] walletAddressByteArray = new byte[BlockchainSetting.WalletAddressByteArrayLength - 1];
 
@@ -255,22 +260,10 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
         /// <returns></returns>
         public static bool CheckWalletAddress(string walletAddress)
         {
-            if (walletAddress.IsNullOrEmpty(out _))
+            // Check is null, check if length is below or above, check the format.
+            if (walletAddress.IsNullOrEmpty(out _) || walletAddress.Length < BlockchainSetting.WalletAddressWifLengthMin || walletAddress.Length > BlockchainSetting.WalletAddressWifLengthMax ||
+                ClassBase58.DecodeWithCheckSum(walletAddress, true) == null)
                 return false;
-
-            #region Check WIF length.
-
-            if (walletAddress.Length < BlockchainSetting.WalletAddressWifLengthMin || walletAddress.Length > BlockchainSetting.WalletAddressWifLengthMax)
-                return false;
-
-            #endregion
-
-            #region Check WIF encoding.
-
-            if (ClassBase58.DecodeWithCheckSum(walletAddress, true) == null)
-                return false;
-
-            #endregion
 
             return true;
         }
@@ -282,26 +275,14 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
         /// <returns></returns>
         public static bool CheckWalletPublicKey(string walletPublicKey)
         {
-            if (walletPublicKey.IsNullOrEmpty(out _))
+            // Check is null, check if the length is different of the setting, check the format.
+            if (walletPublicKey.IsNullOrEmpty(out _) || walletPublicKey.Length != BlockchainSetting.WalletPublicKeyWifLength || ClassBase58.DecodeWithCheckSum(walletPublicKey, false) == null)
                 return false;
-
-            #region Check WIF length.
-
-            if (walletPublicKey.Length != BlockchainSetting.WalletPublicKeyWifLength)
-                return false;
-
-            #endregion
-
-            #region Check WIF encoding.
-
-            if (ClassBase58.DecodeWithCheckSum(walletPublicKey, false) == null)
-                return false;
-
-            #endregion
 
             return true;
         }
 
         #endregion
+
     }
 }

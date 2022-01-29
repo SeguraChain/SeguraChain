@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Security.Cryptography;
 using SeguraChain_Lib.Blockchain.Setting;
@@ -87,12 +87,16 @@ namespace SeguraChain_Lib.Algorithm
                     }
                 }
             }
+#if DEBUG
             catch (Exception error)
             {
-#if DEBUG
                 Debug.WriteLine("Error on encrypt content. Exception: " + error.Message);
+#else
+            catch
+            {
 #endif
             }
+
             result = null;
             return false;
         }
@@ -131,10 +135,13 @@ namespace SeguraChain_Lib.Algorithm
                 }
             }
 
+#if DEBUG
             catch (Exception error)
             {
-#if DEBUG
                 Debug.WriteLine("Error on decrypt content. Exception: " + error.Message);
+#else
+            catch
+            {
 #endif
             }
 

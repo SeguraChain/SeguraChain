@@ -46,7 +46,8 @@
             // 
             this.labelWalletRescanPending.AutoSize = true;
             this.labelWalletRescanPending.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.labelWalletRescanPending.Location = new System.Drawing.Point(63, 10);
+            this.labelWalletRescanPending.ForeColor = System.Drawing.Color.Ivory;
+            this.labelWalletRescanPending.Location = new System.Drawing.Point(74, 10);
             this.labelWalletRescanPending.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.labelWalletRescanPending.Name = "labelWalletRescanPending";
             this.labelWalletRescanPending.Size = new System.Drawing.Size(261, 13);
@@ -56,7 +57,8 @@
             // labelWalletRescanProgressText
             // 
             this.labelWalletRescanProgressText.AutoSize = true;
-            this.labelWalletRescanProgressText.Location = new System.Drawing.Point(83, 84);
+            this.labelWalletRescanProgressText.ForeColor = System.Drawing.Color.Ivory;
+            this.labelWalletRescanProgressText.Location = new System.Drawing.Point(94, 84);
             this.labelWalletRescanProgressText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.labelWalletRescanProgressText.Name = "labelWalletRescanProgressText";
             this.labelWalletRescanProgressText.Size = new System.Drawing.Size(228, 15);
@@ -67,6 +69,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(70)))), ((int)(((byte)(90)))), ((int)(((byte)(120)))));
             this.ClientSize = new System.Drawing.Size(433, 110);
             this.Controls.Add(this.labelWalletRescanProgressText);
             this.Controls.Add(this.labelWalletRescanPending);

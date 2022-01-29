@@ -835,46 +835,51 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                                         {
                                                                             ClassBlockObject blockObjectToCheck = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(blockHeightToCheck, false, true, _cancellationTokenServiceSync);
 
-                                                                            if (blockObjectToCheck.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
+                                                                            if (blockObjectToCheck == null)
+                                                                                cancelCheck = true;
+                                                                            else
                                                                             {
-                                                                                blockObjectToCheck.BlockLastChangeTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
-
-                                                                                ClassLog.WriteLine("The block height: " + blockHeightToCheck + " seems to be valid for other peers. Amount of confirmations: " + blockObjectToCheck.BlockNetworkAmountConfirmations + "/" + BlockchainSetting.BlockAmountNetworkConfirmations, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
-
-                                                                                // Faster network confirmations.
-                                                                                if (blockHeightToCheck + blockObjectToCheck.BlockNetworkAmountConfirmations < lastBlockHeight)
+                                                                                if (blockObjectToCheck.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
                                                                                 {
-                                                                                    blockObjectToCheck.BlockNetworkAmountConfirmations++;
+                                                                                    blockObjectToCheck.BlockLastChangeTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
 
-                                                                                    if (blockObjectToCheck.BlockNetworkAmountConfirmations >= BlockchainSetting.BlockAmountNetworkConfirmations)
-                                                                                    {
-                                                                                        ClassLog.WriteLine("The block height: " + blockHeightToCheck + " is totally valid. The node can start to confirm tx's of this block.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkCyan);
-                                                                                        blockObjectToCheck.BlockUnlockValid = true;
-                                                                                    }
-                                                                                    if (!await ClassBlockchainDatabase.BlockchainMemoryManagement.InsertOrUpdateBlockObjectToCache(blockObjectToCheck, true, _cancellationTokenServiceSync))
-                                                                                        ClassLog.WriteLine("The block height: " + blockHeightToCheck + " seems to be valid for other peers. But can't push updated data into the database.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
-                                                                              
-                                                                                }
-                                                                                // Increment slowly network confirmations.
-                                                                                else
-                                                                                {
-                                                                                    if (blockObjectToCheck.BlockSlowNetworkAmountConfirmations >= BlockchainSetting.BlockAmountSlowNetworkConfirmations)
+                                                                                    ClassLog.WriteLine("The block height: " + blockHeightToCheck + " seems to be valid for other peers. Amount of confirmations: " + blockObjectToCheck.BlockNetworkAmountConfirmations + "/" + BlockchainSetting.BlockAmountNetworkConfirmations, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
+
+                                                                                    // Faster network confirmations.
+                                                                                    if (blockHeightToCheck + blockObjectToCheck.BlockNetworkAmountConfirmations < lastBlockHeight)
                                                                                     {
                                                                                         blockObjectToCheck.BlockNetworkAmountConfirmations++;
-                                                                                        blockObjectToCheck.BlockSlowNetworkAmountConfirmations = 0;
+
+                                                                                        if (blockObjectToCheck.BlockNetworkAmountConfirmations >= BlockchainSetting.BlockAmountNetworkConfirmations)
+                                                                                        {
+                                                                                            ClassLog.WriteLine("The block height: " + blockHeightToCheck + " is totally valid. The node can start to confirm tx's of this block.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkCyan);
+                                                                                            blockObjectToCheck.BlockUnlockValid = true;
+                                                                                        }
+                                                                                        if (!await ClassBlockchainDatabase.BlockchainMemoryManagement.InsertOrUpdateBlockObjectToCache(blockObjectToCheck, true, _cancellationTokenServiceSync))
+                                                                                            ClassLog.WriteLine("The block height: " + blockHeightToCheck + " seems to be valid for other peers. But can't push updated data into the database.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
+
                                                                                     }
+                                                                                    // Increment slowly network confirmations.
                                                                                     else
-                                                                                        blockObjectToCheck.BlockSlowNetworkAmountConfirmations++;
-
-
-                                                                                    if (blockObjectToCheck.BlockNetworkAmountConfirmations >= BlockchainSetting.BlockAmountNetworkConfirmations)
                                                                                     {
-                                                                                        ClassLog.WriteLine("The block height: " + blockHeightToCheck + " is totally valid. The node can start to confirm tx's of this block.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkCyan);
-                                                                                        blockObjectToCheck.BlockUnlockValid = true;
-                                                                                    }
+                                                                                        if (blockObjectToCheck.BlockSlowNetworkAmountConfirmations >= BlockchainSetting.BlockAmountSlowNetworkConfirmations)
+                                                                                        {
+                                                                                            blockObjectToCheck.BlockNetworkAmountConfirmations++;
+                                                                                            blockObjectToCheck.BlockSlowNetworkAmountConfirmations = 0;
+                                                                                        }
+                                                                                        else
+                                                                                            blockObjectToCheck.BlockSlowNetworkAmountConfirmations++;
 
-                                                                                    if (!await ClassBlockchainDatabase.BlockchainMemoryManagement.InsertOrUpdateBlockObjectToCache(blockObjectToCheck, true, _cancellationTokenServiceSync))
-                                                                                        ClassLog.WriteLine("The block height: " + blockHeightToCheck + " seems to be valid for other peers. But can't push updated data into the database.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
+
+                                                                                        if (blockObjectToCheck.BlockNetworkAmountConfirmations >= BlockchainSetting.BlockAmountNetworkConfirmations)
+                                                                                        {
+                                                                                            ClassLog.WriteLine("The block height: " + blockHeightToCheck + " is totally valid. The node can start to confirm tx's of this block.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkCyan);
+                                                                                            blockObjectToCheck.BlockUnlockValid = true;
+                                                                                        }
+
+                                                                                        if (!await ClassBlockchainDatabase.BlockchainMemoryManagement.InsertOrUpdateBlockObjectToCache(blockObjectToCheck, true, _cancellationTokenServiceSync))
+                                                                                            ClassLog.WriteLine("The block height: " + blockHeightToCheck + " seems to be valid for other peers. But can't push updated data into the database.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
+                                                                                    }
                                                                                 }
                                                                             }
                                                                         }
@@ -1209,13 +1214,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 while (totalTaskComplete < totalTaskCount)
                 {
 
-                    if (timestampStart + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000) <= ClassUtility.GetCurrentTimestampInMillisecond())
-                        break;
-
-                    if (totalTaskComplete + totalTaskCancelled >= totalTaskCount)
-                        break;
-
-                    if (_cancellationTokenServiceSync.IsCancellationRequested)
+                    if (timestampStart + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000) <= ClassUtility.GetCurrentTimestampInMillisecond() ||
+                        totalTaskComplete + totalTaskCancelled >= totalTaskCount || _cancellationTokenServiceSync.IsCancellationRequested)
                         break;
 
                     try
@@ -1279,24 +1279,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                             var result = await SendAskSovereignUpdateList(peerListTarget[i].PeerNetworkClientSyncObject, cancellationTokenSourceTaskSyncSovereignUpdate);
 
-                            if (result != null)
+                            if (result != null && result?.Item2 != null && result.Item1 && result.Item2?.Count > 0)
                             {
-                                if (result.Item2 != null)
+                                foreach (string sovereignHash in result.Item2)
                                 {
-                                    if (result.Item1)
+                                    if (!ClassSovereignUpdateDatabase.CheckIfSovereignUpdateHashExist(sovereignHash))
                                     {
-                                        if (result.Item2.Count > 0)
-                                        {
-
-                                            foreach (string sovereignHash in result.Item2)
-                                            {
-                                                if (!ClassSovereignUpdateDatabase.CheckIfSovereignUpdateHashExist(sovereignHash))
-                                                {
-                                                    if (!hashSetSovereignUpdateHash.Contains(sovereignHash))
-                                                        hashSetSovereignUpdateHash.Add(sovereignHash);
-                                                }
-                                            }
-                                        }
+                                        if (!hashSetSovereignUpdateHash.Contains(sovereignHash))
+                                            hashSetSovereignUpdateHash.Add(sovereignHash);
                                     }
                                 }
                             }
@@ -1317,13 +1307,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 // Await the task is complete.
                 while (totalTaskComplete < totalTaskCount)
                 {
-                    if (timestampStart + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000) <= ClassUtility.GetCurrentTimestampInMillisecond())
-                        break;
-
-                    if (totalTaskComplete + totalTaskCancelled >= totalTaskCount)
-                        break;
-
-                    if (cancellationTokenSourceTaskSyncSovereignUpdate.IsCancellationRequested)
+                    if (totalTaskComplete + totalTaskCancelled >= totalTaskCount || cancellationTokenSourceTaskSyncSovereignUpdate.IsCancellationRequested ||
+                        timestampStart + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000) <= ClassUtility.GetCurrentTimestampInMillisecond())
                         break;
 
                     try
@@ -1373,23 +1358,19 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                             {
                                 var result = await SendAskSovereignUpdateData(peerListTarget[i].PeerNetworkClientSyncObject, sovereignUpdateHash, cancellationTokenSourceTaskSyncSovereignUpdate);
 
-                                if (result != null)
+                                if (result != null &&
+                                    result?.Item2 != null && 
+                                    result.Item1 && 
+                                    result?.Item2.ObjectReturned != null &&
+                                    result?.Item2?.ObjectReturned?.SovereignUpdateHash == sovereignUpdateHash)
                                 {
-                                    if (result.Item1)
+                                    if (!ClassSovereignUpdateDatabase.CheckIfSovereignUpdateHashExist(result.Item2.ObjectReturned.SovereignUpdateHash))
                                     {
-                                        if (result.Item2 != null)
-                                        {
-                                            if (result.Item2.ObjectReturned.SovereignUpdateHash == sovereignUpdateHash)
-                                            {
-                                                if (!ClassSovereignUpdateDatabase.CheckIfSovereignUpdateHashExist(result.Item2.ObjectReturned.SovereignUpdateHash))
-                                                {
-                                                    if (ClassSovereignUpdateDatabase.RegisterSovereignUpdateObject(result.Item2.ObjectReturned))
-                                                        totalSovereignUpdatedReceived++;
-                                                }
-                                            }
-                                        }
+                                        if (ClassSovereignUpdateDatabase.RegisterSovereignUpdateObject(result.Item2.ObjectReturned))
+                                            totalSovereignUpdatedReceived++;
                                     }
                                 }
+                                
                             }
 
                             totalTaskComplete++;
@@ -1405,13 +1386,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 // Await the task is complete.
                 while (totalTaskComplete < totalTaskCount)
                 {
-                    if (timestampStart + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000) <= ClassUtility.GetCurrentTimestampInMillisecond())
-                        break;
-
-                    if (totalTaskComplete + totalTaskCancelled >= totalTaskCount)
-                        break;
-
-                    if (cancellationTokenSourceTaskSyncSovereignUpdate.IsCancellationRequested)
+                    if (timestampStart + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000) <= ClassUtility.GetCurrentTimestampInMillisecond() ||
+                        totalTaskComplete + totalTaskCancelled >= totalTaskCount || cancellationTokenSourceTaskSyncSovereignUpdate.IsCancellationRequested)
                         break;
 
                     try
@@ -1667,7 +1643,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                     totalVote = totalSeedVote + totalNormVote;
 
-                                    if (percentAgreeVoteNorm > 0 || percentAgreeVoteSeed > 0)
+                                    if ((percentAgreeVoteNorm > 0 || percentAgreeVoteSeed > 0))
                                     {
                                         if (!mostVotedDataHashSeed.IsNullOrEmpty(out _))
                                         {
@@ -1676,13 +1652,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                 if (listNetworkInformationsSynced.ContainsKey(mostVotedDataHashSeed))
                                                     return new Tuple<ClassPeerPacketSendNetworkInformation, float>(listNetworkInformationsSynced[mostVotedDataHashSeed], totalVote);
                                             }
-                                            else
+                                            else if (!mostVotedDataHashNorm.IsNullOrEmpty(out _))
                                             {
-                                                if (!mostVotedDataHashNorm.IsNullOrEmpty(out _))
-                                                {
-                                                    if (listNetworkInformationsSynced.ContainsKey(mostVotedDataHashNorm))
-                                                        return new Tuple<ClassPeerPacketSendNetworkInformation, float>(listNetworkInformationsSynced[mostVotedDataHashNorm], totalVote);
-                                                }
+                                                if (listNetworkInformationsSynced.ContainsKey(mostVotedDataHashNorm))
+                                                    return new Tuple<ClassPeerPacketSendNetworkInformation, float>(listNetworkInformationsSynced[mostVotedDataHashNorm], totalVote);
                                             }
                                         }
                                         else if (!mostVotedDataHashNorm.IsNullOrEmpty(out _))

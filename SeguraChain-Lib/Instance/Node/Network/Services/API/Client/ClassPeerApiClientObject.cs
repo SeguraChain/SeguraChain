@@ -795,34 +795,35 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                                     {
                                                         // Unlock the current block if everything is okay with other peers.
                                                         case ClassMiningPoWaCEnumStatus.VALID_UNLOCK_BLOCK_SHARE:
-                                                            ClassBlockEnumMiningShareVoteStatus miningShareVoteStatus = await ClassBlockchainDatabase.UnlockCurrentBlockAsync(lastBlockHeight, apiPeerPacketSendMiningShare.MiningPowShareObject, false, _peerNetworkSettingObject.ListenIp, _apiServerOpenNatIp, false, false, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenApiClient);
-
-                                                            switch (miningShareVoteStatus)
                                                             {
-                                                                case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED:
-                                                                    miningPowShareStatus = ClassMiningPoWaCEnumStatus.VALID_UNLOCK_BLOCK_SHARE;
-                                                                    await Task.Factory.StartNew(async () => await ClassPeerNetworkBroadcastFunction.BroadcastMiningShareAsync(_peerNetworkSettingObject.ListenIp, _apiServerOpenNatIp, _clientIp, apiPeerPacketSendMiningShare.MiningPowShareObject, _peerNetworkSettingObject, _peerFirewallSettingObject));
-                                                                    break;
-                                                                case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND:
-                                                                    // That's can happen sometimes when the broadcast of the share to other nodes is very fast and return back the data of the block unlocked to the synced data before to retrieve back every votes done.
-                                                                    if (ClassMiningPoWaCUtility.ComparePoWaCShare(ClassBlockchainDatabase.BlockchainMemoryManagement[lastBlockHeight, _cancellationTokenApiClient].BlockMiningPowShareUnlockObject, apiPeerPacketSendMiningShare.MiningPowShareObject))
-                                                                        miningPowShareStatus = ClassMiningPoWaCEnumStatus.VALID_UNLOCK_BLOCK_SHARE;
-                                                                    else
-                                                                        miningPowShareStatus = ClassMiningPoWaCEnumStatus.BLOCK_ALREADY_FOUND;
-                                                                    break;
-                                                                case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_NOCONSENSUS:
-                                                                    // That's can happen sometimes when the broadcast of the share to other nodes is very fast and return back the data of the block unlocked to the synced data before to retrieve back every votes done.
-                                                                    if (ClassMiningPoWaCUtility.ComparePoWaCShare(ClassBlockchainDatabase.BlockchainMemoryManagement[lastBlockHeight, _cancellationTokenApiClient].BlockMiningPowShareUnlockObject, apiPeerPacketSendMiningShare.MiningPowShareObject))
-                                                                        miningPowShareStatus = ClassMiningPoWaCEnumStatus.VALID_UNLOCK_BLOCK_SHARE;
-                                                                    else
-                                                                        miningPowShareStatus = ClassMiningPoWaCEnumStatus.BLOCK_ALREADY_FOUND;
-                                                                    break;
-                                                                case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_INVALID_TIMESTAMP:
-                                                                case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_REFUSED:
-                                                                    miningPowShareStatus = ClassMiningPoWaCEnumStatus.INVALID_SHARE_DATA;
-                                                                    break;
-                                                            }
+                                                                ClassBlockEnumMiningShareVoteStatus miningShareVoteStatus = await ClassBlockchainDatabase.UnlockCurrentBlockAsync(lastBlockHeight, apiPeerPacketSendMiningShare.MiningPowShareObject, false, _peerNetworkSettingObject.ListenIp, _apiServerOpenNatIp, false, false, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenApiClient);
 
+                                                                switch (miningShareVoteStatus)
+                                                                {
+                                                                    case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED:
+                                                                        miningPowShareStatus = ClassMiningPoWaCEnumStatus.VALID_UNLOCK_BLOCK_SHARE;
+                                                                        await Task.Factory.StartNew(async () => await ClassPeerNetworkBroadcastFunction.BroadcastMiningShareAsync(_peerNetworkSettingObject.ListenIp, _apiServerOpenNatIp, _clientIp, apiPeerPacketSendMiningShare.MiningPowShareObject, _peerNetworkSettingObject, _peerFirewallSettingObject));
+                                                                        break;
+                                                                    case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND:
+                                                                        // That's can happen sometimes when the broadcast of the share to other nodes is very fast and return back the data of the block unlocked to the synced data before to retrieve back every votes done.
+                                                                        if (ClassMiningPoWaCUtility.ComparePoWaCShare(ClassBlockchainDatabase.BlockchainMemoryManagement[lastBlockHeight, _cancellationTokenApiClient].BlockMiningPowShareUnlockObject, apiPeerPacketSendMiningShare.MiningPowShareObject))
+                                                                            miningPowShareStatus = ClassMiningPoWaCEnumStatus.VALID_UNLOCK_BLOCK_SHARE;
+                                                                        else
+                                                                            miningPowShareStatus = ClassMiningPoWaCEnumStatus.BLOCK_ALREADY_FOUND;
+                                                                        break;
+                                                                    case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_NOCONSENSUS:
+                                                                        // That's can happen sometimes when the broadcast of the share to other nodes is very fast and return back the data of the block unlocked to the synced data before to retrieve back every votes done.
+                                                                        if (ClassMiningPoWaCUtility.ComparePoWaCShare(ClassBlockchainDatabase.BlockchainMemoryManagement[lastBlockHeight, _cancellationTokenApiClient].BlockMiningPowShareUnlockObject, apiPeerPacketSendMiningShare.MiningPowShareObject))
+                                                                            miningPowShareStatus = ClassMiningPoWaCEnumStatus.VALID_UNLOCK_BLOCK_SHARE;
+                                                                        else
+                                                                            miningPowShareStatus = ClassMiningPoWaCEnumStatus.BLOCK_ALREADY_FOUND;
+                                                                        break;
+                                                                    case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_INVALID_TIMESTAMP:
+                                                                    case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_REFUSED:
+                                                                        miningPowShareStatus = ClassMiningPoWaCEnumStatus.INVALID_SHARE_DATA;
+                                                                        break;
+                                                                }
+                                                            }
                                                             break;
                                                         case ClassMiningPoWaCEnumStatus.VALID_SHARE:
                                                             miningPowShareStatus = ClassMiningPoWaCEnumStatus.VALID_SHARE;

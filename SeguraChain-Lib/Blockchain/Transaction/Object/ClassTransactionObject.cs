@@ -40,7 +40,7 @@ namespace SeguraChain_Lib.Blockchain.Transaction.Object
 
         #endregion
 
-        #region Informations about block reward.
+        #region Informations about the block reward.
 
         public string BlockHash;
 

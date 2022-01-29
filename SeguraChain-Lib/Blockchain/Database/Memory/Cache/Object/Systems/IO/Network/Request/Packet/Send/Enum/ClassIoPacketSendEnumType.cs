@@ -1,5 +1,5 @@
 ﻿
-namespace SeguraChain_Lib.Instance.IoCache.Request.Packet.Send.Enum
+namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Network.Request.Packet.Send.Enum
 {
     public enum ClassIoPacketSendEnumType
     {

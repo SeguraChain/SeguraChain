@@ -505,9 +505,8 @@ namespace SeguraChain_Lib.Log
         /// Change the current log level.
         /// </summary>
         /// <param name="logLevel"></param>
-        public static bool ChangeLogLevel(int logLevel)
+        public static bool ChangeLogLevel(bool init, int logLevel)
         {
-            bool logLevelChanged = false;
             ClassEnumLogLevelType previousLogLevelType = CurrentLogLevelType;
 
             switch (logLevel)
@@ -545,18 +544,20 @@ namespace SeguraChain_Lib.Log
                     break;
                 default:
                     SimpleWriteLine("Log level: " + logLevel + " not exist.", ConsoleColor.Yellow);
-                    break;
+                    return false;
             }
 
-            if (previousLogLevelType != CurrentLogLevelType)
-                logLevelChanged = true;
-
-            if (logLevelChanged)
+            if (!init)
             {
-                SimpleWriteLine(CurrentLogLevelType + " enabled.", ConsoleColor.Cyan);
-                return true;
+                if (previousLogLevelType != CurrentLogLevelType)
+                {
+                    SimpleWriteLine(CurrentLogLevelType + " enabled.", ConsoleColor.Cyan);
+                    return true;
+                }
+
+                return false;
             }
-            return false;
+            else return true;
         }
 
         /// <summary>

@@ -15,6 +15,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Object.Structure
     {
         #region Dispose functions
 
+        [JsonIgnore]
         public bool Disposed;
 
         ~ClassBlockObject()
