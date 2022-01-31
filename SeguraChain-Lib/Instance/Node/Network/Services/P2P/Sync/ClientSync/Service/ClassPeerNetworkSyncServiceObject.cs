@@ -1519,7 +1519,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                                                 if (insert)
                                                                 {
-                                                                    string packetDataHash = ClassUtility.GenerateSha3512FromString(ClassUtility.SerializeData(packetData));
+                                                                    string packetDataHash = ClassUtility.GenerateSha256FromString(ClassUtility.SerializeData(packetData));
 
                                                                     if (!listNetworkInformationsSynced.ContainsKey(packetDataHash))
                                                                         listNetworkInformationsSynced.TryAdd(packetDataHash, packetData);
@@ -1783,7 +1783,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                                         #endregion
 
-                                                        string blockObjectHash = ClassUtility.GenerateSha3512FromString(string.Concat("", ClassBlockUtility.BlockObjectToStringBlockData(blockObject, false).ToList()));
+                                                        string blockObjectHash = ClassUtility.GenerateSha256FromString(string.Concat("", ClassBlockUtility.BlockObjectToStringBlockData(blockObject, false).ToList()));
 
                                                         bool insertStatus = false;
 
@@ -2060,7 +2060,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                                             peerRanked = !listOfRankedPeerPublicKeySaved.ContainsKey(numericPublicKeyOut) ? listOfRankedPeerPublicKeySaved.TryAdd(numericPublicKeyOut, 0) : false;
                                                                     }
 
-                                                                    string txHashCompare = ClassUtility.GenerateSha3512FromString(ClassTransactionUtility.SplitTransactionObject(result.Item2.ObjectReturned.TransactionObject));
+                                                                    string txHashCompare = ClassUtility.GenerateSha256FromString(ClassTransactionUtility.SplitTransactionObject(result.Item2.ObjectReturned.TransactionObject));
 
                                                                     if (!listTransactionObjects.ContainsKey(txHashCompare))
                                                                         listTransactionObjects.TryAdd(txHashCompare, result.Item2.ObjectReturned.TransactionObject);
@@ -2305,7 +2305,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                                     foreach (ClassTransactionObject transactionObject in result.Item2.ObjectReturned.ListTransactionObject.Values)
                                                                         listTxtData += ClassTransactionUtility.SplitTransactionObject(transactionObject);
 
-                                                                    string txHashCompare = ClassUtility.GenerateSha3512FromString(listTxtData);
+                                                                    string txHashCompare = ClassUtility.GenerateSha256FromString(listTxtData);
 
                                                                     // Clean up.
                                                                     listTxtData.Clear();
@@ -2814,7 +2814,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
                 }),
             };
-            sendObject.PacketHash = ClassUtility.GenerateSha3512FromString(sendObject.PacketContent + sendObject.PacketOrder);
+            sendObject.PacketHash = ClassUtility.GenerateSha256FromString(sendObject.PacketContent + sendObject.PacketOrder);
             sendObject.PacketSignature = ClassWalletUtility.WalletGenerateSignature(peerObject.PeerInternPrivateKey, sendObject.PacketHash);
 
             #endregion
@@ -2841,7 +2841,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 try
                 {
 
-                    if (!TryGetPacketPeerAuthKeys(peerNetworkClientSyncObject, peerIp, peerPort, peerUniqueId, _peerNetworkSettingObject, out ClassPeerPacketSendPeerAuthKeys peerPacketSendPeerAuthKeys))
+                    if (!TryGetPacketPeerAuthKeys(peerNetworkClientSyncObject, _peerNetworkSettingObject, out ClassPeerPacketSendPeerAuthKeys peerPacketSendPeerAuthKeys))
                     {
                         ClassLog.WriteLine(peerIp + ":" + peerPort + " can't handle peer auth keys from the packet received. Increment invalid packets.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
@@ -2935,7 +2935,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.SEND_PEER_LIST)
                 {
 
-                    if (!TryGetPacketPeerList(peerNetworkClientSyncObject, peerIp, peerPort, _peerNetworkSettingObject, cancellation, out ClassPeerPacketSendPeerList packetPeerList))
+                    if (!TryGetPacketPeerList(peerNetworkClientSyncObject, peerIp, _peerNetworkSettingObject, cancellation, out ClassPeerPacketSendPeerList packetPeerList))
                     {
                         ClassLog.WriteLine(peerIp + ":" + peerPort + " can't handle peer packet received. Increment invalid packets", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                         ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
@@ -3265,7 +3265,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.SEND_BLOCK_DATA)
                 {
-                    if (!TryGetPacketBlockData(peerNetworkClientSyncObject, peerIp, peerPort, _peerNetworkSettingObject, blockHeightTarget, refuseLockedBlock, cancellation, out ClassPeerPacketSendBlockData packetSendBlockData))
+                    if (!TryGetPacketBlockData(peerNetworkClientSyncObject, peerIp, _peerNetworkSettingObject, blockHeightTarget, refuseLockedBlock, cancellation, out ClassPeerPacketSendBlockData packetSendBlockData))
                     {
                         ClassLog.WriteLine(peerIp + ":" + peerPort + " invalid block data received. Increment invalid packets.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                         ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);

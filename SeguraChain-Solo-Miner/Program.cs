@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Net;
 using System.Reflection;
 using SeguraChain_Lib.Blockchain.Setting;
 using SeguraChain_Lib.Log;

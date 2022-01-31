@@ -32,6 +32,8 @@ namespace SeguraChain_Lib.Blockchain.Setting
         /// </summary>
         public const string CurveName = "sect571r1";
         public const string SignerName = "SHA512WITHECDSA";
+        public const string SignerNameNetwork = "SHA256WITHECDSA";
+        public const string CurveNameBitcoin = "secp256k1";
 
         /// <summary>
         /// Transaction Settings.
@@ -101,7 +103,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int BlockDifficultyPrecision = 100_000; // The precision put on the difficulty factor calculated.
         public const int GenesisBlockHeight = 1; // The genesis block height.
         public static readonly BigInteger GenesisBlockAmount = 2_973_370 * CoinDecimal; // The genesis block amount reward has pre-mining.
-        public const string GenesisBlockFinalTransactionHash = "9A098A92064FE706892E59469CD0792BBD62DD49185EE7B35E2012E9E3B2B3A0BEF0DB72C2D506D6967D32ABE03123B416D846A576D38D72319641C95B7EBC1A"; // The mandatory final block transaction hash to retrieve back from tx's contained inside the genesis block.
+        public const string GenesisBlockFinalTransactionHash = "24DD9A10C08B16BD2E76440EEDE9DC030B214BB4E90C5A78B14251DA2B3FDCB089242819004ACF6EE7B929E90BC989BD6DC2812EEFEEBD7C4C34504F508ED7EB"; // The mandatory final block transaction hash to retrieve back from tx's contained inside the genesis block.
         public const int GenesisBlockTransactionCount = 1; // The maximum of transaction inserted on the genesis block.
         public const int BlockAmountNetworkConfirmations = 2; // The minimum amount of network checks on blocks to do with peers, before to enable the task of confirmations on the block.
         public const int BlockAmountSlowNetworkConfirmations = 5; // This amount increment another amount of network checks, once this one is reach, the network counter increment and this one return back to 0.
@@ -121,6 +123,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         /// </summary>
         public static readonly byte[] BlockchainMarkKey = ClassUtility.GetByteArrayFromStringAscii(ClassUtility.GenerateSha3512FromString(new byte[] { 0x73, 0x61, 0x6d, 0x20, 0x73, 0x65, 0x67, 0x75, 0x72, 0x61 }.GetStringFromByteArrayAscii()));
         public const int BlockchainSha512HexStringLength = 128;
+        public const int BlockchainSha256HexStringLength = 64;
 
         /// <summary>
         /// Block hash description size.

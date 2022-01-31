@@ -2008,7 +2008,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 if (encrypted)
                     packetSendObject.PacketContent = Convert.ToBase64String(packetContentEncrypted);
 
-                packetSendObject.PacketHash = ClassUtility.GenerateSha3512FromString(packetSendObject.PacketContent);
+                packetSendObject.PacketHash = ClassUtility.GenerateSha256FromString(packetSendObject.PacketContent);
 
                 if (ClassPeerCheckManager.CheckPeerClientWhitelistStatus(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject))
                 {
@@ -2050,7 +2050,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         /// <param name="numericSignature">The signature generated returned.</param>
         private void SignPacketWithNumericPrivateKey<T>(T content, out string numericHash, out string numericSignature)
         {
-            numericHash = ClassUtility.GenerateSha3512FromString(ClassUtility.SerializeData(content));
+            numericHash = ClassUtility.GenerateSha256FromString(ClassUtility.SerializeData(content));
             numericSignature = ClassWalletUtility.WalletGenerateSignature(_peerNetworkSettingObject.PeerNumericPrivateKey, numericHash);
         }
 
@@ -2080,7 +2080,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         private bool CheckContentPacketSignaturePeer(ClassPeerPacketSendObject packetSendObject)
         {
             if (!ClassPeerDatabase.ContainsPeer(_peerClientIp, _peerUniqueId))
-                return ClassUtility.GenerateSha3512FromString(packetSendObject.PacketContent + packetSendObject.PacketOrder) == packetSendObject.PacketHash;
+                return ClassUtility.GenerateSha256FromString(packetSendObject.PacketContent + packetSendObject.PacketOrder) == packetSendObject.PacketHash;
 
             if (ClassPeerCheckManager.CheckPeerClientWhitelistStatus(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject))
                 return true;
@@ -2091,7 +2091,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 return false;
             }
 
-            if (ClassUtility.GenerateSha3512FromString(packetSendObject.PacketContent + packetSendObject.PacketOrder) != packetSendObject.PacketHash)
+            if (ClassUtility.GenerateSha256FromString(packetSendObject.PacketContent + packetSendObject.PacketOrder) != packetSendObject.PacketHash)
                 return false;
 
             if (ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].GetClientCryptoStreamObject.CheckSignatureProcess(packetSendObject.PacketHash, packetSendObject.PacketSignature, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientPublicKey))

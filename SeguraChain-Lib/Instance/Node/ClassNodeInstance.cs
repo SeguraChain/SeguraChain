@@ -333,12 +333,10 @@ namespace SeguraChain_Lib.Instance.Node
 
             if (!forceClose)
             {
-                if (!isWallet)
-                {
-                    ClassLog.CloseLogStreams();
-                    ClassLog.WriteLine("Peer tool successfully closed. Press a key to exit.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                    Console.ReadLine();
-                }
+
+                ClassLog.CloseLogStreams();
+                ClassLog.WriteLine("Peer tool successfully closed. Press a key to exit.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                Console.ReadLine();
             }
             else
             {

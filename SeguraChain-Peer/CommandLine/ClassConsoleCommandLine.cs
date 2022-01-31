@@ -302,7 +302,7 @@ namespace SeguraChain_Peer.CommandLine
                                 if (splitCommandLine.Length >= 2)
                                 {
                                     if (int.TryParse(splitCommandLine[1], out var logLevel))
-                                        ClassLog.ChangeLogLevel(logLevel);
+                                        ClassLog.ChangeLogLevel(false, logLevel);
                                     else
                                         ClassLog.SimpleWriteLine("Argument invalid.", ConsoleColor.Red);
                                 }

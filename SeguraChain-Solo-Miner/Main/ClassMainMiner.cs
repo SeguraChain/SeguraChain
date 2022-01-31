@@ -40,12 +40,12 @@ namespace SeguraChain_Solo_Miner.Main
                 if (ClassLog.InitializeWriteLog())
                 {
                     ClassLog.EnableWriteLogTask();
-                    ClassLog.ChangeLogLevel((int)ClassEnumLogLevelType.LOG_LEVEL_GENERAL);
+                    ClassLog.ChangeLogLevel(false, (int)ClassEnumLogLevelType.LOG_LEVEL_GENERAL);
                     ClassLog.WriteLine("Log system enabled successfully.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Magenta);
                 }
             }
 
-            ClassLog.ChangeLogLevel((int)ClassEnumLogLevelType.LOG_LEVEL_MINING);
+            ClassLog.ChangeLogLevel(false, (int)ClassEnumLogLevelType.LOG_LEVEL_MINING);
 
 
             ClassLog.WriteLine("[Mining setting]" +

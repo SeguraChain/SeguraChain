@@ -3525,7 +3525,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
             bool updateAddResult = !_blockchainDatabaseSetting.BlockchainCacheSetting.EnableCacheDatabase;
 
-            if (GetLastBlockHeight < blockObject.BlockHeight)
+            if (GetLastBlockHeight < blockObject.BlockHeight || !ContainsKey(blockObject.BlockHeight))
                 _dictionaryBlockObjectMemory.Add(blockObject.BlockHeight, new BlockchainMemoryObject());
 
             if (_dictionaryBlockObjectMemory[blockObject.BlockHeight].Content != null)

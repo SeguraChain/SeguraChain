@@ -145,7 +145,7 @@ namespace SeguraChain_Lib.Utility
             using (var hash = new ClassSha3512DigestDisposable())
             {
 
-                hash.Compute(GetByteArrayFromStringAscii(sourceString), out byte[] hashedInputBytes);
+                hash.Compute(GetByteArrayFromStringUtf8(sourceString), out byte[] hashedInputBytes);
 
                 var hashedInputStringBuilder = new StringBuilder(BlockchainSetting.BlockchainSha512HexStringLength);
 
@@ -159,6 +159,32 @@ namespace SeguraChain_Lib.Utility
                 return hashToReturn;
             }
         }
+
+        /// <summary>
+        /// Generate a SHA 256 hash from a string.
+        /// </summary>
+        /// <param name="sourceString"></param>
+        /// <returns></returns>
+        public static string GenerateSha256FromString(string sourceString)
+        {
+            using (var hash = SHA256.Create())
+            {
+
+                byte[] hashedInputBytes = hash.ComputeHash(GetByteArrayFromStringUtf8(sourceString));
+
+                var hashedInputStringBuilder = new StringBuilder(BlockchainSetting.BlockchainSha256HexStringLength);
+
+                foreach (var b in hashedInputBytes)
+                    hashedInputStringBuilder.Append(b.ToString("X2"));
+
+                string hashToReturn = hashedInputStringBuilder.ToString();
+
+                hashedInputStringBuilder.Clear();
+
+                return hashToReturn;
+            }
+        }
+
 
         /// <summary>
         /// Generate a SHA 512 byte array from a byte array.
@@ -931,7 +957,8 @@ namespace SeguraChain_Lib.Utility
                 if (ClassBase58.CharacterIsInsideBase58CharacterList(character))
                     base58StringCopy += character;
 
-                if (isWalletAddress && base58StringCopy.Length >= BlockchainSetting.WalletAddressWifLengthMin && base58StringCopy.Length <= BlockchainSetting.WalletAddressWifLengthMax)
+                if (isWalletAddress && base58StringCopy.Length >= BlockchainSetting.WalletAddressWifLengthMin
+                    && base58StringCopy.Length <= BlockchainSetting.WalletAddressWifLengthMax)
                 {
                     if (ClassBase58.DecodeWithCheckSum(base58StringCopy, true) != null)
                     {

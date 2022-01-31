@@ -325,7 +325,7 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Function
 
                 while (countIteration < totalWalletIteration)
                 {
-                    // Increase interation.
+                    // Increase iteration.
                     countIteration++;
 
                     // Update the encryption after each encryptions done.

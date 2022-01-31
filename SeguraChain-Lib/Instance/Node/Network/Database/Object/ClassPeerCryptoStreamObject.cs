@@ -228,7 +228,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
                 if (!_initialized || privateKey.IsNullOrEmpty(out _))
                     return string.Empty;
 
-                var _signerDoSignature = SignerUtilities.GetSigner(BlockchainSetting.SignerName);
+                var _signerDoSignature = SignerUtilities.GetSigner(BlockchainSetting.SignerNameNetwork);
 
                 if (_ecPrivateKeyParameters == null)
                     _ecPrivateKeyParameters = new ECPrivateKeyParameters(new BigInteger(ClassBase58.DecodeWithCheckSum(privateKey, true)), ClassWalletUtility.ECDomain);
@@ -276,7 +276,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
                 if (decodedPublicKey == null)
                     return false;
 
-                var _signerCheckSignature = SignerUtilities.GetSigner(BlockchainSetting.SignerName);
+                var _signerCheckSignature = SignerUtilities.GetSigner(BlockchainSetting.SignerNameNetwork);
 
                 if (_ecPublicKeyParameters == null)
                     _ecPublicKeyParameters = new ECPublicKeyParameters(ClassWalletUtility.ECParameters.Curve.DecodePoint(decodedPublicKey), ClassWalletUtility.ECDomain);

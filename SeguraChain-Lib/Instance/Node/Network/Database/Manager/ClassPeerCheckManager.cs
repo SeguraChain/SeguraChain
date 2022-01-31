@@ -113,7 +113,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                             else if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalAttemptConnection >= peerNetworkSettingObject.PeerMaxAttemptConnection ||
                                      ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalNoPacketConnectionAttempt >= peerNetworkSettingObject.PeerMaxNoPacketPerConnectionOpened)
                             {
-                                SetPeerDeadState(peerIp, peerUniqueId, peerNetworkSettingObject, peerFirewallSettingObject);
+                                SetPeerDeadState(peerIp, peerUniqueId, peerFirewallSettingObject);
                                 return false;
                             }
                             else if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalInvalidPacket >= peerNetworkSettingObject.PeerMaxInvalidPacket)
@@ -276,7 +276,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                 ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalNoPacketConnectionAttempt++;
 
                 if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalNoPacketConnectionAttempt >= peerNetworkSettingObject.PeerMaxNoPacketPerConnectionOpened)
-                    SetPeerDeadState(peerIp, peerUniqueId, peerNetworkSettingObject, peerFirewallSettingObject);
+                    SetPeerDeadState(peerIp, peerUniqueId, peerFirewallSettingObject);
             }
         }
 
@@ -303,7 +303,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
 
                 ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalAttemptConnection++;
                 if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalAttemptConnection >= peerNetworkSettingObject.PeerMaxAttemptConnection)
-                    SetPeerDeadState(peerIp, peerUniqueId, peerNetworkSettingObject, peerFirewallSettingObject);
+                    SetPeerDeadState(peerIp, peerUniqueId, peerFirewallSettingObject);
             }
         }
 
@@ -414,7 +414,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="peerUniqueId"></param>
         /// <param name="peerNetworkSettingObject"></param>
         /// <param name="peerFirewallSettingObject"></param>
-        public static void SetPeerDeadState(string peerIp, string peerUniqueId, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject)
+        public static void SetPeerDeadState(string peerIp, string peerUniqueId, ClassPeerFirewallSettingObject peerFirewallSettingObject)
         {
             if (!ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
             {
@@ -470,7 +470,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
             if (packetNumericHash.IsNullOrEmpty(out _) || packetNumericSignature.IsNullOrEmpty(out _) || peerNumericPublicKey.IsNullOrEmpty(out _))
                 return false;
 
-            if (ClassUtility.GenerateSha3512FromString(data) != packetNumericHash)
+            if (ClassUtility.GenerateSha256FromString(data) != packetNumericHash)
                 return false;
 
             return ClassWalletUtility.WalletCheckSignature(packetNumericHash, packetNumericSignature, peerNumericPublicKey);

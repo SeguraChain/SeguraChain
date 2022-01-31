@@ -840,19 +840,16 @@ namespace SeguraChain_Lib.Blockchain.Sovereign.Database
                 {
                     foreach (var sovereignHash in DictionarySortedSovereignUpdateList[ClassSovereignEnumUpdateType.SOVEREIGN_DEV_SIGNATURE_CHANGE_UPDATE])
                     {
-                        if (DictionarySovereignUpdateObject.ContainsKey(sovereignHash.Value))
+                        if (DictionarySovereignUpdateObject.ContainsKey(sovereignHash.Value) && DictionarySovereignUpdateObject[sovereignHash.Value].SovereignUpdateType == ClassSovereignEnumUpdateType.SOVEREIGN_DEV_SIGNATURE_CHANGE_UPDATE)
                         {
-                            if (DictionarySovereignUpdateObject[sovereignHash.Value].SovereignUpdateType == ClassSovereignEnumUpdateType.SOVEREIGN_DEV_SIGNATURE_CHANGE_UPDATE)
+                            if (CheckSovereignUpdateObject(DictionarySovereignUpdateObject[sovereignHash.Value], out var typeUpdate) == ClassSovereignEnumUpdateCheckStatus.VALID_SOVEREIGN_UPDATE)
                             {
-                                if (CheckSovereignUpdateObject(DictionarySovereignUpdateObject[sovereignHash.Value], out var typeUpdate) == ClassSovereignEnumUpdateCheckStatus.VALID_SOVEREIGN_UPDATE)
+                                if (typeUpdate == ClassSovereignEnumUpdateType.SOVEREIGN_DEV_SIGNATURE_CHANGE_UPDATE)
                                 {
-                                    if (typeUpdate == ClassSovereignEnumUpdateType.SOVEREIGN_DEV_SIGNATURE_CHANGE_UPDATE)
+                                    if (timestampSovereignUpdate >= DictionarySovereignUpdateObject[sovereignHash.Value].SovereignUpdateTimestamp)
                                     {
-                                        if (timestampSovereignUpdate >= DictionarySovereignUpdateObject[sovereignHash.Value].SovereignUpdateTimestamp)
-                                        {
-                                            if (ClassBase58.DecodeWithCheckSum(DictionarySovereignUpdateObject[sovereignHash.Value].SovereignUpdateContent.PossibleContent2, false) != null)
-                                                lastWalletAddressDevPublicKey = DictionarySovereignUpdateObject[sovereignHash.Value].SovereignUpdateContent.PossibleContent2;
-                                        }
+                                        if (ClassBase58.DecodeWithCheckSum(DictionarySovereignUpdateObject[sovereignHash.Value].SovereignUpdateContent.PossibleContent2, false) != null)
+                                            lastWalletAddressDevPublicKey = DictionarySovereignUpdateObject[sovereignHash.Value].SovereignUpdateContent.PossibleContent2;
                                     }
                                 }
                             }

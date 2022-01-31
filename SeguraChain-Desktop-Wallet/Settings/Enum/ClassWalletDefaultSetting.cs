@@ -69,7 +69,6 @@ namespace SeguraChain_Desktop_Wallet.Settings.Enum
         public static readonly SolidBrush DefaultRecentTransactionSolidBrushColor = new SolidBrush(Color.Black);
         public static readonly SolidBrush DefaultRecentTransactionInvalidSolidBrushColor = new SolidBrush(Color.Red);
 
-
         #endregion
 
         #region Transaction history default colors and settings.

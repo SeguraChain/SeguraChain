@@ -1,4 +1,7 @@
-﻿using SeguraChain_Lib.Algorithm;
+﻿using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Security;
+using SeguraChain_Lib.Algorithm;
+using SeguraChain_Lib.Blockchain.Setting;
 using SeguraChain_Lib.Blockchain.Wallet.Function;
 using SeguraChain_Lib.Instance.Node.Network.Database;
 using SeguraChain_Lib.Instance.Node.Network.Database.Manager;
@@ -9,8 +12,11 @@ using SeguraChain_Lib.Instance.Node.Setting.Object;
 using SeguraChain_Lib.Utility;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
+using BigInteger = Org.BouncyCastle.Math.BigInteger;
+
 
 namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 {
@@ -126,7 +132,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
 
                 sendObject.PacketContent = Convert.ToBase64String(packetContentEncrypted);
-                sendObject.PacketHash = ClassUtility.GenerateSha3512FromString(sendObject.PacketContent + sendObject.PacketOrder);
+                sendObject.PacketHash = ClassUtility.GenerateSha256FromString(sendObject.PacketContent + sendObject.PacketOrder);
 
                 if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].ContainsKey(peerUniqueId))
                 {
@@ -135,7 +141,18 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject != null && cancellation != null)
                             sendObject.PacketSignature = ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject.DoSignatureProcess(sendObject.PacketHash, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey);
                         else
-                            sendObject.PacketSignature = ClassWalletUtility.WalletGenerateSignature(ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey, sendObject.PacketHash);
+                        {
+                            var signer = SignerUtilities.GetSigner(BlockchainSetting.SignerNameNetwork);
+
+                            signer.Init(true, new ECPrivateKeyParameters(new BigInteger(ClassBase58.DecodeWithCheckSum(ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey, true)), ClassWalletUtility.ECDomain));
+
+                            signer.BlockUpdate(ClassUtility.GetByteArrayFromHexString(sendObject.PacketHash), 0, sendObject.PacketHash.Length / 2);
+
+                            sendObject.PacketSignature = Convert.ToBase64String(signer.GenerateSignature());
+
+                            // Reset.
+                            signer.Reset();
+                        }
                     }
                 }
             }
@@ -164,13 +181,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             // Default value.
             numericPublicKeyOut = string.Empty;
 
-            if (!peerNetworkSettingObject.PeerEnableSovereignPeerVote)
-                return false;
-
-            if (packetNumericHash.IsNullOrEmpty(out _) || packetNumericSignature.IsNullOrEmpty(out _))
-                return false;
-
-            if (!ClassPeerCheckManager.PeerHasSeedRank(peerIp, peerUniqueId, out numericPublicKeyOut, out _))
+            if (!peerNetworkSettingObject.PeerEnableSovereignPeerVote || packetNumericHash.IsNullOrEmpty(out _) || packetNumericSignature.IsNullOrEmpty(out _) || !ClassPeerCheckManager.PeerHasSeedRank(peerIp, peerUniqueId, out numericPublicKeyOut, out _))
                 return false;
 
             return ClassPeerCheckManager.CheckPeerSeedNumericPacketSignature(ClassUtility.SerializeData(objectData), packetNumericHash, packetNumericSignature, numericPublicKeyOut, cancellation);
