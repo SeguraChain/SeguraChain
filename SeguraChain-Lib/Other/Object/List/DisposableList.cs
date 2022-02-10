@@ -104,13 +104,10 @@ namespace SeguraChain_Lib.Other.Object.List
         {
             try
             {
-                if (GetList != null)
+                if (GetList != null && GetList?.Count > 0)
                 {
-                    if (GetList.Count > 0)
-                    {
-                        for (int i = 0; i < GetList.Count; i++)
-                            GetList[i] = default(V);
-                    }
+                    for (int i = 0; i < GetList.Count; i++)
+                        GetList[i] = default(V);
                 }
             }
             catch

@@ -51,6 +51,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
                     ClassLog.WriteLine("Can't generate standard encryption key for decrypt peer list.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
                     return false;
                 }
+
                 _peerDataStandardEncryptionKeyIv = ClassAes.GenerateIv(_peerDataStandardEncryptionKey);
             }
 

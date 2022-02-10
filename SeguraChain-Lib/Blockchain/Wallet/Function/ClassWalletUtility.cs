@@ -138,7 +138,7 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
         public static string GenerateWalletPublicKeyFromPrivateKey(string privateKeyWif, bool blockReward = false)
         {
             if (privateKeyWif.IsNullOrEmpty(out _))
-                return String.Empty;
+                return string.Empty;
 
             if (!blockReward)
             {

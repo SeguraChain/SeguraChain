@@ -63,8 +63,8 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Object
         public int PeerMaxWhiteListPacket; // Empty valid packet counter of a peer after to have ignoring packet signature (x) of a peer.
         public int PeerTaskSyncDelay;
         public int PeerMaxTaskSync;
-        public int PeerMinAvailablePeerSync; 
-        public int PeerMaxAuthKeysExpire; 
+        public int PeerMinAvailablePeerSync;
+        public int PeerMaxAuthKeysExpire;
         public int PeerMaxPacketBufferSize;
         public int PeerMaxPacketSplitedSendSize;
         public int PeerMinPort;
@@ -79,6 +79,7 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Object
         public int PeerMinThreadsPoolCompletionPort;
         public int PeerMaxThreadsPool;
         public int PeerMaxThreadsPoolCompletionPort;
+        public int PeerMaxTaskIncomingConnection;
 
         /// <summary>
         /// API.
@@ -92,6 +93,7 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Object
         public int PeerApiMaxRangeTransactionToSyncPerRequest;
         public int PeerApiSemaphoreDelay;
         public int PeerApiMaxRetryRequest;
+
 
         /// <summary>
         /// Set default values.
@@ -130,6 +132,7 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Object
             PeerMinThreadsPoolCompletionPort = ClassUtility.GetMaxAvailableProcessorCount();
             PeerMaxThreadsPool = 1;
             PeerMaxThreadsPoolCompletionPort = ClassUtility.GetMaxAvailableProcessorCount() * ClassUtility.GetMaxAvailableProcessorCount();
+            PeerMaxTaskIncomingConnection = BlockchainSetting.PeerMaxTaskIncomingConnection;
 
             // API Part.
             ListenApiIp = BlockchainSetting.PeerDefaultApiIp;

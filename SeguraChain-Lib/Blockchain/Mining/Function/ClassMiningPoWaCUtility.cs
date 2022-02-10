@@ -419,7 +419,7 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
 
                 #region Test all proof of compatibilities with allowed math operators.
 
-                if (CheckPoc(currentMiningSetting, numberOne, numberTwo, previousBlockTransactionCount, out pocTxCount))
+                if (CheckPoc(currentMiningSetting, numberOne, numberTwo, previousBlockTransactionCount, out pocTxCount) && pocTxCount == previousBlockTransactionCount)
                 {
                     if (pocTxCount == previousBlockTransactionCount)
                     {
@@ -449,7 +449,6 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
                         return pocRandomData;
 
                         #endregion
-
                     }
                 }
 

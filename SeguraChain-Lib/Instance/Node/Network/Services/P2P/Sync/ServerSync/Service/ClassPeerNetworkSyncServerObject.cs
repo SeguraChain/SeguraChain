@@ -25,7 +25,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
         public string PeerIpOpenNatServer;
         private ClassPeerNetworkSettingObject _peerNetworkSettingObject;
         private ClassPeerFirewallSettingObject _firewallSettingObject;
-
+        private DisposableList<Task> _listPeerIncomingConnectionTask;
+        private SemaphoreSlim _semaphoreIncomingConnection;
 
         #region Dispose functions
 
@@ -67,6 +68,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
             PeerIpOpenNatServer = peerIpOpenNatServer;
             _peerNetworkSettingObject = peerNetworkSettingObject;
             _firewallSettingObject = firewallSettingObject;
+            _listPeerIncomingConnectionTask = new DisposableList<Task>();
+            _semaphoreIncomingConnection = new SemaphoreSlim(1, 1);
         }
 
         #region Peer Server management functions.
@@ -107,34 +110,58 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                         {
                             await _tcpListenerPeer.AcceptTcpClientAsync().ContinueWith(async clientTask =>
                             {
+                                bool useSemaphore = false;
+                                int countTaskRemoved = 0;
+
                                 try
                                 {
-                                    TcpClient clientPeerTcp = await clientTask;
-
-                                    if (clientPeerTcp != null)
+                                    try
                                     {
-                                        await Task.Factory.StartNew(async () =>
+
+                                        TcpClient clientPeerTcp = await clientTask;
+
+                                        if (clientPeerTcp != null)
                                         {
+                                            await _semaphoreIncomingConnection.WaitAsync(_cancellationTokenSourcePeerServer.Token);
+                                            useSemaphore = true;
 
-                                            string clientIp = ((IPEndPoint)(clientPeerTcp.Client.RemoteEndPoint)).Address.ToString();
-
-                                            switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
+                                            if (_peerNetworkSettingObject.PeerMaxTaskIncomingConnection >= _listPeerIncomingConnectionTask.Count)
                                             {
-                                                case ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
-                                                case ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS:
-                                                    if (_firewallSettingObject.PeerEnableFirewallLink)
-                                                        ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
-                                                    break;
+                                                countTaskRemoved = ClearIncomingConnectionTask();
+
+                                                ClassLog.WriteLine("Total cleaned task completed: " + countTaskRemoved, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true, ConsoleColor.Yellow);
+
+                                                _listPeerIncomingConnectionTask.Add(Task.Factory.StartNew(async () =>
+                                                {
+
+                                                    string clientIp = ((IPEndPoint)(clientPeerTcp.Client.RemoteEndPoint)).Address.ToString();
+
+                                                    switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
+                                                    {
+                                                        case ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
+                                                        case ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS:
+                                                            if (_firewallSettingObject.PeerEnableFirewallLink)
+                                                                ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
+                                                            break;
+                                                    }
+
+                                                    CloseTcpClient(clientPeerTcp);
+
+                                                }, _cancellationTokenSourcePeerServer.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current));
                                             }
+                                            else CloseTcpClient(clientPeerTcp);
 
-                                            CloseTcpClient(clientPeerTcp);
-
-                                        }, _cancellationTokenSourcePeerServer.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        // Ignored, catch the exception once the task is completed.
                                     }
                                 }
-                                catch
+                                finally
                                 {
-                                    // Ignored, catch the exception once the task is completed.
+                                    if (useSemaphore)
+                                        _semaphoreIncomingConnection.Release();
                                 }
 
                             }, _cancellationTokenSourcePeerServer.Token);
@@ -218,7 +245,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 {
                     if (!_listPeerIncomingConnectionObject.TryAdd(clientIp, new ClassPeerIncomingConnectionObject()))
                         return ClassPeerNetworkServerHandleConnectionEnum.INSERT_CLIENT_IP_EXCEPTION;
-
                 }
 
                 #region Ensure to not have too much incoming connection from the same ip.
@@ -232,14 +258,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
                 if (GetTotalActiveConnection(clientIp) < _peerNetworkSettingObject.PeerMaxNodeConnectionPerIp)
                 {
-                    if (!_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryAdd(randomId, new ClassPeerNetworkClientServerObject(clientPeerTcp, cancellationToken, clientIp, peerIpOpenNatServer, _peerNetworkSettingObject, _firewallSettingObject)))
+                    if (!_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryAdd(randomId, 
+                        new ClassPeerNetworkClientServerObject(clientPeerTcp, cancellationToken, clientIp, peerIpOpenNatServer, _peerNetworkSettingObject, _firewallSettingObject)))
                         return ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION;
                 }
                 else
                 {
                     if (CleanUpInactiveConnectionFromClientIpTarget(clientIp) > 0)
                     {
-                        if (!_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryAdd(randomId, new ClassPeerNetworkClientServerObject(clientPeerTcp, cancellationToken, clientIp, peerIpOpenNatServer, _peerNetworkSettingObject, _firewallSettingObject)))
+                        if (!_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryAdd(randomId, 
+                            new ClassPeerNetworkClientServerObject(clientPeerTcp, cancellationToken, clientIp, peerIpOpenNatServer, _peerNetworkSettingObject, _firewallSettingObject)))
                             return ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION;
                     }
                     else
@@ -253,19 +281,46 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
 
                 bool failed = false;
+                bool semaphoreUsed = false;
 
-                if (await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.WaitAsync(_peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay, _cancellationTokenSourcePeerServer.Token))
+                try
                 {
-                    _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
+                    try
+                    {
+                        long timestampEnd = ClassUtility.GetCurrentTimestampInMillisecond() + _peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay;
+
+
+                        while (ClassUtility.GetCurrentTimestampInMillisecond() < timestampEnd)
+                        {
+                            if (await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.WaitAsync(10, _cancellationTokenSourcePeerServer.Token))
+                            {
+                                _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
+                                semaphoreUsed = true;
+                                break;
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // Ignored.
+                    }
 
                     #region Handle the incoming connection to the P2P server.
 
-                    await _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
+                    if (semaphoreUsed)
+                    {
+                        semaphoreUsed = false;
+                        await _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
+                    }
 
                     #endregion
                 }
-                else failed = true;
 
+                finally
+                {
+                    if (semaphoreUsed)
+                        _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
+                }
                 _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].Dispose();
                 _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryRemove(randomId, out _);
 
@@ -369,11 +424,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
                                 try
                                 {
-                                    if (_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.ContainsKey(key))
-                                    {
-                                        if (_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[key].ClientPeerConnectionStatus)
-                                            totalActiveConnection++;
-                                    }
+                                    if (_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.ContainsKey(key)
+                                        && _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[key].ClientPeerConnectionStatus)
+                                        totalActiveConnection++;
+
                                 }
                                 catch
                                 {
@@ -492,33 +546,30 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 {
                     foreach (var peerIncomingConnectionKey in peerIncomingConnectionKeyList.GetList)
                     {
-                        if (_listPeerIncomingConnectionObject[peerIncomingConnectionKey] != null)
+                        if (_listPeerIncomingConnectionObject[peerIncomingConnectionKey] != null && _listPeerIncomingConnectionObject[peerIncomingConnectionKey]?.ListPeerClientObject?.Count > 0)
                         {
-                            if (_listPeerIncomingConnectionObject[peerIncomingConnectionKey].ListPeerClientObject.Count > 0)
+                            _listPeerIncomingConnectionObject[peerIncomingConnectionKey].OnCleanUp = true;
+
+                            using (DisposableList<long> listKey = new DisposableList<long>(false, 0, _listPeerIncomingConnectionObject[peerIncomingConnectionKey].ListPeerClientObject.Keys.ToList()))
                             {
-                                _listPeerIncomingConnectionObject[peerIncomingConnectionKey].OnCleanUp = true;
-
-                                using (DisposableList<long> listKey = new DisposableList<long>(false, 0, _listPeerIncomingConnectionObject[peerIncomingConnectionKey].ListPeerClientObject.Keys.ToList()))
+                                foreach (var key in listKey.GetList)
                                 {
-                                    foreach (var key in listKey.GetList)
+                                    try
                                     {
-                                        try
-                                        {
 
-                                            if (_listPeerIncomingConnectionObject[peerIncomingConnectionKey].ListPeerClientObject[key].ClientPeerConnectionStatus)
-                                                totalConnectionClosed++;
+                                        if (_listPeerIncomingConnectionObject[peerIncomingConnectionKey].ListPeerClientObject[key].ClientPeerConnectionStatus)
+                                            totalConnectionClosed++;
 
-                                            _listPeerIncomingConnectionObject[peerIncomingConnectionKey].ListPeerClientObject[key].Dispose();
-                                        }
-                                        catch
-                                        {
-                                            // Ignored.
-                                        }
+                                        _listPeerIncomingConnectionObject[peerIncomingConnectionKey].ListPeerClientObject[key].Dispose();
+                                    }
+                                    catch
+                                    {
+                                        // Ignored.
                                     }
                                 }
-
-                                _listPeerIncomingConnectionObject[peerIncomingConnectionKey].OnCleanUp = false;
                             }
+
+                            _listPeerIncomingConnectionObject[peerIncomingConnectionKey].OnCleanUp = false;
                         }
                     }
                 }
@@ -528,6 +579,38 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
             }
 
             return totalConnectionClosed;
+        }
+
+        /// <summary>
+        /// Clear all incoming connection task completed, faulted.
+        /// </summary>
+        public int ClearIncomingConnectionTask()
+        {
+
+            int countTaskCompleted = 0;
+
+            for (int i = 0; i < _listPeerIncomingConnectionTask.Count; i++)
+            {
+                try
+                {
+                    
+                    if (_listPeerIncomingConnectionTask[i].IsCompleted)
+                    {
+                        _listPeerIncomingConnectionTask[i].Dispose();
+
+                        // Remove the completed task.
+                        _listPeerIncomingConnectionTask.Remove(_listPeerIncomingConnectionTask[i]);
+
+                        countTaskCompleted++;
+                    }
+                }
+                catch
+                {
+                    // Ignored.
+                }
+            }
+
+            return countTaskCompleted;
         }
 
         #endregion

@@ -3145,6 +3145,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
         #endregion
 
+
         #region Functions to manage memory.
 
         /// <summary>
@@ -4208,7 +4209,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                             _dictionaryBlockObjectMemory[blockHeight].ObjectCacheType = CacheBlockMemoryEnumState.IN_PERSISTENT_CACHE;
                             return await GetObjectByKeyFromMemoryOrCacheAsync(blockHeight, cancellation);
-
                         }
                     }
                     break;
@@ -4281,6 +4281,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         }
 
         #endregion
+
 
         #region Functions to manage mirror memory.
 
@@ -4366,6 +4367,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         }
 
         #endregion
+
 
         #region Manage the block transaction cache in front of IO Cache files/network.
 
@@ -5172,6 +5174,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         }
 
         #endregion
+
 
         #region Other functions.
 

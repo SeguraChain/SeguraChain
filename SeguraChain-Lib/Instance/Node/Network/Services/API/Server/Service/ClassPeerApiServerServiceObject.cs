@@ -192,8 +192,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
             }
         }
 
-
-
         /// <summary>
         /// Handle incoming connection.
         /// </summary>
@@ -221,10 +219,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                         if (!_listApiIncomingConnectionObject.ContainsKey(clientIp))
                         {
                             if (!_listApiIncomingConnectionObject.TryAdd(clientIp, new ClassPeerApiIncomingConnectionObject()))
-                            {
-                                if (!_listApiIncomingConnectionObject.ContainsKey(clientIp))
-                                    return ClassPeerApiHandleIncomingConnectionEnum.INSERT_CLIENT_IP_EXCEPTION;
-                            }
+                                return ClassPeerApiHandleIncomingConnectionEnum.INSERT_CLIENT_IP_EXCEPTION;
+
                         }
 
                         #region Ensure to not have too much incoming connection from the same ip.

@@ -103,7 +103,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int BlockDifficultyPrecision = 100_000; // The precision put on the difficulty factor calculated.
         public const int GenesisBlockHeight = 1; // The genesis block height.
         public static readonly BigInteger GenesisBlockAmount = 2_973_370 * CoinDecimal; // The genesis block amount reward has pre-mining.
-        public const string GenesisBlockFinalTransactionHash = "24DD9A10C08B16BD2E76440EEDE9DC030B214BB4E90C5A78B14251DA2B3FDCB089242819004ACF6EE7B929E90BC989BD6DC2812EEFEEBD7C4C34504F508ED7EB"; // The mandatory final block transaction hash to retrieve back from tx's contained inside the genesis block.
+        public const string GenesisBlockFinalTransactionHash = "DA679622433D924E1200AA93CB6A4960A631F6557A3516197867F46B0EE2DAAB58AE29AF2252EF7F67C1DFFB6143B658EB5A6752DBE3F3D935085B84C589E7D0"; // The mandatory final block transaction hash to retrieve back from tx's contained inside the genesis block.
         public const int GenesisBlockTransactionCount = 1; // The maximum of transaction inserted on the genesis block.
         public const int BlockAmountNetworkConfirmations = 2; // The minimum amount of network checks on blocks to do with peers, before to enable the task of confirmations on the block.
         public const int BlockAmountSlowNetworkConfirmations = 5; // This amount increment another amount of network checks, once this one is reach, the network counter increment and this one return back to 0.
@@ -185,6 +185,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int PeerMaxRangeTransactionToSyncPerRequest = 5; // Amount of transactions to sync per range.
         public const bool PeerEnableSyncTransactionByRange = true;
         public const bool PeerEnableSovereignPeerVote = false;
+        public const int PeerMaxTaskIncomingConnection = 200;
 
         /// <summary>
         /// The default P2P port.

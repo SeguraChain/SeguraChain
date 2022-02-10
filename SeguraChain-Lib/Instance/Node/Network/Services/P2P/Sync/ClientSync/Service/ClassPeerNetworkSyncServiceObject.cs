@@ -201,9 +201,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         int peerPort = BlockchainSetting.BlockchainStaticPeerList[peerIp][peerUniqueId];
 
                         if (!await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(peerIp, peerPort, peerUniqueId, _cancellationTokenServiceSync, _peerNetworkSettingObject, _peerFirewallSettingObject), _cancellationTokenServiceSync, true))
-                        {
                             ClassLog.WriteLine("Can't send auth keys to default peer: " + peerIp + ":" + peerPort + " | Peer Unique ID: " + peerUniqueId, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
-                        }
                         else
                         {
                             if (ClassPeerDatabase.DictionaryPeerDataObject.ContainsKey(peerIp))
@@ -425,6 +423,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                     if (ClassPeerDatabase.DictionaryPeerDataObject[peerListToCheck[i1].Item1].TryRemove(peerListToCheck[i1].Item2, out _))
                                                     {
                                                         totalPeerRemoved++;
+                                                      
                                                         if (ClassPeerDatabase.DictionaryPeerDataObject[peerListToCheck[i1].Item1].Count == 0)
                                                             ClassPeerDatabase.DictionaryPeerDataObject.Remove(peerListToCheck[i1].Item1);
                                                     }
