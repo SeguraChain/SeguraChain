@@ -55,6 +55,9 @@ Everything has been developed in C#, and support Net5, a downgrade to NetFramewo
 A simple wiki page who explain how to setup your Blockchain:
 https://github.com/SeguraChain/SeguraChain/wiki/Setup-your-own-Blockchain
 
+Desktop Wallet description page:
+https://github.com/SeguraChain/SeguraChain/wiki/Description-of-the-Desktop-Wallet
+
 <h3>Contacts</h3>
   
 Every devs and potential users can send me their returns about the project, potential fix, issues and more.
