@@ -95,7 +95,9 @@ namespace SeguraChain_Lib.Instance.Node
                                 if (!PeerSettingObject.PeerNetworkSettingObject.IsDedicatedServer)
                                 {
 #if NET5_0_OR_GREATER
-                                    ClassLog.WriteLine("You setting indicate it's a not a dedicated server, remember to open the P2P port and target the host IP to your router", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
+                                    ClassLog.WriteLine("Your setting indicate it's not a dedicated server.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
+                                    ClassLog.WriteLine("Remember to open the P2P port "+PeerSettingObject.PeerNetworkSettingObject.ListenApiPort+" and target the host IP: "+PeerSettingObject.PeerNetworkSettingObject.ListenIp+" to your router.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
+
                                     PeerOpenNatPublicIp = PeerSettingObject.PeerNetworkSettingObject.ListenIp;
 #else
                                     Task<bool> openNatTask = PeerOpenNatPort();
@@ -333,7 +335,6 @@ namespace SeguraChain_Lib.Instance.Node
 
             if (!forceClose)
             {
-
                 ClassLog.CloseLogStreams();
                 ClassLog.WriteLine("Peer tool successfully closed. Press a key to exit.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                 Console.ReadLine();
@@ -362,7 +363,7 @@ namespace SeguraChain_Lib.Instance.Node
             {
                 ClassLog.WriteLine("Do you want to initialize again the peer setting? [Y/N]", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                 string choose = Console.ReadLine() ?? string.Empty;
-                if (!choose.IsNullOrEmpty(out _))
+                if (!choose.IsNullOrEmpty(false, out _))
                 {
                     if (choose.ToLower() == "y")
                     {

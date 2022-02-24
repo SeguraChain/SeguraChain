@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using SeguraChain_Lib.Blockchain.Block.Object.Structure;
 
 namespace SeguraChain_Lib.Other.Object.List
@@ -64,7 +65,10 @@ namespace SeguraChain_Lib.Other.Object.List
 
             if (disposing)
             {
-                Clear();
+                if (typeof(V) == typeof(Task))
+                    ClearTask();
+                else
+                    Clear();
                 GetList = null;
             }
 
@@ -114,6 +118,35 @@ namespace SeguraChain_Lib.Other.Object.List
             {
                 // Ignored.
             }
+            GetList?.Clear();
+            GetList?.TrimExcess();
+        }
+
+        public void ClearTask()
+        {
+
+            if (GetList != null && GetList?.Count > 0)
+            {
+                for (int i = 0; i < GetList.Count; i++)
+                {
+                    try
+                    {
+                        if ((GetList[i] as Task)?.Status == TaskStatus.RanToCompletion || 
+                            (GetList[i] as Task)?.Status == TaskStatus.Faulted || 
+                            (GetList[i] as Task)?.Status == TaskStatus.Canceled)
+                        {
+                            (GetList[i] as Task).Dispose();
+
+                            GetList[i] = default(V);
+                        }
+                    }
+                    catch
+                    {
+                        // Ignored.
+                    }
+                }
+            }
+
             GetList?.Clear();
             GetList?.TrimExcess();
         }

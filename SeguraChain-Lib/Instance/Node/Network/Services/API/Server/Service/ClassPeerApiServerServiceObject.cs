@@ -359,22 +359,19 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                     {
                         if (_listApiIncomingConnectionObject[clientIp].ListApiClientObject.Count > 0)
                         {
-                            lock (_listApiIncomingConnectionObject[clientIp].ListApiClientObject)
+                            foreach (long id in _listApiIncomingConnectionObject[clientIp].ListApiClientObject.Keys.ToArray())
                             {
-                                foreach (long id in _listApiIncomingConnectionObject[clientIp].ListApiClientObject.Keys.ToArray())
+                                try
                                 {
-                                    try
+                                    if (_listApiIncomingConnectionObject[clientIp].ListApiClientObject.ContainsKey(id))
                                     {
-                                        if (_listApiIncomingConnectionObject[clientIp].ListApiClientObject.ContainsKey(id))
-                                        {
-                                            if (_listApiIncomingConnectionObject[clientIp].ListApiClientObject[id].ClientConnectionStatus)
-                                                totalActiveConnection++;
-                                        }
+                                        if (_listApiIncomingConnectionObject[clientIp].ListApiClientObject[id].ClientConnectionStatus)
+                                            totalActiveConnection++;
                                     }
-                                    catch
-                                    {
-                                        // Ignored.
-                                    }
+                                }
+                                catch
+                                {
+                                    // Ignored.
                                 }
                             }
                         }
@@ -435,49 +432,48 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                     {
                         long currentTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
 
-                        lock (_listApiIncomingConnectionObject[clientIp].ListApiClientObject)
+
+                        using (DisposableList<long> listIds = new DisposableList<long>(false, 0, _listApiIncomingConnectionObject[clientIp].ListApiClientObject.Keys.ToList()))
                         {
-                            using (DisposableList<long> listIds = new DisposableList<long>(false, 0, _listApiIncomingConnectionObject[clientIp].ListApiClientObject.Keys.ToList()))
+                            foreach (var id in listIds.GetList)
                             {
-                                foreach (var id in listIds.GetList)
+                                try
                                 {
-                                    try
+                                    if (_listApiIncomingConnectionObject[clientIp].ListApiClientObject.ContainsKey(id))
                                     {
-                                        if (_listApiIncomingConnectionObject[clientIp].ListApiClientObject.ContainsKey(id))
+                                        bool remove = false;
+
+                                        if (_listApiIncomingConnectionObject[clientIp].ListApiClientObject[id] == null)
+                                            remove = true;
+                                        else
                                         {
-                                            bool remove = false;
-
-                                            if (_listApiIncomingConnectionObject[clientIp].ListApiClientObject[id] == null)
+                                            if (!_listApiIncomingConnectionObject[clientIp].ListApiClientObject[id].ClientConnectionStatus ||
+                                                _listApiIncomingConnectionObject[clientIp].ListApiClientObject[id].PacketResponseSent ||
+                                                 (_listApiIncomingConnectionObject[clientIp].ListApiClientObject[id].ClientConnectionStatus &&
+                                                        !_listApiIncomingConnectionObject[clientIp].ListApiClientObject[id].OnHandlePacket &&
+                                                         _listApiIncomingConnectionObject[clientIp].ListApiClientObject[id].ClientConnectTimestamp + _peerNetworkSettingObject.PeerApiMaxConnectionDelay < currentTimestamp))
+                                            {
                                                 remove = true;
-                                            else
-                                            {
-                                                if (!_listApiIncomingConnectionObject[clientIp].ListApiClientObject[id].ClientConnectionStatus ||
-                                                    _listApiIncomingConnectionObject[clientIp].ListApiClientObject[id].PacketResponseSent ||
-                                                     (_listApiIncomingConnectionObject[clientIp].ListApiClientObject[id].ClientConnectionStatus &&
-                                                            !_listApiIncomingConnectionObject[clientIp].ListApiClientObject[id].OnHandlePacket &&
-                                                             _listApiIncomingConnectionObject[clientIp].ListApiClientObject[id].ClientConnectTimestamp + _peerNetworkSettingObject.PeerApiMaxConnectionDelay < currentTimestamp))
-                                                {
-                                                    remove = true;
-                                                }
-
-                                                if (_listApiIncomingConnectionObject[clientIp].ListApiClientObject[id]._cancellationTokenApiClient.IsCancellationRequested)
-                                                    remove = true;
                                             }
 
-                                            if (remove)
-                                            {
-                                                _listApiIncomingConnectionObject[clientIp].ListApiClientObject[id].Dispose();
-                                                totalClosed++;
-                                            }
+                                            if (_listApiIncomingConnectionObject[clientIp].ListApiClientObject[id]._cancellationTokenApiClient.IsCancellationRequested)
+                                                remove = true;
+                                        }
+
+                                        if (remove)
+                                        {
+                                            _listApiIncomingConnectionObject[clientIp].ListApiClientObject[id].Dispose();
+                                            totalClosed++;
                                         }
                                     }
-                                    catch
-                                    {
-                                        break;
-                                    }
+                                }
+                                catch
+                                {
+                                    break;
                                 }
                             }
                         }
+
                     }
                 }
             }
@@ -572,26 +568,23 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                                 {
                                     using (DisposableList<long> idsList = new DisposableList<long>(false, 0, _listApiIncomingConnectionObject[clientIp].ListApiClientObject.Keys.ToList()))
                                     {
-                                        lock (_listApiIncomingConnectionObject[clientIp].ListApiClientObject)
+                                        foreach (var id in idsList.GetList)
                                         {
-                                            foreach (var id in idsList.GetList)
+                                            try
                                             {
-                                                try
-                                                {
 
-                                                    _listApiIncomingConnectionObject[clientIp].ListApiClientObject[id].Dispose();
-                                                    if (_listApiIncomingConnectionObject[clientIp].ListApiClientObject.TryRemove(id, out _))
-                                                    {
-                                                        if (_listApiIncomingConnectionObject[clientIp].ListApiClientObject.Count == 0)
-                                                            _listApiIncomingConnectionObject.TryRemove(clientIp, out _);
-                                                    }
-
-                                                    totalConnectionClosed++;
-                                                }
-                                                catch
+                                                _listApiIncomingConnectionObject[clientIp].ListApiClientObject[id].Dispose();
+                                                if (_listApiIncomingConnectionObject[clientIp].ListApiClientObject.TryRemove(id, out _))
                                                 {
-                                                    // Ignored.
+                                                    if (_listApiIncomingConnectionObject[clientIp].ListApiClientObject.Count == 0)
+                                                        _listApiIncomingConnectionObject.TryRemove(clientIp, out _);
                                                 }
+
+                                                totalConnectionClosed++;
+                                            }
+                                            catch
+                                            {
+                                                // Ignored.
                                             }
                                         }
                                     }

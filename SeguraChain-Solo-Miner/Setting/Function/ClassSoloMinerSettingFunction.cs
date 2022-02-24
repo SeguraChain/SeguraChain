@@ -23,7 +23,7 @@ namespace SeguraChain_Solo_Miner.Setting.Function
         /// <returns></returns>
         public static ClassSoloMinerSettingLoadEnum LoadSoloMinerSettingFile(string selectPath, out ClassSoloMinerSettingObject soloMinerSettingObject)
         {
-            if (selectPath.IsNullOrEmpty(out _))
+            if (selectPath.IsNullOrEmpty(false, out _))
                 selectPath = DefaultSoloMinerSettingFilePath;
 
             if (File.Exists(selectPath))
@@ -33,7 +33,7 @@ namespace SeguraChain_Solo_Miner.Setting.Function
                 using (StreamReader reader = new StreamReader(selectPath))
                     dataRead = reader.ReadToEnd();
 
-                if (!dataRead.IsNullOrEmpty(out _))
+                if (!dataRead.IsNullOrEmpty(false, out _))
                 {
                     if (ClassUtility.TryDeserialize(dataRead, out soloMinerSettingObject))
                     {

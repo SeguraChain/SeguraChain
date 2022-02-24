@@ -134,7 +134,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
 
                 }
 
-                if (!publicKey.IsNullOrEmpty(out _) && !privateKey.IsNullOrEmpty(out _))
+                if (!publicKey.IsNullOrEmpty(false, out _) && !privateKey.IsNullOrEmpty(false, out _))
                 {
                     _ecPrivateKeyParameters = new ECPrivateKeyParameters(new BigInteger(ClassBase58.DecodeWithCheckSum(privateKey, true)), ClassWalletUtility.ECDomain);
                     _ecPublicKeyParameters = new ECPublicKeyParameters(ClassWalletUtility.ECParameters.Curve.DecodePoint(ClassBase58.DecodeWithCheckSum(publicKey, false)), ClassWalletUtility.ECDomain);
@@ -225,7 +225,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         {
             try
             {
-                if (!_initialized || privateKey.IsNullOrEmpty(out _))
+                if (!_initialized || privateKey.IsNullOrEmpty(false, out _))
                     return string.Empty;
 
                 var _signerDoSignature = SignerUtilities.GetSigner(BlockchainSetting.SignerNameNetwork);
@@ -262,7 +262,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         {
             try
             {
-                if (!_initialized || publicKey.IsNullOrEmpty(out _) || signature.IsNullOrEmpty(out signature))
+                if (!_initialized || publicKey.IsNullOrEmpty(false, out _) || signature.IsNullOrEmpty(false, out _))
                     return false;
 
                 if (publicKey == "empty" && signature == "empty")

@@ -402,7 +402,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                     typeResponse = ClassPeerApiPacketResponseEnum.INVALID_PACKET;
                 else
                 {
-                    if (apiPeerPacketObjectSend.PacketContentObjectSerialized.IsNullOrEmpty(out _))
+                    if (apiPeerPacketObjectSend.PacketContentObjectSerialized.IsNullOrEmpty(false, out _))
                         typeResponse = ClassPeerApiPacketResponseEnum.INVALID_PACKET;
                     else
                     {
@@ -725,31 +725,33 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                                 if (await ClassBlockchainStats.CheckTransaction(apiPeerPacketPushWalletTransaction.TransactionObject, null, false, null, _cancellationTokenApiClient, true) == ClassTransactionEnumStatus.VALID_TRANSACTION)
                                                 {
 
-                                                    Dictionary<string, ClassTransactionEnumStatus> transactionStatus = await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(_peerNetworkSettingObject.ListenApiIp, _apiServerOpenNatIp, _clientIp, new List<ClassTransactionObject>() { apiPeerPacketPushWalletTransaction.TransactionObject }, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenApiClient, true);
-
-                                                    bool broadcastComplete = transactionStatus.ContainsKey(apiPeerPacketPushWalletTransaction.TransactionObject.TransactionHash) ? 
-                                                        transactionStatus[apiPeerPacketPushWalletTransaction.TransactionObject.TransactionHash] == ClassTransactionEnumStatus.VALID_TRANSACTION : false;
-
-
-                                                    if (broadcastComplete)
+                                                    using (DisposableDictionary<string, ClassTransactionEnumStatus> transactionStatus = await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(_peerNetworkSettingObject.ListenApiIp, _apiServerOpenNatIp, _clientIp, new List<ClassTransactionObject>() { apiPeerPacketPushWalletTransaction.TransactionObject }, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenApiClient, true))
                                                     {
-                                                        ClassBlockTransactionInsertEnumStatus blockTransactionInsertStatus = ClassBlockTransactionInsertEnumStatus.BLOCK_TRANSACTION_INVALID;
 
-                                                        if (!await ClassMemPoolDatabase.CheckTxHashExist(apiPeerPacketPushWalletTransaction.TransactionObject.TransactionHash, _cancellationTokenApiClient))
-                                                            blockTransactionInsertStatus = await ClassBlockchainDatabase.InsertTransactionToMemPool(apiPeerPacketPushWalletTransaction.TransactionObject, true, false, true, _cancellationTokenApiClient);
-                                                        else
-                                                            blockTransactionInsertStatus = ClassBlockTransactionInsertEnumStatus.BLOCK_TRANSACTION_HASH_ALREADY_EXIST;
+                                                        bool broadcastComplete = transactionStatus.ContainsKey(apiPeerPacketPushWalletTransaction.TransactionObject.TransactionHash) ?
+                                                            transactionStatus[apiPeerPacketPushWalletTransaction.TransactionObject.TransactionHash] == ClassTransactionEnumStatus.VALID_TRANSACTION : false;
 
-                                                        responseSent = true;
 
-                                                        if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendPushWalletTransactionResponse()
+                                                        if (broadcastComplete)
                                                         {
-                                                            BlockTransactionInsertStatus = blockTransactionInsertStatus,
-                                                            PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
-                                                        }, ClassPeerApiPacketResponseEnum.SEND_REPLY_WALLET_TRANSACTION_PUSHED)))
-                                                        {
-                                                            // Can't send packet.
-                                                            return false;
+                                                            ClassBlockTransactionInsertEnumStatus blockTransactionInsertStatus = ClassBlockTransactionInsertEnumStatus.BLOCK_TRANSACTION_INVALID;
+
+                                                            if (!await ClassMemPoolDatabase.CheckTxHashExist(apiPeerPacketPushWalletTransaction.TransactionObject.TransactionHash, _cancellationTokenApiClient))
+                                                                blockTransactionInsertStatus = await ClassBlockchainDatabase.InsertTransactionToMemPool(apiPeerPacketPushWalletTransaction.TransactionObject, true, false, true, _cancellationTokenApiClient);
+                                                            else
+                                                                blockTransactionInsertStatus = ClassBlockTransactionInsertEnumStatus.BLOCK_TRANSACTION_HASH_ALREADY_EXIST;
+
+                                                            responseSent = true;
+
+                                                            if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendPushWalletTransactionResponse()
+                                                            {
+                                                                BlockTransactionInsertStatus = blockTransactionInsertStatus,
+                                                                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                            }, ClassPeerApiPacketResponseEnum.SEND_REPLY_WALLET_TRANSACTION_PUSHED)))
+                                                            {
+                                                                // Can't send packet.
+                                                                return false;
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -802,7 +804,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                                                 {
                                                                     case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED:
                                                                         miningPowShareStatus = ClassMiningPoWaCEnumStatus.VALID_UNLOCK_BLOCK_SHARE;
-                                                                        await Task.Factory.StartNew(async () => await ClassPeerNetworkBroadcastFunction.BroadcastMiningShareAsync(_peerNetworkSettingObject.ListenIp, _apiServerOpenNatIp, _clientIp, apiPeerPacketSendMiningShare.MiningPowShareObject, _peerNetworkSettingObject, _peerFirewallSettingObject));
+                                                                        ClassPeerNetworkBroadcastFunction.BroadcastMiningShareAsync(_peerNetworkSettingObject.ListenIp, _apiServerOpenNatIp, _clientIp, apiPeerPacketSendMiningShare.MiningPowShareObject, _peerNetworkSettingObject, _peerFirewallSettingObject);
                                                                         break;
                                                                     case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND:
                                                                         // That's can happen sometimes when the broadcast of the share to other nodes is very fast and return back the data of the block unlocked to the synced data before to retrieve back every votes done.

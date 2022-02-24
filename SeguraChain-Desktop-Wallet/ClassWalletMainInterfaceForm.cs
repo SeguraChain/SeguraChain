@@ -452,7 +452,7 @@ namespace SeguraChain_Desktop_Wallet
         /// <param name="cancellation"></param>
         private void SwitchWalletFile(string walletFilename, bool firstLoad, CancellationTokenSource cancellation)
         {
-            if (!walletFilename.IsNullOrEmpty(out _))
+            if (!walletFilename.IsNullOrEmpty(false, out _))
             {
                 // Cancel the update task who update wallet informations showed from the previous wallet file.
                 StopTaskUpdateWalletInformations();
@@ -805,12 +805,9 @@ namespace SeguraChain_Desktop_Wallet
 
                                     #endregion
 
-
-
                                     if (duplicatedFound)
-                                    {
                                         break;
-                                    }
+                                    
                                 }
                             }
 
@@ -1764,7 +1761,7 @@ namespace SeguraChain_Desktop_Wallet
                         {
                             if (saveTransactionExportFileDialog.ShowDialog(this) == DialogResult.OK)
                             {
-                                if (!saveTransactionExportFileDialog.FileName.IsNullOrEmpty(out _))
+                                if (!saveTransactionExportFileDialog.FileName.IsNullOrEmpty(false, out _))
                                 {
                                     if (_walletTransactionHistorySystemInstance.TryExportTransactionHistory(_currentWalletFilename, saveTransactionExportFileDialog.FileName, allTransaction, _walletMainFormLanguageObject, _cancellationTokenTaskUpdateWalletContentInformations))
                                         MessageBox.Show(_walletMainFormLanguageObject.MESSAGEBOX_TRANSACTION_HISTORY_EXPORT_DONE_TEXT, _walletMainFormLanguageObject.MESSAGEBOX_TRANSACTION_HISTORY_EXPORT_TITLE_TEXT);
@@ -2152,7 +2149,7 @@ namespace SeguraChain_Desktop_Wallet
         private async Task UpdateTransactionFeeCostEstimated()
         {
 
-            if (!textBoxSendTransactionAmountSelected.Text.IsNullOrEmpty(out _))
+            if (!textBoxSendTransactionAmountSelected.Text.IsNullOrEmpty(false, out _))
             {
                 if (decimal.TryParse(textBoxSendTransactionAmountSelected.Text, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out decimal amountSelected))
                 {
@@ -2273,7 +2270,7 @@ namespace SeguraChain_Desktop_Wallet
         {
             if (_walletMainFormLanguageObject != null)
             {
-                if (!textBoxSendTransactionConfirmationsCountTarget.Text.IsNullOrEmpty(out _))
+                if (!textBoxSendTransactionConfirmationsCountTarget.Text.IsNullOrEmpty(false, out _))
                 {
                     if (textBoxSendTransactionFeeCalculated.Text != _walletMainFormLanguageObject.LABEL_SEND_TRANSACTION_CONFIRMATION_TIME_ESTIMATED_FAILED_TEXT)
                     {
@@ -2340,16 +2337,16 @@ namespace SeguraChain_Desktop_Wallet
         private ClassEnumSendTransactionResult StartSendTransactionTask()
         {
 
-            if (textBoxSendTransactionWalletAddressTarget.Text.IsNullOrEmpty(out _))
+            if (textBoxSendTransactionWalletAddressTarget.Text.IsNullOrEmpty(false, out _))
                 return ClassEnumSendTransactionResult.SEND_FAILED;
 
             if (!ClassWalletUtility.CheckWalletAddress(textBoxSendTransactionWalletAddressTarget.Text))
                 return ClassEnumSendTransactionResult.SEND_FAILED;
 
-            if (textBoxSendTransactionAmountSelected.Text.IsNullOrEmpty(out _))
+            if (textBoxSendTransactionAmountSelected.Text.IsNullOrEmpty(false, out _))
                 return ClassEnumSendTransactionResult.SEND_FAILED;
 
-            if (textBoxSendTransactionFeeCalculated.Text.IsNullOrEmpty(out _))
+            if (textBoxSendTransactionFeeCalculated.Text.IsNullOrEmpty(false, out _))
                 return ClassEnumSendTransactionResult.SEND_FAILED;
 
             string walletAddress = ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[_currentWalletFilename].WalletAddress;
@@ -2419,7 +2416,7 @@ namespace SeguraChain_Desktop_Wallet
             else
                 walletPrivateKey = ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[_currentWalletFilename].WalletPrivateKey;
 
-            if (walletPrivateKey.IsNullOrEmpty(out _))
+            if (walletPrivateKey.IsNullOrEmpty(false, out _))
                 return ClassEnumSendTransactionResult.SEND_FAILED;
 
             bool doSendTransactionTask;
@@ -2578,7 +2575,7 @@ namespace SeguraChain_Desktop_Wallet
                 {
                     if (saveQrCodeFileDialog.ShowDialog(this) == DialogResult.OK)
                     {
-                        if (!saveQrCodeFileDialog.FileName.IsNullOrEmpty(out _))
+                        if (!saveQrCodeFileDialog.FileName.IsNullOrEmpty(false, out _))
                             panelQrCodeWalletAddress.BackgroundImage.Save(saveQrCodeFileDialog.FileName, ImageFormat.Png);
                     }
                 }

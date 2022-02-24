@@ -1129,7 +1129,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         /// <returns></returns>
         public async Task<ClassBlockTransaction> GetBlockTransactionFromSpecificTransactionHashAndHeight(string transactionHash, long blockHeight, bool useBlockTransactionCache, bool keepAlive, CancellationTokenSource cancellation)
         {
-            if (transactionHash.IsNullOrEmpty(out transactionHash))
+            if (transactionHash.IsNullOrEmpty(false, out _))
                 return null;
 
             if (blockHeight == 0)
@@ -2463,7 +2463,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             if (transactionObject.AmountTransactionSource.Count == 0)
                 return ClassTransactionEnumStatus.EMPTY_TRANSACTION_SOURCE_LIST;
 
-            if (transactionObject.AmountTransactionSource.Count(x => x.Key.IsNullOrEmpty(out _)) > 0)
+            if (transactionObject.AmountTransactionSource.Count(x => x.Key.IsNullOrEmpty(false, out _)) > 0)
                 return ClassTransactionEnumStatus.INVALID_TRANSACTION_SOURCE_LIST;
 
             if (transactionObject.AmountTransactionSource.Count(x => x.Value == null) > 0)
@@ -2546,16 +2546,16 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         {
             #region Check transaction content.
 
-            if (transactionObject.WalletAddressSender.IsNullOrEmpty(out _))
+            if (transactionObject.WalletAddressSender.IsNullOrEmpty(false, out _))
                 return ClassTransactionEnumStatus.INVALID_WALLET_ADDRESS_SENDER;
 
-            if (transactionObject.WalletAddressReceiver.IsNullOrEmpty(out _))
+            if (transactionObject.WalletAddressReceiver.IsNullOrEmpty(false, out _))
                 return ClassTransactionEnumStatus.INVALID_WALLET_ADDRESS_SENDER;
 
             if (transactionObject.WalletAddressSender == transactionObject.WalletAddressReceiver)
                 return ClassTransactionEnumStatus.SAME_WALLET_ADDRESS;
 
-            if (transactionObject.TransactionHash.IsNullOrEmpty(out _))
+            if (transactionObject.TransactionHash.IsNullOrEmpty(false, out _))
                 return ClassTransactionEnumStatus.INVALID_TRANSACTION_NULL_HASH;
 
             if (transactionObject.TransactionHash.Length != BlockchainSetting.TransactionHashSize)
@@ -2607,12 +2607,12 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             {
                 case ClassTransactionEnumType.DEV_FEE_TRANSACTION:
                     {
-                        if (!transactionObject.WalletPublicKeyReceiver.IsNullOrEmpty(out _) ||
-                            !transactionObject.WalletPublicKeySender.IsNullOrEmpty(out _) ||
+                        if (!transactionObject.WalletPublicKeyReceiver.IsNullOrEmpty(false, out _) ||
+                            !transactionObject.WalletPublicKeySender.IsNullOrEmpty(false, out _) ||
                             transactionObject.PaymentId != 0 ||
                             transactionObject.TimestampBlockHeightCreateSend != transactionObject.TimestampSend ||
-                            !transactionObject.TransactionSignatureReceiver.IsNullOrEmpty(out _) ||
-                            !transactionObject.TransactionSignatureSender.IsNullOrEmpty(out _))
+                            !transactionObject.TransactionSignatureReceiver.IsNullOrEmpty(false, out _) ||
+                            !transactionObject.TransactionSignatureSender.IsNullOrEmpty(false, out _))
                         {
                             return ClassTransactionEnumStatus.INVALID_TRANSACTION_TYPE;
                         }
@@ -2665,22 +2665,22 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     {
                         if (transactionObject.BlockHeightTransaction > BlockchainSetting.GenesisBlockHeight)
                         {
-                            if (!transactionObject.WalletPublicKeyReceiver.IsNullOrEmpty(out _) ||
-                                !transactionObject.WalletPublicKeySender.IsNullOrEmpty(out _) ||
+                            if (!transactionObject.WalletPublicKeyReceiver.IsNullOrEmpty(false, out _) ||
+                                !transactionObject.WalletPublicKeySender.IsNullOrEmpty(false, out _) ||
                                 transactionObject.PaymentId != 0 ||
                                 transactionObject.TimestampBlockHeightCreateSend != transactionObject.TimestampSend ||
-                                !transactionObject.TransactionSignatureReceiver.IsNullOrEmpty(out _) ||
-                                !transactionObject.TransactionSignatureSender.IsNullOrEmpty(out _))
+                                !transactionObject.TransactionSignatureReceiver.IsNullOrEmpty(false, out _) ||
+                                !transactionObject.TransactionSignatureSender.IsNullOrEmpty(false, out _))
                             {
                                 return ClassTransactionEnumStatus.INVALID_TRANSACTION_TYPE;
                             }
                         }
                         else
                         {
-                            if (!transactionObject.WalletPublicKeyReceiver.IsNullOrEmpty(out _) ||
+                            if (!transactionObject.WalletPublicKeyReceiver.IsNullOrEmpty(false, out _) ||
                                 transactionObject.PaymentId != 0 ||
                                 transactionObject.TimestampBlockHeightCreateSend != transactionObject.TimestampSend ||
-                                !transactionObject.TransactionSignatureReceiver.IsNullOrEmpty(out _))
+                                !transactionObject.TransactionSignatureReceiver.IsNullOrEmpty(false, out _))
                             {
                                 return ClassTransactionEnumStatus.INVALID_TRANSACTION_TYPE;
                             }
@@ -2828,7 +2828,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             if (transactionObject.AmountTransactionSource.Count == 0)
                                 return ClassTransactionEnumStatus.EMPTY_TRANSACTION_SOURCE_LIST;
 
-                            if (transactionObject.AmountTransactionSource.Count(x => x.Key.IsNullOrEmpty(out _)) > 0)
+                            if (transactionObject.AmountTransactionSource.Count(x => x.Key.IsNullOrEmpty(false, out _)) > 0)
                                 return ClassTransactionEnumStatus.INVALID_TRANSACTION_SOURCE_LIST;
 
                             if (transactionObject.AmountTransactionSource.Count(x => x.Value == null) > 0)

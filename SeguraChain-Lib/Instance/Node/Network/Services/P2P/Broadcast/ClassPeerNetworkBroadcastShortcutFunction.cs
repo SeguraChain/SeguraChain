@@ -181,7 +181,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             // Default value.
             numericPublicKeyOut = string.Empty;
 
-            if (!peerNetworkSettingObject.PeerEnableSovereignPeerVote || packetNumericHash.IsNullOrEmpty(out _) || packetNumericSignature.IsNullOrEmpty(out _) || !ClassPeerCheckManager.PeerHasSeedRank(peerIp, peerUniqueId, out numericPublicKeyOut, out _))
+            if (!peerNetworkSettingObject.PeerEnableSovereignPeerVote || packetNumericHash.IsNullOrEmpty(false, out _) || packetNumericSignature.IsNullOrEmpty(false, out _) || !ClassPeerCheckManager.PeerHasSeedRank(peerIp, peerUniqueId, out numericPublicKeyOut, out _))
                 return false;
 
             return ClassPeerCheckManager.CheckPeerSeedNumericPacketSignature(ClassUtility.SerializeData(objectData), packetNumericHash, packetNumericSignature, numericPublicKeyOut, cancellation);

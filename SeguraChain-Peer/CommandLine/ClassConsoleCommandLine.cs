@@ -91,7 +91,7 @@ namespace SeguraChain_Peer.CommandLine
         {
             try
             {
-                if (!commandLine.IsNullOrEmpty(out _))
+                if (!commandLine.IsNullOrEmpty(false, out _))
                 {
                     string[] splitCommandLine = commandLine.Split(new[] { " " }, StringSplitOptions.None);
                     switch (splitCommandLine[0])
@@ -332,11 +332,11 @@ namespace SeguraChain_Peer.CommandLine
                             {
                                 if (splitCommandLine.Length >= 4)
                                 {
-                                    if (!splitCommandLine[1].IsNullOrEmpty(out _))
+                                    if (!splitCommandLine[1].IsNullOrEmpty(false, out _))
                                     {
-                                        if (!splitCommandLine[2].IsNullOrEmpty(out _))
+                                        if (!splitCommandLine[2].IsNullOrEmpty(false, out _))
                                         {
-                                            if (!splitCommandLine[3].IsNullOrEmpty(out _))
+                                            if (!splitCommandLine[3].IsNullOrEmpty(false, out _))
                                             {
                                                 if (int.TryParse(splitCommandLine[2], out var peerPort))
                                                 {
@@ -388,7 +388,7 @@ namespace SeguraChain_Peer.CommandLine
                             {
                                 if (splitCommandLine.Length >= 2)
                                 {
-                                    if (!splitCommandLine[1].IsNullOrEmpty(out _))
+                                    if (!splitCommandLine[1].IsNullOrEmpty(false, out _))
                                     {
                                         string walletAddress = splitCommandLine[1];
 

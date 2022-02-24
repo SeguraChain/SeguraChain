@@ -148,7 +148,7 @@ namespace SeguraChain_Test_Tool
             Console.WriteLine("Private Key WIF: " + walletObject.WalletPrivateKey);
             Console.WriteLine("Public Key WIF: " + walletObject.WalletPublicKey);
             Console.WriteLine("Wallet Address: " + walletObject.WalletAddress);
-            if (!baseWord.IsNullOrEmpty(out _))
+            if (!baseWord.IsNullOrEmpty(false, out _))
             {
                 Console.WriteLine("Base word(s) used: " + baseWord);
             }
@@ -236,7 +236,7 @@ namespace SeguraChain_Test_Tool
                 Console.WriteLine("Public Key WIF: " + walletObject.WalletPublicKey);
                 Console.WriteLine("Wallet Address: " + walletObject.WalletAddress);
 
-                if (!baseWord.IsNullOrEmpty(out _))
+                if (!baseWord.IsNullOrEmpty(false, out _))
                     Console.WriteLine("Base word(s) used: " + baseWord);
 
                 #endregion
@@ -581,7 +581,7 @@ namespace SeguraChain_Test_Tool
 
             string peerIp = Console.ReadLine() ?? string.Empty;
 
-            while (peerIp.IsNullOrEmpty(out _) || !IPAddress.TryParse(peerIp, out _))
+            while (peerIp.IsNullOrEmpty(false, out _) || !IPAddress.TryParse(peerIp, out _))
             {
                 Console.WriteLine("Invalid IP, please write a valid IP:");
                 peerIp = Console.ReadLine() ?? string.Empty;
@@ -591,7 +591,7 @@ namespace SeguraChain_Test_Tool
 
             string peerPort = Console.ReadLine() ?? string.Empty;
 
-            while (peerPort.IsNullOrEmpty(out _) || !int.TryParse(peerPort, out _))
+            while (peerPort.IsNullOrEmpty(false, out _) || !int.TryParse(peerPort, out _))
             {
                 Console.WriteLine("Invalid port, please write a valid port:");
                 peerPort = Console.ReadLine() ?? string.Empty;
@@ -611,7 +611,7 @@ namespace SeguraChain_Test_Tool
                 using (StreamReader reader = new StreamReader(stream))
                     result = reader.ReadToEndAsync().Result;
 
-                if (!result.IsNullOrEmpty(out _))
+                if (!result.IsNullOrEmpty(false, out _))
                 {
                     if (ClassUtility.TryDeserialize(result, out ClassApiPeerPacketObjetReceive apiPeerPacketObjetReceive))
                     {

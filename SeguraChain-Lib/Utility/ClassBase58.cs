@@ -126,7 +126,7 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         private static byte[] Decode(string base58Content, bool useBlockchainVersion)
         {
-            if (base58Content.IsNullOrEmpty(out _))
+            if (base58Content.IsNullOrEmpty(false, out _))
                 return null;
 
             try
@@ -143,16 +143,19 @@ namespace SeguraChain_Lib.Utility
                         return null;
                 }
 
-                int leadingZeroCount = base58Content.TakeWhile(c => c == FixedDigit).Count();
-                var leadingZeros = Enumerable.Repeat((byte)0, leadingZeroCount);
-                var bytesWithoutLeadingZeros = intData.ToByteArray().Reverse().SkipWhile(b => b == 0);
-                var result = leadingZeros.Concat(bytesWithoutLeadingZeros).ToArray();
+
+                var result = Enumerable.Repeat((byte)0, base58Content.TakeWhile(c => c == FixedDigit).Count()).Concat(intData.ToByteArray().Reverse().SkipWhile(b => b == 0)).ToArray();
 
                 if (useBlockchainVersion)
                 {
-                    string resultHex = ClassUtility.GetHexStringFromByteArray(result);
-                    if (!resultHex.StartsWith(BlockchainSetting.BlockchainVersion))
+                    //string resultHex = ClassUtility.GetHexStringFromByteArray(result);
+
+                    // Faster way.
+                    if (!SubArray(result, 0, 1).CompareArray(BlockchainSetting.BlockchainVersionByteArray))
                         return null;
+                    
+                    /*if (!resultHex.StartsWith(BlockchainSetting.BlockchainVersion))
+                        return null;*/
                 }
 
                 return result;
@@ -180,11 +183,12 @@ namespace SeguraChain_Lib.Utility
             {
                 try
                 {
-                    byte[] result = SubArray(data, 0, data.Length - BlockchainSetting.BlockchainChecksum);
                     byte[] givenCheckSum = SubArray(data, data.Length - BlockchainSetting.BlockchainChecksum);
 
                     if (givenCheckSum != null)
                     {
+                        byte[] result = SubArray(data, 0, data.Length - BlockchainSetting.BlockchainChecksum);
+
                         byte[] correctCheckSum = GetCheckSum(result);
 
                         if (correctCheckSum != null)
@@ -214,15 +218,7 @@ namespace SeguraChain_Lib.Utility
             if (data != null)
             {
                 using (SHA256 sha256 = new SHA256Managed())
-                {
-                    byte[] hash1 = sha256.ComputeHash(data);
-                    byte[] hash2 = sha256.ComputeHash(hash1);
-
-                    var result = new byte[BlockchainSetting.BlockchainChecksum];
-                    Array.Copy(hash2, 0, result, 0, result.Length);
-
-                    return result;
-                }
+                    return SubArray(sha256.ComputeHash(sha256.ComputeHash(data)), 0, BlockchainSetting.BlockchainChecksum);
             }
             return null;
         }

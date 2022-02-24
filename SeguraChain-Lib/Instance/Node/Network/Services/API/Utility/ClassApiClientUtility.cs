@@ -377,7 +377,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Utility
                 // Clean up.
                 content.Clear();
 
-                if (!apiPeerPacketObjetReceive.PacketObjectSerialized.IsNullOrEmpty(out _))
+                if (!apiPeerPacketObjetReceive.PacketObjectSerialized.IsNullOrEmpty(false, out _))
                 {
                     if (ClassUtility.TryDeserialize(apiPeerPacketObjetReceive.PacketObjectSerialized, out T apiPeerPacketContent))
                         return apiPeerPacketContent;
@@ -526,7 +526,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Utility
             }
 
 
-            if (!content.IsNullOrEmpty(out _))
+            if (!content.IsNullOrEmpty(false, out _))
             {
                 if (ClassUtility.TryDeserialize(content, out ClassApiPeerPacketObjetReceive apiPeerPacketObjetReceive))
                 {

@@ -7,12 +7,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet.Model
     /// </summary>
     public class ClassReadPacketSplitted
     {
-        public DisposableList<byte> Packet;
+        public string Packet;
         public bool Complete;
 
         public ClassReadPacketSplitted()
         {
-            Packet = new DisposableList<byte>(false, 8192);
+            Packet = string.Empty;
         }
     }
 }

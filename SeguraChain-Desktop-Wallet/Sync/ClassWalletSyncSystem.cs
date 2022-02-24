@@ -227,7 +227,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
 
                             }
                         }
-                        
+
 
 
                         try
@@ -273,7 +273,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                         {
                             cancellationUpdateWalletSync.Token.ThrowIfCancellationRequested();
 
-                            if (!walletFileName.IsNullOrEmpty(out _))
+                            if (!walletFileName.IsNullOrEmpty(false, out _))
                             {
                                 if (ClassDesktopWalletCommonData.WalletDatabase.WalletOnResync(walletFileName))
                                 {
@@ -339,7 +339,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                                         break;
                                                     else
                                                     {
-                                                        currentBlockTransaction.BlockTransaction.TransactionTotalConfirmation = (lastBlockHeightTransactionConfirmation - blockHeight)+1;
+                                                        currentBlockTransaction.BlockTransaction.TransactionTotalConfirmation = (lastBlockHeightTransactionConfirmation - blockHeight) + 1;
                                                         DatabaseSyncCache[walletAddress].UpdateBlockTransaction(currentBlockTransaction.BlockTransaction, false);
                                                         totalTxUpdated++;
                                                     }
@@ -457,7 +457,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                             BlockTransaction = blockTransaction,
                             IsMemPool = isMemPool,
                             IsSender = isSender
-                        }, cancellation) ;
+                        }, cancellation);
                     }
                     else
                         DatabaseSyncCache[walletAddress].UpdateBlockTransaction(blockTransaction, isMemPool);
@@ -941,7 +941,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                 case ClassWalletSettingEnumSyncMode.EXTERNAL_PEER_SYNC_MODE:
                     {
                         if (_apiIsAlive || useInternalUpdate)
-                            return useInternalUpdate && _lastBlockHeightTimestampCreate  > 0 ? _lastBlockHeightTimestampCreate : await ClassApiClientUtility.GetBlockTimestampCreateFromExternalSyncMode(ClassDesktopWalletCommonData.WalletSettingObject.ApiHost, ClassDesktopWalletCommonData.WalletSettingObject.ApiPort, ClassDesktopWalletCommonData.WalletSettingObject.WalletInternalSyncNodeSetting.PeerNetworkSettingObject.PeerApiMaxConnectionDelay, blockHeight, cancellation);
+                            return useInternalUpdate && _lastBlockHeightTimestampCreate > 0 ? _lastBlockHeightTimestampCreate : await ClassApiClientUtility.GetBlockTimestampCreateFromExternalSyncMode(ClassDesktopWalletCommonData.WalletSettingObject.ApiHost, ClassDesktopWalletCommonData.WalletSettingObject.ApiPort, ClassDesktopWalletCommonData.WalletSettingObject.WalletInternalSyncNodeSetting.PeerNetworkSettingObject.PeerApiMaxConnectionDelay, blockHeight, cancellation);
                     }
                     break;
             }
@@ -1471,6 +1471,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                             TransactionBlockHeightInsert = memPoolTransactionObject.BlockHeightTransaction,
                                             TransactionBlockHeightTarget = memPoolTransactionObject.BlockHeightTransactionConfirmationTarget
                                         }, true, false, cancellation);
+
                                         ClassLog.WriteLine(memPoolTransactionObject.TransactionHash + " tx hash of wallet address: " + walletAddress + " from mempool has been synced successfully.", ClassEnumLogLevelType.LOG_LEVEL_WALLET, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
                                     }
                                 }
@@ -1795,19 +1796,21 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                 string nodeLocalIp = _nodeInstance.PeerSettingObject.PeerNetworkSettingObject.ListenIp;
                                 string openNatIp = _nodeInstance.PeerOpenNatPublicIp;
 
-                                var sendTransactionResult = await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(nodeLocalIp, openNatIp, openNatIp, new List<ClassTransactionObject>() { transactionObject }, _nodeInstance.PeerSettingObject.PeerNetworkSettingObject, _nodeInstance.PeerSettingObject.PeerFirewallSettingObject, cancellation, true);
-
-                                var sendTransactionResultElement = sendTransactionResult.ElementAt(0);
-#if DEBUG
-                                Debug.WriteLine("Send transaction request result: " + sendTransactionResultElement.Key + " | Tx response status: " + System.Enum.GetName(typeof(ClassTransactionEnumStatus), sendTransactionResultElement.Value));
-#endif
-                                ClassLog.WriteLine("Send transaction request result: " + sendTransactionResultElement.Key + " | Tx response status: " + System.Enum.GetName(typeof(ClassTransactionEnumStatus), sendTransactionResultElement.Value), ClassEnumLogLevelType.LOG_LEVEL_WALLET, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
-
-                                if (sendTransactionResultElement.Value == ClassTransactionEnumStatus.VALID_TRANSACTION)
+                                using (DisposableDictionary<string, ClassTransactionEnumStatus> sendTransactionResult = await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(nodeLocalIp, openNatIp, openNatIp, new List<ClassTransactionObject>() { transactionObject }, _nodeInstance.PeerSettingObject.PeerNetworkSettingObject, _nodeInstance.PeerSettingObject.PeerFirewallSettingObject, cancellation, true))
                                 {
-                                    sendTransactionStatus = true;
 
-                                    ClassMemPoolDatabase.InsertTxToMemPool(transactionObject);
+                                    KeyValuePair<string, ClassTransactionEnumStatus> sendTransactionResultElement = sendTransactionResult.GetList.ElementAt(0);
+#if DEBUG
+                                    Debug.WriteLine("Send transaction request result: " + sendTransactionResultElement.Key + " | Tx response status: " + System.Enum.GetName(typeof(ClassTransactionEnumStatus), sendTransactionResultElement.Value));
+#endif
+                                    ClassLog.WriteLine("Send transaction request result: " + sendTransactionResultElement.Key + " | Tx response status: " + System.Enum.GetName(typeof(ClassTransactionEnumStatus), sendTransactionResultElement.Value), ClassEnumLogLevelType.LOG_LEVEL_WALLET, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
+
+                                    if (sendTransactionResultElement.Value == ClassTransactionEnumStatus.VALID_TRANSACTION)
+                                    {
+                                        sendTransactionStatus = true;
+
+                                        ClassMemPoolDatabase.InsertTxToMemPool(transactionObject);
+                                    }
                                 }
                             }
                             break;
@@ -1883,9 +1886,9 @@ namespace SeguraChain_Desktop_Wallet.Sync
                     return sendTransactionFeeCostCalculationResult;
                 }
 
-                #region Generate list unspend.
+                #region Generated list unspend.
 
-                using (var allBlockTransactions = await DatabaseSyncCache[walletAddress].GetAllBlockTransactionCached(cancellation))
+                using (DisposableDictionary<long, Dictionary<string, ClassSyncCacheBlockTransactionObject>> allBlockTransactions = await DatabaseSyncCache[walletAddress].GetAllBlockTransactionCached(cancellation))
                 {
                     foreach (long blockHeight in allBlockTransactions.GetList.Keys)
                     {

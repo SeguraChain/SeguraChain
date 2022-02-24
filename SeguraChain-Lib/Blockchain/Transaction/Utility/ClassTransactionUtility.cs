@@ -107,7 +107,7 @@ namespace SeguraChain_Lib.Blockchain.Transaction.Utility
         {
             if (BuildTransactionHash(prebuildTransactionObject, out prebuildTransactionObject.TransactionHash))
             {
-                if (!prebuildTransactionObject.TransactionHash.IsNullOrEmpty(out _))
+                if (!prebuildTransactionObject.TransactionHash.IsNullOrEmpty(false, out _))
                 {
                     BuildBigTransactionHash(prebuildTransactionObject, cancellation, out string bigTransactionHash);
                     prebuildTransactionObject.TransactionSignatureSender = ClassWalletUtility.WalletGenerateSignature(privateKeySender, prebuildTransactionObject.TransactionHash);
@@ -169,7 +169,7 @@ namespace SeguraChain_Lib.Blockchain.Transaction.Utility
 
             }
 
-            if (!transactionHash.IsNullOrEmpty(out _))
+            if (!transactionHash.IsNullOrEmpty(false, out _))
                 transactionHash = ClassUtility.GetHexStringFromByteArray(BitConverter.GetBytes(transactionData.BlockHeightTransaction)) + transactionHash;
 
             return true;
@@ -329,7 +329,7 @@ namespace SeguraChain_Lib.Blockchain.Transaction.Utility
         {
             if (BuildTransactionHash(transactionData, out var transactionHash))
             {
-                if (!transactionHash.IsNullOrEmpty(out _))
+                if (!transactionHash.IsNullOrEmpty(false, out _))
                 {
                     if (transactionData.TransactionHash == transactionHash)
                         return true;
@@ -473,7 +473,7 @@ namespace SeguraChain_Lib.Blockchain.Transaction.Utility
                 if (transactionObject1.AmountTransactionSource.Count == 0)
                     return false;
 
-                if (transactionObject1.AmountTransactionSource.Keys.Count(x => x.IsNullOrEmpty(out _)) > 0)
+                if (transactionObject1.AmountTransactionSource.Keys.Count(x => x.IsNullOrEmpty(false, out _)) > 0)
                     return false;
 
                 if (transactionObject1.AmountTransactionSource.Values.Count(x => x == null) > 0)
@@ -489,7 +489,7 @@ namespace SeguraChain_Lib.Blockchain.Transaction.Utility
                 if (transactionObject2.AmountTransactionSource.Count == 0)
                     return false;
 
-                if (transactionObject2.AmountTransactionSource.Keys.Count(x => x.IsNullOrEmpty(out _)) > 0)
+                if (transactionObject2.AmountTransactionSource.Keys.Count(x => x.IsNullOrEmpty(false, out _)) > 0)
                     return false;
 
                 if (transactionObject2.AmountTransactionSource.Values.Count(x => x == null) > 0)
@@ -955,56 +955,56 @@ namespace SeguraChain_Lib.Blockchain.Transaction.Utility
             }
 
             // Wallet Address Sender.
-            if (!transactionObject.WalletAddressSender.IsNullOrEmpty(out _))
+            if (!transactionObject.WalletAddressSender.IsNullOrEmpty(false, out _))
                 totalMemoryUsage += transactionObject.WalletAddressSender.Length * sizeof(char);
 
             // Public Key Sender.
-            if (!transactionObject.WalletPublicKeySender.IsNullOrEmpty(out _))
+            if (!transactionObject.WalletPublicKeySender.IsNullOrEmpty(false, out _))
                 totalMemoryUsage += transactionObject.WalletPublicKeySender.Length * sizeof(char);
 
             // Signature Sender.
             if (!exceptFee)
             {
-                if (!transactionObject.TransactionSignatureSender.IsNullOrEmpty(out _))
+                if (!transactionObject.TransactionSignatureSender.IsNullOrEmpty(false, out _))
                     totalMemoryUsage += transactionObject.TransactionSignatureSender.Length * sizeof(char);
             }
 
             // Big signature sender.
             if (!exceptFee)
             {
-                if (!transactionObject.TransactionBigSignatureSender.IsNullOrEmpty(out _))
+                if (!transactionObject.TransactionBigSignatureSender.IsNullOrEmpty(false, out _))
                     totalMemoryUsage += transactionObject.TransactionBigSignatureSender.Length * sizeof(char);
             }
 
             // Public Key Receiver.
             if (!exceptFee)
             {
-                if (!transactionObject.WalletPublicKeyReceiver.IsNullOrEmpty(out _))
+                if (!transactionObject.WalletPublicKeyReceiver.IsNullOrEmpty(false, out _))
                     totalMemoryUsage += transactionObject.WalletPublicKeyReceiver.Length * sizeof(char);
             }
 
             // signature Receiver.
             if (!exceptFee)
             {
-                if (!transactionObject.TransactionSignatureReceiver.IsNullOrEmpty(out _))
+                if (!transactionObject.TransactionSignatureReceiver.IsNullOrEmpty(false, out _))
                     totalMemoryUsage += transactionObject.TransactionSignatureReceiver.Length * sizeof(char);
             }
 
             // Big signature receiver.
             if (!exceptFee)
             {
-                if (!transactionObject.TransactionBigSignatureReceiver.IsNullOrEmpty(out _))
+                if (!transactionObject.TransactionBigSignatureReceiver.IsNullOrEmpty(false, out _))
                     totalMemoryUsage += transactionObject.TransactionBigSignatureReceiver.Length * sizeof(char);
             }
 
             // Block hash.
             if (!exceptFee)
             {
-                if (!transactionObject.BlockHash.IsNullOrEmpty(out _))
+                if (!transactionObject.BlockHash.IsNullOrEmpty(false, out _))
                     totalMemoryUsage += transactionObject.BlockHash.Length * sizeof(char);
 
                 // Block hash reward.
-                if (!transactionObject.TransactionHashBlockReward.IsNullOrEmpty(out _))
+                if (!transactionObject.TransactionHashBlockReward.IsNullOrEmpty(false, out _))
                     totalMemoryUsage += transactionObject.TransactionHashBlockReward.Length * sizeof(char);
             }
 

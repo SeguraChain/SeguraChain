@@ -51,7 +51,7 @@ namespace SeguraChain_Desktop_Wallet.Language.Database
                         {
                             if (languageObject != null)
                             {
-                                if (!languageObject.LanguageName.IsNullOrEmpty(out _) && !languageObject.LanguageMinName.IsNullOrEmpty(out _))
+                                if (!languageObject.LanguageName.IsNullOrEmpty(false, out _) && !languageObject.LanguageMinName.IsNullOrEmpty(false, out _))
                                 {
                                     readStatus = true;
                                     if (!_dictionaryLanguageObjects.ContainsKey(languageObject.LanguageMinName))

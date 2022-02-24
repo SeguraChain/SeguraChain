@@ -390,13 +390,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                     {
                         bool peerTargetExist = false;
                         long packetSizeCount = 0;
+                        int countPacketCompleted = 0;
 
                         listPacketReceived?.Clear();
 
                         using (listPacketReceived = new DisposableList<ClassReadPacketSplitted>())
                         {
                             listPacketReceived.Add(new ClassReadPacketSplitted());
-
 
                             byte[] packetBufferOnReceive = new byte[_peerNetworkSetting.PeerMaxPacketBufferSize];
 
@@ -421,24 +421,22 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                                             if (character != '\0')
                                             {
-
                                                 if (character == ClassPeerPacketSetting.PacketPeerSplitSeperator)
                                                 {
                                                     listPacketReceived[listPacketReceived.Count - 1].Complete = true;
+                                                    countPacketCompleted++;
                                                     break;
                                                 }
-                                                else
+                                                else if (ClassUtility.CharIsABase64Character(character))
                                                 {
-                                                    if (ClassUtility.CharIsABase64Character(character))
-                                                    {
-                                                        listPacketReceived[listPacketReceived.Count - 1].Packet.Add(dataByte);
-                                                        packetSizeCount++;
-                                                    }
+                                                    listPacketReceived[listPacketReceived.Count - 1].Packet += character;
+                                                    packetSizeCount++;
                                                 }
+
                                             }
                                         }
 
-                                        if (listPacketReceived.GetList.Count(x => x.Complete && x.Packet.Count > 0) > 0)
+                                        if (countPacketCompleted > 0)
                                         {
 
                                             byte[] base64Packet = null;
@@ -446,7 +444,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                                             try
                                             {
-                                                base64Packet = Convert.FromBase64String(listPacketReceived[listPacketReceived.Count - 1].Packet.GetList.ToArray().GetStringFromByteArrayUtf8());
+                                                base64Packet = Convert.FromBase64String(listPacketReceived[listPacketReceived.Count - 1].Packet);
                                             }
                                             catch
                                             {
@@ -455,6 +453,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                                             listPacketReceived[listPacketReceived.Count - 1].Packet.Clear();
                                             listPacketReceived[listPacketReceived.Count - 1].Complete = false;
+                                            countPacketCompleted = 0;
 
                                             if (!failed)
                                             {
@@ -464,7 +463,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                                 {
                                                     if (!peerTargetExist)
                                                     {
-                                                        if(ClassPeerDatabase.ContainsPeer(PeerIpTarget, PeerUniqueIdTarget))
+                                                        if (ClassPeerDatabase.ContainsPeer(PeerIpTarget, PeerUniqueIdTarget))
                                                         {
                                                             peerTargetExist = true;
                                                             ClassPeerDatabase.DictionaryPeerDataObject[PeerIpTarget][PeerUniqueIdTarget].PeerLastPacketReceivedTimestamp = ClassUtility.GetCurrentTimestampInSecond();
@@ -633,7 +632,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                     break;
                                 }
 
-                                await Task.Delay(5000);
+                                await Task.Delay(5000, _peerCancellationTokenTaskSendPeerPacketKeepAlive.Token);
                             }
                             catch (SocketException)
                             {

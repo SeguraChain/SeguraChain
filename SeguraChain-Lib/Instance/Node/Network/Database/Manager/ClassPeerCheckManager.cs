@@ -144,7 +144,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <returns></returns>
         public static bool CheckPeerClientWhitelistStatus(string peerIp, string peerUniqueId, ClassPeerNetworkSettingObject peerNetworkSettingObject)
         {
-            if (peerUniqueId.IsNullOrEmpty(out _))
+            if (peerUniqueId.IsNullOrEmpty(false, out _))
                 return false;
 
             if (!ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
@@ -186,16 +186,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
             if (!ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
                 return false;
 
-            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerIp.IsNullOrEmpty(out _) ||
-                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerUniqueId.IsNullOrEmpty(out _) ||
+            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerIp.IsNullOrEmpty(false, out _) ||
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerUniqueId.IsNullOrEmpty(false, out _) ||
                 ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerPort <= 0 ||
                 ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey == null ||
                 ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKeyIv == null ||
-                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPublicKey.IsNullOrEmpty(out _) ||
-                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey.IsNullOrEmpty(out _) ||
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPublicKey.IsNullOrEmpty(false, out _) ||
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey.IsNullOrEmpty(false, out _) ||
                 ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPacketEncryptionKey == null ||
                 ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPacketEncryptionKeyIv == null ||
-                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPublicKey.IsNullOrEmpty(out _))
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPublicKey.IsNullOrEmpty(false, out _))
                 return false;
 
             return true;
@@ -211,7 +211,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         public static bool ComparePeerPacketPublicKey(string peerIp, string peerUniqueId, string peerPublicKeyReceived)
         {
             if (!ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId) ||
-                peerPublicKeyReceived.IsNullOrEmpty(out _))
+                peerPublicKeyReceived.IsNullOrEmpty(false, out _))
                 return false;
 
             return ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPublicKey == peerPublicKeyReceived;
@@ -451,7 +451,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
             if (!ClassPeerDatabase.GetPeerNumericPublicKey(peerIp, peerUniqueId, out numericPublicKeyOut))
                 return false;
 
-            if (numericPublicKeyOut.IsNullOrEmpty(out _))
+            if (numericPublicKeyOut.IsNullOrEmpty(false, out _))
                 return false;
 
             return ClassSovereignUpdateDatabase.CheckIfNumericPublicKeyPeerIsRanked(numericPublicKeyOut, out timestampRankDelay);
@@ -467,7 +467,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <returns></returns>
         public static bool CheckPeerSeedNumericPacketSignature(string data, string packetNumericHash, string packetNumericSignature, string peerNumericPublicKey, CancellationTokenSource cancellation)
         {
-            if (packetNumericHash.IsNullOrEmpty(out _) || packetNumericSignature.IsNullOrEmpty(out _) || peerNumericPublicKey.IsNullOrEmpty(out _))
+            if (packetNumericHash.IsNullOrEmpty(false, out _) || packetNumericSignature.IsNullOrEmpty(false, out _) || peerNumericPublicKey.IsNullOrEmpty(false, out _))
                 return false;
 
             if (ClassUtility.GenerateSha256FromString(data) != packetNumericHash)

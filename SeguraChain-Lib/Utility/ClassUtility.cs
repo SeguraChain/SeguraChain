@@ -416,13 +416,16 @@ namespace SeguraChain_Lib.Utility
         }
 
         /// <summary>
-        /// Check if the sha string contain only hex characters.
+        /// Check if the hex string contain only hex characters.
         /// </summary>
-        /// <param name="shaHexString"></param>
+        /// <param name="hexString"></param>
         /// <returns></returns>
-        public static bool CheckHexStringFormat(string shaHexString)
+        public static bool CheckHexStringFormat(string hexString)
         {
-            return shaHexString.IsNullOrEmpty(out string shaHexStringTrimmed) || shaHexStringTrimmed.ToLower().Count(character => ListOfHexCharacters.Contains(character)) != shaHexStringTrimmed.Length ? false : true;
+            if (hexString.IsNullOrEmpty(false, out _))
+                return false;
+
+            return hexString.ToLower().Count(character => ListOfHexCharacters.Contains(character)) == hexString.Length;
         }
 
         /// <summary>
@@ -434,9 +437,9 @@ namespace SeguraChain_Lib.Utility
         {
             string newHexString = string.Empty;
 
-            if (!hexString.IsNullOrEmpty(out string hexStringTrimmed))
+            if (!hexString.IsNullOrEmpty(false, out _))
             {
-                foreach (var hexCharacter in hexStringTrimmed.ToLower())
+                foreach (var hexCharacter in hexString.ToLower())
                 {
                     if (ListOfHexCharacters.Contains(hexCharacter))
                         newHexString += hexCharacter;
@@ -570,15 +573,7 @@ namespace SeguraChain_Lib.Utility
             long currentTimestamp = GetCurrentTimestampInSecond();
 
 
-#if DEBUG
-            bool isAlive = timestampPacket + maxDelay > currentTimestamp && timestampPacket < currentTimestamp + earlierDelay ? true : false;
-
-            if (!isAlive)
-                Console.WriteLine("Is expired" + (timestampPacket + maxDelay) + "/" + currentTimestamp + " | " + timestampPacket + "/" + (currentTimestamp + earlierDelay));
-            return isAlive;
-#else
-            return timestampPacket + maxDelay > currentTimestamp && timestampPacket < currentTimestamp + earlierDelay ? true : false;
-#endif
+            return timestampPacket + maxDelay >= currentTimestamp && (timestampPacket + maxDelay - currentTimestamp) <= earlierDelay ? true : false;
         }
 
         /// <summary>
@@ -633,7 +628,7 @@ namespace SeguraChain_Lib.Utility
         /// <param name="handling"></param>
         public static bool TryDeserialize<T>(string content, out T result, ObjectCreationHandling handling = ObjectCreationHandling.Auto)
         {
-            if (!content.IsNullOrEmpty(out string contentTrimmed))
+            if (!content.IsNullOrEmpty(true, out string contentTrimmed))
             {
 
                 bool isNull = false;
@@ -754,14 +749,12 @@ namespace SeguraChain_Lib.Utility
         {
             try
             {
-                if (socket != null)
-                    return !((socket.Poll(10, SelectMode.SelectRead) && (socket.Available == 0)) || !socket.Connected);
+                return !socket.Poll(1000, SelectMode.SelectWrite) || !socket.Connected ? false : true;
             }
             catch
             {
                 return false;
             }
-            return false;
         }
 
 
@@ -1023,7 +1016,7 @@ namespace SeguraChain_Lib.Utility
             {
                 foreach (var word in src.Split(new[] { seperatorStr }, StringSplitOptions.None))
                 {
-                    if (!word.IsNullOrEmpty(out string wordTrimmed))
+                    if (!word.IsNullOrEmpty(true, out string wordTrimmed))
                         listSplitted.Add(wordTrimmed);
                 }
             }
@@ -1036,18 +1029,23 @@ namespace SeguraChain_Lib.Utility
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        public static bool IsNullOrEmpty(this string str, out string strTrimmed)
+        public static bool IsNullOrEmpty(this string str, bool useTrim, out string strTrimmed)
         {
-            strTrimmed = string.Empty;
+            strTrimmed = null;
+
             if (str == null) return true;
             if (str.Length == 0) return true;
             if (str == string.Empty) return true;
             if (str == "") return true;
 
-            strTrimmed = str.TrimFast();
 
-            if (strTrimmed.Length == 0) return true;
-            if (string.IsNullOrEmpty(strTrimmed)) return true;
+            strTrimmed = useTrim ? str.TrimFast() : null;
+
+            if (useTrim)
+            {
+                if (strTrimmed.Length == 0) return true;
+                if (string.IsNullOrEmpty(strTrimmed)) return true;
+            }
 
             return false;
         }

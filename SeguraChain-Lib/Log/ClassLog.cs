@@ -122,7 +122,7 @@ namespace SeguraChain_Lib.Log
         {
             _logListOnCollect = new Dictionary<ClassEnumLogLevelType, List<ClassLogObject>>();
 
-            if (customLogFilePath.IsNullOrEmpty(out _))
+            if (customLogFilePath.IsNullOrEmpty(false, out _))
                 customLogFilePath = LogFilePath;
 
             if (!Directory.Exists(customLogFilePath))
@@ -432,34 +432,38 @@ namespace SeguraChain_Lib.Log
             {
                 if (LogWriterInitialized)
                 {
-                    bool locked = false;
-
-                    try
+                    Task.Factory.StartNew(() =>
                     {
+
+                        bool locked = false;
+
                         try
                         {
-                            if (Monitor.TryEnter(_logListOnCollect[logLevelType]))
+                            try
                             {
-                                _logListOnCollect[logLevelType].Add(new ClassLogObject()
+                                if (Monitor.TryEnter(_logListOnCollect[logLevelType]))
                                 {
-                                    LogContent = logLine,
-                                    Written = false,
-                                    Timestamp = ClassUtility.GetCurrentTimestampInSecond()
-                                });
+                                    _logListOnCollect[logLevelType].Add(new ClassLogObject()
+                                    {
+                                        LogContent = logLine,
+                                        Written = false,
+                                        Timestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                    });
 
-                                Monitor.PulseAll(_logListOnCollect[logLevelType]);
+                                    Monitor.PulseAll(_logListOnCollect[logLevelType]);
+                                }
+                            }
+                            catch
+                            {
+                                // Ignored.
                             }
                         }
-                        catch
+                        finally
                         {
-                            // Ignored.
+                            if (locked)
+                                Monitor.Exit(_logListOnCollect[logLevelType]);
                         }
-                    }
-                    finally
-                    {
-                        if (locked)
-                            Monitor.Exit(_logListOnCollect[logLevelType]);
-                    }
+                    }, _cancellationTokenSourceLogWriter.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
                 }
             }
         }

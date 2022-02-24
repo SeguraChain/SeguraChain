@@ -125,9 +125,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                             await _semaphoreIncomingConnection.WaitAsync(_cancellationTokenSourcePeerServer.Token);
                                             useSemaphore = true;
 
-                                            if (_peerNetworkSettingObject.PeerMaxTaskIncomingConnection >= _listPeerIncomingConnectionTask.Count)
+                                            if (_listPeerIncomingConnectionTask.Count <= _peerNetworkSettingObject.PeerMaxTaskIncomingConnection)
                                             {
-                                                countTaskRemoved = ClearIncomingConnectionTask();
 
                                                 ClassLog.WriteLine("Total cleaned task completed: " + countTaskRemoved, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true, ConsoleColor.Yellow);
 
@@ -149,8 +148,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
                                                 }, _cancellationTokenSourcePeerServer.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current));
                                             }
-                                            else CloseTcpClient(clientPeerTcp);
-
+                                            else
+                                            {
+                                                countTaskRemoved = ClearIncomingConnectionTask();
+                                                CloseTcpClient(clientPeerTcp);
+                                            }
                                         }
                                     }
                                     catch
@@ -591,22 +593,27 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
             for (int i = 0; i < _listPeerIncomingConnectionTask.Count; i++)
             {
-                try
+                if (i < _listPeerIncomingConnectionTask.Count)
                 {
-                    
-                    if (_listPeerIncomingConnectionTask[i].IsCompleted)
+                    try
                     {
-                        _listPeerIncomingConnectionTask[i].Dispose();
 
-                        // Remove the completed task.
-                        _listPeerIncomingConnectionTask.Remove(_listPeerIncomingConnectionTask[i]);
+                        if (_listPeerIncomingConnectionTask[i]?.Status == TaskStatus.RanToCompletion ||
+                                                _listPeerIncomingConnectionTask[i]?.Status == TaskStatus.Faulted ||
+                                                _listPeerIncomingConnectionTask[i]?.Status == TaskStatus.Canceled)
+                        {
+                            _listPeerIncomingConnectionTask[i].Dispose();
 
-                        countTaskCompleted++;
+                            // Remove the completed task.
+                            _listPeerIncomingConnectionTask.GetList.RemoveAt(i);
+
+                            countTaskCompleted++;
+                        }
                     }
-                }
-                catch
-                {
-                    // Ignored.
+                    catch
+                    {
+                        // Ignored.
+                    }
                 }
             }
 

@@ -79,7 +79,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         {
             packetDecrypted = null; // Default.
 
-            if (packetContent.IsNullOrEmpty(out _) || !ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId) || ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetInternCryptoStreamObject == null)
+            if (packetContent.IsNullOrEmpty(false, out _) || !ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId) || ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetInternCryptoStreamObject == null)
                 return false;
 
             Tuple<byte[], bool> taskPacketDecrypt;
@@ -121,7 +121,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         /// <returns></returns>
         private bool CheckPeerUniqueId(string peerUniqueId)
         {
-            return peerUniqueId.IsNullOrEmpty(out _) || peerUniqueId.Length != BlockchainSetting.PeerUniqueIdHashLength || !ClassUtility.CheckHexStringFormat(peerUniqueId) ? false : true;
+            return peerUniqueId.IsNullOrEmpty(false, out _) || peerUniqueId.Length != BlockchainSetting.PeerUniqueIdHashLength || !ClassUtility.CheckHexStringFormat(peerUniqueId) ? false : true;
         }
 
         #endregion
@@ -171,7 +171,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         /// </summary>
         /// <param name="peerNetworkClientSyncObject"></param>
         /// <param name="peerIp"></param>
-        /// <param name="peerPort"></param>
         /// <param name="peerNetworkSettingObject"></param>
         /// <param name="cancellation"></param>
         /// <param name="packetPeerList"></param>
@@ -224,7 +223,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
 
                 foreach (string peerIp in packetPeerList.PeerIpList)
                 {
-                    if (peerIp.IsNullOrEmpty(out _))
+                    if (peerIp.IsNullOrEmpty(false, out _))
                         return false;
 
                     if (!IPAddress.TryParse(peerIp, out _))
@@ -291,7 +290,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
             if (peerPacketNetworkInformation.CurrentBlockHeight < BlockchainSetting.GenesisBlockHeight)
                 return false;
 
-            if (peerPacketNetworkInformation.CurrentBlockHash.IsNullOrEmpty(out _))
+            if (peerPacketNetworkInformation.CurrentBlockHash.IsNullOrEmpty(false, out _))
                 return false;
 
             if (peerPacketNetworkInformation.CurrentBlockHash.Length != BlockchainSetting.BlockHashHexSize)
@@ -321,13 +320,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         /// </summary>
         /// <param name="peerNetworkClientSyncObject"></param>
         /// <param name="peerIp"></param>
-        /// <param name="peerPort"></param>
         /// <param name="peerNetworkSettingObject"></param>
         /// <param name="cancellation"></param>
         /// <param name="packetPeerSovereignUpdateList"></param>
         /// 
         /// <returns></returns>
-        public bool TryGetPacketSovereignUpdateList(ClassPeerNetworkClientSyncObject peerNetworkClientSyncObject, string peerIp, int peerPort, ClassPeerNetworkSettingObject peerNetworkSettingObject, CancellationTokenSource cancellation, out ClassPeerPacketSendListSovereignUpdate packetPeerSovereignUpdateList)
+        public bool TryGetPacketSovereignUpdateList(ClassPeerNetworkClientSyncObject peerNetworkClientSyncObject, string peerIp,  ClassPeerNetworkSettingObject peerNetworkSettingObject, CancellationTokenSource cancellation, out ClassPeerPacketSendListSovereignUpdate packetPeerSovereignUpdateList)
         {
             packetPeerSovereignUpdateList = null; // Default.
 
@@ -372,7 +370,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
             {
                 foreach (var sovereignUpdateHash in packetPeerSendSovereignUpdateList.SovereignUpdateHashList)
                 {
-                    if (sovereignUpdateHash.IsNullOrEmpty(out _))
+                    if (sovereignUpdateHash.IsNullOrEmpty(false, out _))
                         return false;
 
                     if (!ClassUtility.CheckHexStringFormat(sovereignUpdateHash))
@@ -436,22 +434,22 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
             if (packetSovereignUpdateData.SovereignUpdateObject.SovereignUpdateContent == null)
                 return false;
 
-            if (packetSovereignUpdateData.SovereignUpdateObject.SovereignUpdateContent.Description.IsNullOrEmpty(out _))
+            if (packetSovereignUpdateData.SovereignUpdateObject.SovereignUpdateContent.Description.IsNullOrEmpty(false, out _))
                 return false;
 
-            if (packetSovereignUpdateData.SovereignUpdateObject.SovereignUpdateContent.PossibleContent1.IsNullOrEmpty(out _))
+            if (packetSovereignUpdateData.SovereignUpdateObject.SovereignUpdateContent.PossibleContent1.IsNullOrEmpty(false, out _))
                 return false;
 
-            if (packetSovereignUpdateData.SovereignUpdateObject.SovereignUpdateContent.PossibleContent2.IsNullOrEmpty(out _))
+            if (packetSovereignUpdateData.SovereignUpdateObject.SovereignUpdateContent.PossibleContent2.IsNullOrEmpty(false, out _))
                 return false;
 
-            if (packetSovereignUpdateData.SovereignUpdateObject.SovereignUpdateDevWalletAddress.IsNullOrEmpty(out _))
+            if (packetSovereignUpdateData.SovereignUpdateObject.SovereignUpdateDevWalletAddress.IsNullOrEmpty(false, out _))
                 return false;
 
-            if (packetSovereignUpdateData.SovereignUpdateObject.SovereignUpdateHash.IsNullOrEmpty(out _))
+            if (packetSovereignUpdateData.SovereignUpdateObject.SovereignUpdateHash.IsNullOrEmpty(false, out _))
                 return false;
 
-            if (packetSovereignUpdateData.SovereignUpdateObject.SovereignUpdateSignature.IsNullOrEmpty(out _))
+            if (packetSovereignUpdateData.SovereignUpdateObject.SovereignUpdateSignature.IsNullOrEmpty(false, out _))
                 return false;
 
             if (!ClassUtility.CheckPacketTimestamp(packetSovereignUpdateData.PacketTimestamp, peerNetworkSettingObject.PeerMaxTimestampDelayPacket, peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
@@ -540,7 +538,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         /// </summary>
         /// <param name="peerNetworkClientSyncObject"></param>
         /// <param name="peerIp"></param>
-        /// <param name="peerPort"></param>
         /// <param name="peerNetworkSettingObject"></param>
         /// <param name="blockHeightTarget"></param>
         /// <param name="refuseLockedBlock"></param>
@@ -628,13 +625,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         /// </summary>
         /// <param name="peerNetworkClientSyncObject"></param>
         /// <param name="peerIp"></param>
-        /// <param name="peerPort"></param>
         /// <param name="peerNetworkSettingObject"></param>
         /// <param name="blockHeightTarget"></param>
         /// <param name="cancellation"></param>
         /// <param name="packetSendBlockTransactionData"></param>
         /// <returns></returns>
-        public bool TryGetPacketBlockTransactionData(ClassPeerNetworkClientSyncObject peerNetworkClientSyncObject, string peerIp, int peerPort, ClassPeerNetworkSettingObject peerNetworkSettingObject, long blockHeightTarget, CancellationTokenSource cancellation, out ClassPeerPacketSendBlockTransactionData packetSendBlockTransactionData)
+        public bool TryGetPacketBlockTransactionData(ClassPeerNetworkClientSyncObject peerNetworkClientSyncObject, string peerIp, ClassPeerNetworkSettingObject peerNetworkSettingObject, long blockHeightTarget, CancellationTokenSource cancellation, out ClassPeerPacketSendBlockTransactionData packetSendBlockTransactionData)
         {
             packetSendBlockTransactionData = null; // Default.
 
@@ -672,7 +668,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         /// </summary>
         /// <param name="peerNetworkClientSyncObject"></param>
         /// <param name="peerIp"></param>
-        /// <param name="peerPort"></param>
         /// <param name="listWalletAndPublicKeys"></param>
         /// <param name="peerNetworkSettingObject"></param>
         /// <param name="blockHeightTarget"></param>
@@ -680,7 +675,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         /// <param name="packetSendBlockTransactionDataByRange"></param>
         /// 
         /// <returns></returns>
-        public bool TryGetPacketBlockTransactionDataByRange(ClassPeerNetworkClientSyncObject peerNetworkClientSyncObject, string peerIp, int peerPort, DisposableDictionary<string, string> listWalletAndPublicKeys, ClassPeerNetworkSettingObject peerNetworkSettingObject, long blockHeightTarget, CancellationTokenSource cancellation, out ClassPeerPacketSendBlockTransactionDataByRange packetSendBlockTransactionDataByRange)
+        public bool TryGetPacketBlockTransactionDataByRange(ClassPeerNetworkClientSyncObject peerNetworkClientSyncObject, string peerIp, DisposableDictionary<string, string> listWalletAndPublicKeys, ClassPeerNetworkSettingObject peerNetworkSettingObject, long blockHeightTarget, CancellationTokenSource cancellation, out ClassPeerPacketSendBlockTransactionDataByRange packetSendBlockTransactionDataByRange)
         {
             packetSendBlockTransactionDataByRange = null; // Default.
 
@@ -752,14 +747,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
                     switch (packetSendBlockTransactionDataByRange.ListTransactionObject[transactionHash].TransactionType)
                     {
                         case ClassTransactionEnumType.NORMAL_TRANSACTION:
-                            lock (listWalletAndPublicKeys)
                             {
                                 if (!listWalletAndPublicKeys.ContainsKey(packetSendBlockTransactionDataByRange.ListTransactionObject[transactionHash].WalletAddressSender))
                                     listWalletAndPublicKeys.Add(packetSendBlockTransactionDataByRange.ListTransactionObject[transactionHash].WalletAddressSender, packetSendBlockTransactionDataByRange.ListTransactionObject[transactionHash].WalletPublicKeySender);
                             }
                             break;
                         case ClassTransactionEnumType.TRANSFER_TRANSACTION:
-                            lock (listWalletAndPublicKeys)
                             {
                                 if (!listWalletAndPublicKeys.ContainsKey(packetSendBlockTransactionDataByRange.ListTransactionObject[transactionHash].WalletAddressSender))
                                     listWalletAndPublicKeys.Add(packetSendBlockTransactionDataByRange.ListTransactionObject[transactionHash].WalletAddressSender, packetSendBlockTransactionDataByRange.ListTransactionObject[transactionHash].WalletPublicKeySender);
@@ -791,9 +784,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
                 packetSendBlockTransactionData.BlockHeight != blockHeightTarget || 
                 packetSendBlockTransactionData.TransactionObject == null ||
                 packetSendBlockTransactionData.TransactionObject.BlockHeightTransaction != blockHeightTarget ||
-                packetSendBlockTransactionData.TransactionObject.TransactionHash.IsNullOrEmpty(out var txHashTrimmed) ||
-                packetSendBlockTransactionData.TransactionObject.TransactionHash.IsNullOrEmpty(out txHashTrimmed) ||
-                ClassTransactionUtility.GetBlockHeightFromTransactionHash(txHashTrimmed) != blockHeightTarget)
+                packetSendBlockTransactionData.TransactionObject.TransactionHash.IsNullOrEmpty(false, out _) ||
+                ClassTransactionUtility.GetBlockHeightFromTransactionHash(packetSendBlockTransactionData.TransactionObject.TransactionHash) != blockHeightTarget)
                 return false;
 
             ClassTransactionEnumStatus checkTxResult = await ClassBlockchainDatabase.BlockchainMemoryManagement.CheckTransaction(packetSendBlockTransactionData.TransactionObject, null, false, listWalletAndPublicKeys, cancellation, false);
@@ -897,7 +889,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
             }
 
             #endregion
-
         }
 
         #endregion

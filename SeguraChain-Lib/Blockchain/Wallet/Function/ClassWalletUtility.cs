@@ -75,7 +75,7 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
             // Not really much secure by this way, but much slower.
             if (!fastGenerator)
             {
-                bool useBaseWord = !baseWords.IsNullOrEmpty(out _); // If false, use random word process.
+                bool useBaseWord = !baseWords.IsNullOrEmpty(false, out _); // If false, use random word process.
 
                 byte[] privateKeyWifByteArray = new byte[BlockchainSetting.WalletPrivateKeyWifByteArrayLength];
                 if (useBaseWord)
@@ -137,7 +137,7 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
         /// <returns>Return a public key WIF.</returns>
         public static string GenerateWalletPublicKeyFromPrivateKey(string privateKeyWif, bool blockReward = false)
         {
-            if (privateKeyWif.IsNullOrEmpty(out _))
+            if (privateKeyWif.IsNullOrEmpty(false, out _))
                 return string.Empty;
 
             if (!blockReward)
@@ -163,7 +163,7 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
         /// <returns>Return a wallet address WIF.</returns>
         public static string GenerateWalletAddressFromPublicKey(string publicKeyWif)
         {
-            if (publicKeyWif.IsNullOrEmpty(out _) || publicKeyWif.Length != BlockchainSetting.WalletPublicKeyWifLength)
+            if (publicKeyWif.IsNullOrEmpty(false, out _) || publicKeyWif.Length != BlockchainSetting.WalletPublicKeyWifLength)
                 return string.Empty;
 
             byte[] walletAddressByteArray = new byte[BlockchainSetting.WalletAddressByteArrayLength - 1];
@@ -195,7 +195,7 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
         {
             try
             {
-                if (privateKeyWif.IsNullOrEmpty(out _) || hash.IsNullOrEmpty(out _))
+                if (privateKeyWif.IsNullOrEmpty(false, out _) || hash.IsNullOrEmpty(false, out _))
                     return null;
 
                 var signer = SignerUtilities.GetSigner(BlockchainSetting.SignerName);
@@ -228,7 +228,7 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
         {
             try
             {
-                if (hash.IsNullOrEmpty(out _) || publicKeyWif.IsNullOrEmpty(out _) || signature.IsNullOrEmpty(out _))
+                if (hash.IsNullOrEmpty(false, out _) || publicKeyWif.IsNullOrEmpty(false, out _) || signature.IsNullOrEmpty(false, out _))
                     return false;
 
                 var signer = SignerUtilities.GetSigner(BlockchainSetting.SignerName);
@@ -261,7 +261,7 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
         public static bool CheckWalletAddress(string walletAddress)
         {
             // Check is null, check if length is below or above, check the format.
-            if (walletAddress.IsNullOrEmpty(out _) || walletAddress.Length < BlockchainSetting.WalletAddressWifLengthMin || walletAddress.Length > BlockchainSetting.WalletAddressWifLengthMax ||
+            if (walletAddress.IsNullOrEmpty(false, out _) || walletAddress.Length < BlockchainSetting.WalletAddressWifLengthMin || walletAddress.Length > BlockchainSetting.WalletAddressWifLengthMax ||
                 ClassBase58.DecodeWithCheckSum(walletAddress, true) == null)
                 return false;
 
@@ -276,7 +276,7 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
         public static bool CheckWalletPublicKey(string walletPublicKey)
         {
             // Check is null, check if the length is different of the setting, check the format.
-            if (walletPublicKey.IsNullOrEmpty(out _) || walletPublicKey.Length != BlockchainSetting.WalletPublicKeyWifLength || ClassBase58.DecodeWithCheckSum(walletPublicKey, false) == null)
+            if (walletPublicKey.IsNullOrEmpty(false, out _) || walletPublicKey.Length != BlockchainSetting.WalletPublicKeyWifLength || ClassBase58.DecodeWithCheckSum(walletPublicKey, false) == null)
                 return false;
 
             return true;

@@ -90,7 +90,7 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Database
                                 resultLoad = ClassWalletLoadFileEnumResult.WALLET_LOAD_ALREADY_LOADED_ERROR;
                             else
                             {
-                                if (!GetWalletFileNameFromWalletAddress(walletDataObjectLoaded.WalletAddress).IsNullOrEmpty(out _))
+                                if (!GetWalletFileNameFromWalletAddress(walletDataObjectLoaded.WalletAddress).IsNullOrEmpty(false, out _))
                                     resultLoad = ClassWalletLoadFileEnumResult.WALLET_LOAD_ALREADY_LOADED_ERROR;
                                 else
                                 {
@@ -384,7 +384,7 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Database
         /// <returns></returns>
         public bool WalletOnResync(string walletFileName)
         {
-            if (!walletFileName.IsNullOrEmpty(out _))
+            if (!walletFileName.IsNullOrEmpty(false, out _))
             {
                 if (DictionaryWalletData.ContainsKey(walletFileName))
                     return DictionaryWalletData[walletFileName].WalletEnableRescan;

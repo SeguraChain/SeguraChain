@@ -34,9 +34,9 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Function
 
             #region Check Wallet data content.
 
-            if (walletDataObjectLoaded.WalletAddress.IsNullOrEmpty(out _) ||
-                walletDataObjectLoaded.WalletPublicKey.IsNullOrEmpty(out _) ||
-                walletDataObjectLoaded.WalletPrivateKey.IsNullOrEmpty(out _))
+            if (walletDataObjectLoaded.WalletAddress.IsNullOrEmpty(false, out _) ||
+                walletDataObjectLoaded.WalletPublicKey.IsNullOrEmpty(false, out _) ||
+                walletDataObjectLoaded.WalletPrivateKey.IsNullOrEmpty(false, out _))
                 return ClassWalletLoadFileEnumResult.WALLET_LOAD_INVALID_CONTENT;
 
             if (walletDataObjectLoaded.WalletEncrypted)

@@ -277,7 +277,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <returns>Return a public key WIF.</returns>
         public static string GeneratePeerPublicKeyFromPrivateKey(string privateKeyWif)
         {
-            if (privateKeyWif.IsNullOrEmpty(out _))
+            if (privateKeyWif.IsNullOrEmpty(false, out _))
                 return null;
 
             var curve = SecNamedCurves.GetByName(BlockchainSetting.CurveName);

@@ -348,7 +348,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main.Wallet
                             }
                         }
 
-                        if (!walletAddress.IsNullOrEmpty(out _))
+                        if (!walletAddress.IsNullOrEmpty(false, out _))
                         {
                             if (search)
                             {
@@ -488,7 +488,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main.Wallet
                     }
                 }
 
-                if (!blockchainWalletCheckpoints.IsNullOrEmpty(out _))
+                if (!blockchainWalletCheckpoints.IsNullOrEmpty(false, out _))
                 {
                     yield return blockchainWalletCheckpoints;
                 }

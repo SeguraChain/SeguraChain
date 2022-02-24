@@ -98,12 +98,12 @@ namespace SeguraChain_Lib.Blockchain.Setting
 
         public const string BlockRewardName = "BLOCK"; // Block reward transaction name.
         public const int BlockTime = 60; // The block time scheduled in seconds.
-        public const int BlockExpectedPerDay = (int)((24 * 60d) / (BlockTime /60d)); // The average of blocks calculated from the scheduled Block Time and the amount of minutes in a single day.
+        public const int BlockExpectedPerDay = (int)((24 * 60d) / (BlockTime / 60d)); // The average of blocks calculated from the scheduled Block Time and the amount of minutes in a single day.
         public const int BlockDifficultyRangeCalculation = BlockExpectedPerDay / 3; // Use previous blocks for generate the new block difficulty.
         public const int BlockDifficultyPrecision = 100_000; // The precision put on the difficulty factor calculated.
         public const int GenesisBlockHeight = 1; // The genesis block height.
         public static readonly BigInteger GenesisBlockAmount = 2_973_370 * CoinDecimal; // The genesis block amount reward has pre-mining.
-        public const string GenesisBlockFinalTransactionHash = "DA679622433D924E1200AA93CB6A4960A631F6557A3516197867F46B0EE2DAAB58AE29AF2252EF7F67C1DFFB6143B658EB5A6752DBE3F3D935085B84C589E7D0"; // The mandatory final block transaction hash to retrieve back from tx's contained inside the genesis block.
+        public const string GenesisBlockFinalTransactionHash = "BC8773AFDF1F2C91F32D1B74C0763B1ACF078C375830A828D9F3E9581F3ABBED73E700987486B99D6ECAE0900E55C6B0C647A90602F9C280A9302C9D067D43F0"; // The mandatory final block transaction hash to retrieve back from tx's contained inside the genesis block.
         public const int GenesisBlockTransactionCount = 1; // The maximum of transaction inserted on the genesis block.
         public const int BlockAmountNetworkConfirmations = 2; // The minimum amount of network checks on blocks to do with peers, before to enable the task of confirmations on the block.
         public const int BlockAmountSlowNetworkConfirmations = 5; // This amount increment another amount of network checks, once this one is reach, the network counter increment and this one return back to 0.
@@ -116,6 +116,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const string CoinName = "XENOPHYTE";
         public const string CoinMinName = "XENOP";
         public const string BlockchainVersion = "01"; // Version of the blockchain used on Base58.
+        public static readonly byte[] BlockchainVersionByteArray = ClassUtility.GetByteArrayFromHexString(BlockchainVersion);
         public const int BlockchainChecksum = 16; // Checksum size used on Base58.
 
         /// <summary>

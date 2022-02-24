@@ -241,7 +241,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Create
             {
                 case ClassWalletCreateEnumCreateMethod.BASE_WORD_WAY:
                     {
-                        if (_baseWordSelected.IsNullOrEmpty(out _))
+                        if (_baseWordSelected.IsNullOrEmpty(false, out _))
                         {
                             goNextStep = false;
                             MessageBox.Show(_walletCreateFormLanguageObject.MESSAGEBOX_CREATE_WALLET_BASE_WORD_WAY_METHOD_CONTENT_ERROR_TEXT, _walletCreateFormLanguageObject.MESSAGEBOX_CREATE_WALLET_BASE_WORD_WAY_METHOD_TITLE_ERROR_TEXT, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -318,7 +318,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Create
             bool goNextStep = true;
             if (_usePassword)
             {
-                if (_passwordSelected.IsNullOrEmpty(out _))
+                if (_passwordSelected.IsNullOrEmpty(false, out _))
                 {
                     goNextStep = false;
                     MessageBox.Show(_walletCreateFormLanguageObject.MESSAGEBOX_CREATE_WALLET_SELECT_PASSWORD_CONTENT_ERROR_TEXT, _walletCreateFormLanguageObject.MESSAGEBOX_CREATE_WALLET_SELECT_PASSWORD_TITLE_ERROR_TEXT, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -384,7 +384,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Create
         /// <param name="e"></param>
         private void buttonCreateWalletSaveWallet_Click(object sender, EventArgs e)
         {
-            if (!textBoxCreateWalletSaveWalletFile.Text.IsNullOrEmpty(out _))
+            if (!textBoxCreateWalletSaveWalletFile.Text.IsNullOrEmpty(false, out _))
             {
                 string walletFilename = textBoxCreateWalletSaveWalletFile.Text + ClassWalletDefaultSetting.WalletFileFormat.Replace("*", "");
 

@@ -280,7 +280,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
         private async Task<string> HandlePacketContent(string packetData)
         {
 
-            if (packetData.IsNullOrEmpty(out _))
+            if (packetData.IsNullOrEmpty(false, out _))
                 return string.Empty;
 
             if (!ClassUtility.TryDeserialize(packetData, out ClassRpcApiPostPacket rpcApiPostPacket))
@@ -302,7 +302,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
                 return string.Empty;
             }
 
-            if (rpcApiPostPacket.packet_content.IsNullOrEmpty(out _))
+            if (rpcApiPostPacket.packet_content.IsNullOrEmpty(false, out _))
             {
                 await SendApiResponse("The packet content data received is empty.");
                 return string.Empty;
@@ -347,7 +347,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
             {
                 packetData = await HandlePacketContent(packetData);
 
-                if (packetData.IsNullOrEmpty(out _))
+                if (packetData.IsNullOrEmpty(false, out _))
                     return false;
 
                 switch (packetData)
@@ -360,8 +360,8 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
                                 return false;
                             }
 
-                            if (rpcApiPostTransactionObject.wallet_address_src.IsNullOrEmpty(out _) ||
-                                rpcApiPostTransactionObject.wallet_address_target.IsNullOrEmpty(out _))
+                            if (rpcApiPostTransactionObject.wallet_address_src.IsNullOrEmpty(false, out _) ||
+                                rpcApiPostTransactionObject.wallet_address_target.IsNullOrEmpty(false, out _))
                             {
                                 await SendApiResponse("The transaction packet content is invalid, check wallet addresses.");
                                 return false;

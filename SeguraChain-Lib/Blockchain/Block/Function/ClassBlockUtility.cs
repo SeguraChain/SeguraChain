@@ -158,7 +158,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
         {
             if (blockHashTransactionList?.Count > 0)
                 return ClassUtility.GenerateSha3512FromString(string.Join("", blockHashTransactionList));
-            else if (!previousBlockHash.IsNullOrEmpty(out _))
+            else if (!previousBlockHash.IsNullOrEmpty(false, out _))
                 return ClassUtility.GenerateSha3512FromString(previousBlockHash);
 
             return string.Empty;
@@ -439,7 +439,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
                 if (blockObject.BlockStatus == ClassBlockEnumStatus.LOCKED)
                     return false;
 
-                if (blockObject.BlockWalletAddressWinner.IsNullOrEmpty(out _))
+                if (blockObject.BlockWalletAddressWinner.IsNullOrEmpty(false, out _))
                     return false;
 
                 if (blockObject.BlockWalletAddressWinner.Length < BlockchainSetting.WalletAddressWifLengthMin ||
@@ -479,7 +479,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
                 if (ClassBase58.DecodeWithCheckSum(blockObject.BlockWalletAddressWinner, true) == null)
                     return false;
 
-                if (blockObject.BlockFinalHashTransaction.IsNullOrEmpty(out _))
+                if (blockObject.BlockFinalHashTransaction.IsNullOrEmpty(false, out _))
                     return false;
             }
             else
@@ -487,10 +487,10 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
                 if (blockObject.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
                     return false;
 
-                if (!blockObject.BlockFinalHashTransaction.IsNullOrEmpty(out _))
+                if (!blockObject.BlockFinalHashTransaction.IsNullOrEmpty(false, out _))
                     return false;
 
-                if (!blockObject.BlockWalletAddressWinner.IsNullOrEmpty(out _))
+                if (!blockObject.BlockWalletAddressWinner.IsNullOrEmpty(false, out _))
                     return false;
 
                 if (blockObject.BlockMiningPowShareUnlockObject != null)
@@ -614,7 +614,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
 
             string finalTransactionHash = "empty";
 
-            if (!blockObject.BlockFinalHashTransaction.IsNullOrEmpty(out _) && blockObject.BlockFinalHashTransaction != "empty")
+            if (!blockObject.BlockFinalHashTransaction.IsNullOrEmpty(false, out _) && blockObject.BlockFinalHashTransaction != "empty")
                 finalTransactionHash = blockObject.BlockFinalHashTransaction;
 
             return blockObject.BlockHeight + ClassBlockSplitDataConfig.BlockSplitDataCharacterSeparator +
@@ -805,7 +805,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
                     }
                 }
 
-                if (!transactionLine.IsNullOrEmpty(out _))
+                if (!transactionLine.IsNullOrEmpty(false, out _))
                     yield return transactionLine;
             }
 

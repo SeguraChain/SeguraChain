@@ -50,7 +50,7 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
 
             if (blockchainDatabaseSetting.DataSetting.EnableEncryptionDatabase)
             {
-                if (encryptionKey.IsNullOrEmpty(out _))
+                if (encryptionKey.IsNullOrEmpty(false, out _))
                 {
                     ClassLog.WriteLine("The input encryption key is empty, can't decrypt MemPool database.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                     return false;
@@ -103,7 +103,7 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
                                     }
                                 }
 
-                                if (!line.IsNullOrEmpty(out _))
+                                if (!line.IsNullOrEmpty(false, out _))
                                 {
 
                                     if (ClassUtility.TryDeserialize(line, out ClassMemPoolTransactionObject transactionObject, ObjectCreationHandling.Reuse))

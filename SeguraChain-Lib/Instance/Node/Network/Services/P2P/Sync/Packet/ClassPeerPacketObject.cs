@@ -69,11 +69,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
         public byte[] GetPacketData()
         {
             return ClassUtility.GetByteArrayFromStringUtf8((int)PacketOrder + "#" +
-                (PacketContent.IsNullOrEmpty(out _) ? "empty" : PacketContent) + "#" +
-                (PacketHash.IsNullOrEmpty(out _) ? "empty" : PacketHash) + "#" +
-                (PacketSignature.IsNullOrEmpty(out _) ? "empty" : PacketSignature) + "#" +
-                (PacketPeerUniqueId.IsNullOrEmpty(out _) ? "empty" : PacketPeerUniqueId) + "#" +
-                (PublicKey.IsNullOrEmpty(out _) ? "empty" : PublicKey) + "#" +
+                (PacketContent.IsNullOrEmpty(false, out _) ? "empty" : PacketContent) + "#" +
+                (PacketHash.IsNullOrEmpty(false, out _) ? "empty" : PacketHash) + "#" +
+                (PacketSignature.IsNullOrEmpty(false, out _) ? "empty" : PacketSignature) + "#" +
+                (PacketPeerUniqueId.IsNullOrEmpty(false, out _) ? "empty" : PacketPeerUniqueId) + "#" +
+                (PublicKey.IsNullOrEmpty(false, out _) ? "empty" : PublicKey) + "#" +
                 PeerLastTimestampSignatureWhitelist);
         }
     }
@@ -142,11 +142,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
         public byte[] GetPacketData()
         {
             return ClassUtility.GetByteArrayFromStringUtf8((int)PacketOrder + "#" +
-                (PacketContent.IsNullOrEmpty(out _) ? "empty" : PacketContent) + "#" +
-                (PacketHash.IsNullOrEmpty(out _) ? "empty" : PacketHash) + "#" +
-                (PacketSignature.IsNullOrEmpty(out _) ? "empty" : PacketSignature) + "#" +
-                (PacketPeerUniqueId.IsNullOrEmpty(out _) ? "empty" : PacketPeerUniqueId) + "#" +
-                (PublicKey.IsNullOrEmpty(out _) ? "empty" : PublicKey) + "#" +
+                (PacketContent.IsNullOrEmpty(false, out _) ? "empty" : PacketContent) + "#" +
+                (PacketHash.IsNullOrEmpty(false, out _) ? "empty" : PacketHash) + "#" +
+                (PacketSignature.IsNullOrEmpty(false, out _) ? "empty" : PacketSignature) + "#" +
+                (PacketPeerUniqueId.IsNullOrEmpty(false, out _) ? "empty" : PacketPeerUniqueId) + "#" +
+                (PublicKey.IsNullOrEmpty(false, out _) ? "empty" : PublicKey) + "#" +
                 PeerLastTimestampSignatureWhitelist);
         }
     }

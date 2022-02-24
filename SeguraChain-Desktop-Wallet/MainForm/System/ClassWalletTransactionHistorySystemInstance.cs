@@ -449,7 +449,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         {
             bool exist = false;
 
-            if (!walletFileOpened.IsNullOrEmpty(out _))
+            if (!walletFileOpened.IsNullOrEmpty(false, out _))
             {
                 if (_dictionaryTransactionHistory.ContainsKey(walletFileOpened))
                     exist = true;
@@ -467,7 +467,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         /// <returns></returns>
         public void ClearTransactionHistoryOfWalletFileOpened(string walletFileOpened)
         {
-            if (!walletFileOpened.IsNullOrEmpty(out _))
+            if (!walletFileOpened.IsNullOrEmpty(false, out _))
                 RemoveTransactionHistoryFromWalletFileOpenedTarget(walletFileOpened);
         }
 
@@ -533,7 +533,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
             bool loadStatus = false; // Default.
             progressPercent = 0; // Default.
 
-            if (!walletFileOpened.IsNullOrEmpty(out _))
+            if (!walletFileOpened.IsNullOrEmpty(false, out _))
             {
 
                 if (_dictionaryTransactionHistory.ContainsKey(walletFileOpened))
@@ -566,7 +566,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         /// <param name="cancellation"></param>
         public void SetPageTransactionHistory(string walletFileOpened, int page, CancellationTokenSource cancellation)
         {
-            if (!walletFileOpened.IsNullOrEmpty(out _))
+            if (!walletFileOpened.IsNullOrEmpty(false, out _))
             {
                 bool useSemaphore = false;
 
@@ -613,7 +613,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         {
             currentPage = 1; // Default.
 
-            if (!walletFileOpened.IsNullOrEmpty(out _))
+            if (!walletFileOpened.IsNullOrEmpty(false, out _))
             {
                 bool useSemaphore = false;
 
@@ -665,7 +665,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         public void BackPageTransactionHistory(string walletFileOpened, CancellationTokenSource cancellation, out int currentPage)
         {
             currentPage = 1; // Default.
-            if (!walletFileOpened.IsNullOrEmpty(out _))
+            if (!walletFileOpened.IsNullOrEmpty(false, out _))
             {
                 bool useSemaphore = false;
 
@@ -713,7 +713,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         public int CurrentPageTransactionHistory(string walletFileOpened, CancellationTokenSource cancellation)
         {
             int currentPage = 1;
-            if (!walletFileOpened.IsNullOrEmpty(out _))
+            if (!walletFileOpened.IsNullOrEmpty(false, out _))
             {
                 bool useSemaphore = false;
 
@@ -743,7 +743,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         public int MaxPageTransactionHistory(string walletFileOpened, CancellationTokenSource cancellation)
         {
             int maxPage = 1;
-            if (!walletFileOpened.IsNullOrEmpty(out _))
+            if (!walletFileOpened.IsNullOrEmpty(false, out _))
             {
                 bool useSemaphore = false;
 
@@ -903,7 +903,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
             isMemPool = false; // Default.
             ClassBlockTransaction blockTransaction = null; // Default.
 
-            if (!walletFileOpened.IsNullOrEmpty(out _))
+            if (!walletFileOpened.IsNullOrEmpty(false, out _))
             {
                 try
                 {
@@ -963,7 +963,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         /// <param name="panelTransactionHistoryColumns"></param>
         public void SetOrderTypeTransactionHistory(string walletFileOpened, Point mouseClickPosition, Panel panelTransactionHistoryColumns, ClassWalletMainFormLanguage walletMainFormLanguage, CancellationTokenSource cancellation)
         {
-            if (!walletFileOpened.IsNullOrEmpty(out _))
+            if (!walletFileOpened.IsNullOrEmpty(false, out _))
             {
                 bool useSemaphore = false;
 

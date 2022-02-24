@@ -67,7 +67,7 @@ namespace SeguraChain_Solo_Miner.Network.Function
 
                         if (apiPeerPacketSendBlockTemplate != null)
                         {
-                            if (!apiPeerPacketSendBlockTemplate.CurrentBlockHash.IsNullOrEmpty(out _) && apiPeerPacketSendBlockTemplate.CurrentMiningPoWaCSetting != null)
+                            if (!apiPeerPacketSendBlockTemplate.CurrentBlockHash.IsNullOrEmpty(false, out _) && apiPeerPacketSendBlockTemplate.CurrentMiningPoWaCSetting != null)
                             {
                                 if (apiPeerPacketSendBlockTemplate.CurrentBlockHash.Length == BlockchainSetting.BlockHashHexSize)
                                 {
@@ -84,7 +84,7 @@ namespace SeguraChain_Solo_Miner.Network.Function
                             }
                         }
 
-                        if (!currentMiningPowacSettingSerializedString.IsNullOrEmpty(out _))
+                        if (!currentMiningPowacSettingSerializedString.IsNullOrEmpty(false, out _))
                         {
                             if (ClassUtility.TryDeserialize(currentMiningPowacSettingSerializedString, out ClassMiningPoWaCSettingObject miningPoWaCSettingObject, ObjectCreationHandling.Replace))
                             {

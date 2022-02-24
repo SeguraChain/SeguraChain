@@ -138,7 +138,7 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
 
             #region Check Wallet Address.
 
-            if (pocShareObject.WalletAddress.IsNullOrEmpty(out _))
+            if (pocShareObject.WalletAddress.IsNullOrEmpty(false, out _))
                 return ClassMiningPoWaCEnumStatus.INVALID_WALLET_ADDRESS;
 
             if (pocShareObject.WalletAddress.Length < BlockchainSetting.WalletAddressWifLengthMin || pocShareObject.WalletAddress.Length > BlockchainSetting.WalletAddressWifLengthMax)
@@ -151,7 +151,7 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
 
             #region Check Block Hash.
 
-            if (pocShareObject.BlockHash.IsNullOrEmpty(out _))
+            if (pocShareObject.BlockHash.IsNullOrEmpty(false, out _))
                 return ClassMiningPoWaCEnumStatus.INVALID_BLOCK_HASH;
 
             if (pocShareObject.BlockHash != blockHash)
@@ -164,7 +164,7 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
 
             #region Check Share Nonce.
 
-            if (pocShareObject.NonceComputedHexString.IsNullOrEmpty(out _))
+            if (pocShareObject.NonceComputedHexString.IsNullOrEmpty(false, out _))
                 return ClassMiningPoWaCEnumStatus.INVALID_NONCE_SHARE;
 
             if (!ClassUtility.CheckHexStringFormat(pocShareObject.NonceComputedHexString))
@@ -182,7 +182,7 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
 
             #region Check PoC Share format.
 
-            if (pocShareObject.PoWaCShare.IsNullOrEmpty(out _))
+            if (pocShareObject.PoWaCShare.IsNullOrEmpty(false, out _))
                 return ClassMiningPoWaCEnumStatus.EMPTY_SHARE;
 
             if (ClassUtility.CheckStringUseLowercaseOnly(pocShareObject.PoWaCShare))
@@ -376,7 +376,7 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
         /// <returns></returns>
         public static byte[] GenerateFinalBlockTransactionHashMiningKey(string previousFinalBlockTransactionHash)
         {
-            if (!previousFinalBlockTransactionHash.IsNullOrEmpty(out _))
+            if (!previousFinalBlockTransactionHash.IsNullOrEmpty(false, out _))
             {
                 using (ClassSha3512DigestDisposable sha3512 = new ClassSha3512DigestDisposable())
                 {
@@ -801,9 +801,9 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
                 miningPoWaCSettingObject.PocShareNonceNoSquareFoundShaRounds <= 0 ||
                 miningPoWaCSettingObject.MathOperatorList == null ||
                 miningPoWaCSettingObject.MiningIntructionsList == null ||
-                miningPoWaCSettingObject.MiningSettingContentDevPublicKey.IsNullOrEmpty(out _) ||
-                miningPoWaCSettingObject.MiningSettingContentHash.IsNullOrEmpty(out _) ||
-                miningPoWaCSettingObject.MiningSettingContentHashSignature.IsNullOrEmpty(out _))
+                miningPoWaCSettingObject.MiningSettingContentDevPublicKey.IsNullOrEmpty(false, out _) ||
+                miningPoWaCSettingObject.MiningSettingContentHash.IsNullOrEmpty(false, out _) ||
+                miningPoWaCSettingObject.MiningSettingContentHashSignature.IsNullOrEmpty(false, out _))
             {
                 return false;
             }

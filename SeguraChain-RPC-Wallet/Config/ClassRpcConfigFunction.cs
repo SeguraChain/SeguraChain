@@ -40,7 +40,7 @@ namespace SeguraChain_RPC_Wallet.Config
                     {
                         string secretKey = Console.ReadLine();
 
-                        while (secretKey.IsNullOrEmpty(out _))
+                        while (secretKey.IsNullOrEmpty(false, out _))
                         {
                             Console.WriteLine("The password is empty, please write a password:");
                             secretKey = Console.ReadLine();
@@ -226,7 +226,7 @@ namespace SeguraChain_RPC_Wallet.Config
 
             if (rpcConfig.RpcApiSetting.RpcApiEnableSecretKey)
             {
-                if (rpcConfig.RpcApiSetting.RpcApiSecretIvArray == null || rpcConfig.RpcApiSetting.RpcApiSecretKeyArray == null || !rpcConfig.RpcApiSetting.RpcApiSecretKey.IsNullOrEmpty(out _))
+                if (rpcConfig.RpcApiSetting.RpcApiSecretIvArray == null || rpcConfig.RpcApiSetting.RpcApiSecretKeyArray == null || !rpcConfig.RpcApiSetting.RpcApiSecretKey.IsNullOrEmpty(false, out _))
                 {
                     Console.WriteLine("The RPC Wallet database directory path " + rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabasePath + " is empty or empty.");
                     return false;
@@ -254,13 +254,13 @@ namespace SeguraChain_RPC_Wallet.Config
                 return false;
             }
 
-            if (!rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabasePath.IsNullOrEmpty(out _))
+            if (!rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabasePath.IsNullOrEmpty(false, out _))
             {
                 Console.WriteLine("The RPC Wallet database directory path " + rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabasePath + " is null or empty.");
                 return false;
             }
 
-            if (!rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabaseFilename.IsNullOrEmpty(out _))
+            if (!rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabaseFilename.IsNullOrEmpty(false, out _))
             {
                 Console.WriteLine("The RPC Wallet database filename " + rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabaseFilename + " is null or empty.");
                 return false;
