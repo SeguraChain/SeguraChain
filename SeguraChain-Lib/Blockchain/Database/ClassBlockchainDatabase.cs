@@ -68,7 +68,7 @@ namespace SeguraChain_Lib.Blockchain.Database
         /// Load blockchain database files.
         /// </summary>
         /// <returns></returns>
-        public static async Task<bool> LoadBlockchainDatabase(ClassBlockchainDatabaseSetting blockchainDatabaseSetting, string encryptionDatabaseKey = null, bool resetBlockchain = false)
+        public static async Task<bool> LoadBlockchainDatabase(ClassBlockchainDatabaseSetting blockchainDatabaseSetting, string encryptionDatabaseKey = null, bool resetBlockchain = false, bool fromWallet = false)
         {
             // Initialize main cancellation token.
             _cancellationTokenStopBlockchain = new CancellationTokenSource();
@@ -194,7 +194,6 @@ namespace SeguraChain_Lib.Blockchain.Database
                                     {
                                         if (blockObject != null)
                                         {
-
                                             if (blockchainDatabaseSetting.BlockchainCacheSetting.EnableCacheDatabase)
                                             {
                                                 if (blockObject.BlockHeight > BlockchainSetting.GenesisBlockHeight)
@@ -233,7 +232,6 @@ namespace SeguraChain_Lib.Blockchain.Database
                                             }
 
                                         }
-                                        blockObject = null;
                                     }
                                 }
                             }
@@ -257,6 +255,7 @@ namespace SeguraChain_Lib.Blockchain.Database
                 Directory.CreateDirectory(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryPath);
                 ClassLog.WriteLine("Blockchain database not initialized. Initialized now.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
             }
+
 
             #endregion
 
@@ -309,6 +308,7 @@ namespace SeguraChain_Lib.Blockchain.Database
                 }
             }
 
+
             #endregion
 
 
@@ -352,6 +352,7 @@ namespace SeguraChain_Lib.Blockchain.Database
                 if (!await CheckBlockchainDatabase(blockchainDatabaseSetting))
                     return false;
 
+
                 #endregion
             }
 
@@ -359,9 +360,12 @@ namespace SeguraChain_Lib.Blockchain.Database
 
             if (blockchainDatabaseSetting.BlockchainCacheSetting.EnableCacheDatabase)
             {
-                ClassLog.WriteLine("All data loaded, purge cache system..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                await BlockchainMemoryManagement.ForcePurgeCache(_cancellationTokenStopBlockchain);
-                ClassLog.WriteLine("Purge of the cache system done, retrieve most recent blocks into the active memory..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                if (!fromWallet)
+                {
+                    ClassLog.WriteLine("All data loaded, purge cache system..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                    await BlockchainMemoryManagement.ForcePurgeCache(_cancellationTokenStopBlockchain);
+                    ClassLog.WriteLine("Purge of the cache system done, retrieve most recent blocks into the active memory..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                }
 
                 #region Retrieve block most recent blocks data to the active memory.
 

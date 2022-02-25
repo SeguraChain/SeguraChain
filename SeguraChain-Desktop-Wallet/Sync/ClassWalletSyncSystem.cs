@@ -1060,56 +1060,59 @@ namespace SeguraChain_Desktop_Wallet.Sync
 
                 bool cancelled = false;
 
-                foreach (ClassTransactionObject memPoolTransactionObject in (await ClassMemPoolDatabase.GetMemPoolAllTxFromWalletAddressTargetAsync(walletAddress, cancellation))?.GetList)
+                using (var memPoolList = await ClassMemPoolDatabase.GetMemPoolAllTxFromWalletAddressTargetAsync(walletAddress, cancellation))
                 {
-                    if (cancellation.IsCancellationRequested)
-                    {
-                        cancelled = true;
-                        break;
-                    }
 
-                    if (memPoolTransactionObject != null)
+                    foreach (ClassTransactionObject memPoolTransactionObject in memPoolList.GetList)
                     {
-                        if (memPoolTransactionObject.WalletAddressReceiver == walletAddress || memPoolTransactionObject.WalletAddressSender == walletAddress)
+                        if (cancellation.IsCancellationRequested)
                         {
-                            bool alreadyConfirmed = false;
-                            if (ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletTransactionList.ContainsKey(memPoolTransactionObject.BlockHeightTransaction))
-                            {
-                                if (ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletTransactionList[memPoolTransactionObject.BlockHeightTransaction].Contains(memPoolTransactionObject.TransactionHash))
-                                    alreadyConfirmed = true;
-                            }
-                            if (!alreadyConfirmed)
-                            {
-                                if (!ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletMemPoolTransactionList.Contains(memPoolTransactionObject.TransactionHash))
-                                {
-                                    if (ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletMemPoolTransactionList.Add(memPoolTransactionObject.TransactionHash))
-                                    {
-                                        ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletTotalMemPoolTransaction++;
-                                        changeDone = true;
+                            cancelled = true;
+                            break;
+                        }
 
-                                        await InsertOrUpdateBlockTransactionToSyncCache(walletAddress, new ClassBlockTransaction(0, memPoolTransactionObject)
+                        if (memPoolTransactionObject != null)
+                        {
+                            if (memPoolTransactionObject.WalletAddressReceiver == walletAddress || memPoolTransactionObject.WalletAddressSender == walletAddress)
+                            {
+                                bool alreadyConfirmed = false;
+                                if (ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletTransactionList.ContainsKey(memPoolTransactionObject.BlockHeightTransaction))
+                                {
+                                    if (ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletTransactionList[memPoolTransactionObject.BlockHeightTransaction].Contains(memPoolTransactionObject.TransactionHash))
+                                        alreadyConfirmed = true;
+                                }
+                                if (!alreadyConfirmed)
+                                {
+                                    if (!ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletMemPoolTransactionList.Contains(memPoolTransactionObject.TransactionHash))
+                                    {
+                                        if (ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletMemPoolTransactionList.Add(memPoolTransactionObject.TransactionHash))
                                         {
-                                            TransactionObject = memPoolTransactionObject,
-                                            TransactionStatus = true,
-                                            TransactionBlockHeightInsert = memPoolTransactionObject.BlockHeightTransaction,
-                                            TransactionBlockHeightTarget = memPoolTransactionObject.BlockHeightTransactionConfirmationTarget
-                                        }, true, false, cancellation);
-                                        ClassLog.WriteLine(memPoolTransactionObject.TransactionHash + " tx hash of wallet address: " + walletAddress + " from mempool has been synced successfully.", ClassEnumLogLevelType.LOG_LEVEL_WALLET, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
+                                            ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletTotalMemPoolTransaction++;
+                                            changeDone = true;
+
+                                            await InsertOrUpdateBlockTransactionToSyncCache(walletAddress, new ClassBlockTransaction(0, memPoolTransactionObject)
+                                            {
+                                                TransactionObject = memPoolTransactionObject,
+                                                TransactionStatus = true,
+                                                TransactionBlockHeightInsert = memPoolTransactionObject.BlockHeightTransaction,
+                                                TransactionBlockHeightTarget = memPoolTransactionObject.BlockHeightTransactionConfirmationTarget
+                                            }, true, false, cancellation);
+                                            ClassLog.WriteLine(memPoolTransactionObject.TransactionHash + " tx hash of wallet address: " + walletAddress + " from mempool has been synced successfully.", ClassEnumLogLevelType.LOG_LEVEL_WALLET, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
+                                        }
                                     }
                                 }
-                            }
-                            else
-                            {
-                                if (ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletMemPoolTransactionList.Contains(memPoolTransactionObject.TransactionHash))
+                                else
                                 {
-                                    ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletMemPoolTransactionList.Remove(memPoolTransactionObject.TransactionHash);
-                                    changeDone = true;
+                                    if (ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletMemPoolTransactionList.Contains(memPoolTransactionObject.TransactionHash))
+                                    {
+                                        ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletMemPoolTransactionList.Remove(memPoolTransactionObject.TransactionHash);
+                                        changeDone = true;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-
 
                 if (!cancelled)
                 {

@@ -86,7 +86,7 @@ namespace SeguraChain_Lib.Instance.Node
 
                     if (ClassMemPoolDatabase.LoadMemPoolDatabase(encryptionKey, PeerSettingObject.PeerBlockchainDatabaseSettingObject))
                     {
-                        if (ClassBlockchainDatabase.LoadBlockchainDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject, encryptionKey).Result)
+                        if (ClassBlockchainDatabase.LoadBlockchainDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject, encryptionKey, false, fromWallet).Result)
                         {
                             #region Enable public peer mode. (If enabled and possible to enable).
 
