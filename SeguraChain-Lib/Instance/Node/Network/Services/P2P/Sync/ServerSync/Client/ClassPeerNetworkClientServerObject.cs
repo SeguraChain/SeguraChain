@@ -186,6 +186,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         /// </summary>
         public void ClosePeerClient(bool fromCheckConnection)
         {
+            ClientPeerConnectionStatus = false;
+
             // Clean up.
             _listMemPoolBroadcastBlockHeight?.Clear();
             listPacketReceived?.Clear();
@@ -219,24 +221,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 }
 
 
-                try
-                {
-                    _taskCheckPeerConnection?.Dispose();
-                }
-                catch
-                {
-                    // Ignored.
-                }
+
             }
 
-            try
-            {
-                _taskBroadcast?.Dispose();
-            }
-            catch
-            {
-                // Ignored.
-            }
 
             try
             {
@@ -257,7 +244,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             }
 
 
-            ClientPeerConnectionStatus = false;
         }
 
         #endregion
@@ -338,24 +324,28 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                         {
                                             if (listPacketReceived[i].Complete && listPacketReceived[i].Packet.Length > 0)
                                             {
-
                                                 bool failed = false;
-
                                                 byte[] base64Packet = null;
 
-                                                try
+                                                if (ClassUtility.CheckBase64String(listPacketReceived[i].Packet))
                                                 {
-                                                    base64Packet = Convert.FromBase64String(listPacketReceived[i].Packet);
+                                                    try
+                                                    {
+                                                        base64Packet = Convert.FromBase64String(listPacketReceived[i].Packet);
+                                                        if (base64Packet.Length == 0)
+                                                            failed = true;
+                                                    }
+                                                    catch
+                                                    {
+                                                        failed = true;
+                                                    }
                                                 }
-                                                catch
-                                                {
-                                                    failed = true;
-                                                }
+                                                else failed = true;
 
                                                 listPacketReceived[i].Packet.Clear();
 
 
-                                                if (!failed && base64Packet.Length > 0)
+                                                if (!failed)
                                                 {
                                                     _onSendingPacketResponse = true;
 
@@ -1999,8 +1989,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 packetSendObject.PacketHash = ClassUtility.GenerateSha256FromString(packetSendObject.PacketContent);
 
                 if (ClassPeerCheckManager.CheckPeerClientWhitelistStatus(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject))
-                    packetSendObject.PacketSignature = ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].GetClientCryptoStreamObject.DoSignatureProcess(packetSendObject.PacketHash, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPrivateKey);
-
+                {
+                    if (ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].GetClientCryptoStreamObject != null)
+                        packetSendObject.PacketSignature = ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].GetClientCryptoStreamObject.DoSignatureProcess(packetSendObject.PacketHash, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPrivateKey);
+                }
 
                 using (NetworkStream networkStream = new NetworkStream(_tcpClientPeer.Client))
                 {

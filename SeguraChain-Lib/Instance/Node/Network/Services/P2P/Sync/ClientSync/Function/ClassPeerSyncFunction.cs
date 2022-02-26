@@ -82,6 +82,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
             if (packetContent.IsNullOrEmpty(false, out _) || !ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId) || ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetInternCryptoStreamObject == null)
                 return false;
 
+            if (!ClassUtility.CheckBase64String(packetContent))
+                return false;
+
             Tuple<byte[], bool> taskPacketDecrypt;
 
             try
@@ -139,7 +142,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         {
             peerPacketSendPeerAuthKeys = null; // Default.
 
-            if (!CheckPeerUniqueId(peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId) || 
+            if (!CheckPeerUniqueId(peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId) ||
                 !DeserializePacketContent(peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, out peerPacketSendPeerAuthKeys) ||
                 !CheckPacketPeerAuthKeys(peerPacketSendPeerAuthKeys, peerNetworkSettingObject))
                 return false;
@@ -181,7 +184,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
 
             bool checkPacketSignature = CheckPacketSignature(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkSettingObject, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder, peerNetworkClientSyncObject.PeerPacketReceived.PacketHash, peerNetworkClientSyncObject.PeerPacketReceived.PacketSignature, cancellation);
 
-            if (!checkPacketSignature || 
+            if (!checkPacketSignature ||
                 !TryDecryptPacketPeerContent(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, out byte[] packetDecrypted) ||
                 packetDecrypted == null ||
                 packetDecrypted.Length == 0 ||
@@ -325,7 +328,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         /// <param name="packetPeerSovereignUpdateList"></param>
         /// 
         /// <returns></returns>
-        public bool TryGetPacketSovereignUpdateList(ClassPeerNetworkClientSyncObject peerNetworkClientSyncObject, string peerIp,  ClassPeerNetworkSettingObject peerNetworkSettingObject, CancellationTokenSource cancellation, out ClassPeerPacketSendListSovereignUpdate packetPeerSovereignUpdateList)
+        public bool TryGetPacketSovereignUpdateList(ClassPeerNetworkClientSyncObject peerNetworkClientSyncObject, string peerIp, ClassPeerNetworkSettingObject peerNetworkSettingObject, CancellationTokenSource cancellation, out ClassPeerPacketSendListSovereignUpdate packetPeerSovereignUpdateList)
         {
             packetPeerSovereignUpdateList = null; // Default.
 
@@ -413,7 +416,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
 
             if (!DeserializePacketContent(packetDecrypted.GetStringFromByteArrayUtf8(), out packetSovereignUpdateData))
                 return false;
-            
+
             if (!CheckPacketSovereignUpdateData(packetSovereignUpdateData, peerNetworkSettingObject))
                 return false;
 
@@ -780,8 +783,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         /// <returns></returns>
         private async Task<bool> CheckPacketBlockTransactionData(ClassPeerPacketSendBlockTransactionData packetSendBlockTransactionData, long blockHeightTarget, DisposableDictionary<string, string> listWalletAndPublicKeys, CancellationTokenSource cancellation)
         {
-            if (packetSendBlockTransactionData == null || 
-                packetSendBlockTransactionData.BlockHeight != blockHeightTarget || 
+            if (packetSendBlockTransactionData == null ||
+                packetSendBlockTransactionData.BlockHeight != blockHeightTarget ||
                 packetSendBlockTransactionData.TransactionObject == null ||
                 packetSendBlockTransactionData.TransactionObject.BlockHeightTransaction != blockHeightTarget ||
                 packetSendBlockTransactionData.TransactionObject.TransactionHash.IsNullOrEmpty(false, out _) ||

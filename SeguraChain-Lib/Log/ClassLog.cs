@@ -432,7 +432,7 @@ namespace SeguraChain_Lib.Log
             {
                 if (LogWriterInitialized)
                 {
-                    Task.Factory.StartNew(() =>
+                    TaskManager.TaskManager.InsertTask(() =>
                     {
 
                         bool locked = false;
@@ -463,7 +463,7 @@ namespace SeguraChain_Lib.Log
                             if (locked)
                                 Monitor.Exit(_logListOnCollect[logLevelType]);
                         }
-                    }, _cancellationTokenSourceLogWriter.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+                    }, 0, _cancellationTokenSourceLogWriter);
                 }
             }
         }
