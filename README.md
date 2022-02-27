@@ -58,6 +58,9 @@ https://github.com/SeguraChain/SeguraChain/wiki/Setup-your-own-Blockchain
 Desktop Wallet description page:
 https://github.com/SeguraChain/SeguraChain/wiki/Description-of-the-Desktop-Wallet
 
+Compilation Platform Target:
+https://github.com/SeguraChain/SeguraChain/wiki/Compilation-Platform-Target
+
 <h3>Contacts</h3>
   
 Every devs and potential users can send me their returns about the project, potential fix, issues and more.
