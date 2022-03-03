@@ -137,9 +137,6 @@ namespace SeguraChain_Test_Tool
                 }
             }
 
-
-
-
             Console.WriteLine("Valid wallet generated: ");
             Console.WriteLine("");
 
@@ -149,9 +146,7 @@ namespace SeguraChain_Test_Tool
             Console.WriteLine("Public Key WIF: " + walletObject.WalletPublicKey);
             Console.WriteLine("Wallet Address: " + walletObject.WalletAddress);
             if (!baseWord.IsNullOrEmpty(false, out _))
-            {
                 Console.WriteLine("Base word(s) used: " + baseWord);
-            }
 
             #endregion
 
@@ -736,14 +731,26 @@ namespace SeguraChain_Test_Tool
         private static void TestGenesisBlockGenerator()
         {
             ClassLog.SimpleWriteLine("[Warning] Be sure to have generate your dev wallet, and updating the BlockchainSetting.cs file before.", ConsoleColor.Red);
+
+            Console.WriteLine("Write the wallet address of the developer: ");
+
+            string walletAddress = Console.ReadLine();
+
+            Console.WriteLine("Write the public key of the dev wallet address: ");
+
+            string publicKey = Console.ReadLine();
+
             Console.WriteLine("Write the private key of the dev wallet address: ");
 
             string privateKey = Console.ReadLine();
+
 
             Console.WriteLine("Load or create blockchain database..");
 
             ClassBlockchainDatabaseSetting blockchainDatabaseSetting = new ClassBlockchainDatabaseSetting();
 
+            if (Directory.Exists(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryPath))
+                Directory.Delete(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryPath, true);
 
             // Load blockchain database + blockchain database cache.
             if (ClassBlockchainDatabase.LoadBlockchainDatabase(blockchainDatabaseSetting, string.Empty).Result)
@@ -754,7 +761,7 @@ namespace SeguraChain_Test_Tool
                     long blockHeight = BlockchainSetting.GenesisBlockHeight;
                     BigInteger blockDifficulty = BlockchainSetting.MiningMinDifficulty;
 
-                    var blockTransaction = ClassTransactionUtility.BuildTransaction(blockHeight, blockHeight + BlockchainSetting.TransactionMandatoryMinBlockTransactionConfirmations, BlockchainSetting.BlockRewardName, BlockchainSetting.WalletAddressDevPublicKey(0), string.Empty, BlockchainSetting.GenesisBlockAmount, 0, BlockchainSetting.WalletAddressDev(0), timestampCreate, ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION, 0, string.Empty, string.Empty, privateKey, string.Empty, null, timestampCreate, new CancellationTokenSource());
+                    ClassTransactionObject blockTransaction = ClassTransactionUtility.BuildTransaction(blockHeight, blockHeight + BlockchainSetting.TransactionMandatoryMinBlockTransactionConfirmations, BlockchainSetting.BlockRewardName, BlockchainSetting.WalletAddressDevPublicKey(0), string.Empty, BlockchainSetting.GenesisBlockAmount, 0, walletAddress, timestampCreate, ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION, 0, string.Empty, string.Empty, privateKey, string.Empty, null, timestampCreate, new CancellationTokenSource());
 
                     Console.WriteLine("Genesis block transaction hash: "+blockTransaction.TransactionHash);
 
@@ -779,24 +786,104 @@ namespace SeguraChain_Test_Tool
                         Console.WriteLine("Genesis block generated.");
                         Console.WriteLine("Sign default mining setting object..");
 
-
                         ClassMiningPoWaCSettingObject miningPoWaCSettingObject = BlockchainSetting.DefaultMiningPocSettingObject;
 
                         long miningSettingObjectTimestampSign = ClassUtility.GetCurrentTimestampInSecond();
                         miningPoWaCSettingObject.MiningSettingTimestamp = miningSettingObjectTimestampSign;
                         miningPoWaCSettingObject.MiningSettingContentHash = null;
                         miningPoWaCSettingObject.MiningSettingContentHashSignature = null;
-                        miningPoWaCSettingObject.MiningSettingContentDevPublicKey = BlockchainSetting.DefaultWalletAddressDevPublicKey;
+                        miningPoWaCSettingObject.MiningSettingContentDevPublicKey = publicKey;
 
                         string miningPoWacSettingObjectContentHash = ClassUtility.GenerateSha3512FromString(ClassUtility.SerializeData(miningPoWaCSettingObject));
                         string miningPoWacSettingObjectContentSignature = ClassWalletUtility.WalletGenerateSignature(privateKey, miningPoWacSettingObjectContentHash);
 
+                        Console.WriteLine("Please write, the blockchain setting file path: ");
+                        string blockchainSettingFilePath = Console.ReadLine();
+
+                        while (!File.Exists(blockchainSettingFilePath))
+                        {
+                            Console.WriteLine("The blockchain setting file path not exist, please try again: ");
+                            blockchainSettingFilePath = Console.ReadLine();
+                        }
+
+                        List<string> blockchainData = new List<string>();
+
+                        string line;
+                        using(StreamReader reader = new StreamReader(blockchainSettingFilePath))
+                        {
+                            while((line = reader.ReadLine()) != null)
+                                blockchainData.Add(line);
+                        }
+
+                        using (StreamWriter writer = new StreamWriter(blockchainSettingFilePath))
+                        {
+                            foreach (string blockchainLine in blockchainData)
+                            {
+                                if (blockchainLine.Contains("GenesisBlockFinalTransactionHash"))
+                                    writer.WriteLine("\t\tpublic const string GenesisBlockFinalTransactionHash =\"" + finalTransactionHash + "\";");
+                                else if (blockchainLine.Contains("DefaultWalletAddressDevPublicKey"))
+                                    writer.WriteLine("\t\tpublic const string DefaultWalletAddressDevPublicKey =\"" + publicKey + "\";");
+                                else if (blockchainLine.Contains("DefaultWalletAddressDev"))
+                                    writer.WriteLine("\t\tpublic const string DefaultWalletAddressDev =\"" + walletAddress + "\";");
+                                else if (blockchainLine.Contains(", new Dictionary<string, int>(){ { \""))
+                                {
+                                    Console.WriteLine("Please write your default node IP: ");
+
+                                    string peerIp = Console.ReadLine();
+
+                                    writer.WriteLine("\t\t\t{ \"" + peerIp + "\", new Dictionary<string, int>() { { \"D0BFF4A56F062828939E40E6DFD8A5EF58E28A10CB69E9E281C90802632D0345618CB5DA20736C2BAAC458A1EB5239F012621847B40F76C0CD10EA05CC4FD184\", PeerDefaultPort } }}");
+
+                                }
+                                else
+                                    writer.WriteLine(blockchainLine);
+                            }
+                        }
+
+
+                        Console.WriteLine("Please write the mining setting file path:");
+                        string miningSettingFilePath = Console.ReadLine();
+
+                        while(!File.Exists(miningSettingFilePath))
+                        {
+                            Console.WriteLine("The mining setting file not working, please try again:");
+                            miningSettingFilePath = Console.ReadLine();
+                        }
+
+                        List<string> miningSettingContent = new List<string>();
+
+                        line = string.Empty;
+                        using (StreamReader reader = new StreamReader(miningSettingFilePath))
+                        {
+                            while ((line = reader.ReadLine()) != null)
+                                miningSettingContent.Add(line);
+                        }
+
+                        using (StreamWriter writer = new StreamWriter(miningSettingFilePath))
+                        {
+                            foreach (string miningLine in miningSettingContent)
+                            {
+                                if (miningLine.Contains("MiningSettingTimestamp ="))
+                                    writer.WriteLine("\t\t\tMiningSettingTimestamp = " + miningSettingObjectTimestampSign + ";");
+                                else if (miningLine.Contains("MiningSettingContentHash ="))
+                                    writer.WriteLine("\t\t\tMiningSettingContentHash = \"" + miningPoWacSettingObjectContentHash + "\";");
+                                else if (miningLine.Contains("MiningSettingContentHashSignature ="))
+                                    writer.WriteLine("\t\t\tMiningSettingContentHashSignature = \"" + miningPoWacSettingObjectContentSignature + "\";");
+                                else if (miningLine.Contains("MiningSettingContentDevPublicKey ="))
+                                    writer.WriteLine("\t\t\tMiningSettingContentDevPublicKey = \"" + publicKey + "\";");
+                                else
+                                    writer.WriteLine(miningLine);
+                            }
+                        }
+
+                        Console.WriteLine("Genesis block generated, blockchain setting and mining setting are updated.");
+
+                        /*
                         Console.WriteLine("Do not forget to update the BlockchainSetting source code file with the final block transaction hash: "+ finalTransactionHash);
                         Console.WriteLine("Do not forget to put those elements has default value inside the default mining setting object: ");
                         Console.WriteLine("MiningSettingTimestamp = " + miningSettingObjectTimestampSign);
                         Console.WriteLine("MiningSettingContentHash = " + miningPoWacSettingObjectContentHash);
                         Console.WriteLine("MiningPoWacSettingObjectContentSignature = " + miningPoWacSettingObjectContentSignature);
-                        Console.WriteLine("MiningSettingContentDevPublicKey = " + BlockchainSetting.DefaultWalletAddressDevPublicKey);
+                        Console.WriteLine("MiningSettingContentDevPublicKey = " + BlockchainSetting.DefaultWalletAddressDevPublicKey);*/
                     }
                 }
                 else

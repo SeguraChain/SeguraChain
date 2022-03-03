@@ -724,14 +724,14 @@ namespace SeguraChain_Lib.Utility
         /// <summary>
         /// Check if the tcp client socket is still connected.
         /// </summary>
-        /// <param name="socket"></param>
+        /// <param name="tcpClient"></param>
         /// <returns></returns>
-        public static bool TcpClientIsConnected(TcpClient socket)
+        public static bool TcpClientIsConnected(TcpClient tcpClient)
         {
             try
             {
-                if (socket?.Client != null)
-                    return !((socket.Client.Poll(10, SelectMode.SelectRead) && (socket.Client.Available == 0)) || !socket.Client.Connected);
+                if (tcpClient?.Client != null)
+                    return !((tcpClient.Client.Poll(10, SelectMode.SelectRead) && (tcpClient.Client.Available == 0)) || !tcpClient.Client.Connected);
             }
             catch
             {
@@ -757,7 +757,83 @@ namespace SeguraChain_Lib.Utility
             }
         }
 
+        /// <summary>
+        /// Close TCP Client.
+        /// </summary>
+        /// <param name="tcpClient"></param>
+        public static void CloseTcpClient(TcpClient tcpClient)
+        {
+            try
+            {
+                if (tcpClient != null)
+                {
+                    if (tcpClient.Connected)
+                    {
+                        try
+                        {
+                            tcpClient.Client.Shutdown(SocketShutdown.Both);
+                        }
+                        finally
+                        {
+                            if (tcpClient != null)
+                            {
+                                tcpClient?.Close();
+                                tcpClient?.Dispose();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        tcpClient?.Close();
+                        tcpClient?.Dispose();
+                    }
+                }
+            }
+            catch
+            {
+                tcpClient?.Close();
+                tcpClient?.Dispose();
+            }
+        }
 
+        /// <summary>
+        /// Close Socket Client.
+        /// </summary>
+        /// <param name="socket"></param>
+        public static void CloseSocket(Socket socket)
+        {
+            try
+            {
+                if (socket != null)
+                {
+                    if (socket.Connected)
+                    {
+                        try
+                        {
+                            socket.Shutdown(SocketShutdown.Both);
+                        }
+                        finally
+                        {
+                            if (socket != null)
+                            {
+                                socket?.Close();
+                                socket?.Dispose();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        socket?.Close();
+                        socket?.Dispose();
+                    }
+                }
+            }
+            catch
+            {
+                socket?.Close();
+                socket?.Dispose();
+            }
+        }
 
         /// <summary>
         /// Return each packet splitted received.

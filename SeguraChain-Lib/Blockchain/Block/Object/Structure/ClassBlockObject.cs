@@ -180,7 +180,6 @@ namespace SeguraChain_Lib.Blockchain.Block.Object.Structure
             TotalTransactionConfirmed = 0;
         }
 
-
         #region Clone functions.
 
         /// <summary>
