@@ -751,29 +751,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             CancelTaskDoConnection();
             CancelTaskPeerPacketKeepAlive();
             CancelTaskListenPeerPacketResponse();
-
-            try
-            {
-                if (_peerSocketClient != null)
-                {
-                    if (_peerSocketClient.Connected)
-                    {
-                        try
-                        {
-                            _peerSocketClient.Shutdown(SocketShutdown.Both);
-                        }
-                        finally
-                        {
-                            _peerSocketClient.Close();
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                // Ignored.
-            }
-
+            ClassUtility.CloseSocket(_peerSocketClient);
         }
 
 

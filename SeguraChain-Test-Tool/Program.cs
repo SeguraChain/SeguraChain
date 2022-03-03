@@ -43,7 +43,7 @@ namespace SeguraChain_Test_Tool
                 Console.WriteLine((int)EnumListTestMenu.TEST_TRANSACTION_TRANSFER_BUILDER + " - Test Transaction Transfer build + test both transaction signatures.");
                 Console.WriteLine((int)EnumListTestMenu.TEST_PEER_API_REQUEST + " - Test to make a request and send it to a peer api server.");
                 Console.WriteLine((int)EnumListTestMenu.TEST_GENERATE_FAKE_BLOCK + " - Test to make fake blocks. Remember, just the first block is valid, others generated manually with this function are not accepted because they are not mined propertly.");
-                Console.WriteLine((int)EnumListTestMenu.TEST_GENERATE_GENESIS_BLOCK +" - Test to make the genesis block. Remember the block reward target the dev wallet address.");
+                Console.WriteLine((int)EnumListTestMenu.TEST_GENERATE_GENESIS_BLOCK +" - Build your own blockchain. Remember the block reward target the dev wallet address.");
                 Console.WriteLine((int)EnumListTestMenu.EXIT + " - Exit.");
                 string choose = Console.ReadLine();
 
@@ -183,13 +183,9 @@ namespace SeguraChain_Test_Tool
 
 
                     if (signatureCheckStatut)
-                    {
                         Console.WriteLine("Content: " + message + " signed and checked successfully.");
-                    }
                     else
-                    {
                         Console.WriteLine("The content has been signed but the checker return an error.");
-                    }
 
                     Console.WriteLine("Generate another wallet to test the signature security check..");
 
@@ -225,7 +221,6 @@ namespace SeguraChain_Test_Tool
                 Console.WriteLine("");
 
                 #region Show wallet informations generated.
-
 
                 Console.WriteLine("Private Key WIF: " + walletObject.WalletPrivateKey);
                 Console.WriteLine("Public Key WIF: " + walletObject.WalletPublicKey);
@@ -289,9 +284,7 @@ namespace SeguraChain_Test_Tool
             decimal amount;
 
             while (!decimal.TryParse(Console.ReadLine(), out amount))
-            {
                 Console.WriteLine("Error the input is invalid, write the amount of " + BlockchainSetting.CoinMinName + " to send: ");
-            }
 
             amount *= BlockchainSetting.CoinDecimal;
             amount = ClassUtility.RemoveDecimalPoint(amount);
@@ -306,9 +299,7 @@ namespace SeguraChain_Test_Tool
             decimal fee;
 
             while (!decimal.TryParse(Console.ReadLine(), out fee))
-            {
                 Console.WriteLine("Error the input is invalid, write the amount fee of " + BlockchainSetting.CoinMinName + " to send: ");
-            }
 
             fee *= BlockchainSetting.CoinDecimal;
             fee = ClassUtility.RemoveDecimalPoint(fee);
@@ -322,21 +313,19 @@ namespace SeguraChain_Test_Tool
             Console.WriteLine("Write a block start height has you want: ");
             long blockHeight;
             while (!long.TryParse(Console.ReadLine(), out blockHeight))
-            {
                 Console.WriteLine("Error the input is invalid, write a block height has you want: ");
-            }
 
             Console.Clear();
 
             #endregion
 
             #region Input Payment ID.
+			
             Console.WriteLine("Write a payment ID, leave empty for set default value:");
 
             if (!long.TryParse(Console.ReadLine(), out var paymentId))
-            {
                 paymentId = 0;
-            }
+
             #endregion
 
             long blockHeighTarget = blockHeight + BlockchainSetting.TransactionMandatoryMinBlockTransactionConfirmations;
@@ -667,14 +656,10 @@ namespace SeguraChain_Test_Tool
             while (transactionCountPerBlock <= 0)
             {
                 while (!(int.TryParse(Console.ReadLine() ?? string.Empty, out transactionCountPerBlock)))
-                {
                     Console.WriteLine("Error the input is invalid. Write the amount of tx per block propertly: ");
 
-                }
                 if (transactionCountPerBlock <= 0)
-                {
                     Console.WriteLine("Error the amount of transactions can't be set to 0, the benchmark would be unusefull.");
-                }
             }
 
             #endregion
@@ -730,7 +715,8 @@ namespace SeguraChain_Test_Tool
         /// </summary>
         private static void TestGenesisBlockGenerator()
         {
-            ClassLog.SimpleWriteLine("[Warning] Be sure to have generate your dev wallet, and updating the BlockchainSetting.cs file before.", ConsoleColor.Red);
+            ClassLog.SimpleWriteLine("[Note] Be sure to have generate your dev wallet, and updating the BlockchainSetting.cs file before.", ConsoleColor.Red);
+            ClassLog.SimpleWriteLine("[Note] You need at least 2 two public nodes to run your own decentralized network.", ConsoleColor.Red);
 
             Console.WriteLine("Write the wallet address of the developer: ");
 
@@ -827,7 +813,8 @@ namespace SeguraChain_Test_Tool
                                     writer.WriteLine("\t\tpublic const string DefaultWalletAddressDev =\"" + walletAddress + "\";");
                                 else if (blockchainLine.Contains(", new Dictionary<string, int>(){ { \""))
                                 {
-                                    Console.WriteLine("Please write your default node IP: ");
+                                    Console.WriteLine("Please write a default node IP: ");
+                                    ClassLog.SimpleWriteLine("[Note] - You can insert more default peers on the BlockchainSetting.cs", ConsoleColor.Red);
 
                                     string peerIp = Console.ReadLine();
 
@@ -876,14 +863,6 @@ namespace SeguraChain_Test_Tool
                         }
 
                         Console.WriteLine("Genesis block generated, blockchain setting and mining setting are updated.");
-
-                        /*
-                        Console.WriteLine("Do not forget to update the BlockchainSetting source code file with the final block transaction hash: "+ finalTransactionHash);
-                        Console.WriteLine("Do not forget to put those elements has default value inside the default mining setting object: ");
-                        Console.WriteLine("MiningSettingTimestamp = " + miningSettingObjectTimestampSign);
-                        Console.WriteLine("MiningSettingContentHash = " + miningPoWacSettingObjectContentHash);
-                        Console.WriteLine("MiningPoWacSettingObjectContentSignature = " + miningPoWacSettingObjectContentSignature);
-                        Console.WriteLine("MiningSettingContentDevPublicKey = " + BlockchainSetting.DefaultWalletAddressDevPublicKey);*/
                     }
                 }
                 else

@@ -73,8 +73,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         private bool _onWaitingMemPoolTransactionConfirmationReceived;
         private Dictionary<long, int> _listMemPoolBroadcastBlockHeight;
         private DisposableList<ClassReadPacketSplitted> listPacketReceived;
-        private Task _taskCheckPeerConnection;
-        private Task _taskBroadcast;
+
 
         /// <summary>
         /// Constructor.
@@ -219,30 +218,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 {
                     // Ignored.
                 }
-
-
-
             }
 
-
-            try
-            {
-
-                try
-                {
-                    _tcpClientPeer?.Client?.Shutdown(SocketShutdown.Both);
-                }
-                finally
-                {
-                    _tcpClientPeer?.Close();
-                    _tcpClientPeer?.Dispose();
-                }
-            }
-            catch
-            {
-                // Ignored.
-            }
-
+            ClassUtility.CloseTcpClient(_tcpClientPeer);
 
         }
 
@@ -260,7 +238,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             try
             {
                 // Launch a task for check the peer connection.
-                _taskCheckPeerConnection = Task.Factory.StartNew(async () => await CheckPeerClientAsync(), _cancellationTokenClientCheckConnectionPeer.Token);
+                await Task.Factory.StartNew(async () => await CheckPeerClientAsync(), _cancellationTokenClientCheckConnectionPeer.Token).ConfigureAwait(false);
             }
             catch
             {
@@ -1586,12 +1564,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     }
 
                                     if (listTransactionToBroadcast.Count > 0)
-                                    {
-                                        if (_taskBroadcast != null)
-                                            _taskBroadcast.Dispose();
+                                        await Task.Factory.StartNew(async () => await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(_peerServerOpenNatIp, _peerServerOpenNatIp, _peerClientIp, listTransactionToBroadcast.GetList, _peerNetworkSettingObject, _peerFirewallSettingObject, new CancellationTokenSource(), false)).ConfigureAwait(false);
 
-                                        _taskBroadcast = Task.Factory.StartNew(async () => await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(_peerServerOpenNatIp, _peerServerOpenNatIp, _peerClientIp, listTransactionToBroadcast.GetList, _peerNetworkSettingObject, _peerFirewallSettingObject, new CancellationTokenSource(), false));
-                                    }
                                     ClassPeerPacketSendMemPoolTransactionVote packetSendMemPoolTransactionVote = new ClassPeerPacketSendMemPoolTransactionVote()
                                     {
                                         ListTransactionHashResult = listTransactionResult.GetList,
@@ -1748,11 +1722,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                     try
                                     {
-                                        if (_taskBroadcast != null)
-                                            _taskBroadcast.Dispose();
 
                                         // Enable a task of broadcasting transactions from the MemPool, await after each sending a confirmation. 
-                                        _taskBroadcast = Task.Factory.StartNew(async () =>
+                                        await Task.Factory.StartNew(async () =>
                                         {
                                             int countMemPoolTxSent = 0;
                                             bool exceptionOnSending = false;
@@ -1904,7 +1876,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                             _onSendingMemPoolTransaction = false;
 
-                                        }, _cancellationTokenAccessData.Token);
+                                        }, _cancellationTokenAccessData.Token).ConfigureAwait(false);
 
                                     }
                                     // Ignored, catch the exception once broadcast task is cancelled.

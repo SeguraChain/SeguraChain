@@ -190,10 +190,24 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                             {
                                                 await Task.Factory.StartNew(async () =>
                                                 {
+                                                    if (walletAddressUpdateSyncCacheState.ContainsKey(walletAddress))
+                                                    {
+                                                        try
+                                                        {
+                                                            await UpdateWalletSyncTransactionCache(walletAddress, walletFileName, lastBlockHeightTransactionConfirmation, cancellationUpdateWalletSync);
 
-                                                    await UpdateWalletSyncTransactionCache(walletAddress, walletFileName, lastBlockHeightTransactionConfirmation, cancellationUpdateWalletSync);
+                                                            walletAddressUpdateSyncCacheState[walletAddress] = true;
+                                                        }
+#if DEBUG
+                                                        catch (Exception error)
+                                                        {
+                                                            Debug.WriteLine("Error update sync transaction cache: "+error.Message);
+#else
+                                                        {
+#endif
 
-                                                    walletAddressUpdateSyncCacheState[walletAddress] = true;
+                                                        }
+                                                    }
 
                                                 }, cancellationUpdateWalletSync.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
                                             }
@@ -265,7 +279,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
 
                 if (DatabaseSyncCache[walletAddress].CountBlockHeight > 0)
                 {
-                    #region Update every cached transactions.
+#region Update every cached transactions.
 
                     using (var blockHeightList = DatabaseSyncCache[walletAddress].BlockHeightKeys)
                     {
@@ -314,7 +328,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                 }
                                 else
                                 {
-                                    #region Update the amount of confirmations on block transactions on the block height if they are fully confirmed without to call the blockchain database or the API.
+#region Update the amount of confirmations on block transactions on the block height if they are fully confirmed without to call the blockchain database or the API.
 
                                     using (DisposableList<string> listTransactionHash = await DatabaseSyncCache[walletAddress].GetListBlockTransactionHashFromBlockHeight(blockHeight, false, cancellationUpdateWalletSync))
                                     {
@@ -348,7 +362,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                         }
                                     }
 
-                                    #endregion
+#endregion
                                 }
                             }
 
@@ -357,15 +371,15 @@ namespace SeguraChain_Desktop_Wallet.Sync
                         }
                     }
 
-                    #endregion
+#endregion
 
 
-                    #region Calculate balances.
+#region Calculate balances.
 
                     if (!cancelled)
                         await DatabaseSyncCache[walletAddress].UpdateWalletBalance(cancellationUpdateWalletSync);
 
-                    #endregion
+#endregion
                 }
 #if DEBUG
                 Debug.WriteLine("Wallet Address " + walletAddress + " sync cache updated. Total transaction updated: " + totalTxUpdated);
@@ -418,7 +432,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
 
             bool isSender = blockTransaction.TransactionObject.WalletAddressSender == walletAddress;
 
-            #region Update sender cache.
+#region Update sender cache.
 
             if (!DatabaseSyncCache.ContainsKey(walletAddress))
             {
@@ -464,7 +478,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                 }
             }
 
-            #endregion
+#endregion
 
         }
 
@@ -542,9 +556,9 @@ namespace SeguraChain_Desktop_Wallet.Sync
             return blockTransaction;
         }
 
-        #endregion
+#endregion
 
-        #region Main sync functions.
+#region Main sync functions.
 
         /// <summary>
         /// Initialize and start the sync system.
@@ -553,7 +567,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
         public async Task<bool> StartSync()
         {
 
-            #region Cancel external sync mode update task if necessary.
+#region Cancel external sync mode update task if necessary.
 
             if (_cancellationExternalSyncModeUpdateTask != null)
             {
@@ -561,7 +575,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                     _cancellationExternalSyncModeUpdateTask.Cancel();
             }
 
-            #endregion
+#endregion
 
             switch (ClassDesktopWalletCommonData.WalletSettingObject.WalletSyncMode)
             {
@@ -1035,9 +1049,9 @@ namespace SeguraChain_Desktop_Wallet.Sync
             return new DisposableList<ClassBlockTransaction>();
         }
 
-        #endregion
+#endregion
 
-        #region Sync wallet functions in internal mode.
+#region Sync wallet functions in internal mode.
 
         /// <summary>
         /// Update the wallet sync data in internal sync mode.
@@ -1280,9 +1294,9 @@ namespace SeguraChain_Desktop_Wallet.Sync
             return await ClassMemPoolDatabase.GetMemPoolTxFromTransactionHash(transactionHash, 0, cancellation);
         }
 
-        #endregion
+#endregion
 
-        #region Sync wallet functions in external mode.
+#region Sync wallet functions in external mode.
 
         /// <summary>
         /// Start the external sync mode update task.
@@ -1374,7 +1388,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
             string walletAddress = ClassDesktopWalletCommonData.WalletDatabase.GetWalletAddressFromWalletFileName(walletFileName);
 
 
-            #region Sync Mem Pool transaction.
+#region Sync Mem Pool transaction.
 
             using (DisposableList<ClassTransactionObject> listTransactionObject = new DisposableList<ClassTransactionObject>())
             {
@@ -1496,11 +1510,11 @@ namespace SeguraChain_Desktop_Wallet.Sync
                 }
             }
 
-            #endregion
+#endregion
 
             if (!cancelled)
             {
-                #region Sync transaction from blocks.
+#region Sync transaction from blocks.
 
                 long lastBlockHeight = await GetLastBlockHeightSynced(cancellation, true);
 
@@ -1734,16 +1748,16 @@ namespace SeguraChain_Desktop_Wallet.Sync
                 else
                     ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletEnableRescan = true;
 
-                #endregion
+#endregion
             }
 
             return cancelled ? false : changeDone;
         }
 
 
-        #endregion
+#endregion
 
-        #region Related of build & send transaction functions.
+#region Related of build & send transaction functions.
 
         /// <summary>
         /// Build and send a transaction.
@@ -1889,7 +1903,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                     return sendTransactionFeeCostCalculationResult;
                 }
 
-                #region Generated list unspend.
+#region Generated list unspend.
 
                 using (DisposableDictionary<long, Dictionary<string, ClassSyncCacheBlockTransactionObject>> allBlockTransactions = await DatabaseSyncCache[walletAddress].GetAllBlockTransactionCached(cancellation))
                 {
@@ -1983,9 +1997,9 @@ namespace SeguraChain_Desktop_Wallet.Sync
                     }
                 }
 
-                #endregion
+#endregion
 
-                #region Generate transaction hash source list from the amount to spend.
+#region Generate transaction hash source list from the amount to spend.
 
                 if (listUnspend.Count > 0)
                 {
@@ -2032,7 +2046,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                     }
                 }
 
-                #endregion
+#endregion
 
                 if (amountToSpend == amountSpend)
                 {
@@ -2058,7 +2072,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                         amountToSpend = ((BigInteger)(sendAmount * BlockchainSetting.CoinDecimal)) + sendTransactionFeeCostCalculationResult.TotalFeeCost;
                         amountSpend = 0;
 
-                        #region Regenerate amount hash transaction source list with fees calculated.
+#region Regenerate amount hash transaction source list with fees calculated.
 
                         if (listUnspend.Count > 0)
                         {
@@ -2106,7 +2120,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                             }
                         }
 
-                        #endregion
+#endregion
 
                         if (amountSpend > amountToSpend)
                             sendTransactionFeeCostCalculationResult.Failed = true;
@@ -2122,6 +2136,6 @@ namespace SeguraChain_Desktop_Wallet.Sync
             return sendTransactionFeeCostCalculationResult;
         }
 
-        #endregion
+#endregion
     }
 }

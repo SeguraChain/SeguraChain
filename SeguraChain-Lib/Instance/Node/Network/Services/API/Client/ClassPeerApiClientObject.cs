@@ -350,7 +350,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
                 try
                 {
-                    if (_taskCheckConnection?.Status == TaskStatus.RanToCompletion ||
+                    if (_taskCheckConnection.IsCompleted ||
                         _taskCheckConnection?.Status == TaskStatus.Faulted ||
                         _taskCheckConnection?.Status == TaskStatus.Canceled)
                         _taskCheckConnection?.Dispose();
@@ -361,25 +361,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                 }
             }
 
-            try
-            {
-
-                try
-                {
-                    _clientTcpClient?.Client?.Shutdown(SocketShutdown.Both);
-                }
-                finally
-                {
-
-                    _clientTcpClient?.Close();
-                    _clientTcpClient?.Dispose();
-                }
-            }
-            catch
-            {
-                // Ignored.
-            }
-
+            ClassUtility.CloseTcpClient(_clientTcpClient);
         }
 
         #endregion

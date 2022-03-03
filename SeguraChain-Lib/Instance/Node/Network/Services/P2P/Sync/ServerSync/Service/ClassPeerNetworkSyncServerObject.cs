@@ -26,7 +26,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
         private ClassPeerNetworkSettingObject _peerNetworkSettingObject;
         private ClassPeerFirewallSettingObject _firewallSettingObject;
         private DisposableList<Task> _listPeerIncomingConnectionTask;
-        private SemaphoreSlim _semaphoreIncomingConnection;
+        private SemaphoreSlim _semaphoreHandleIncomingConnection = new SemaphoreSlim(1, Environment.ProcessorCount);
 
         #region Dispose functions
 
@@ -69,7 +69,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
             _peerNetworkSettingObject = peerNetworkSettingObject;
             _firewallSettingObject = firewallSettingObject;
             _listPeerIncomingConnectionTask = new DisposableList<Task>();
-            _semaphoreIncomingConnection = new SemaphoreSlim(1, 1);
         }
 
         #region Peer Server management functions.
@@ -110,8 +109,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                         {
                             await _tcpListenerPeer.AcceptTcpClientAsync().ContinueWith(async clientTask =>
                             {
-                                bool useSemaphore = false;
                                 int countTaskRemoved = 0;
+
+                                bool useSemaphore = false;
 
                                 try
                                 {
@@ -122,10 +122,20 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
                                         if (clientPeerTcp != null)
                                         {
-                                            await _semaphoreIncomingConnection.WaitAsync(_cancellationTokenSourcePeerServer.Token);
+                                            await _semaphoreHandleIncomingConnection.WaitAsync(_cancellationTokenSourcePeerServer.Token);
                                             useSemaphore = true;
 
-                                            if (_listPeerIncomingConnectionTask.Count <= _peerNetworkSettingObject.PeerMaxTaskIncomingConnection)
+                                            bool handleConnection = true;
+
+                                            if (_listPeerIncomingConnectionTask.Count > _peerNetworkSettingObject.PeerMaxTaskIncomingConnection)
+                                            {
+                                                countTaskRemoved = ClearIncomingConnectionTask();
+
+                                                handleConnection = _listPeerIncomingConnectionTask.Count <= _peerNetworkSettingObject.PeerMaxTaskIncomingConnection;
+                                            }
+
+
+                                            if (handleConnection)
                                             {
 
                                                 ClassLog.WriteLine("Total cleaned task completed: " + countTaskRemoved, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true, ConsoleColor.Yellow);
@@ -144,15 +154,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                                             break;
                                                     }
 
-                                                    CloseTcpClient(clientPeerTcp);
-
+                                                    ClassUtility.CloseTcpClient(clientPeerTcp);
                                                 }, _cancellationTokenSourcePeerServer.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current));
                                             }
                                             else
-                                            {
-                                                countTaskRemoved = ClearIncomingConnectionTask();
-                                                CloseTcpClient(clientPeerTcp);
-                                            }
+                                                ClassUtility.CloseTcpClient(clientPeerTcp);
+
+
                                         }
                                     }
                                     catch
@@ -163,8 +171,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                 finally
                                 {
                                     if (useSemaphore)
-                                        _semaphoreIncomingConnection.Release();
+                                        _semaphoreHandleIncomingConnection.Release();
                                 }
+                              
 
                             }, _cancellationTokenSourcePeerServer.Token);
                         }
@@ -291,10 +300,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     {
                         long timestampEnd = ClassUtility.GetCurrentTimestampInMillisecond() + _peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay;
 
-
                         while (ClassUtility.GetCurrentTimestampInMillisecond() < timestampEnd)
                         {
-                            if (await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.WaitAsync(10, _cancellationTokenSourcePeerServer.Token))
+                            if (await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.WaitAsync(1000, _cancellationTokenSourcePeerServer.Token))
                             {
                                 _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
                                 semaphoreUsed = true;
@@ -334,33 +342,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 return ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION;
             }
             return ClassPeerNetworkServerHandleConnectionEnum.VALID_HANDLE;
-        }
-
-        /// <summary>
-        /// Close an incoming tcp client connection.
-        /// </summary>
-        /// <param name="tcpClient"></param>
-        private void CloseTcpClient(TcpClient tcpClient)
-        {
-            try
-            {
-                if (tcpClient?.Client != null)
-                {
-                    try
-                    {
-                        tcpClient?.Client?.Shutdown(SocketShutdown.Both);
-                    }
-                    finally
-                    {
-                        tcpClient?.Close();
-                        tcpClient?.Dispose();
-                    }
-                }
-            }
-            catch
-            {
-                // Ignored.
-            }
         }
 
         #endregion
@@ -598,15 +579,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     try
                     {
 
-                        if (_listPeerIncomingConnectionTask[i]?.Status == TaskStatus.RanToCompletion ||
-                                                _listPeerIncomingConnectionTask[i]?.Status == TaskStatus.Faulted ||
-                                                _listPeerIncomingConnectionTask[i]?.Status == TaskStatus.Canceled)
+                        if (_listPeerIncomingConnectionTask[i].IsCompleted ||
+                                                _listPeerIncomingConnectionTask[i].Status == TaskStatus.Faulted ||
+                                                _listPeerIncomingConnectionTask[i].Status == TaskStatus.Canceled)
                         {
                             _listPeerIncomingConnectionTask[i].Dispose();
-
-                            // Remove the completed task.
                             _listPeerIncomingConnectionTask.GetList.RemoveAt(i);
-
                             countTaskCompleted++;
                         }
                     }
@@ -616,6 +594,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     }
                 }
             }
+
+
 
             return countTaskCompleted;
         }
