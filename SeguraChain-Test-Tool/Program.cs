@@ -43,7 +43,7 @@ namespace SeguraChain_Test_Tool
                 Console.WriteLine((int)EnumListTestMenu.TEST_TRANSACTION_TRANSFER_BUILDER + " - Test Transaction Transfer build + test both transaction signatures.");
                 Console.WriteLine((int)EnumListTestMenu.TEST_PEER_API_REQUEST + " - Test to make a request and send it to a peer api server.");
                 Console.WriteLine((int)EnumListTestMenu.TEST_GENERATE_FAKE_BLOCK + " - Test to make fake blocks. Remember, just the first block is valid, others generated manually with this function are not accepted because they are not mined propertly.");
-                Console.WriteLine((int)EnumListTestMenu.TEST_GENERATE_GENESIS_BLOCK +" - Build your own blockchain. Remember the block reward target the dev wallet address.");
+                Console.WriteLine((int)EnumListTestMenu.BUILD_BLOCKCHAIN +" - Build your own blockchain. Remember the block reward target the dev wallet address.");
                 Console.WriteLine((int)EnumListTestMenu.EXIT + " - Exit.");
                 string choose = Console.ReadLine();
 
@@ -66,8 +66,8 @@ namespace SeguraChain_Test_Tool
                         case (int)EnumListTestMenu.TEST_GENERATE_FAKE_BLOCK:
                             TestFakeBlockGenerator();
                             break;
-                        case (int)EnumListTestMenu.TEST_GENERATE_GENESIS_BLOCK:
-                            TestGenesisBlockGenerator();
+                        case (int)EnumListTestMenu.BUILD_BLOCKCHAIN:
+                            BuildBlockchain();
                             break;
                         case (int)EnumListTestMenu.EXIT:
                             exit = true;
@@ -713,7 +713,7 @@ namespace SeguraChain_Test_Tool
         /// <summary>
         /// Test to generate the genesis block.
         /// </summary>
-        private static void TestGenesisBlockGenerator()
+        private static void BuildBlockchain()
         {
             ClassLog.SimpleWriteLine("[Note] Be sure to have generate your dev wallet, and updating the BlockchainSetting.cs file before.", ConsoleColor.Red);
             ClassLog.SimpleWriteLine("[Note] You need at least 2 two public nodes to run your own decentralized network.", ConsoleColor.Red);
@@ -863,6 +863,8 @@ namespace SeguraChain_Test_Tool
                         }
 
                         Console.WriteLine("Genesis block generated, blockchain setting and mining setting are updated.");
+                        ClassLog.SimpleWriteLine("[Note] You need to rebuild the source code and copy the Blockchain folder to the node build folder.", ConsoleColor.Red);
+
                     }
                 }
                 else
