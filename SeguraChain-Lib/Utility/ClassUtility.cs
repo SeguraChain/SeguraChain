@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SeguraChain_Lib.Blockchain.Setting;
 using SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Packet;
+using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet.Model;
 using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.Other.Object.SHA3;
 
@@ -903,6 +904,47 @@ namespace SeguraChain_Lib.Utility
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Compile packet buffer received, split each characters and return a list of packet splitted.
+        /// </summary>
+        /// <param name="packetBuffer"></param>
+        /// <returns></returns>
+        public static List<ClassReadPacketSplitted> CompilePacketBuffer(byte[] packetBuffer)
+        {
+#if DEBUG
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+#endif
+
+            List<ClassReadPacketSplitted> listReadPacketSplitted = new List<ClassReadPacketSplitted>
+            {
+                new ClassReadPacketSplitted()
+            };
+
+
+            foreach (char character in packetBuffer.GetStringFromByteArrayUtf8())
+            {
+                if (character != '\0')
+                {
+                    if (character == ClassPeerPacketSetting.PacketPeerSplitSeperator)
+                    {
+                        listReadPacketSplitted[listReadPacketSplitted.Count - 1].Complete = true;
+                        listReadPacketSplitted.Add(new ClassReadPacketSplitted());
+                    }
+                    else if (CharIsABase64Character(character))
+                        listReadPacketSplitted[listReadPacketSplitted.Count - 1].Packet += character;
+                }
+            }
+
+
+#if DEBUG
+            stopwatch.Stop();
+            Console.WriteLine(stopwatch.ElapsedMilliseconds + " ms.");
+#endif
+
+            return listReadPacketSplitted;
         }
 
         #endregion

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
@@ -407,12 +408,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                     if (IsCancelledOrDisconnected())
                                         break;
 
-                                    int packetLength = await networkStream.ReadAsync(packetBufferOnReceive, 0, packetBufferOnReceive.Length, _peerCancellationTokenTaskListenPeerPacketResponse.Token);
-
-                                    _lastPacketReceivedTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
-
-                                    if (packetLength > 0)
+                                    if (await networkStream.ReadAsync(packetBufferOnReceive, 0, packetBufferOnReceive.Length, _peerCancellationTokenTaskListenPeerPacketResponse.Token) > 0)
                                     {
+                                        _lastPacketReceivedTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+
+                                        #region Compile the packet.
+
+#if DEBUG
+                                        Stopwatch stopwatch = new Stopwatch();
+                                        stopwatch.Start();
+#endif
                                         foreach (byte dataByte in packetBufferOnReceive)
                                         {
                                             if (IsCancelledOrDisconnected()) break;
@@ -432,9 +437,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                                     listPacketReceived[listPacketReceived.Count - 1].Packet += character;
                                                     packetSizeCount++;
                                                 }
-
                                             }
                                         }
+
+#if DEBUG
+                                        stopwatch.Stop();
+                                        Console.WriteLine(stopwatch.ElapsedMilliseconds + " ms.");
+#endif
+
+                                        #endregion
 
                                         if (countPacketCompleted > 0)
                                         {
