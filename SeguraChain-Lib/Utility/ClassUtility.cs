@@ -941,7 +941,7 @@ namespace SeguraChain_Lib.Utility
 
 #if DEBUG
             stopwatch.Stop();
-            Console.WriteLine(stopwatch.ElapsedMilliseconds + " ms.");
+            Debug.WriteLine(stopwatch.ElapsedMilliseconds + " ms.");
 #endif
 
             return listReadPacketSplitted;
