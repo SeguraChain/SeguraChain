@@ -415,8 +415,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                         #region Compile the packet.
 
 #if DEBUG
-                                        Stopwatch stopwatch = new Stopwatch();
-                                        stopwatch.Start();
+                                        //Stopwatch stopwatch = new Stopwatch();
+                                        //stopwatch.Start();
 #endif
                                         foreach (byte dataByte in packetBufferOnReceive)
                                         {
@@ -441,8 +441,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                         }
 
 #if DEBUG
-                                        stopwatch.Stop();
-                                        Console.WriteLine(stopwatch.ElapsedMilliseconds + " ms.");
+                                        //stopwatch.Stop();
+                                        //Debug.WriteLine(stopwatch.ElapsedMilliseconds + " ms.");
 #endif
 
                                         #endregion
