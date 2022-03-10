@@ -510,7 +510,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                 bool broadcastResponsePacketStatus = false;
                 bool failed = false;
-                long timestampEnd = ClassUtility.GetCurrentTimestampInMillisecond() + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
+                long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
 
                 using (CancellationTokenSource cancellationReceiveBroadcastResponsePacket = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationToken.Token))
                 {
@@ -629,7 +629,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         if (failed)
                             break;
 
-                        if (timestampEnd < ClassUtility.GetCurrentTimestampInMillisecond())
+                        if (timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond)
                             break;
 
                         try
@@ -1091,7 +1091,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 bool taskComplete = false;
                 ClassPeerPacketRecvObject peerPacketRecvObject = null;
 
-                long timestampEnd = ClassUtility.GetCurrentTimestampInMillisecond() + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
+                long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
 
                 using (CancellationTokenSource cancellationReceiveBlockListPacket = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationToken.Token))
                 {
@@ -1196,7 +1196,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                     while (!taskComplete)
                     {
-                        if (timestampEnd < ClassUtility.GetCurrentTimestampInMillisecond())
+                        if (timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond)
                             break;
 
                         if (!IsAlive)
@@ -1232,7 +1232,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 bool receiveStatus = true;
                 bool endBroadcast = false;
                 int txCountReceived = 0;
-                long timestampEnd = ClassUtility.GetCurrentTimestampInMillisecond() + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
+                long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
 
                 using (DisposableDictionary<string, string> listWalletAddressAndPublicKeyCache = new DisposableDictionary<string, string>())
                 {
@@ -1370,7 +1370,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                                                                     break;
                                                                                                 }
 
-                                                                                                timestampEnd = ClassUtility.GetCurrentTimestampInMillisecond() + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
+                                                                                                timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
                                                                                             }
                                                                                         }
                                                                                     }
@@ -1440,7 +1440,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                             while (!endBroadcast)
                             {
-                                if (timestampEnd < ClassUtility.GetCurrentTimestampInMillisecond())
+                                if (timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond)
                                     break;
 
                                 if (!IsAlive)
@@ -1488,7 +1488,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             {
                 bool voteStatus = false;
                 bool taskDone = false;
-                long timestampEnd = ClassUtility.GetCurrentTimestampInMillisecond() + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
+                long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
                 DisposableDictionary<string, ClassTransactionEnumStatus> listTransactionStatus = new DisposableDictionary<string, ClassTransactionEnumStatus>();
 
                 using (CancellationTokenSource cancellationReceiveMemPoolTransactionVote = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationToken.Token))
@@ -1611,7 +1611,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                     while (!taskDone)
                     {
-                        if (timestampEnd < ClassUtility.GetCurrentTimestampInMillisecond())
+                        if (timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond)
                             break;
 
                         if (voteStatus)

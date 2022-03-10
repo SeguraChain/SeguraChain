@@ -14,6 +14,7 @@ namespace SeguraChain_Lib.TaskManager
         private static CancellationTokenSource _cancelTaskManager = new CancellationTokenSource();
         private static List<ClassTaskObject> _taskCollection = new List<ClassTaskObject>();
         private static SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+        public static long CurrentTimestampMillisecond { get; private set; }
 
         /// <summary>
         /// Enable the task manager. Check tasks, dispose them if they are faulted, completed, cancelled, or if a timestamp of end has been set and has been reached.
@@ -24,16 +25,17 @@ namespace SeguraChain_Lib.TaskManager
             {
                 Task.Factory.StartNew(async () =>
                 {
-                    try
-                    {
-                        while(!_cancelTaskManager.IsCancellationRequested)
-                        {
-                            bool useSemaphore = false;
-                            try
-                            {
-                                await _semaphore.WaitAsync(_cancelTaskManager.Token);
-                                useSemaphore = true;
 
+                    while (!_cancelTaskManager.IsCancellationRequested)
+                    {
+                        bool isLocked = false;
+                        bool cleanUpDone = false;
+
+                        try
+                        {
+                            if (Monitor.TryEnter(_taskCollection))
+                            {
+                                isLocked = true;
 
                                 using (DisposableList<int> listTaskToRemove = new DisposableList<int>())
                                 {
@@ -56,7 +58,7 @@ namespace SeguraChain_Lib.TaskManager
                                             }
                                             else
                                             {
-                                                if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < ClassUtility.GetCurrentTimestampInMillisecond())
+                                                if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond)
                                                     doDispose = true;
                                             }
 
@@ -75,26 +77,35 @@ namespace SeguraChain_Lib.TaskManager
                                                 _taskCollection.RemoveAt(taskId);
 
                                             _taskCollection.TrimExcess();
+
+                                            cleanUpDone = true;
                                         }
                                     }
-
                                 }
 
+                                if (cleanUpDone)
+                                    Monitor.PulseAll(_taskCollection);
+                            }
 
-                            }
-                            finally
-                            {
-                                if (useSemaphore)
-                                    _semaphore.Release();
-                            }
-                            await Task.Delay(1000);
                         }
+                        finally
+                        {
+                            if (isLocked)
+                                Monitor.Exit(_taskCollection);
+                        }
+                        await Task.Delay(1000);
                     }
-                    catch
+                    
+                }, _cancelTaskManager.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+
+                Task.Factory.StartNew(async () =>
+                {
+                    while(!_cancelTaskManager.IsCancellationRequested)
                     {
-                        // Ignored.
+                        CurrentTimestampMillisecond = ClassUtility.GetCurrentTimestampInMillisecond();
+                        await Task.Delay(10);
                     }
-                }, _cancelTaskManager.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current);
+                }, _cancelTaskManager.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
             }
             catch
             {
@@ -110,36 +121,40 @@ namespace SeguraChain_Lib.TaskManager
         /// <param name="cancellation"></param>
         public static void InsertTask(Action action, long timestampEnd, CancellationTokenSource cancellation, Socket socket = null)
         {
-            bool useSemaphore = false;
+            bool isLocked = false;
 
             try
             {
                 try
                 {
-
-                    _semaphore.Wait(new CancellationTokenSource(5000).Token);
-                    useSemaphore = true;
-
-                    _taskCollection.Add(new ClassTaskObject()
+                    if (Monitor.TryEnter(_taskCollection))
                     {
-                        Socket = socket,
-                        TimestampEnd = timestampEnd,
-                        Task = Task.Factory.StartNew(action, CancellationTokenSource.CreateLinkedTokenSource(_cancelTaskManager.Token,
-                        cancellation != null ?
-                        cancellation.Token : new CancellationToken(),
-                        timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - ClassUtility.GetCurrentTimestampInMillisecond())).Token : new CancellationToken()).Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current)
-                    });
+                        isLocked = true;
 
+                        _taskCollection.Add(new ClassTaskObject()
+                        {
+                            Socket = socket,
+                            TimestampEnd = timestampEnd,
+                            Task = Task.Factory.StartNew(action, CancellationTokenSource.CreateLinkedTokenSource(_cancelTaskManager.Token,
+                            cancellation != null ?
+                            cancellation.Token : new CancellationToken(),
+                            timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - CurrentTimestampMillisecond)).Token : new CancellationToken()).Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current)
+                        });
+
+                        Monitor.PulseAll(_taskCollection);
+                    }
                 }
                 catch
                 {
-                    // Ignored, catch the exception if the cancellation token of the semaphore is dead.
+                    if (cancellation != null)
+                        cancellation.Cancel();
+
                 }
             }
             finally
             {
-                if (useSemaphore)
-                    _semaphore.Release();
+                if (isLocked)
+                    Monitor.Exit(_taskCollection);
             }
         }
 

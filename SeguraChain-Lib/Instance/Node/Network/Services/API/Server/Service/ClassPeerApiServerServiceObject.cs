@@ -400,7 +400,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                 {
                     if (_listApiIncomingConnectionObject[clientIp].ListApiClientObject.Count > 0)
                     {
-                        long currentTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                        long currentTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
 
                         using (DisposableList<long> listIds = new DisposableList<long>(false, 0, _listApiIncomingConnectionObject[clientIp].ListApiClientObject.Keys.ToList()))

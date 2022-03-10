@@ -19,7 +19,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main.Wallet.Object
         public BlockchainWalletMemoryObject()
         {
             ListBlockchainWalletBalanceCheckpoints = new SortedList<long, ClassBlockchainWalletBalanceCheckpointObject>();
-            LastTimestampCallOrUpdate = ClassUtility.GetCurrentTimestampInMillisecond();
+            LastTimestampCallOrUpdate = TaskManager.TaskManager.CurrentTimestampMillisecond;
         }
 
         #region Manage Wallet Checkpoint Object.

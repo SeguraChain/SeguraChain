@@ -225,7 +225,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             bool successConnect = false;
             CancelTaskDoConnection();
 
-            long timestampEnd = ClassUtility.GetCurrentTimestampInMillisecond() + (_peerNetworkSetting.PeerMaxDelayToConnectToTarget * 1000);
+            long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSetting.PeerMaxDelayToConnectToTarget * 1000);
 
             _peerCancellationTokenDoConnection = CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, _peerCancellationTokenMain.Token);
 
@@ -259,7 +259,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
             while (!successConnect)
             {
-                if (timestampEnd < ClassUtility.GetCurrentTimestampInMillisecond())
+                if (timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond)
                     break;
 
                 try
@@ -299,7 +299,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// <returns></returns>
         private async Task<bool> WaitPacketExpected(CancellationTokenSource cancellation)
         {
-            _lastPacketReceivedTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+            _lastPacketReceivedTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
             TaskWaitPeerPacketResponse(cancellation);
 
@@ -308,7 +308,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                 if (cancellation.IsCancellationRequested ||
                     !PeerConnectStatus ||
-                    _lastPacketReceivedTimestamp + (_peerNetworkSetting.PeerMaxDelayAwaitResponse * 1000) < ClassUtility.GetCurrentTimestampInMillisecond() ||
+                    _lastPacketReceivedTimestamp + (_peerNetworkSetting.PeerMaxDelayAwaitResponse * 1000) < TaskManager.TaskManager.CurrentTimestampMillisecond ||
                     PeerPacketReceived != null)
                 {
                     PeerConnectStatus = false;
@@ -387,7 +387,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                                     if (await networkStream.ReadAsync(packetBufferOnReceive, 0, packetBufferOnReceive.Length, _peerCancellationTokenTaskListenPeerPacketResponse.Token) > 0)
                                     {
-                                        _lastPacketReceivedTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                                        _lastPacketReceivedTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
                                         #region Compile the packet.
 

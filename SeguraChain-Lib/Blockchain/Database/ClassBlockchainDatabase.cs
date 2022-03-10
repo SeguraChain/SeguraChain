@@ -999,7 +999,7 @@ namespace SeguraChain_Lib.Blockchain.Database
                                                                                                                 BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject = miningPowShareObject;
                                                                                                                 BlockchainMemoryManagement[blockHeight, cancellation].BlockUnlockValid = false;
                                                                                                                 BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus = ClassBlockEnumStatus.UNLOCKED;
-                                                                                                                BlockchainMemoryManagement[blockHeight, cancellation].BlockLastChangeTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                                                                                                                BlockchainMemoryManagement[blockHeight, cancellation].BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
                                                                                                                 if (ClassBlockchainStats.BlockchainNetworkStatsObject != null)
                                                                                                                     ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " push transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, blockHeight < ClassBlockchainStats.BlockchainNetworkStatsObject.LastNetworkBlockHeight, ConsoleColor.Cyan);
@@ -1095,7 +1095,7 @@ namespace SeguraChain_Lib.Blockchain.Database
                                                                                                 BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject = miningPowShareObject;
                                                                                                 BlockchainMemoryManagement[blockHeight, cancellation].BlockUnlockValid = false;
                                                                                                 BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus = ClassBlockEnumStatus.UNLOCKED;
-                                                                                                BlockchainMemoryManagement[blockHeight, cancellation].BlockLastChangeTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                                                                                                BlockchainMemoryManagement[blockHeight, cancellation].BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
                                                                                                 if (ClassBlockchainStats.BlockchainNetworkStatsObject != null)
                                                                                                     ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " push transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, blockHeight < ClassBlockchainStats.BlockchainNetworkStatsObject.LastNetworkBlockHeight, ConsoleColor.Cyan);
@@ -1727,7 +1727,7 @@ namespace SeguraChain_Lib.Blockchain.Database
                         blockObject.BlockTransactionFullyConfirmed = false;
                         blockObject.TotalTransaction = blockObject.BlockTransactions.Count;
                         blockObject.BlockTransactionConfirmationCheckTaskDone = false;
-                        blockObject.BlockLastChangeTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                        blockObject.BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
                         blockObject.BlockMiningPowShareUnlockObject = null;
                         if (!await BlockchainMemoryManagement.InsertOrUpdateBlockObjectToCache(blockObject, true, _cancellationTokenStopBlockchain))
                         {
@@ -1778,7 +1778,7 @@ namespace SeguraChain_Lib.Blockchain.Database
                         blockObject.BlockTransactionFullyConfirmed = false;
                         blockObject.TotalTransaction = blockObject.BlockTransactions.Count;
                         blockObject.BlockTransactionConfirmationCheckTaskDone = false;
-                        blockObject.BlockLastChangeTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                        blockObject.BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
                         foreach (var txHash in blockObject.BlockTransactions.Keys)
                         {

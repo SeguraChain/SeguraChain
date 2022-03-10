@@ -1240,7 +1240,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                         int totalTravel = 0;
 
-                        long timestampTaskStart = ClassUtility.GetCurrentTimestampInMillisecond();
+                        long timestampTaskStart = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
                         try
                         {
@@ -1299,7 +1299,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             blockchainNetworkStatsObject.LastAverageMiningTimespendExpected = averageMiningTimespendExpected;
                             blockchainNetworkStatsObject.LastBlockHeightTransactionConfirmationDone = lastBlockHeightTransactionConfirmationDone;
                             blockchainNetworkStatsObject.LastUpdateStatsDateTime = ClassUtility.GetDatetimeFromTimestamp(ClassUtility.GetCurrentTimestampInSecond());
-                            blockchainNetworkStatsObject.BlockchainStatsTimestampToGenerate = ClassUtility.GetCurrentTimestampInMillisecond() - timestampTaskStart;
+                            blockchainNetworkStatsObject.BlockchainStatsTimestampToGenerate = TaskManager.TaskManager.CurrentTimestampMillisecond - timestampTaskStart;
                         }
 
                     }
@@ -1349,7 +1349,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     bool canceled = false;
                     bool changeDone = false;
 
-                    long timestampStart = ClassUtility.GetCurrentTimestampInMillisecond();
+                    long timestampStart = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
                     ClassBlockObject lastBlockHeightUnlockedObject = await GetBlockInformationDataStrategy(lastBlockHeightUnlockedChecked, cancellation);
                     long lastBlockHeightTransactionConfirmationDone = await GetLastBlockHeightTransactionConfirmationDone(cancellation);
@@ -1558,7 +1558,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                     }
                                                                 }
 
-                                                                blockObjectUpdated.BlockLastChangeTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                                                                blockObjectUpdated.BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
 
                                                                 changeDone = true;
@@ -1634,7 +1634,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     {
                         if (totalBlockTravel >= lastBlockHeightUnlockedChecked)
                         {
-                            long timestampProceedTx = ClassUtility.GetCurrentTimestampInMillisecond() - timestampStart;
+                            long timestampProceedTx = TaskManager.TaskManager.CurrentTimestampMillisecond - timestampStart;
 #if DEBUG
                             Debug.WriteLine("Time spend to confirm: " + lastBlockHeightUnlockedChecked + " blocks and to travel: " + lastBlockHeightUnlocked + " blocks: " + timestampProceedTx + " ms. Last block height confirmation done:" + lastBlockHeightTransactionConfirmationDone);
 #endif
@@ -1687,7 +1687,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                 long totalPassed = 0;
                 long lastBlockHeight = GetLastBlockHeight;
-                long taskStartTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                long taskStartTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
                 foreach (long blockHeight in listBlockHeightConfirmed)
                 {
@@ -1759,7 +1759,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         if (cancelConfirmations)
                             break;
 
-                        blockObjectUpdated.BlockLastChangeTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                        blockObjectUpdated.BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
                         // Update the active memory if this one is available on the active memory.
                         if (_dictionaryBlockObjectMemory[blockHeight].Content != null)
@@ -1781,7 +1781,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     }
                 }
 
-                long taskDoneTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                long taskDoneTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
 #if DEBUG
                 Debug.WriteLine("Total block fully confirmed on their tx passed: " + totalPassed + ". Task done in: " + (taskDoneTimestamp - taskStartTimestamp) + "ms.");

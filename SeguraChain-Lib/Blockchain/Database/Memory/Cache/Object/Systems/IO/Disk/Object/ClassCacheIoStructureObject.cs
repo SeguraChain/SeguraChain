@@ -20,7 +20,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                 if (!IsNull)
                 {
 
-                    LastGetTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                    LastGetTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
                     return _blockObject;
                 }
@@ -66,7 +66,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                                     _blockObject.BlockFromCache = true;
                                     _blockObject.BlockCloned = false;
                                     _blockObject.Disposed = false;
-                                    LastUpdateTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                                    LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
                                 }
                             }
                             else
@@ -77,7 +77,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                                 _blockObject.BlockCloned = false;
                                 _blockObject.BlockIsUpdated = false;
                                 _blockObject.Disposed = false;
-                                LastUpdateTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                                LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
                             }
 
                             if (_ioDataSizeOnMemory == 0)
@@ -99,7 +99,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                         _blockObject?.Dispose();
                         _blockObject = null;
                         IsUpdated = false;
-                        LastUpdateTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                        LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
                     }
                 }
             }

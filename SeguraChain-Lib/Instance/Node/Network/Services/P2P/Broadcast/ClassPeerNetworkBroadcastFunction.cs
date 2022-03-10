@@ -303,7 +303,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                             using (CancellationTokenSource cancellationTokenSourceMiningShareVote = cancellation != null ? CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token) : new CancellationTokenSource())
                             {
 
-                                long taskTimestampStart = ClassUtility.GetCurrentTimestampInMillisecond();
+                                long taskTimestampStart = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
 
                                 #region Ask mining share votes check result to peers.
@@ -473,7 +473,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                         break;
 
                                     // Max delay of waiting.
-                                    if (taskTimestampStart + (peerNetworkSetting.PeerMaxDelayConnection * 1000) < ClassUtility.GetCurrentTimestampInMillisecond())
+                                    if (taskTimestampStart + (peerNetworkSetting.PeerMaxDelayConnection * 1000) < TaskManager.TaskManager.CurrentTimestampMillisecond)
                                         break;
 
                                     await Task.Delay(100);
@@ -730,7 +730,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 {
                     using (DisposableHashset<string> listOfRankedPeerPublicKeySaved = new DisposableHashset<string>())
                     {
-                        long timestampEnd = ClassUtility.GetCurrentTimestampInMillisecond() + (peerNetworkSetting.PeerMaxDelayAwaitResponse * 1000);
+                        long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (peerNetworkSetting.PeerMaxDelayAwaitResponse * 1000);
                         int totalTaskDone = 0;
                         int totalResponseOk = 0;
 
@@ -869,7 +869,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                     break;
 
                                 // Timeout reach.
-                                if (timestampEnd < ClassUtility.GetCurrentTimestampInMillisecond())
+                                if (timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond)
                                     break;
 
                                 if (onlyOneAgree)

@@ -33,7 +33,7 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
         public static ClassWalletGeneratorObject GenerateWallet(string baseWords, bool fastGenerator = false)
         {
 #if DEBUG
-            long timestampStart = ClassUtility.GetCurrentTimestampInMillisecond();
+            long timestampStart = TaskManager.TaskManager.CurrentTimestampMillisecond;
 #endif
             ClassWalletGeneratorObject walletObject;
 
@@ -50,7 +50,7 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
                 WalletPrivateKey = privateKeyWallet
             };
 
-            Debug.WriteLine("Amount of time spend for generate the whole wallet: " + (ClassUtility.GetCurrentTimestampInMillisecond() - timestampStart) + " ms.");
+            Debug.WriteLine("Amount of time spend for generate the whole wallet: " + (TaskManager.TaskManager.CurrentTimestampMillisecond - timestampStart) + " ms.");
 
             return walletObject;
 #else

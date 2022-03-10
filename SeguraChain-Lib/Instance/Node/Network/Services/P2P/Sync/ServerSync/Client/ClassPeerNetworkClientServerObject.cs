@@ -1769,10 +1769,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                                                     if (!exceptionOnSending)
                                                                     {
-                                                                        long timestampStartWaitingResponse = ClassUtility.GetCurrentTimestampInMillisecond();
+                                                                        long timestampStartWaitingResponse = TaskManager.TaskManager.CurrentTimestampMillisecond;
                                                                         while (_onWaitingMemPoolTransactionConfirmationReceived)
                                                                         {
-                                                                            if (timestampStartWaitingResponse + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000) < ClassUtility.GetCurrentTimestampInMillisecond())
+                                                                            if (timestampStartWaitingResponse + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000) < TaskManager.TaskManager.CurrentTimestampMillisecond)
                                                                                 break;
 
                                                                             try
@@ -1824,10 +1824,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                                             if (!exceptionOnSending)
                                                             {
-                                                                long timestampStartWaitingResponse = ClassUtility.GetCurrentTimestampInMillisecond();
+                                                                long timestampStartWaitingResponse = TaskManager.TaskManager.CurrentTimestampMillisecond;
                                                                 while (_onWaitingMemPoolTransactionConfirmationReceived)
                                                                 {
-                                                                    if (timestampStartWaitingResponse + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000) < ClassUtility.GetCurrentTimestampInMillisecond())
+                                                                    if (timestampStartWaitingResponse + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000) < TaskManager.TaskManager.CurrentTimestampMillisecond)
                                                                         break;
 
                                                                     try

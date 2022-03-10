@@ -750,7 +750,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                                                 _ioStructureObjectsDictionary[blockHeight].BlockObject.BlockTransactions.Add(transactionHash, listBlockTransaction[i]);
 
                                             _ioStructureObjectsDictionary[blockHeight].BlockObject.BlockIsUpdated = true;
-                                            _ioStructureObjectsDictionary[blockHeight].BlockObject.BlockLastChangeTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                                            _ioStructureObjectsDictionary[blockHeight].BlockObject.BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
                                             result = true;
                                         }
                                     }
@@ -767,7 +767,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                                                 blockObject.BlockTransactions.Add(transactionHash, listBlockTransaction[i]);
 
                                             blockObject.BlockIsUpdated = true;
-                                            blockObject.BlockLastChangeTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                                            blockObject.BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
                                             // Update the io cache file and remove the data updated from the active memory
                                             await InsertInActiveMemory(blockObject, keepAlive, false, cancellationIoCache);
@@ -971,7 +971,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
                     #region Sort data to cache, sort data to keep in active memory and sort data to delete forever.
 
-                    long timestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                    long timestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
                     foreach (long ioBlockHeight in _ioStructureObjectsDictionary.Keys)
                     {
