@@ -547,7 +547,7 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Database
                                         }
                                     }
 
-                                    foreach(var walletFileName in walletFileOpened)
+                                    foreach (var walletFileName in walletFileOpened)
                                         DictionaryWalletData[walletFileName].WalletOnSync = false;
 
                                     cancellationLinked.Cancel();
@@ -561,10 +561,8 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Database
                         finally
                         {
                             if (useSemaphore)
-                            {
-                                if (_semaphoreGetWalletFileData.CurrentCount == 0)
-                                    _semaphoreGetWalletFileData.Release();
-                            }
+                                _semaphoreGetWalletFileData.Release();
+
                         }
 
                         try
@@ -581,10 +579,8 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Database
             catch
             {
                 if (useSemaphore)
-                {
-                    if (_semaphoreGetWalletFileData.CurrentCount == 0)
-                        _semaphoreGetWalletFileData.Release();
-                }
+                    _semaphoreGetWalletFileData.Release();
+
             }
         }
 
