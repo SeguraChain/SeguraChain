@@ -156,7 +156,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                 await _dictionaryCacheIoIndexObject[ioFileName].PurgeIoBlockDataMemory(false, cancellation, 0, false);
                                 totalTaskDone++;
 
-                            }), 0, cancellation);
+                            }), 0, cancellation, null);
                         }
                         catch
                         {
@@ -225,7 +225,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                     File.Delete(ioFilePath);
                                     totalTaskDone++;
 
-                                }), 0, cancellation);
+                                }), 0, cancellation, null);
                             }
                             catch
                             {
@@ -499,7 +499,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                         }
 
                                         totalTaskDone++;
-                                    }), 0, cancellation);
+                                    }), 0, cancellation, null);
                                 }
                                 catch
                                 {
@@ -689,7 +689,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                             result = false;
 
                                         totalTaskDone++;
-                                    }), 0, cancellation);
+                                    }), 0, cancellation, null);
                                 }
                                 catch
                                 {
@@ -926,7 +926,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                                 totalTaskDone++;
                                             }
 
-                                        }), 0, cancellation);
+                                        }), 0, cancellation, null);
                                     }
                                     catch
                                     {

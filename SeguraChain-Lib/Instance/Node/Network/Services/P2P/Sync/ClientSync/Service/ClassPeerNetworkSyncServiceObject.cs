@@ -311,7 +311,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                             }
 
                                             totalTaskComplete++;
-                                        }), timestampEnd, cancellationTokenSourceTaskSync);
+                                        }), timestampEnd, cancellationTokenSourceTaskSync, null);
                                     }
                                     catch
                                     {
@@ -430,11 +430,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                         }
                                         catch
                                         {
-                                        // Ignored.
-                                    }
+                                            // Ignored.
+                                        }
 
                                         totalTaskComplete++;
-                                    }), timestampEnd, cancellationTokenSourceTaskSync);
+                                    }), timestampEnd, cancellationTokenSourceTaskSync, null);
                                 }
                                 catch
                                 {
@@ -542,7 +542,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                     }
 
-                }), 0, _cancellationTokenServiceSync);
+                }), 0, _cancellationTokenServiceSync, null);
             }
             catch
             {
@@ -593,7 +593,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                     }
 
-                }), 0, _cancellationTokenServiceSync);
+                }), 0, _cancellationTokenServiceSync, null);
             }
             catch
             {
@@ -713,7 +713,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
 
                     }
-                }), 0, _cancellationTokenServiceSync);
+
+                }), 0, _cancellationTokenServiceSync, null);
             }
             catch
             {
@@ -917,7 +918,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         }
                     }
 
-                }), 0, _cancellationTokenServiceSync);
+                }), 0, _cancellationTokenServiceSync, null);
             }
             catch
             {
@@ -1060,7 +1061,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                     }
 
-                }), 0, _cancellationTokenServiceSync);
+                }), 0, _cancellationTokenServiceSync, null);
             }
             catch
             {
@@ -2583,7 +2584,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                         totalTaskDone++;
 
-                                    }), timestampEnd, cancellationTokenSourceTaskSync);
+                                    }), timestampEnd, cancellationTokenSourceTaskSync, null);
 
                                 }
 

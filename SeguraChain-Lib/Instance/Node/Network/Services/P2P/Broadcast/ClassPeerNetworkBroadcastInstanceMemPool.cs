@@ -217,7 +217,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         await Task.Delay(1000, _cancellation.Token);
                     }
 
-                }), 0, _cancellation);
+                }), 0, _cancellation, null);
             }
             catch
             {
@@ -621,7 +621,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 #endif
                             }
 
-                    }), timestampEnd, cancellationReceiveBroadcastResponsePacket);
+                    }), timestampEnd, cancellationReceiveBroadcastResponsePacket, _peerSocketClient);
 
 
 
@@ -759,7 +759,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         IsAlive = false;
                     }
 
-                }), 0, _peerCancellationToken);
+                }), 0, _peerCancellationToken, _peerSocketClient);
             }
 
             /// <summary>
@@ -931,7 +931,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         IsAlive = false;
                     }
 
-                }), 0, _peerCancellationToken);
+                }), 0, _peerCancellationToken, _peerSocketClient);
             }
 
             /// <summary>
@@ -1038,7 +1038,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         IsAlive = false;
                     }
 
-                }), 0,  _peerCancellationToken);
+                }), 0,  _peerCancellationToken, _peerSocketClient);
             }
 
             /// <summary>
@@ -1050,6 +1050,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 {
                     TaskManager.TaskManager.InsertTask(new Action(async () =>
                     {
+
                         while (IsAlive)
                         {
                             try
@@ -1070,7 +1071,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                 break;
                             }
                         }
-                    }), 0, _peerCheckConnectionCancellationToken);
+
+                    }), 0, _peerCheckConnectionCancellationToken, _peerSocketClient);
                 }
                 catch
                 {
@@ -1189,7 +1191,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                             }
 
                             taskComplete = true;
-                        }), timestampEnd, cancellationReceiveBlockListPacket);
+                        }), timestampEnd, cancellationReceiveBlockListPacket, _peerSocketClient);
 
                     }
                     catch
@@ -1434,7 +1436,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                         // Ignored, the socket can be closed.
                                     }
 
-                                }), timestampEnd, cancellationReceiveTransactionPacket);
+                                }), timestampEnd, cancellationReceiveTransactionPacket, _peerSocketClient);
                             }
                             catch
                             {
@@ -1605,7 +1607,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                             }
 
                             taskDone = true;
-                        }), timestampEnd, cancellationReceiveMemPoolTransactionVote);
+                        }), timestampEnd, cancellationReceiveMemPoolTransactionVote, _peerSocketClient);
                     }
                     catch
                     {

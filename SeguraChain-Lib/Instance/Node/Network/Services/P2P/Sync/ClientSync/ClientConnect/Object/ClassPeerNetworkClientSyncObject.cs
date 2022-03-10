@@ -249,7 +249,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                         }
                     }
 
-                }), timestampEnd, _peerCancellationTokenDoConnection);
+                }), timestampEnd, _peerCancellationTokenDoConnection, _peerSocketClient);
             }
             catch
             {
@@ -516,7 +516,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                             PeerConnectStatus = false;
                     }
 
-                }), 0, _peerCancellationTokenTaskListenPeerPacketResponse);
+                }), 0, _peerCancellationTokenTaskListenPeerPacketResponse, _peerSocketClient);
             }
             catch
             {
@@ -608,7 +608,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                         }
                     }
 
-                }), 0, _peerCancellationTokenTaskSendPeerPacketKeepAlive);
+                }), 0, _peerCancellationTokenTaskSendPeerPacketKeepAlive, _peerSocketClient);
             }
         }
 

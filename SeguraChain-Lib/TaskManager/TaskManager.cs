@@ -3,6 +3,7 @@ using SeguraChain_Lib.TaskManager.Object;
 using SeguraChain_Lib.Utility;
 using System;
 using System.Collections.Generic;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -44,11 +45,11 @@ namespace SeguraChain_Lib.TaskManager
 
                                             if (
 #if NET5_0_OR_GREATER
-                                        _taskCollection[i].Task.IsCompletedSuccessfully
+                                                _taskCollection[i].Task.IsCompletedSuccessfully
 #else
-                                        _taskCollection[i].Task.IsCompleted
+                                                _taskCollection[i].Task.IsCompleted
 #endif
-                                        || _taskCollection[i].Task.Status == TaskStatus.Canceled || _taskCollection[i].Task.Status == TaskStatus.Faulted ||
+                                                || _taskCollection[i].Task.Status == TaskStatus.Canceled || _taskCollection[i].Task.Status == TaskStatus.Faulted ||
                                                 _taskCollection[i].Task.IsCanceled || _taskCollection[i].Task.IsFaulted)
                                             {
                                                 doDispose = true;
@@ -61,6 +62,7 @@ namespace SeguraChain_Lib.TaskManager
 
                                             if (doDispose)
                                             {
+                                                ClassUtility.CloseSocket(_taskCollection[i].Socket);
                                                 _taskCollection[i].Task.Dispose();
                                                 _taskCollection[i].Disposed = true;
                                                 listTaskToRemove.Add(i);
@@ -106,7 +108,7 @@ namespace SeguraChain_Lib.TaskManager
         /// <param name="action"></param>
         /// <param name="timestampEnd"></param>
         /// <param name="cancellation"></param>
-        public static void InsertTask(Action action, long timestampEnd, CancellationTokenSource cancellation)
+        public static void InsertTask(Action action, long timestampEnd, CancellationTokenSource cancellation, Socket socket = null)
         {
             bool useSemaphore = false;
 
@@ -120,6 +122,7 @@ namespace SeguraChain_Lib.TaskManager
 
                     _taskCollection.Add(new ClassTaskObject()
                     {
+                        Socket = socket,
                         TimestampEnd = timestampEnd,
                         Task = Task.Factory.StartNew(action, CancellationTokenSource.CreateLinkedTokenSource(_cancelTaskManager.Token,
                         cancellation != null ?

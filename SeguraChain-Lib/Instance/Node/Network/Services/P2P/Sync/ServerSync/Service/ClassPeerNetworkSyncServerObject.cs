@@ -105,7 +105,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     {
                         try
                         {
-                            await _tcpListenerPeer.AcceptTcpClientAsync().ContinueWith(async clientTask =>
+                            await _tcpListenerPeer.AcceptSocketAsync().ContinueWith(async clientTask =>
                             {
                                 int countTaskRemoved = 0;
 
@@ -116,7 +116,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                     try
                                     {
 
-                                        TcpClient clientPeerTcp = await clientTask;
+                                        Socket clientPeerTcp = await clientTask;
 
                                         if (clientPeerTcp != null)
                                         {
@@ -130,7 +130,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                             TaskManager.TaskManager.InsertTask(new Action(async () =>
                                             {
 
-                                                string clientIp = ((IPEndPoint)(clientPeerTcp.Client.RemoteEndPoint)).Address.ToString();
+                                                string clientIp = ((IPEndPoint)(clientPeerTcp.RemoteEndPoint)).Address.ToString();
 
                                                 switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
                                                 {
@@ -141,8 +141,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                                         break;
                                                 }
 
-                                                ClassUtility.CloseTcpClient(clientPeerTcp);
-                                            }), 0, _cancellationTokenSourcePeerServer);
+                                                ClassUtility.CloseSocket(clientPeerTcp);
+                                            }), 0, _cancellationTokenSourcePeerServer, null);
 
 
 
@@ -167,7 +167,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                             // Ignored, catch the exception once the task is cancelled.
                         }
                     }
-                }), 0, _cancellationTokenSourcePeerServer);
+                }), 0, _cancellationTokenSourcePeerServer, null);
             }
             catch
             {
@@ -217,7 +217,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
         /// <param name="clientPeerTcp">The tcp client object of the incoming connection.</param>
         /// <param name="peerIpOpenNatServer">The public ip of the server.</param>
         /// <returns>Return the handling status of the incoming connection.</returns>
-        private async Task<ClassPeerNetworkServerHandleConnectionEnum> HandleIncomingConnection(string clientIp, TcpClient clientPeerTcp, string peerIpOpenNatServer)
+        private async Task<ClassPeerNetworkServerHandleConnectionEnum> HandleIncomingConnection(string clientIp, Socket clientPeerTcp, string peerIpOpenNatServer)
         {
             try
             {

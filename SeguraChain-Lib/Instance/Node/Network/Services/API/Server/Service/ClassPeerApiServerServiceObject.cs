@@ -111,17 +111,17 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                             while (!_tcpListenerPeerApi.Pending())
                                 await Task.Delay(1, _cancellationTokenSourcePeerApiServer.Token);
 
-                            await _tcpListenerPeerApi.AcceptTcpClientAsync().ContinueWith(async clientTask =>
+                            await _tcpListenerPeerApi.AcceptSocketAsync().ContinueWith(async clientTask =>
                             {
                                 try
                                 {
-                                    TcpClient clientApiTcp = await clientTask;
+                                    Socket clientApiTcp = await clientTask;
 
                                     if (clientApiTcp != null)
                                     {
                                         TaskManager.TaskManager.InsertTask(new Action(async() =>
                                         {
-                                            string clientIp = ((IPEndPoint)(clientApiTcp.Client.RemoteEndPoint)).Address.ToString();
+                                            string clientIp = ((IPEndPoint)(clientApiTcp.RemoteEndPoint)).Address.ToString();
 
                                             switch (await HandleIncomingConnection(clientIp, clientApiTcp))
                                             {
@@ -132,7 +132,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                                                         ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
                                                     break;
                                             }
-                                            CloseTcpClient(clientApiTcp);
+
+                                            ClassUtility.CloseSocket(clientApiTcp);
 
                                         }), 0, _cancellationTokenSourcePeerApiServer);
                                     }
@@ -197,7 +198,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
         /// </summary>
         /// <param name="clientIp"></param>
         /// <param name="clientApiTcp"></param>
-        private async Task<ClassPeerApiHandleIncomingConnectionEnum> HandleIncomingConnection(string clientIp, TcpClient clientApiTcp)
+        private async Task<ClassPeerApiHandleIncomingConnectionEnum> HandleIncomingConnection(string clientIp, Socket clientApiTcp)
         {
             try
             {
@@ -307,37 +308,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
 
             return ClassPeerApiHandleIncomingConnectionEnum.VALID_HANDLE;
         }
-
-        /// <summary>
-        /// Close an incoming tcp client connection.
-        /// </summary>
-        /// <param name="tcpClient"></param>
-        private void CloseTcpClient(TcpClient tcpClient)
-        {
-            try
-            {
-                if (tcpClient?.Client != null)
-                {
-                    if (tcpClient.Client.Connected)
-                    {
-                        try
-                        {
-                            tcpClient.Client.Shutdown(SocketShutdown.Both);
-                        }
-                        finally
-                        {
-                            tcpClient?.Close();
-                            tcpClient?.Dispose();
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                // Ignored.
-            }
-        }
-
 
         #endregion
 

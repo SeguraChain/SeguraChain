@@ -43,7 +43,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
     /// </summary>
     public class ClassPeerNetworkClientServerObject : IDisposable
     {
-        private TcpClient _tcpClientPeer;
+        private Socket _clientSocket;
         public CancellationTokenSource CancellationTokenHandlePeerConnection;
         private CancellationTokenSource _cancellationTokenClientCheckConnectionPeer;
         private CancellationTokenSource _cancellationTokenAccessData;
@@ -78,18 +78,18 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="tcpClientPeer">The tcp client object.</param>
+        /// <param name="clientSocket">The tcp client object.</param>
         /// <param name="cancellationTokenHandlePeerConnection">The cancellation token who permit to cancel the handling of the incoming connection.</param>
         /// <param name="peerClientIp">The peer client IP.</param>
         /// <param name="peerServerOpenNatIp">The public ip of the server.</param>
         /// <param name="peerNetworkSettingObject"></param>
         /// <param name="peerFirewallSettingObject"></param>
-        public ClassPeerNetworkClientServerObject(TcpClient tcpClientPeer, CancellationTokenSource cancellationTokenHandlePeerConnection, string peerClientIp, string peerServerOpenNatIp, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject)
+        public ClassPeerNetworkClientServerObject(Socket clientSocket, CancellationTokenSource cancellationTokenHandlePeerConnection, string peerClientIp, string peerServerOpenNatIp, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject)
         {
             ClientPeerConnectionStatus = true;
             ClientPeerLastPacketReceived = ClassUtility.GetCurrentTimestampInSecond();
             CancellationTokenHandlePeerConnection = cancellationTokenHandlePeerConnection;
-            _tcpClientPeer = tcpClientPeer;
+            _clientSocket = clientSocket;
             _peerNetworkSettingObject = peerNetworkSettingObject;
             _peerFirewallSettingObject = peerFirewallSettingObject;
             _peerClientIp = peerClientIp;
@@ -158,7 +158,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                         }
                     }
 
-                    if (!ClassUtility.TcpClientIsConnected(_tcpClientPeer))
+                    if (!ClassUtility.SocketIsConnected(_clientSocket))
                         break;
 
                     if (_peerFirewallSettingObject.PeerEnableFirewallLink)
@@ -220,7 +220,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 }
             }
 
-            ClassUtility.CloseTcpClient(_tcpClientPeer);
+            ClassUtility.CloseSocket(_clientSocket);
 
         }
 
@@ -238,7 +238,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             try
             {
                 // Launch a task for check the peer connection.
-                TaskManager.TaskManager.InsertTask(new Action(async () => await CheckPeerClientAsync()), 0, _cancellationTokenClientCheckConnectionPeer);
+                TaskManager.TaskManager.InsertTask(new Action(async () => await CheckPeerClientAsync()), 0, _cancellationTokenClientCheckConnectionPeer, _clientSocket);
             }
             catch
             {
@@ -255,7 +255,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                 try
                 {
-                    using (NetworkStream networkStream = new NetworkStream(_tcpClientPeer.Client))
+                    using (NetworkStream networkStream = new NetworkStream(_clientSocket))
                     {
                         while (ClientPeerConnectionStatus && !_clientAskDisconnection)
                         {
@@ -1558,7 +1558,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     }
 
                                     if (listTransactionToBroadcast.Count > 0)
-                                        TaskManager.TaskManager.InsertTask(new Action(async () => await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(_peerServerOpenNatIp, _peerServerOpenNatIp, _peerClientIp, listTransactionToBroadcast.GetList, _peerNetworkSettingObject, _peerFirewallSettingObject, new CancellationTokenSource(), false)), 0, null);
+                                        TaskManager.TaskManager.InsertTask(new Action(async () => await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(_peerServerOpenNatIp, _peerServerOpenNatIp, _peerClientIp, listTransactionToBroadcast.GetList, _peerNetworkSettingObject, _peerFirewallSettingObject, new CancellationTokenSource(), false)), 0, null, null);
 
                                     ClassPeerPacketSendMemPoolTransactionVote packetSendMemPoolTransactionVote = new ClassPeerPacketSendMemPoolTransactionVote()
                                     {
@@ -1870,7 +1870,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                             _onSendingMemPoolTransaction = false;
 
-                                        }), 0, _cancellationTokenAccessData);
+                                        }), 0, _cancellationTokenAccessData, _clientSocket);
 
                                     }
                                     catch
@@ -1960,7 +1960,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                         packetSendObject.PacketSignature = ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].GetClientCryptoStreamObject.DoSignatureProcess(packetSendObject.PacketHash, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPrivateKey);
                 }
 
-                using (NetworkStream networkStream = new NetworkStream(_tcpClientPeer.Client))
+                using (NetworkStream networkStream = new NetworkStream(_clientSocket))
                 {
                     if (await networkStream.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(Convert.ToBase64String(packetSendObject.GetPacketData()) + ClassPeerPacketSetting.PacketPeerSplitSeperator), _cancellationTokenAccessData, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize))
                     {

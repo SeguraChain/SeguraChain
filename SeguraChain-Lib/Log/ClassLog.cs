@@ -463,7 +463,8 @@ namespace SeguraChain_Lib.Log
                             if (locked)
                                 Monitor.Exit(_logListOnCollect[logLevelType]);
                         }
-                    }, 0, _cancellationTokenSourceLogWriter);
+
+                    }, 0, _cancellationTokenSourceLogWriter, null);
                 }
             }
         }

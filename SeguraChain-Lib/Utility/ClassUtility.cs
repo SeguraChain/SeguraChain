@@ -750,7 +750,7 @@ namespace SeguraChain_Lib.Utility
         {
             try
             {
-                return !socket.Poll(1000, SelectMode.SelectWrite) || !socket.Connected ? false : true;
+                return !((socket.Poll(10, SelectMode.SelectRead) && (socket.Available == 0)) || !socket.Connected);
             }
             catch
             {

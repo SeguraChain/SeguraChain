@@ -3374,7 +3374,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.GlobalTaskManageMemoryInterval);
                     }
 
-                }), 0, _cancellationTokenMemoryManagement);
+                }), 0, _cancellationTokenMemoryManagement, null);
             }
             catch
             {

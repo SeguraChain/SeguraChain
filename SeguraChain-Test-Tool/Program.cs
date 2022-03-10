@@ -43,7 +43,7 @@ namespace SeguraChain_Test_Tool
                 Console.WriteLine((int)EnumListTestMenu.TEST_TRANSACTION_TRANSFER_BUILDER + " - Test Transaction Transfer build + test both transaction signatures.");
                 Console.WriteLine((int)EnumListTestMenu.TEST_PEER_API_REQUEST + " - Test to make a request and send it to a peer api server.");
                 Console.WriteLine((int)EnumListTestMenu.TEST_GENERATE_FAKE_BLOCK + " - Test to make fake blocks. Remember, just the first block is valid, others generated manually with this function are not accepted because they are not mined propertly.");
-                Console.WriteLine((int)EnumListTestMenu.BUILD_BLOCKCHAIN +" - Build your own blockchain. Remember the block reward target the dev wallet address.");
+                Console.WriteLine((int)EnumListTestMenu.BUILD_BLOCKCHAIN +" - Build your own blockchain. Remember the genesis block reward target the dev wallet address.");
                 Console.WriteLine((int)EnumListTestMenu.EXIT + " - Exit.");
                 string choose = Console.ReadLine();
 
@@ -708,7 +708,7 @@ namespace SeguraChain_Test_Tool
 
         #endregion
 
-        #region Function dedicated to the genesis block maker.
+        #region Function dedicated to build a blockchain
 
         /// <summary>
         /// Test to generate the genesis block.
