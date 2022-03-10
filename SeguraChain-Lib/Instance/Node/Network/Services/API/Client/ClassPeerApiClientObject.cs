@@ -46,7 +46,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
         public bool PacketResponseSent;
         private bool _validPostRequest;
         public bool OnHandlePacket;
-        private Task _taskCheckConnection;
 
         #region Dispose functions
 
@@ -108,14 +107,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
         public async Task<bool> HandleApiClientConnection()
         {
 
-            try
-            {
-                _taskCheckConnection = Task.Factory.StartNew(async () => await CheckApiClientConnection(), _cancellationTokenApiClientCheck.Token);
-            }
-            catch
-            {
-                // Ignored.
-            }
+
+            TaskManager.TaskManager.InsertTask(new Action(async () => await CheckApiClientConnection()), 0, _cancellationTokenApiClientCheck);
+       
 
             try
             {
@@ -346,18 +340,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                         _cancellationTokenApiClientCheck.Cancel();
                         _cancellationTokenApiClientCheck.Dispose();
                     }
-                }
-
-                try
-                {
-                    if (_taskCheckConnection.IsCompleted ||
-                        _taskCheckConnection?.Status == TaskStatus.Faulted ||
-                        _taskCheckConnection?.Status == TaskStatus.Canceled)
-                        _taskCheckConnection?.Dispose();
-                }
-                catch
-                {
-                    // Ignored.
                 }
             }
 

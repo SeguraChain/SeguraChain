@@ -209,68 +209,50 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
         /// <param name="peerFirewallSettingObject"></param>
         public static void BroadcastMiningShareAsync(string peerServerIp, string peerOpenNatServerIp, string peerToExcept, ClassMiningPoWaCShareObject miningPowShareObject, ClassPeerNetworkSettingObject peerNetworkSetting, ClassPeerFirewallSettingObject peerFirewallSettingObject)
         {
-            Task.Factory.StartNew(async () =>
+            TaskManager.TaskManager.InsertTask(new Action(async () =>
             {
-                var peerListTarget = GetRandomListPeerTargetAlive(peerServerIp, peerOpenNatServerIp, peerToExcept, null, peerNetworkSetting, peerFirewallSettingObject, new CancellationTokenSource());
 
-                using (DisposableList<Task> listTask = new DisposableList<Task>())
+                foreach (var peerValuePair in GetRandomListPeerTargetAlive(peerServerIp, peerOpenNatServerIp, peerToExcept, null, peerNetworkSetting, peerFirewallSettingObject, new CancellationTokenSource()))
                 {
-
-                    foreach (var peerValuePair in peerListTarget)
+                    try
                     {
-                        try
+                        TaskManager.TaskManager.InsertTask(new Action(async () =>
                         {
-                            listTask.Add(Task.Factory.StartNew(async () =>
+                            string peerIpTarget = peerValuePair.Value.PeerIpTarget;
+                            string peerUniqueIdTarget = peerValuePair.Value.PeerIpTarget;
+
+                            ClassPeerPacketSendMiningShareVote peerPacketSendMiningShareVote = null;
+
+                            while (peerPacketSendMiningShareVote == null)
                             {
-                                string peerIpTarget = peerValuePair.Value.PeerIpTarget;
-                                string peerUniqueIdTarget = peerValuePair.Value.PeerIpTarget;
+                                if (!ClassPeerCheckManager.CheckPeerClientStatus(peerIpTarget, peerUniqueIdTarget, false, peerNetworkSetting, peerFirewallSettingObject))
+                                    break;
 
-                                ClassPeerPacketSendMiningShareVote peerPacketSendMiningShareVote = null;
-
-                                while (peerPacketSendMiningShareVote == null)
+                                peerPacketSendMiningShareVote = await ClassPeerNetworkBroadcastShortcutFunction.SendBroadcastPacket<ClassPeerPacketSendAskMiningShareVote, ClassPeerPacketSendMiningShareVote>(
+                                                                                                        peerValuePair.Value.PeerNetworkClientSyncObject,
+                                                                                                        ClassPeerEnumPacketSend.ASK_MINING_SHARE_VOTE,
+                                                                                                        new ClassPeerPacketSendAskMiningShareVote()
+                                                                                                        {
+                                                                                                            BlockHeight = miningPowShareObject.BlockHeight,
+                                                                                                            MiningPowShareObject = miningPowShareObject,
+                                                                                                            PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                                                                                                        }, peerIpTarget, peerUniqueIdTarget, peerNetworkSetting, ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE, new CancellationTokenSource());
+                                if (peerPacketSendMiningShareVote != null)
                                 {
-                                    if (!ClassPeerCheckManager.CheckPeerClientStatus(peerIpTarget, peerUniqueIdTarget, false, peerNetworkSetting, peerFirewallSettingObject))
-                                        break;
-
-                                    peerPacketSendMiningShareVote = await ClassPeerNetworkBroadcastShortcutFunction.SendBroadcastPacket<ClassPeerPacketSendAskMiningShareVote, ClassPeerPacketSendMiningShareVote>(
-                                                                                                            peerValuePair.Value.PeerNetworkClientSyncObject,
-                                                                                                            ClassPeerEnumPacketSend.ASK_MINING_SHARE_VOTE,
-                                                                                                            new ClassPeerPacketSendAskMiningShareVote()
-                                                                                                            {
-                                                                                                                BlockHeight = miningPowShareObject.BlockHeight,
-                                                                                                                MiningPowShareObject = miningPowShareObject,
-                                                                                                                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
-                                                                                                            }, peerIpTarget, peerUniqueIdTarget, peerNetworkSetting, ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE, new CancellationTokenSource());
-                                    if (peerPacketSendMiningShareVote != null)
-                                    {
-                                        peerValuePair.Value.PeerNetworkClientSyncObject.Dispose();
-                                        break;
-                                    }
-
-                                    peerValuePair.Value.PeerNetworkClientSyncObject.DisconnectFromTarget();
+                                    peerValuePair.Value.PeerNetworkClientSyncObject.Dispose();
+                                    break;
                                 }
-                            }));
-                        }
-                        catch
-                        {
-                            // Ignored, catch the exception once the task is cancelled.
-                        }
+
+                                peerValuePair.Value.PeerNetworkClientSyncObject.DisconnectFromTarget();
+                            }
+                        }), 0, null);
                     }
-
-                    int totalTask = listTask.Count;
-
-
-                    while (true)
+                    catch
                     {
-                        int totalTaskComplete = 0;
-
-                        if (totalTask <= totalTaskComplete)
-                            break;
-
-                        await Task.Delay(100);
+                        // Ignored, catch the exception once the task is cancelled.
                     }
                 }
-            }).ConfigureAwait(false);
+            }), 0, null);
         }
 
         /// <summary>
@@ -320,207 +302,120 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         {
                             using (CancellationTokenSource cancellationTokenSourceMiningShareVote = cancellation != null ? CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token) : new CancellationTokenSource())
                             {
-                                using (DisposableList<Task> listTask = new DisposableList<Task>())
+
+                                long taskTimestampStart = ClassUtility.GetCurrentTimestampInMillisecond();
+
+
+                                #region Ask mining share votes check result to peers.
+
+                                foreach (var peerKey in peerListTarget.GetList.Keys)
                                 {
-                                    long taskTimestampStart = ClassUtility.GetCurrentTimestampInMillisecond();
-
-
-                                    #region Ask mining share votes check result to peers.
-
-                                    foreach (var peerKey in peerListTarget.GetList.Keys)
+                                    try
                                     {
-                                        try
+
+                                        TaskManager.TaskManager.InsertTask(new Action(async () =>
                                         {
+                                            bool invalidPacket = false;
+                                            string peerIpTarget = peerListTarget[peerKey].PeerIpTarget;
+                                            string peerUniqueIdTarget = peerListTarget[peerKey].PeerUniqueIdTarget;
 
-                                            listTask.Add(Task.Factory.StartNew(async () =>
+                                            try
                                             {
-                                                bool invalidPacket = false;
-                                                string peerIpTarget = peerListTarget[peerKey].PeerIpTarget;
-                                                string peerUniqueIdTarget = peerListTarget[peerKey].PeerUniqueIdTarget;
 
-                                                try
-                                                {
-
-                                                    ClassPeerPacketSendMiningShareVote peerPacketSendMiningShareVote = await ClassPeerNetworkBroadcastShortcutFunction.SendBroadcastPacket<ClassPeerPacketSendAskMiningShareVote, ClassPeerPacketSendMiningShareVote>(
-                                                        peerListTarget[peerKey].PeerNetworkClientSyncObject,
-                                                        ClassPeerEnumPacketSend.ASK_MINING_SHARE_VOTE,
-                                                        new ClassPeerPacketSendAskMiningShareVote()
-                                                        {
-                                                            BlockHeight = miningPowShareObject.BlockHeight,
-                                                            MiningPowShareObject = miningPowShareObject,
-                                                            PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
-                                                        }, peerIpTarget, peerUniqueIdTarget, peerNetworkSetting, ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE, cancellationTokenSourceMiningShareVote);
-
-
-                                                    if (peerPacketSendMiningShareVote == null)
-                                                        ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIpTarget, peerUniqueIdTarget, peerNetworkSetting, peerFirewallSettingObject);
-                                                    else
+                                                ClassPeerPacketSendMiningShareVote peerPacketSendMiningShareVote = await ClassPeerNetworkBroadcastShortcutFunction.SendBroadcastPacket<ClassPeerPacketSendAskMiningShareVote, ClassPeerPacketSendMiningShareVote>(
+                                                    peerListTarget[peerKey].PeerNetworkClientSyncObject,
+                                                    ClassPeerEnumPacketSend.ASK_MINING_SHARE_VOTE,
+                                                    new ClassPeerPacketSendAskMiningShareVote()
                                                     {
-                                                        if (ClassUtility.CheckPacketTimestamp(peerPacketSendMiningShareVote.PacketTimestamp, peerNetworkSetting.PeerMaxTimestampDelayPacket, peerNetworkSetting.PeerMaxEarlierPacketDelay))
-                                                        {
-                                                            ClassPeerCheckManager.InputPeerClientValidPacket(peerIpTarget, peerUniqueIdTarget, peerNetworkSetting);
+                                                        BlockHeight = miningPowShareObject.BlockHeight,
+                                                        MiningPowShareObject = miningPowShareObject,
+                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                                                    }, peerIpTarget, peerUniqueIdTarget, peerNetworkSetting, ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE, cancellationTokenSourceMiningShareVote);
 
-                                                            if (peerPacketSendMiningShareVote.BlockHeight == miningPowShareObject.BlockHeight)
+
+                                                if (peerPacketSendMiningShareVote == null)
+                                                    ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIpTarget, peerUniqueIdTarget, peerNetworkSetting, peerFirewallSettingObject);
+                                                else
+                                                {
+                                                    if (ClassUtility.CheckPacketTimestamp(peerPacketSendMiningShareVote.PacketTimestamp, peerNetworkSetting.PeerMaxTimestampDelayPacket, peerNetworkSetting.PeerMaxEarlierPacketDelay))
+                                                    {
+                                                        ClassPeerCheckManager.InputPeerClientValidPacket(peerIpTarget, peerUniqueIdTarget, peerNetworkSetting);
+
+                                                        if (peerPacketSendMiningShareVote.BlockHeight == miningPowShareObject.BlockHeight)
+                                                        {
+                                                            bool ignoreVote = false;
+                                                            bool voteStatus = false;
+                                                            switch (peerPacketSendMiningShareVote.VoteStatus)
                                                             {
-                                                                bool ignoreVote = false;
-                                                                bool voteStatus = false;
-                                                                switch (peerPacketSendMiningShareVote.VoteStatus)
-                                                                {
-                                                                    case ClassPeerPacketMiningShareVoteEnum.ACCEPTED:
-                                                                        voteStatus = true;
-                                                                        totalAgree++;
-                                                                        break;
+                                                                case ClassPeerPacketMiningShareVoteEnum.ACCEPTED:
+                                                                    voteStatus = true;
+                                                                    totalAgree++;
+                                                                    break;
                                                                 // Already set to false.
                                                                 case ClassPeerPacketMiningShareVoteEnum.REFUSED:
-                                                                        break;
-                                                                    case ClassPeerPacketMiningShareVoteEnum.NOT_SYNCED:
-                                                                        ignoreVote = true;
-                                                                        break;
-                                                                    default:
-                                                                        ignoreVote = true;
-                                                                        break;
-                                                                }
-                                                                if (!ignoreVote)
-                                                                {
-                                                                    bool peerRanked = false;
+                                                                    break;
+                                                                case ClassPeerPacketMiningShareVoteEnum.NOT_SYNCED:
+                                                                    ignoreVote = true;
+                                                                    break;
+                                                                default:
+                                                                    ignoreVote = true;
+                                                                    break;
+                                                            }
+                                                            if (!ignoreVote)
+                                                            {
+                                                                bool peerRanked = false;
 
-                                                                    if (peerNetworkSetting.PeerEnableSovereignPeerVote)
+                                                                if (peerNetworkSetting.PeerEnableSovereignPeerVote)
+                                                                {
+                                                                    if (ClassPeerCheckManager.PeerHasSeedRank(peerIpTarget, peerUniqueIdTarget, out string numericPublicKeyOut, out _))
                                                                     {
-                                                                        if (ClassPeerCheckManager.PeerHasSeedRank(peerIpTarget, peerUniqueIdTarget, out string numericPublicKeyOut, out _))
+                                                                        if (!listOfRankedPeerPublicKeySaved.Contains(numericPublicKeyOut))
                                                                         {
-                                                                            if (!listOfRankedPeerPublicKeySaved.Contains(numericPublicKeyOut))
+                                                                            if (ClassPeerCheckManager.CheckPeerSeedNumericPacketSignature(ClassUtility.SerializeData(new ClassPeerPacketSendMiningShareVote()
                                                                             {
-                                                                                if (ClassPeerCheckManager.CheckPeerSeedNumericPacketSignature(ClassUtility.SerializeData(new ClassPeerPacketSendMiningShareVote()
-                                                                                {
-                                                                                    BlockHeight = peerPacketSendMiningShareVote.BlockHeight,
-                                                                                    VoteStatus = peerPacketSendMiningShareVote.VoteStatus,
-                                                                                    PacketTimestamp = peerPacketSendMiningShareVote.PacketTimestamp
-                                                                                }),
-                                                                                peerPacketSendMiningShareVote.PacketNumericHash,
-                                                                                peerPacketSendMiningShareVote.PacketNumericSignature,
-                                                                                numericPublicKeyOut,
-                                                                                cancellationTokenSourceMiningShareVote))
-                                                                                {
+                                                                                BlockHeight = peerPacketSendMiningShareVote.BlockHeight,
+                                                                                VoteStatus = peerPacketSendMiningShareVote.VoteStatus,
+                                                                                PacketTimestamp = peerPacketSendMiningShareVote.PacketTimestamp
+                                                                            }),
+                                                                            peerPacketSendMiningShareVote.PacketNumericHash,
+                                                                            peerPacketSendMiningShareVote.PacketNumericSignature,
+                                                                            numericPublicKeyOut,
+                                                                            cancellationTokenSourceMiningShareVote))
+                                                                            {
                                                                                 // Do not allow multiple seed votes from the same numeric public key.
                                                                                 if (!listOfRankedPeerPublicKeySaved.Contains(numericPublicKeyOut))
-                                                                                    {
-                                                                                        if (listOfRankedPeerPublicKeySaved.Add(numericPublicKeyOut))
-                                                                                            peerRanked = true;
-                                                                                    }
+                                                                                {
+                                                                                    if (listOfRankedPeerPublicKeySaved.Add(numericPublicKeyOut))
+                                                                                        peerRanked = true;
                                                                                 }
                                                                             }
                                                                         }
                                                                     }
-
-
-                                                                    switch (voteStatus)
-                                                                    {
-                                                                        case true:
-                                                                            if (peerRanked)
-                                                                                dictionaryMiningShareVoteSeedPeer[true]++;
-                                                                            else
-                                                                                dictionaryMiningShareVoteNormPeer[true]++;
-                                                                            break;
-                                                                        case false:
-                                                                            if (peerRanked)
-                                                                                dictionaryMiningShareVoteSeedPeer[false]++;
-                                                                            else
-                                                                                dictionaryMiningShareVoteNormPeer[false]++;
-                                                                            break;
-                                                                    }
-
                                                                 }
-                                                                totalResponseOk++;
+
+
+                                                                switch (voteStatus)
+                                                                {
+                                                                    case true:
+                                                                        if (peerRanked)
+                                                                            dictionaryMiningShareVoteSeedPeer[true]++;
+                                                                        else
+                                                                            dictionaryMiningShareVoteNormPeer[true]++;
+                                                                        break;
+                                                                    case false:
+                                                                        if (peerRanked)
+                                                                            dictionaryMiningShareVoteSeedPeer[false]++;
+                                                                        else
+                                                                            dictionaryMiningShareVoteNormPeer[false]++;
+                                                                        break;
+                                                                }
+
                                                             }
+                                                            totalResponseOk++;
                                                         }
                                                     }
-
-                                                    peerListTarget[peerKey].PeerNetworkClientSyncObject.DisconnectFromTarget();
-                                                    peerListTarget[peerKey].PeerNetworkClientSyncObject.Dispose();
                                                 }
-                                                catch
-                                                {
-                                                // Ignored.
-                                            }
 
-                                                totalTaskDone++;
-
-                                                if (invalidPacket)
-                                                    ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIpTarget, peerUniqueIdTarget, peerNetworkSetting, peerFirewallSettingObject);
-
-                                            }, cancellationTokenSourceMiningShareVote.Token));
-
-                                        }
-                                        catch
-                                        {
-                                            // Ignored catch the exception once the taks is cancelled.
-                                        }
-                                    }
-
-                                    #endregion
-
-                                    #region Wait every tasks of votes are done or cancelled.
-
-
-                                    while (totalTaskDone < peerListTarget.Count)
-                                    {
-                                        // If the block is already unlocked pending to wait votes from other peers.
-                                        if (ClassBlockchainDatabase.BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus == ClassBlockEnumStatus.UNLOCKED)
-                                        {
-                                            // That's can happen sometimes when the broadcast of the share to other nodes is very fast and return back the data of the block unlocked to the synced data before to retrieve back every votes done.
-                                            if (ClassMiningPoWaCUtility.ComparePoWaCShare(ClassBlockchainDatabase.BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject, miningPowShareObject))
-                                            {
-                                                ClassLog.WriteLine("Votes from peers ignored, the block seems to be found by the share provided and already available on sync.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
-                                                voteResultStatus = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
-                                            }
-                                            else
-                                            {
-                                                ClassLog.WriteLine("Votes from peers ignored, the block seems to be found by another share or another miner and already available on sync.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
-                                                voteResultStatus = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND;
-                                            }
-
-                                            cancellationTokenSourceMiningShareVote.Cancel();
-
-                                            return new Tuple<ClassBlockEnumMiningShareVoteStatus, bool>(voteResultStatus, true);
-                                        }
-
-
-                                        if (totalResponseOk == peerListTarget.Count || totalTaskDone == peerListTarget.Count)
-                                            break;
-
-                                        if (onlyOneAgree && totalAgree > 0)
-                                            break;
-
-                                        // Max delay of waiting.
-                                        if (taskTimestampStart + (peerNetworkSetting.PeerMaxDelayConnection * 1000) < ClassUtility.GetCurrentTimestampInMillisecond())
-                                            break;
-
-                                        await Task.Delay(100);
-                                    }
-
-                                    #endregion
-
-                                    cancellationTokenSourceMiningShareVote.Cancel();
-
-                                    if (!onlyOneAgree)
-                                    {
-                                        try
-                                        {
-                                            if (!cancellationTokenSourceMiningShareVote.IsCancellationRequested)
-                                                cancellationTokenSourceMiningShareVote.Cancel();
-                                        }
-                                        catch
-                                        {
-                                            // Ignored.  
-                                        }
-
-                                        // Clean up.
-                                        listOfRankedPeerPublicKeySaved.Clear();
-
-                                        foreach (int peerKey in peerListTarget.GetList.Keys)
-                                        {
-                                            try
-                                            {
                                                 peerListTarget[peerKey].PeerNetworkClientSyncObject.DisconnectFromTarget();
                                                 peerListTarget[peerKey].PeerNetworkClientSyncObject.Dispose();
                                             }
@@ -528,10 +423,96 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                             {
                                                 // Ignored.
                                             }
-                                        }
+
+                                            totalTaskDone++;
+
+                                            if (invalidPacket)
+                                                ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIpTarget, peerUniqueIdTarget, peerNetworkSetting, peerFirewallSettingObject);
+
+                                        }), 0, cancellationTokenSourceMiningShareVote);
 
                                     }
+                                    catch
+                                    {
+                                        // Ignored catch the exception once the taks is cancelled.
+                                    }
                                 }
+
+                                #endregion
+
+                                #region Wait every tasks of votes are done or cancelled.
+
+
+                                while (totalTaskDone < peerListTarget.Count)
+                                {
+                                    // If the block is already unlocked pending to wait votes from other peers.
+                                    if (ClassBlockchainDatabase.BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus == ClassBlockEnumStatus.UNLOCKED)
+                                    {
+                                        // That's can happen sometimes when the broadcast of the share to other nodes is very fast and return back the data of the block unlocked to the synced data before to retrieve back every votes done.
+                                        if (ClassMiningPoWaCUtility.ComparePoWaCShare(ClassBlockchainDatabase.BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject, miningPowShareObject))
+                                        {
+                                            ClassLog.WriteLine("Votes from peers ignored, the block seems to be found by the share provided and already available on sync.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
+                                            voteResultStatus = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
+                                        }
+                                        else
+                                        {
+                                            ClassLog.WriteLine("Votes from peers ignored, the block seems to be found by another share or another miner and already available on sync.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
+                                            voteResultStatus = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND;
+                                        }
+
+                                        cancellationTokenSourceMiningShareVote.Cancel();
+
+                                        return new Tuple<ClassBlockEnumMiningShareVoteStatus, bool>(voteResultStatus, true);
+                                    }
+
+
+                                    if (totalResponseOk == peerListTarget.Count || totalTaskDone == peerListTarget.Count)
+                                        break;
+
+                                    if (onlyOneAgree && totalAgree > 0)
+                                        break;
+
+                                    // Max delay of waiting.
+                                    if (taskTimestampStart + (peerNetworkSetting.PeerMaxDelayConnection * 1000) < ClassUtility.GetCurrentTimestampInMillisecond())
+                                        break;
+
+                                    await Task.Delay(100);
+                                }
+
+                                #endregion
+
+                                cancellationTokenSourceMiningShareVote.Cancel();
+
+                                if (!onlyOneAgree)
+                                {
+                                    try
+                                    {
+                                        if (!cancellationTokenSourceMiningShareVote.IsCancellationRequested)
+                                            cancellationTokenSourceMiningShareVote.Cancel();
+                                    }
+                                    catch
+                                    {
+                                        // Ignored.  
+                                    }
+
+                                    // Clean up.
+                                    listOfRankedPeerPublicKeySaved.Clear();
+
+                                    foreach (int peerKey in peerListTarget.GetList.Keys)
+                                    {
+                                        try
+                                        {
+                                            peerListTarget[peerKey].PeerNetworkClientSyncObject.DisconnectFromTarget();
+                                            peerListTarget[peerKey].PeerNetworkClientSyncObject.Dispose();
+                                        }
+                                        catch
+                                        {
+                                            // Ignored.
+                                        }
+                                    }
+
+                                }
+
 
                                 // If the block is already unlocked pending to wait votes from other peers.
                                 if (ClassBlockchainDatabase.BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus == ClassBlockEnumStatus.UNLOCKED)
@@ -747,21 +728,21 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             {
                 using (DisposableDictionary<string, Dictionary<bool, float>> dictionaryMemPoolTxVoteSeedPeer = new DisposableDictionary<string, Dictionary<bool, float>>())
                 {
-                    HashSet<string> listOfRankedPeerPublicKeySaved = new HashSet<string>();
-                    long taskTimestampStart = ClassUtility.GetCurrentTimestampInMillisecond();
-                    int totalTaskDone = 0;
-                    int totalResponseOk = 0;
-
-                    using (CancellationTokenSource cancellationTokenSourceMemPoolTxVote = new CancellationTokenSource())
+                    using (DisposableHashset<string> listOfRankedPeerPublicKeySaved = new DisposableHashset<string>())
                     {
+                        long timestampEnd = ClassUtility.GetCurrentTimestampInMillisecond() + (peerNetworkSetting.PeerMaxDelayAwaitResponse * 1000);
+                        int totalTaskDone = 0;
+                        int totalResponseOk = 0;
 
-                        using (DisposableList<Task> listTask = new DisposableList<Task>())
+                        using (CancellationTokenSource cancellationTokenSourceMemPoolTxVote = new CancellationTokenSource())
                         {
+
+
                             foreach (var peerKey in peerListTarget.Keys)
                             {
                                 try
                                 {
-                                    listTask.Add(Task.Factory.StartNew(async () =>
+                                    TaskManager.TaskManager.InsertTask(new Action(async () =>
                                     {
                                         bool invalidPacket = false;
 
@@ -806,8 +787,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                                 numericPublicKeyOut,
                                                                 cancellationTokenSourceMemPoolTxVote))
                                                                 {
-                                                                    // Do not allow multiple seed votes from the same numeric public key.
-                                                                    if (!listOfRankedPeerPublicKeySaved.Contains(numericPublicKeyOut))
+                                                                // Do not allow multiple seed votes from the same numeric public key.
+                                                                if (!listOfRankedPeerPublicKeySaved.Contains(numericPublicKeyOut))
                                                                     {
                                                                         if (listOfRankedPeerPublicKeySaved.Add(numericPublicKeyOut))
                                                                             peerRanked = true;
@@ -865,8 +846,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                         }
                                         catch
                                         {
-                                            // Ignored.
-                                        }
+                                        // Ignored.
+                                    }
 
                                         if (invalidPacket)
                                             ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIpTarget, peerUniqueIdTarget, peerNetworkSetting, peerFirewallSettingObject);
@@ -874,7 +855,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                                         totalTaskDone++;
 
-                                    }, cancellationTokenSourceMemPoolTxVote.Token));
+                                    }), timestampEnd, cancellationTokenSourceMemPoolTxVote);
                                 }
                                 catch
                                 {
@@ -888,7 +869,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                     break;
 
                                 // Timeout reach.
-                                if (taskTimestampStart + (peerNetworkSetting.PeerMaxDelayAwaitResponse * 1000) < ClassUtility.GetCurrentTimestampInMillisecond())
+                                if (timestampEnd < ClassUtility.GetCurrentTimestampInMillisecond())
                                     break;
 
                                 if (onlyOneAgree)
@@ -939,119 +920,120 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                             cancellationTokenSourceMemPoolTxVote.Cancel();
 
-                           
+
+
+
+                            #region Clean up contact peers.
+
+                            foreach (int peerKey in peerListTarget.Keys)
+                            {
+                                try
+                                {
+                                    peerListTarget[peerKey].PeerNetworkClientSyncObject.Dispose();
+                                }
+                                catch
+                                {
+                                    // Ignored.
+                                }
+                            }
+
+
+                            #endregion
+
+                            #region Calculate votes.
+
+
+                            foreach (var transaction in listTransactionObject)
+                            {
+                                float totalSeedVotes = 0;
+                                float percentSeedAgree = 0;
+                                float percentSeedDenied = 0;
+                                bool seedVoteResult = false;
+
+                                float totalNormVotes = 0;
+                                float percentNormAgree = 0;
+                                float percentNormDenied = 0;
+                                bool normVoteResult = false;
+
+                                if (dictionaryMemPoolTxVoteSeedPeer.ContainsKey(transaction.TransactionHash))
+                                    totalSeedVotes = dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][false] + dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][true];
+
+                                if (dictionaryMemPoolTxVoteNormPeer.ContainsKey(transaction.TransactionHash))
+                                    totalNormVotes = dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][false] + dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][true];
+
+
+                                if (totalSeedVotes > 0)
+                                {
+                                    if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash].ContainsKey(true))
+                                    {
+                                        if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][true] > 0)
+                                            percentSeedAgree = (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][true] / totalSeedVotes) * 100f;
+                                    }
+
+                                    if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash].ContainsKey(false))
+                                    {
+                                        if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][false] > 0)
+                                            percentSeedDenied = (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][false] / totalSeedVotes) * 100f;
+                                    }
+
+                                    seedVoteResult = percentSeedAgree > percentSeedDenied;
+                                }
+
+                                if (totalNormVotes > 0)
+                                {
+                                    if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash].ContainsKey(true))
+                                    {
+                                        if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][true] > 0)
+                                            percentNormAgree = (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][true] / totalNormVotes) * 100f;
+                                    }
+
+                                    if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash].ContainsKey(false))
+                                    {
+                                        if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][false] > 0)
+                                            percentNormDenied = (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][false] / totalNormVotes) * 100f;
+                                    }
+
+                                    normVoteResult = percentNormAgree > percentNormDenied;
+                                }
+
+
+                                ClassTransactionEnumStatus result = ClassTransactionEnumStatus.INVALID_TRANSACTION_FROM_VOTE;
+
+                                if (!onlyOneAgree)
+                                {
+                                    switch (seedVoteResult)
+                                    {
+                                        case true:
+                                            {
+                                                // Total equality.
+                                                if (normVoteResult) result = ClassTransactionEnumStatus.VALID_TRANSACTION;
+                                                else if (percentSeedAgree > percentNormDenied) result = ClassTransactionEnumStatus.VALID_TRANSACTION;
+                                            }
+                                            break;
+                                        case false:
+                                            {
+                                                // Total equality.
+                                                if (!normVoteResult) result = ClassTransactionEnumStatus.INVALID_TRANSACTION_FROM_VOTE;
+                                                else if (percentNormAgree > percentSeedDenied) result = ClassTransactionEnumStatus.VALID_TRANSACTION;
+                                            }
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+                                    if (percentNormAgree > 0)
+                                        result = ClassTransactionEnumStatus.VALID_TRANSACTION;
+                                }
+
+                                if (!dictionaryTransactionCheckStatus.ContainsKey(transaction.TransactionHash))
+                                    dictionaryTransactionCheckStatus.Add(transaction.TransactionHash, result);
+                            }
+
+                            listOfRankedPeerPublicKeySaved.Clear();
+
+                            #endregion
+
                         }
-
-                        #region Clean up contact peers.
-
-                        foreach (int peerKey in peerListTarget.Keys)
-                        {
-                            try
-                            {
-                                peerListTarget[peerKey].PeerNetworkClientSyncObject.Dispose();
-                            }
-                            catch
-                            {
-                                // Ignored.
-                            }
-                        }
-
-
-                        #endregion
-
-                        #region Calculate votes.
-
-
-                        foreach (var transaction in listTransactionObject)
-                        {
-                            float totalSeedVotes = 0;
-                            float percentSeedAgree = 0;
-                            float percentSeedDenied = 0;
-                            bool seedVoteResult = false;
-
-                            float totalNormVotes = 0;
-                            float percentNormAgree = 0;
-                            float percentNormDenied = 0;
-                            bool normVoteResult = false;
-
-                            if (dictionaryMemPoolTxVoteSeedPeer.ContainsKey(transaction.TransactionHash))
-                                totalSeedVotes = dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][false] + dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][true];
-
-                            if (dictionaryMemPoolTxVoteNormPeer.ContainsKey(transaction.TransactionHash))
-                                totalNormVotes = dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][false] + dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][true];
-
-
-                            if (totalSeedVotes > 0)
-                            {
-                                if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash].ContainsKey(true))
-                                {
-                                    if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][true] > 0)
-                                        percentSeedAgree = (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][true] / totalSeedVotes) * 100f;
-                                }
-
-                                if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash].ContainsKey(false))
-                                {
-                                    if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][false] > 0)
-                                        percentSeedDenied = (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][false] / totalSeedVotes) * 100f;
-                                }
-
-                                seedVoteResult = percentSeedAgree > percentSeedDenied;
-                            }
-
-                            if (totalNormVotes > 0)
-                            {
-                                if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash].ContainsKey(true))
-                                {
-                                    if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][true] > 0)
-                                        percentNormAgree = (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][true] / totalNormVotes) * 100f;
-                                }
-
-                                if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash].ContainsKey(false))
-                                {
-                                    if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][false] > 0)
-                                        percentNormDenied = (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][false] / totalNormVotes) * 100f;
-                                }
-
-                                normVoteResult = percentNormAgree > percentNormDenied;
-                            }
-
-
-                            ClassTransactionEnumStatus result = ClassTransactionEnumStatus.INVALID_TRANSACTION_FROM_VOTE;
-
-                            if (!onlyOneAgree)
-                            {
-                                switch (seedVoteResult)
-                                {
-                                    case true:
-                                        {
-                                            // Total equality.
-                                            if (normVoteResult) result = ClassTransactionEnumStatus.VALID_TRANSACTION;
-                                            else if (percentSeedAgree > percentNormDenied) result = ClassTransactionEnumStatus.VALID_TRANSACTION;
-                                        }
-                                        break;
-                                    case false:
-                                        {
-                                            // Total equality.
-                                            if (!normVoteResult) result = ClassTransactionEnumStatus.INVALID_TRANSACTION_FROM_VOTE;
-                                            else if (percentNormAgree > percentSeedDenied) result = ClassTransactionEnumStatus.VALID_TRANSACTION;
-                                        }
-                                        break;
-                                }
-                            }
-                            else
-                            {
-                                if (percentNormAgree > 0)
-                                    result = ClassTransactionEnumStatus.VALID_TRANSACTION;
-                            }
-
-                            if (!dictionaryTransactionCheckStatus.ContainsKey(transaction.TransactionHash))
-                                dictionaryTransactionCheckStatus.Add(transaction.TransactionHash, result);
-                        }
-
-                        listOfRankedPeerPublicKeySaved.Clear();
-
-                        #endregion
-
                     }
                 }
             }

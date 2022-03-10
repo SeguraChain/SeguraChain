@@ -151,12 +151,12 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                     {
                         try
                         {
-                            await Task.Factory.StartNew(async () =>
+                            TaskManager.TaskManager.InsertTask(new Action(async () =>
                             {
                                 await _dictionaryCacheIoIndexObject[ioFileName].PurgeIoBlockDataMemory(false, cancellation, 0, false);
                                 totalTaskDone++;
 
-                            }, cancellation.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+                            }), 0, cancellation);
                         }
                         catch
                         {
@@ -217,7 +217,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                         {
                             try
                             {
-                                await Task.Factory.StartNew(() =>
+                                TaskManager.TaskManager.InsertTask(new Action(() =>
                                 {
                                     string ioFilePath = _blockchainDatabaseSetting.GetBlockchainCacheDirectoryPath + ioFileName;
                                     _dictionaryCacheIoIndexObject[ioFileName].CloseLockStream();
@@ -225,7 +225,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                     File.Delete(ioFilePath);
                                     totalTaskDone++;
 
-                                }, cancellation.Token, TaskCreationOptions.PreferFairness, TaskScheduler.Current).ConfigureAwait(false);
+                                }), 0, cancellation);
                             }
                             catch
                             {
@@ -488,7 +488,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                             {
                                 try
                                 {
-                                    await Task.Factory.StartNew(async () =>
+                                    TaskManager.TaskManager.InsertTask(new Action(async () =>
                                     {
                                         cancellationIoCache?.Token.ThrowIfCancellationRequested();
 
@@ -499,7 +499,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                         }
 
                                         totalTaskDone++;
-                                    }, cancellation.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+                                    }), 0, cancellation);
                                 }
                                 catch
                                 {
@@ -681,7 +681,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                             {
                                 try
                                 {
-                                    await Task.Factory.StartNew(async () =>
+                                    TaskManager.TaskManager.InsertTask(new Action(async () =>
                                     {
                                         cancellationIoCache?.Token.ThrowIfCancellationRequested();
 
@@ -689,7 +689,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                             result = false;
 
                                         totalTaskDone++;
-                                    }, cancellation.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+                                    }), 0, cancellation);
                                 }
                                 catch
                                 {
@@ -897,8 +897,9 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                 {
                                     try
                                     {
-                                        await Task.Factory.StartNew(async () =>
+                                        TaskManager.TaskManager.InsertTask(new Action(async () =>
                                         {
+
                                             if (listBlockHeightIndexedByIoFile[ioFileName].Count > 0)
                                             {
                                                 if (!cancel)
@@ -924,7 +925,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
 
                                                 totalTaskDone++;
                                             }
-                                        }, cancellation.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+
+                                        }), 0, cancellation);
                                     }
                                     catch
                                     {

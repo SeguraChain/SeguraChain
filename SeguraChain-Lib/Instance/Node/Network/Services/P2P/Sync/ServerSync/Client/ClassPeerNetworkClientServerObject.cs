@@ -238,7 +238,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             try
             {
                 // Launch a task for check the peer connection.
-                await Task.Factory.StartNew(async () => await CheckPeerClientAsync(), _cancellationTokenClientCheckConnectionPeer.Token).ConfigureAwait(false);
+                TaskManager.TaskManager.InsertTask(new Action(async () => await CheckPeerClientAsync()), 0, _cancellationTokenClientCheckConnectionPeer);
             }
             catch
             {
@@ -263,12 +263,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                             {
 
                                 int packetLength = await networkStream.ReadAsync(packetBufferOnReceive, 0, packetBufferOnReceive.Length, _cancellationTokenListenPeerPacket.Token);
-
-                                if (_clientAskDisconnection || !ClientPeerConnectionStatus)
-                                {
-                                    ClientPeerConnectionStatus = false;
-                                    break;
-                                }
 
                                 if (packetLength > 0)
                                 {
@@ -1564,7 +1558,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     }
 
                                     if (listTransactionToBroadcast.Count > 0)
-                                        await Task.Factory.StartNew(async () => await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(_peerServerOpenNatIp, _peerServerOpenNatIp, _peerClientIp, listTransactionToBroadcast.GetList, _peerNetworkSettingObject, _peerFirewallSettingObject, new CancellationTokenSource(), false)).ConfigureAwait(false);
+                                        TaskManager.TaskManager.InsertTask(new Action(async () => await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(_peerServerOpenNatIp, _peerServerOpenNatIp, _peerClientIp, listTransactionToBroadcast.GetList, _peerNetworkSettingObject, _peerFirewallSettingObject, new CancellationTokenSource(), false)), 0, null);
 
                                     ClassPeerPacketSendMemPoolTransactionVote packetSendMemPoolTransactionVote = new ClassPeerPacketSendMemPoolTransactionVote()
                                     {
@@ -1724,7 +1718,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     {
 
                                         // Enable a task of broadcasting transactions from the MemPool, await after each sending a confirmation. 
-                                        await Task.Factory.StartNew(async () =>
+                                        TaskManager.TaskManager.InsertTask(new Action(async () =>
                                         {
                                             int countMemPoolTxSent = 0;
                                             bool exceptionOnSending = false;
@@ -1876,12 +1870,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                             _onSendingMemPoolTransaction = false;
 
-                                        }, _cancellationTokenAccessData.Token).ConfigureAwait(false);
+                                        }), 0, _cancellationTokenAccessData);
 
                                     }
-                                    // Ignored, catch the exception once broadcast task is cancelled.
                                     catch
                                     {
+                                        // Ignored, catch the exception once broadcast task is cancelled.
                                         _onSendingMemPoolTransaction = false;
                                     }
 

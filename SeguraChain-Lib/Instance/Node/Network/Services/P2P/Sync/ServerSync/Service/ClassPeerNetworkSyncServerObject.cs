@@ -25,7 +25,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
         public string PeerIpOpenNatServer;
         private ClassPeerNetworkSettingObject _peerNetworkSettingObject;
         private ClassPeerFirewallSettingObject _firewallSettingObject;
-        private DisposableList<Task> _listPeerIncomingConnectionTask;
         private SemaphoreSlim _semaphoreHandleIncomingConnection = new SemaphoreSlim(1, Environment.ProcessorCount);
 
         #region Dispose functions
@@ -68,7 +67,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
             PeerIpOpenNatServer = peerIpOpenNatServer;
             _peerNetworkSettingObject = peerNetworkSettingObject;
             _firewallSettingObject = firewallSettingObject;
-            _listPeerIncomingConnectionTask = new DisposableList<Task>();
         }
 
         #region Peer Server management functions.
@@ -101,7 +99,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
             try
             {
-                Task.Factory.StartNew(async () =>
+                TaskManager.TaskManager.InsertTask(new Action(async () =>
                 {
                     while (NetworkPeerServerStatus)
                     {
@@ -125,40 +123,27 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                             await _semaphoreHandleIncomingConnection.WaitAsync(_cancellationTokenSourcePeerServer.Token);
                                             useSemaphore = true;
 
-                                            bool handleConnection = true;
-
-                                            if (_listPeerIncomingConnectionTask.Count > _peerNetworkSettingObject.PeerMaxTaskIncomingConnection)
-                                            {
-                                                countTaskRemoved = ClearIncomingConnectionTask();
-
-                                                handleConnection = _listPeerIncomingConnectionTask.Count <= _peerNetworkSettingObject.PeerMaxTaskIncomingConnection;
-                                            }
 
 
-                                            if (handleConnection)
+                                            ClassLog.WriteLine("Total cleaned task completed: " + countTaskRemoved, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true, ConsoleColor.Yellow);
+
+                                            TaskManager.TaskManager.InsertTask(new Action(async () =>
                                             {
 
-                                                ClassLog.WriteLine("Total cleaned task completed: " + countTaskRemoved, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true, ConsoleColor.Yellow);
+                                                string clientIp = ((IPEndPoint)(clientPeerTcp.Client.RemoteEndPoint)).Address.ToString();
 
-                                                _listPeerIncomingConnectionTask.Add(Task.Factory.StartNew(async () =>
+                                                switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
                                                 {
+                                                    case ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
+                                                    case ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS:
+                                                        if (_firewallSettingObject.PeerEnableFirewallLink)
+                                                            ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
+                                                        break;
+                                                }
 
-                                                    string clientIp = ((IPEndPoint)(clientPeerTcp.Client.RemoteEndPoint)).Address.ToString();
-
-                                                    switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
-                                                    {
-                                                        case ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
-                                                        case ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS:
-                                                            if (_firewallSettingObject.PeerEnableFirewallLink)
-                                                                ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
-                                                            break;
-                                                    }
-
-                                                    ClassUtility.CloseTcpClient(clientPeerTcp);
-                                                }, _cancellationTokenSourcePeerServer.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current));
-                                            }
-                                            else
                                                 ClassUtility.CloseTcpClient(clientPeerTcp);
+                                            }), 0, _cancellationTokenSourcePeerServer);
+
 
 
                                         }
@@ -182,7 +167,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                             // Ignored, catch the exception once the task is cancelled.
                         }
                     }
-                }, _cancellationTokenSourcePeerServer.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+                }), 0, _cancellationTokenSourcePeerServer);
             }
             catch
             {
@@ -562,42 +547,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
             }
 
             return totalConnectionClosed;
-        }
-
-        /// <summary>
-        /// Clear all incoming connection task completed, faulted.
-        /// </summary>
-        public int ClearIncomingConnectionTask()
-        {
-
-            int countTaskCompleted = 0;
-
-            for (int i = 0; i < _listPeerIncomingConnectionTask.Count; i++)
-            {
-                if (i < _listPeerIncomingConnectionTask.Count)
-                {
-                    try
-                    {
-
-                        if (_listPeerIncomingConnectionTask[i].IsCompleted ||
-                                                _listPeerIncomingConnectionTask[i].Status == TaskStatus.Faulted ||
-                                                _listPeerIncomingConnectionTask[i].Status == TaskStatus.Canceled)
-                        {
-                            _listPeerIncomingConnectionTask[i].Dispose();
-                            _listPeerIncomingConnectionTask.GetList.RemoveAt(i);
-                            countTaskCompleted++;
-                        }
-                    }
-                    catch
-                    {
-                        // Ignored.
-                    }
-                }
-            }
-
-
-
-            return countTaskCompleted;
         }
 
         #endregion

@@ -47,7 +47,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         private bool _peerTaskKeepAliveStatus;
         private CancellationTokenSource _peerCancellationTokenMain;
         private CancellationTokenSource _peerCancellationTokenDoConnection;
-        private CancellationTokenSource _peerCancellationTokenTaskWaitPeerPacketResponse;
         private CancellationTokenSource _peerCancellationTokenTaskListenPeerPacketResponse;
         private CancellationTokenSource _peerCancellationTokenTaskSendPeerPacketKeepAlive;
 
@@ -64,9 +63,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         private DisposableList<ClassReadPacketSplitted> listPacketReceived;
         private bool _keepAlive;
 
-        private Task _taskDoConnection;
-        private Task _taskKeepAlive;
-        private Task _taskListenPacket;
 
         #region Dispose functions
 
@@ -194,7 +190,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             if (!PeerConnectStatus)
                 CancelTaskPeerPacketKeepAlive();
 
-            CancelTaskWaitPeerPacketResponse();
             CancelTaskListenPeerPacketResponse();
         }
 
@@ -230,13 +225,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             bool successConnect = false;
             CancelTaskDoConnection();
 
-            long timestampEnd = ClassUtility.GetCurrentTimestampInMillisecond() + _peerNetworkSetting.PeerMaxDelayToConnectToTarget * 1000;
+            long timestampEnd = ClassUtility.GetCurrentTimestampInMillisecond() + (_peerNetworkSetting.PeerMaxDelayToConnectToTarget * 1000);
 
             _peerCancellationTokenDoConnection = CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, _peerCancellationTokenMain.Token);
 
             try
             {
-                _taskDoConnection = Task.Factory.StartNew(async () =>
+                TaskManager.TaskManager.InsertTask(new Action(async () =>
                 {
 
                     while (!successConnect)
@@ -254,7 +249,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                         }
                     }
 
-                }, _peerCancellationTokenDoConnection.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current);
+                }), timestampEnd, _peerCancellationTokenDoConnection);
             }
             catch
             {
@@ -269,7 +264,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                 try
                 {
-                    await Task.Delay(100, cancellation.Token);
+                    await Task.Delay(1000, cancellation.Token);
                 }
                 catch
                 {
@@ -304,7 +299,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// <returns></returns>
         private async Task<bool> WaitPacketExpected(CancellationTokenSource cancellation)
         {
-            long timeSpendOnWaiting = 0;
             _lastPacketReceivedTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
 
             TaskWaitPeerPacketResponse(cancellation);
@@ -322,23 +316,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                     break;
                 }
 
-
-                if (timeSpendOnWaiting >= 1000)
-                {
-                    timeSpendOnWaiting = 0;
-
-                    if (!ClassUtility.SocketIsConnected(_peerSocketClient))
-                    {
-                        PeerConnectStatus = false;
-                        PeerTaskStatus = false;
-                        break;
-                    }
-                }
-
                 try
                 {
-                    await Task.Delay(100, cancellation.Token);
-                    timeSpendOnWaiting += 100;
+                    await Task.Delay(10, cancellation.Token);
                 }
                 catch
                 {
@@ -347,7 +327,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             }
 
             CancelTaskListenPeerPacketResponse();
-            CancelTaskWaitPeerPacketResponse();
 
             if (PeerPacketReceived == null)
             {
@@ -376,15 +355,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         private void TaskWaitPeerPacketResponse(CancellationTokenSource cancellation)
         {
             PeerPacketReceived = null;
-            CancelTaskWaitPeerPacketResponse();
             CancelTaskListenPeerPacketResponse();
-            _peerCancellationTokenTaskWaitPeerPacketResponse = CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, _peerCancellationTokenMain.Token);
             _peerCancellationTokenTaskListenPeerPacketResponse = CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, _peerCancellationTokenMain.Token);
 
             PeerTaskStatus = true;
             try
             {
-                _taskListenPacket = Task.Factory.StartNew(async () =>
+                TaskManager.TaskManager.InsertTask(new Action(async () =>
                 {
 
                     try
@@ -539,33 +516,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                             PeerConnectStatus = false;
                     }
 
-                }, _peerCancellationTokenTaskWaitPeerPacketResponse.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current);
+                }), 0, _peerCancellationTokenTaskListenPeerPacketResponse);
             }
             catch
             {
                 // Ignored, catch the exception once the task is cancelled.
-            }
-        }
-
-        /// <summary>
-        /// Cancel the token of the task who listen packet in receive from a peer target.
-        /// </summary>
-        public void CancelTaskWaitPeerPacketResponse()
-        {
-            try
-            {
-                if (_peerCancellationTokenTaskWaitPeerPacketResponse != null)
-                {
-                    if (!_peerCancellationTokenTaskWaitPeerPacketResponse.IsCancellationRequested)
-                    {
-                        _peerCancellationTokenTaskWaitPeerPacketResponse.Cancel();
-                        _peerCancellationTokenTaskWaitPeerPacketResponse.Dispose();
-                    }
-                }
-            }
-            catch
-            {
-                // Ignored.
             }
         }
 
@@ -576,7 +531,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         {
             try
             {
-
                 if (_peerCancellationTokenTaskListenPeerPacketResponse != null)
                 {
                     if (!_peerCancellationTokenTaskListenPeerPacketResponse.IsCancellationRequested)
@@ -584,11 +538,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                         _peerCancellationTokenTaskListenPeerPacketResponse.Cancel();
                         _peerCancellationTokenTaskListenPeerPacketResponse.Dispose();
                     }
-                }
-                if (_taskListenPacket != null)
-                {
-                    if (_taskListenPacket.IsCompleted || _taskListenPacket.IsFaulted || _taskListenPacket.IsCanceled)
-                        _taskListenPacket.Dispose();
                 }
             }
             catch
@@ -612,62 +561,54 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                 CancelTaskPeerPacketKeepAlive();
                 _peerCancellationTokenTaskSendPeerPacketKeepAlive = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationTokenMain.Token);
 
-                try
+                TaskManager.TaskManager.InsertTask(new Action(async () =>
                 {
-                    _taskKeepAlive = Task.Factory.StartNew(async () =>
-                    {
-                        _peerTaskKeepAliveStatus = true;
+                    _peerTaskKeepAliveStatus = true;
 
-                        ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSetting.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[PeerIpTarget][PeerUniqueIdTarget].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[PeerIpTarget][PeerUniqueIdTarget].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                    ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSetting.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[PeerIpTarget][PeerUniqueIdTarget].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[PeerIpTarget][PeerUniqueIdTarget].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                    {
+                        PacketOrder = ClassPeerEnumPacketSend.ASK_KEEP_ALIVE,
+                        PacketContent = ClassUtility.SerializeData(new ClassPeerPacketAskKeepAlive()
                         {
-                            PacketOrder = ClassPeerEnumPacketSend.ASK_KEEP_ALIVE,
-                            PacketContent = ClassUtility.SerializeData(new ClassPeerPacketAskKeepAlive()
+                            PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                        }),
+                    };
+
+                    while (PeerConnectStatus && _peerTaskKeepAliveStatus)
+                    {
+                        try
+                        {
+                            sendObject.PacketContent = ClassUtility.SerializeData(new ClassPeerPacketAskKeepAlive()
                             {
                                 PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
-                            }),
-                        };
+                            });
 
-                        while (PeerConnectStatus && _peerTaskKeepAliveStatus)
-                        {
-                            try
+                            if (!await SendPeerPacket(sendObject.GetPacketData(), _peerCancellationTokenTaskSendPeerPacketKeepAlive))
                             {
-                                sendObject.PacketContent = ClassUtility.SerializeData(new ClassPeerPacketAskKeepAlive()
-                                {
-                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
-                                });
-
-                                if (!await SendPeerPacket(sendObject.GetPacketData(), _peerCancellationTokenTaskSendPeerPacketKeepAlive))
-                                {
-                                    PeerConnectStatus = false;
-                                    _peerTaskKeepAliveStatus = false;
-                                    break;
-                                }
-
-                                await Task.Delay(5000, _peerCancellationTokenTaskSendPeerPacketKeepAlive.Token);
-                            }
-                            catch (SocketException)
-                            {
-                                _peerTaskKeepAliveStatus = false;
-
-                                if (!CheckConnection())
-                                    PeerConnectStatus = false;
-
-                                break;
-                            }
-                            catch (TaskCanceledException)
-                            {
+                                PeerConnectStatus = false;
                                 _peerTaskKeepAliveStatus = false;
                                 break;
                             }
+
+                            await Task.Delay(5000, _peerCancellationTokenTaskSendPeerPacketKeepAlive.Token);
                         }
+                        catch (SocketException)
+                        {
+                            _peerTaskKeepAliveStatus = false;
 
-                    }, _peerCancellationTokenTaskSendPeerPacketKeepAlive.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current);
+                            if (!CheckConnection())
+                                PeerConnectStatus = false;
 
-                }
-                catch
-                {
-                    // Ignored, catch the exception once the task is cancelled.
-                }
+                            break;
+                        }
+                        catch (TaskCanceledException)
+                        {
+                            _peerTaskKeepAliveStatus = false;
+                            break;
+                        }
+                    }
+
+                }), 0, _peerCancellationTokenTaskSendPeerPacketKeepAlive);
             }
         }
 
@@ -687,12 +628,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                         _peerCancellationTokenTaskSendPeerPacketKeepAlive.Cancel();
                         _peerCancellationTokenTaskSendPeerPacketKeepAlive.Dispose();
                     }
-                }
-
-                if (_taskKeepAlive != null)
-                {
-                    if (_taskKeepAlive.IsCompleted || _taskKeepAlive.IsFaulted || _taskKeepAlive.IsCanceled)
-                        _taskKeepAlive.Dispose();
                 }
             }
             catch
@@ -715,11 +650,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                         _peerCancellationTokenDoConnection.Cancel();
                         _peerCancellationTokenDoConnection.Dispose();
                     }
-                }
-                if (_taskDoConnection != null)
-                {
-                    if (_taskDoConnection.IsCompleted || _taskDoConnection.IsFaulted || _taskDoConnection.IsCanceled)
-                        _taskDoConnection.Dispose();
                 }
             }
             catch
@@ -772,7 +702,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// <returns></returns>
         private bool IsCancelledOrDisconnected()
         {
-            return !PeerTaskStatus || !PeerConnectStatus || _peerCancellationTokenTaskListenPeerPacketResponse.IsCancellationRequested || _peerCancellationTokenTaskWaitPeerPacketResponse.IsCancellationRequested ? true : false;
+            return !PeerTaskStatus || !PeerConnectStatus || _peerCancellationTokenTaskListenPeerPacketResponse.IsCancellationRequested ? true : false;
         }
 
         #endregion

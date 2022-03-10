@@ -23,7 +23,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
         private TcpListener _tcpListenerPeerApi;
         private CancellationTokenSource _cancellationTokenSourcePeerApiServer;
         private ConcurrentDictionary<string, ClassPeerApiIncomingConnectionObject> _listApiIncomingConnectionObject;
-        private List<Task> _listApiIncomingConnectionTask;
         private ClassPeerNetworkSettingObject _peerNetworkSettingObject;
         private ClassPeerFirewallSettingObject _firewallSettingObject;
         private string _peerIpOpenNatServer;
@@ -70,7 +69,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
             _peerIpOpenNatServer = peerIpOpenNatServer;
             _peerNetworkSettingObject = peerNetworkSettingObject;
             _firewallSettingObject = firewallSettingObject;
-            _listApiIncomingConnectionTask = new List<Task>();
         }
 
         #region Peer API Server management functions.
@@ -103,8 +101,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
 
             try
             {
-                Task.Factory.StartNew(async () =>
+                TaskManager.TaskManager.InsertTask(new Action(async () =>
                 {
+
                     while (NetworkPeerApiServerStatus)
                     {
                         try
@@ -120,7 +119,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
 
                                     if (clientApiTcp != null)
                                     {
-                                        _listApiIncomingConnectionTask.Add(Task.Factory.StartNew(async () =>
+                                        TaskManager.TaskManager.InsertTask(new Action(async() =>
                                         {
                                             string clientIp = ((IPEndPoint)(clientApiTcp.Client.RemoteEndPoint)).Address.ToString();
 
@@ -135,7 +134,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                                             }
                                             CloseTcpClient(clientApiTcp);
 
-                                        }, _cancellationTokenSourcePeerApiServer.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current));
+                                        }), 0, _cancellationTokenSourcePeerApiServer);
                                     }
                                 }
                                 catch
@@ -150,7 +149,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                                 break;
                         }
                     }
-                }, _cancellationTokenSourcePeerApiServer.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+
+                }), 0, _cancellationTokenSourcePeerApiServer);
             }
             catch
             {
@@ -513,34 +513,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                         }
                     }
                 }
-
-                using (DisposableList<int> listTaskRemoved = new DisposableList<int>())
-                {
-
-                    for (int i = 0; i < _listApiIncomingConnectionTask.Count; i++)
-                    {
-                        if (_listApiIncomingConnectionTask[i] == null)
-                            listTaskRemoved.Add(i);
-                        else
-                        {
-                            if (_listApiIncomingConnectionTask[i]?.Status == TaskStatus.RanToCompletion || 
-                                _listApiIncomingConnectionTask[i]?.Status == TaskStatus.Faulted ||
-                                _listApiIncomingConnectionTask[i]?.Status == TaskStatus.Canceled)
-                            {
-                                _listApiIncomingConnectionTask[i].Dispose();
-                                _listApiIncomingConnectionTask[i] = null;
-                                listTaskRemoved.Add(i);
-                            }
-                        }
-                    }
-
-                    foreach (int taskId in listTaskRemoved.GetList)
-                    {
-                        if (_listApiIncomingConnectionTask.Count - 1 >= taskId)
-                            _listApiIncomingConnectionTask.RemoveAt(taskId);
-                    }
-                }
-
             }
             return totalConnectionClosed;
         }
