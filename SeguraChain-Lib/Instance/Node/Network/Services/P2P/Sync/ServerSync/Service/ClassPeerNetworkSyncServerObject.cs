@@ -25,6 +25,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
         public string PeerIpOpenNatServer;
         private ClassPeerNetworkSettingObject _peerNetworkSettingObject;
         private ClassPeerFirewallSettingObject _firewallSettingObject;
+        private SemaphoreSlim _semaphoreHandleIncomingConnection = new SemaphoreSlim(1, Environment.ProcessorCount);
 
         #region Dispose functions
 
@@ -108,42 +109,56 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                             {
                                 int countTaskRemoved = 0;
 
+                                bool useSemaphore = false;
 
-                                Socket clientPeerTcp = await clientTask;
-
-
-                                if (ClassUtility.SocketIsConnected(clientPeerTcp))
+                                try
                                 {
-                                    ClassLog.WriteLine("Total cleaned task completed: " + countTaskRemoved, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true, ConsoleColor.Yellow);
-
-                                    TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                    try
                                     {
-                                        try
-                                        {
-                                            string clientIp = ((IPEndPoint)(clientPeerTcp.RemoteEndPoint)).Address.ToString();
 
-                                            switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
+                                        Socket clientPeerTcp = await clientTask;
+
+                                        if (clientPeerTcp != null)
+                                        {
+                                            await _semaphoreHandleIncomingConnection.WaitAsync(_cancellationTokenSourcePeerServer.Token);
+                                            useSemaphore = true;
+
+                                            ClassLog.WriteLine("Total cleaned task completed: " + countTaskRemoved, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true, ConsoleColor.Yellow);
+
+                                            TaskManager.TaskManager.InsertTask(new Action(async () =>
                                             {
-                                                case ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
-                                                case ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS:
-                                                    if (_firewallSettingObject.PeerEnableFirewallLink)
-                                                        ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
-                                                    break;
-                                            }
+
+                                                string clientIp = ((IPEndPoint)(clientPeerTcp.RemoteEndPoint)).Address.ToString();
+
+                                                switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
+                                                {
+                                                    case ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
+                                                    case ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS:
+                                                        if (_firewallSettingObject.PeerEnableFirewallLink)
+                                                            ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
+                                                        break;
+                                                }
+
+                                                ClassUtility.CloseSocket(clientPeerTcp);
+
+
+                                            }), 0, _cancellationTokenSourcePeerServer, null);
+
+
+
                                         }
-                                        catch
-                                        {
-                                            // Socket can be disconnected.
-                                        }
-
-                                        ClassUtility.CloseSocket(clientPeerTcp);
-
-
-                                    }), 0, _cancellationTokenSourcePeerServer, clientPeerTcp);
+                                    }
+                                    catch
+                                    {
+                                        // Ignored, catch the exception once the task is completed.
+                                    }
                                 }
-
-
-
+                                finally
+                                {
+                                    if (useSemaphore)
+                                        _semaphoreHandleIncomingConnection.Release();
+                                }
+                              
 
                             }, _cancellationTokenSourcePeerServer.Token);
                         }
@@ -268,9 +283,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 {
                     try
                     {
-                        long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + _peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay;
+                        long timestampEnd = ClassUtility.GetCurrentTimestampInMillisecond() + _peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay;
 
-                        while (TaskManager.TaskManager.CurrentTimestampMillisecond < timestampEnd)
+                        while (ClassUtility.GetCurrentTimestampInMillisecond() < timestampEnd)
                         {
                             if (await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.WaitAsync(1000, _cancellationTokenSourcePeerServer.Token))
                             {
