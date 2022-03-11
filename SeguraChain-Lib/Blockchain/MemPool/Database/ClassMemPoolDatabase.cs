@@ -216,16 +216,22 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
                 bool semaphoreUsed = false;
                 try
                 {
-                    await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
-                    semaphoreUsed = true;
-
-
-                    if (_dictionaryMemPoolTransactionObjects.ContainsKey(blockHeightTransaction))
+                    try
                     {
-                        if (_dictionaryMemPoolTransactionObjects[blockHeightTransaction].ContainsKey(transactionHash))
-                            transactionObject = _dictionaryMemPoolTransactionObjects[blockHeightTransaction][transactionHash].TransactionObject;
-                    }
+                        await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
+                        semaphoreUsed = true;
 
+
+                        if (_dictionaryMemPoolTransactionObjects.ContainsKey(blockHeightTransaction))
+                        {
+                            if (_dictionaryMemPoolTransactionObjects[blockHeightTransaction].ContainsKey(transactionHash))
+                                transactionObject = _dictionaryMemPoolTransactionObjects[blockHeightTransaction][transactionHash].TransactionObject;
+                        }
+                    }
+                    catch
+                    {
+                        // Ignored, catch the exception once the cancellation token has been cancelled.
+                    }
                 }
                 finally
                 {
@@ -253,12 +259,18 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
 
                 try
                 {
-                    await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
-                    semaphoreUsed = true;
+                    try
+                    {
+                        await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
+                        semaphoreUsed = true;
 
-                    if (_dictionaryMemPoolTransactionObjects.Count > 0 && _dictionaryMemPoolTransactionObjects.ContainsKey(blockHeight))
-                        countTx = _dictionaryMemPoolTransactionObjects[blockHeight].Count;
-
+                        if (_dictionaryMemPoolTransactionObjects.Count > 0 && _dictionaryMemPoolTransactionObjects.ContainsKey(blockHeight))
+                            countTx = _dictionaryMemPoolTransactionObjects[blockHeight].Count;
+                    }
+                    catch
+                    {
+                        // Ignored, catch the exception once the cancellation token has been cancelled.
+                    }
                 }
                 finally
                 {
@@ -283,11 +295,17 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
 
             try
             {
-                await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
+                try {
+                    await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
+                    semaphoreUsed = true;
 
-                if (_dictionaryMemPoolTransactionObjects.Count > 0)
-                    listBlockHeight.GetList = _dictionaryMemPoolTransactionObjects.Keys.ToList();
+                    if (_dictionaryMemPoolTransactionObjects.Count > 0)
+                        listBlockHeight.GetList = _dictionaryMemPoolTransactionObjects.Keys.ToList();
+                }
+                catch
+                {
+                    // Ignored, catch the exception once the cancellation token has been cancelled.
+                }
             }
             finally
             {
@@ -312,29 +330,36 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
 
             try
             {
-                await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
-
-                if (_dictionaryMemPoolTransactionObjects.Count > 0 && _dictionaryMemPoolTransactionObjects.ContainsKey(blockHeight))
+                try
                 {
-                    if (_dictionaryMemPoolTransactionObjects[blockHeight].Count > 0)
+                    await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
+                    semaphoreUsed = true;
+
+                    if (_dictionaryMemPoolTransactionObjects.Count > 0 && _dictionaryMemPoolTransactionObjects.ContainsKey(blockHeight))
                     {
-                        foreach (var memPoolTxObject in _dictionaryMemPoolTransactionObjects[blockHeight].OrderBy(x => x.Key))
+                        if (_dictionaryMemPoolTransactionObjects[blockHeight].Count > 0)
                         {
-                            if (cancellation.IsCancellationRequested)
-                                break;
-
-                            if (exceptBlockReward)
+                            foreach (var memPoolTxObject in _dictionaryMemPoolTransactionObjects[blockHeight].OrderBy(x => x.Key))
                             {
-                                if (memPoolTxObject.Value.TransactionObject.TransactionType == ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION ||
-                                    memPoolTxObject.Value.TransactionObject.TransactionType == ClassTransactionEnumType.DEV_FEE_TRANSACTION)
-                                    continue;
-                            }
+                                if (cancellation.IsCancellationRequested)
+                                    break;
 
-                            if (memPoolTxObject.Value.TransactionObject.BlockHeightTransaction == blockHeight)
-                                listMemPoolTxObjects.Add(memPoolTxObject.Value.TransactionObject);
+                                if (exceptBlockReward)
+                                {
+                                    if (memPoolTxObject.Value.TransactionObject.TransactionType == ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION ||
+                                        memPoolTxObject.Value.TransactionObject.TransactionType == ClassTransactionEnumType.DEV_FEE_TRANSACTION)
+                                        continue;
+                                }
+
+                                if (memPoolTxObject.Value.TransactionObject.BlockHeightTransaction == blockHeight)
+                                    listMemPoolTxObjects.Add(memPoolTxObject.Value.TransactionObject);
+                            }
                         }
                     }
+                }
+                catch
+                {
+                    // Ignored, catch the exception once the cancellation token has been cancelled.
                 }
             }
             finally
@@ -358,25 +383,32 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
             bool semaphoreUsed = false;
             try
             {
-                await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
-
-                if (_dictionaryMemPoolTransactionObjects.Count > 0)
+                try
                 {
-                    foreach (var blockHeight in _dictionaryMemPoolTransactionObjects.Keys)
+                    await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
+                    semaphoreUsed = true;
+
+                    if (_dictionaryMemPoolTransactionObjects.Count > 0)
                     {
-                        cancellation.Token.ThrowIfCancellationRequested();
-
-                        if (_dictionaryMemPoolTransactionObjects[blockHeight].Count > 0)
+                        foreach (var blockHeight in _dictionaryMemPoolTransactionObjects.Keys)
                         {
-                            foreach (var memPoolTxObject in _dictionaryMemPoolTransactionObjects[blockHeight])
-                            {
-                                cancellation.Token.ThrowIfCancellationRequested();
+                            cancellation.Token.ThrowIfCancellationRequested();
 
-                                listMemPoolTxObjects.Add(memPoolTxObject.Value.TransactionObject);
+                            if (_dictionaryMemPoolTransactionObjects[blockHeight].Count > 0)
+                            {
+                                foreach (var memPoolTxObject in _dictionaryMemPoolTransactionObjects[blockHeight])
+                                {
+                                    cancellation.Token.ThrowIfCancellationRequested();
+
+                                    listMemPoolTxObjects.Add(memPoolTxObject.Value.TransactionObject);
+                                }
                             }
                         }
                     }
+                }
+                catch
+                {
+                    // Ignored, catch the exception once the cancellation token has been cancelled.
                 }
             }
             finally
@@ -402,24 +434,31 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
 
             try
             {
-                await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
-
-                if (_dictionaryMemPoolTransactionObjects.Count > 0)
+                try
                 {
-                    foreach (var blockHeight in _dictionaryMemPoolTransactionObjects.Keys.Where(x => x <= maxBlockHeightTarget))
-                    {
-                        cancellation.Token.ThrowIfCancellationRequested();
+                    await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
+                    semaphoreUsed = true;
 
-                        if (_dictionaryMemPoolTransactionObjects[blockHeight].Count > 0)
+                    if (_dictionaryMemPoolTransactionObjects.Count > 0)
+                    {
+                        foreach (var blockHeight in _dictionaryMemPoolTransactionObjects.Keys.Where(x => x <= maxBlockHeightTarget))
                         {
-                            foreach (var memPoolTxObject in _dictionaryMemPoolTransactionObjects[blockHeight].Where(x => x.Value.TransactionObject.WalletAddressReceiver == walletAddress || x.Value.TransactionObject.WalletAddressSender == walletAddress))
+                            cancellation.Token.ThrowIfCancellationRequested();
+
+                            if (_dictionaryMemPoolTransactionObjects[blockHeight].Count > 0)
                             {
-                                cancellation.Token.ThrowIfCancellationRequested();
-                                listMemPoolTransaction.Add(memPoolTxObject.Value.TransactionObject);
+                                foreach (var memPoolTxObject in _dictionaryMemPoolTransactionObjects[blockHeight].Where(x => x.Value.TransactionObject.WalletAddressReceiver == walletAddress || x.Value.TransactionObject.WalletAddressSender == walletAddress))
+                                {
+                                    cancellation.Token.ThrowIfCancellationRequested();
+                                    listMemPoolTransaction.Add(memPoolTxObject.Value.TransactionObject);
+                                }
                             }
                         }
                     }
+                }
+                catch
+                {
+                    // Ignored, catch the exception once the cancellation token has been cancelled.
                 }
             }
             finally
@@ -445,26 +484,33 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
 
             try
             {
-                await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
-
-                if (_dictionaryMemPoolTransactionObjects.Count > 0)
+                try
                 {
-                    foreach (var blockHeight in _dictionaryMemPoolTransactionObjects.Keys)
+                    await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
+                    semaphoreUsed = true;
+
+                    if (_dictionaryMemPoolTransactionObjects.Count > 0)
                     {
-                        cancellation.Token.ThrowIfCancellationRequested();
-
-                        if (_dictionaryMemPoolTransactionObjects[blockHeight].Count > 0)
+                        foreach (var blockHeight in _dictionaryMemPoolTransactionObjects.Keys)
                         {
-                            foreach (var memPoolTxObject in _dictionaryMemPoolTransactionObjects[blockHeight].Where(x => x.Value.TransactionObject.WalletAddressReceiver == walletAddress || x.Value.TransactionObject.WalletAddressSender == walletAddress))
-                            {
-                                cancellation.Token.ThrowIfCancellationRequested();
+                            cancellation.Token.ThrowIfCancellationRequested();
 
-                                if (memPoolTxObject.Value != null && memPoolTxObject.Value?.TransactionObject != null)
-                                    disposableListTransaction.Add(memPoolTxObject.Value.TransactionObject);
+                            if (_dictionaryMemPoolTransactionObjects[blockHeight].Count > 0)
+                            {
+                                foreach (var memPoolTxObject in _dictionaryMemPoolTransactionObjects[blockHeight].Where(x => x.Value.TransactionObject.WalletAddressReceiver == walletAddress || x.Value.TransactionObject.WalletAddressSender == walletAddress))
+                                {
+                                    cancellation.Token.ThrowIfCancellationRequested();
+
+                                    if (memPoolTxObject.Value != null && memPoolTxObject.Value?.TransactionObject != null)
+                                        disposableListTransaction.Add(memPoolTxObject.Value.TransactionObject);
+                                }
                             }
                         }
                     }
+                }
+                catch
+                {
+                    // Ignored, catch the exception once the cancellation token has been cancelled.
                 }
             }
             finally
@@ -488,18 +534,25 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
 
             try
             {
-                await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
-
-                if (_dictionaryMemPoolTransactionObjects.Count > 0)
+                try
                 {
-                    long blockHeightTransaction = ClassTransactionUtility.GetBlockHeightFromTransactionHash(transactionHash);
+                    await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
+                    semaphoreUsed = true;
 
-                    if (blockHeightTransaction > BlockchainSetting.GenesisBlockHeight && _dictionaryMemPoolTransactionObjects.ContainsKey(blockHeightTransaction))
+                    if (_dictionaryMemPoolTransactionObjects.Count > 0)
                     {
-                        if (_dictionaryMemPoolTransactionObjects[blockHeightTransaction].Count > 0 && _dictionaryMemPoolTransactionObjects[blockHeightTransaction].ContainsKey(transactionHash))
-                            result = _dictionaryMemPoolTransactionObjects[blockHeightTransaction].TryRemove(transactionHash, out _);
+                        long blockHeightTransaction = ClassTransactionUtility.GetBlockHeightFromTransactionHash(transactionHash);
+
+                        if (blockHeightTransaction > BlockchainSetting.GenesisBlockHeight && _dictionaryMemPoolTransactionObjects.ContainsKey(blockHeightTransaction))
+                        {
+                            if (_dictionaryMemPoolTransactionObjects[blockHeightTransaction].Count > 0 && _dictionaryMemPoolTransactionObjects[blockHeightTransaction].ContainsKey(transactionHash))
+                                result = _dictionaryMemPoolTransactionObjects[blockHeightTransaction].TryRemove(transactionHash, out _);
+                        }
                     }
+                }
+                catch
+                {
+                    // Ignored, catch the exception once the cancellation token has been cancelled.
                 }
             }
             finally
@@ -523,13 +576,20 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
                 bool semaphoreUsed = false;
                 try
                 {
-                    await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
-                    semaphoreUsed = true;
-
-                    if (_dictionaryMemPoolTransactionObjects.Count > 0 && _dictionaryMemPoolTransactionObjects.ContainsKey(blockHeight))
+                    try
                     {
-                        _dictionaryMemPoolTransactionObjects[blockHeight].Clear();
-                        _dictionaryMemPoolTransactionObjects.TryRemove(blockHeight, out _);
+                        await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
+                        semaphoreUsed = true;
+
+                        if (_dictionaryMemPoolTransactionObjects.Count > 0 && _dictionaryMemPoolTransactionObjects.ContainsKey(blockHeight))
+                        {
+                            _dictionaryMemPoolTransactionObjects[blockHeight].Clear();
+                            _dictionaryMemPoolTransactionObjects.TryRemove(blockHeight, out _);
+                        }
+                    }
+                    catch
+                    {
+                        // Ignored, catch the exception once the cancellation token has been cancelled.
                     }
                 }
                 finally
@@ -553,18 +613,25 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
 
             try
             {
-                await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
-
-                if (_dictionaryMemPoolTransactionObjects.Count > 0)
+                try
                 {
-                    long blockHeightTransaction = ClassTransactionUtility.GetBlockHeightFromTransactionHash(transactionHash);
+                    await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
+                    semaphoreUsed = true;
 
-                    if (blockHeightTransaction > BlockchainSetting.GenesisBlockHeight)
+                    if (_dictionaryMemPoolTransactionObjects.Count > 0)
                     {
-                        if (_dictionaryMemPoolTransactionObjects.ContainsKey(blockHeightTransaction))
-                            result = _dictionaryMemPoolTransactionObjects[blockHeightTransaction].ContainsKey(transactionHash);
+                        long blockHeightTransaction = ClassTransactionUtility.GetBlockHeightFromTransactionHash(transactionHash);
+
+                        if (blockHeightTransaction > BlockchainSetting.GenesisBlockHeight)
+                        {
+                            if (_dictionaryMemPoolTransactionObjects.ContainsKey(blockHeightTransaction))
+                                result = _dictionaryMemPoolTransactionObjects[blockHeightTransaction].ContainsKey(transactionHash);
+                        }
                     }
+                }
+                catch
+                {
+                    // Ignored, catch the exception once the cancellation token has been cancelled.
                 }
             }
             finally
@@ -664,15 +731,22 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
             bool semaphoreUsed = false;
             try
             {
-                await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
-
-                if (_dictionaryMemPoolTransactionObjects.Count > 0 && _dictionaryMemPoolTransactionObjects.ContainsKey(blockHeight))
+                try
                 {
-                    if (exceptBlockReward)
-                        result = _dictionaryMemPoolTransactionObjects[blockHeight].Count(x => x.Value.TransactionObject.TransactionType != ClassTransactionEnumType.DEV_FEE_TRANSACTION && x.Value.TransactionObject.TransactionType != ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION);
-                    else
-                        result = _dictionaryMemPoolTransactionObjects[blockHeight].Count;
+                    await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
+                    semaphoreUsed = true;
+
+                    if (_dictionaryMemPoolTransactionObjects.Count > 0 && _dictionaryMemPoolTransactionObjects.ContainsKey(blockHeight))
+                    {
+                        if (exceptBlockReward)
+                            result = _dictionaryMemPoolTransactionObjects[blockHeight].Count(x => x.Value.TransactionObject.TransactionType != ClassTransactionEnumType.DEV_FEE_TRANSACTION && x.Value.TransactionObject.TransactionType != ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION);
+                        else
+                            result = _dictionaryMemPoolTransactionObjects[blockHeight].Count;
+                    }
+                }
+                catch
+                {
+                    // Ignored, catch the exception once the cancellation token has been cancelled.
                 }
             }
             finally
@@ -698,25 +772,32 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
 
             try
             {
-                await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
-
-                if (_dictionaryMemPoolTransactionObjects.Count > 0)
+                try
                 {
-                    using (DisposableList<long> listBlockHeight = new DisposableList<long>(false, 0, _dictionaryMemPoolTransactionObjects.Keys.ToList()))
+                    await _semaphoreMemPoolAccess.WaitAsync(cancellation.Token);
+                    semaphoreUsed = true;
+
+                    if (_dictionaryMemPoolTransactionObjects.Count > 0)
                     {
-                        foreach (long blockHeight in listBlockHeight.GetList)
+                        using (DisposableList<long> listBlockHeight = new DisposableList<long>(false, 0, _dictionaryMemPoolTransactionObjects.Keys.ToList()))
                         {
-                            int count = 0;
+                            foreach (long blockHeight in listBlockHeight.GetList)
+                            {
+                                int count = 0;
 
-                            if (exceptBlockReward)
-                                count = _dictionaryMemPoolTransactionObjects[blockHeight].Count(x => x.Value.TransactionObject.TransactionType != ClassTransactionEnumType.DEV_FEE_TRANSACTION && x.Value.TransactionObject.TransactionType != ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION);
-                            else
-                                count = _dictionaryMemPoolTransactionObjects[blockHeight].Count;
+                                if (exceptBlockReward)
+                                    count = _dictionaryMemPoolTransactionObjects[blockHeight].Count(x => x.Value.TransactionObject.TransactionType != ClassTransactionEnumType.DEV_FEE_TRANSACTION && x.Value.TransactionObject.TransactionType != ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION);
+                                else
+                                    count = _dictionaryMemPoolTransactionObjects[blockHeight].Count;
 
-                            listTxCount.Add(blockHeight, count);
+                                listTxCount.Add(blockHeight, count);
+                            }
                         }
                     }
+                }
+                catch
+                {
+                    // Ignored, catch the exception once the cancellation token has been cancelled.
                 }
             }
             finally
