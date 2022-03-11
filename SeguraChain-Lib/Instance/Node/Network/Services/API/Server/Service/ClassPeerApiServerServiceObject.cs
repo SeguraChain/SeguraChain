@@ -101,7 +101,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
 
             try
             {
-                TaskManager.TaskManager.InsertTask(new Action(async () =>
+                Task.Factory.StartNew(async () =>
                 {
 
                     while (NetworkPeerApiServerStatus)
@@ -119,7 +119,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
 
                                     if (clientApiTcp != null)
                                     {
-                                        TaskManager.TaskManager.InsertTask(new Action(async() =>
+                                        await Task.Factory.StartNew(async() =>
                                         {
                                             string clientIp = ((IPEndPoint)(clientApiTcp.RemoteEndPoint)).Address.ToString();
 
@@ -135,7 +135,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
 
                                             ClassUtility.CloseSocket(clientApiTcp);
 
-                                        }), 0, _cancellationTokenSourcePeerApiServer);
+                                        }, _cancellationTokenSourcePeerApiServer.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
                                     }
                                 }
                                 catch
@@ -151,7 +151,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                         }
                     }
 
-                }), 0, _cancellationTokenSourcePeerApiServer);
+                }, _cancellationTokenSourcePeerApiServer.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
             }
             catch
             {

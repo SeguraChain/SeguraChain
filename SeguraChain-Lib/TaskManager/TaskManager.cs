@@ -131,15 +131,18 @@ namespace SeguraChain_Lib.TaskManager
                     {
                         isLocked = true;
 
+
                         _taskCollection.Add(new ClassTaskObject()
                         {
                             Socket = socket,
                             TimestampEnd = timestampEnd,
-                            Task = Task.Factory.StartNew(action, CancellationTokenSource.CreateLinkedTokenSource(_cancelTaskManager.Token,
+                            Task = new Task(action, CancellationTokenSource.CreateLinkedTokenSource(_cancelTaskManager.Token,
                             cancellation != null ?
                             cancellation.Token : new CancellationToken(),
-                            timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - CurrentTimestampMillisecond)).Token : new CancellationToken()).Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current)
+                            timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - CurrentTimestampMillisecond)).Token : new CancellationToken()).Token)
                         });
+
+                        _taskCollection[_taskCollection.Count - 1].Task.Start();
 
                         Monitor.PulseAll(_taskCollection);
                     }

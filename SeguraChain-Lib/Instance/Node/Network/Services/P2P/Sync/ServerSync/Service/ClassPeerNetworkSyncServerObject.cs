@@ -123,9 +123,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                             await _semaphoreHandleIncomingConnection.WaitAsync(_cancellationTokenSourcePeerServer.Token);
                                             useSemaphore = true;
 
-                                            ClassLog.WriteLine("Total cleaned task completed: " + countTaskRemoved, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true, ConsoleColor.Yellow);
-
-                                            TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                            await Task.Factory.StartNew(async () => 
                                             {
 
                                                 string clientIp = ((IPEndPoint)(clientPeerTcp.RemoteEndPoint)).Address.ToString();
@@ -142,10 +140,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                                 ClassUtility.CloseSocket(clientPeerTcp);
 
 
-                                            }), 0, _cancellationTokenSourcePeerServer, null);
-
-
-
+                                            }, _cancellationTokenSourcePeerServer.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
                                         }
                                     }
                                     catch
