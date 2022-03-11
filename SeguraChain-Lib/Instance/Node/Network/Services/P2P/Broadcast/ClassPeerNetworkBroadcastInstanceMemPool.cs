@@ -151,8 +151,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     {
                         foreach (string peerIp in _listPeerNetworkClientBroadcastMemPoolReceiver.Keys.ToArray())
                         {
-                            _cancellation.Token.ThrowIfCancellationRequested();
-
                             if (_listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Count > 0)
                             {
                                 foreach (string peerUniqueId in _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Keys.ToArray())

@@ -264,7 +264,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                 try
                 {
-                    await Task.Delay(1000, cancellation.Token);
+                    await Task.Delay(1000);
                 }
                 catch
                 {

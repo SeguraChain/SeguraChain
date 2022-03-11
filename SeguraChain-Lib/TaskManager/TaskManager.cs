@@ -53,17 +53,31 @@ namespace SeguraChain_Lib.TaskManager
 #endif
                                                 || _taskCollection[i].Task.Status == TaskStatus.Canceled || _taskCollection[i].Task.Status == TaskStatus.Faulted ||
                                                 _taskCollection[i].Task.IsCanceled || _taskCollection[i].Task.IsFaulted)
-                                            {
                                                 doDispose = true;
-                                            }
                                             else
                                             {
                                                 if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond)
+
+                                                {
                                                     doDispose = true;
+                                                    try
+                                                    {
+                                                        if (_taskCollection[i].Cancellation != null)
+                                                        {
+                                                            if (!_taskCollection[i].Cancellation.IsCancellationRequested)
+                                                                _taskCollection[i].Cancellation.Cancel();
+                                                        }
+                                                    }
+                                                    catch
+                                                    {
+                                                        // Ignored.
+                                                    }
+                                                }
                                             }
 
                                             if (doDispose)
                                             {
+                                               
                                                 ClassUtility.CloseSocket(_taskCollection[i].Socket);
                                                 _taskCollection[i].Task.Dispose();
                                                 _taskCollection[i].Disposed = true;
@@ -124,14 +138,17 @@ namespace SeguraChain_Lib.TaskManager
 
             try
             {
+                CancellationTokenSource cancellationTask = CancellationTokenSource.CreateLinkedTokenSource(_cancelTaskManager.Token,
+                       cancellation != null ?
+                       cancellation.Token : new CancellationToken(),
+                       timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - CurrentTimestampMillisecond)).Token : new CancellationToken());
+
                 _taskCollection.Add(new ClassTaskObject()
                 {
                     Socket = socket,
                     TimestampEnd = timestampEnd,
-                    Task = Task.Factory.StartNew(action, CancellationTokenSource.CreateLinkedTokenSource(_cancelTaskManager.Token,
-                       cancellation != null ?
-                       cancellation.Token : new CancellationToken(),
-                       timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - CurrentTimestampMillisecond)).Token : new CancellationToken()).Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current)
+                    Cancellation = cancellation,
+                    Task = Task.Factory.StartNew(action, cancellationTask.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current)
                 });
             }
             catch
