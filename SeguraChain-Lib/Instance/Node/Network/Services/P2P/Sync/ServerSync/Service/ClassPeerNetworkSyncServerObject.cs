@@ -107,7 +107,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                         {
                             await _tcpListenerPeer.AcceptSocketAsync().ContinueWith(async clientTask =>
                             {
-                                int countTaskRemoved = 0;
 
                                 bool useSemaphore = false;
 

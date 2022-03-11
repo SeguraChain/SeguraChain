@@ -68,7 +68,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     {
                         foreach (string peerIpTarget in ClassPeerDatabase.DictionaryPeerDataObject.Keys.ToArray())
                         {
-                            _cancellation.Token.ThrowIfCancellationRequested();
 
                             if (!peerIpTarget.IsNullOrEmpty(false, out _))
                             {
@@ -76,7 +75,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                 {
                                     foreach (string peerUniqueIdTarget in ClassPeerDatabase.DictionaryPeerDataObject[peerIpTarget].Keys.ToArray())
                                     {
-                                        _cancellation.Token.ThrowIfCancellationRequested();
 
                                         bool success = false;
 
@@ -155,8 +153,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                             {
                                 foreach (string peerUniqueId in _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Keys.ToArray())
                                 {
-                                    _cancellation.Token.ThrowIfCancellationRequested();
-
                                     if (!_listPeerNetworkClientBroadcastMemPoolReceiver[peerIp][peerUniqueId].IsAlive)
                                     {
                                         _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp][peerUniqueId].StopTaskAndDisconnect();
@@ -182,13 +178,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         {
                             foreach (string peerIp in _listPeerNetworkClientBroadcastMemPoolSender.Keys.ToArray())
                             {
-                                _cancellation.Token.ThrowIfCancellationRequested();
-
                                 if (_listPeerNetworkClientBroadcastMemPoolSender[peerIp].Count > 0)
                                 {
                                     foreach (string peerUniqueId in _listPeerNetworkClientBroadcastMemPoolSender[peerIp].Keys.ToArray())
                                     {
-                                        _cancellation.Token.ThrowIfCancellationRequested();
 
                                         if (!_listPeerNetworkClientBroadcastMemPoolSender[peerIp][peerUniqueId].IsAlive)
                                         {
