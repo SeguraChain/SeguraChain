@@ -738,7 +738,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                     break;
                                 }
 
-                                await Task.Delay(1000, _peerCancellationToken.Token);
+                                await Task.Delay(1000);
                             }
                             catch
                             {
@@ -910,7 +910,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                             try
                             {
-                                await Task.Delay(1000, _peerCancellationToken.Token);
+                                await Task.Delay(1000);
                             }
                             catch
                             {
@@ -1447,7 +1447,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                 if (endBroadcast)
                                     break;
 
-                                await Task.Delay(1000, _peerCancellationToken.Token);
+                                await Task.Delay(1000);
                             }
 
                             cancellationReceiveTransactionPacket.Cancel();
