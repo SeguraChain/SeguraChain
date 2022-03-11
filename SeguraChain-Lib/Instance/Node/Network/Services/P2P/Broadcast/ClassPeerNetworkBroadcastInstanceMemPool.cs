@@ -219,27 +219,34 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
         /// <returns></returns>
         private async Task<bool> RunPeerNetworkClientBroadcastMemPool(string peerIpTarget, string peerUniqueIdTarget, bool onSendingMode)
         {
-            if (!onSendingMode)
+            try
             {
-                if (_listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].TryConnect(_cancellation))
+                if (!onSendingMode)
                 {
-                    if (await _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].TryAskBroadcastMode())
+                    if (_listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].TryConnect(_cancellation))
                     {
-                        _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].RunBroadcastTransactionTask();
-                        return true;
+                        if (await _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].TryAskBroadcastMode())
+                        {
+                            _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].RunBroadcastTransactionTask();
+                            return true;
+                        }
+                    }
+                }
+                else
+                {
+                    if (_listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].TryConnect(_cancellation))
+                    {
+                        if (await _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].TryAskBroadcastMode())
+                        {
+                            _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].RunBroadcastTransactionTask();
+                            return true;
+                        }
                     }
                 }
             }
-            else
+            catch
             {
-                if (_listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].TryConnect(_cancellation))
-                {
-                    if (await _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].TryAskBroadcastMode())
-                    {
-                        _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].RunBroadcastTransactionTask();
-                        return true;
-                    }
-                }
+                return false;
             }
 
             return false;

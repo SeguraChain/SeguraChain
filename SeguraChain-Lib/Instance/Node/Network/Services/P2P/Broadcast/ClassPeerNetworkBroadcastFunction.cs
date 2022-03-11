@@ -209,7 +209,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
         /// <param name="peerFirewallSettingObject"></param>
         public static void BroadcastMiningShareAsync(string peerServerIp, string peerOpenNatServerIp, string peerToExcept, ClassMiningPoWaCShareObject miningPowShareObject, ClassPeerNetworkSettingObject peerNetworkSetting, ClassPeerFirewallSettingObject peerFirewallSettingObject)
         {
-            TaskManager.TaskManager.InsertTask(new Action(async () =>
+            TaskManager.TaskManager.InsertTask(new Action(() =>
             {
 
                 foreach (var peerValuePair in GetRandomListPeerTargetAlive(peerServerIp, peerOpenNatServerIp, peerToExcept, null, peerNetworkSetting, peerFirewallSettingObject, new CancellationTokenSource()))

@@ -2,6 +2,7 @@
 using SeguraChain_Lib.TaskManager.Object;
 using SeguraChain_Lib.Utility;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Threading;
@@ -13,7 +14,7 @@ namespace SeguraChain_Lib.TaskManager
     {
         private static CancellationTokenSource _cancelTaskManager = new CancellationTokenSource();
         private static List<ClassTaskObject> _taskCollection = new List<ClassTaskObject>();
-        private static SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
+        private const int MaxTaskClean = 10000;
         public static long CurrentTimestampMillisecond { get; private set; }
 
         /// <summary>
@@ -25,88 +26,67 @@ namespace SeguraChain_Lib.TaskManager
             {
                 Task.Factory.StartNew(async () =>
                 {
-
-                    while (!_cancelTaskManager.IsCancellationRequested)
+                    using (DisposableList<int> listTaskToRemove = new DisposableList<int>())
                     {
-                        bool isLocked = false;
-                        bool cleanUpDone = false;
-
-                        try
+                        while (!_cancelTaskManager.IsCancellationRequested)
                         {
-                            if (Monitor.TryEnter(_taskCollection))
+
+                            for (int i = 0; i < _taskCollection.Count; i++)
                             {
-                                isLocked = true;
-
-                                using (DisposableList<int> listTaskToRemove = new DisposableList<int>())
+                                if (!_taskCollection[i].Disposed)
                                 {
-                                    for (int i = 0; i < _taskCollection.Count; i++)
-                                    {
-                                        if (!_taskCollection[i].Disposed)
-                                        {
-                                            bool doDispose = false;
+                                    bool doDispose = false;
 
-                                            if (
+                                    if (
 #if NET5_0_OR_GREATER
-                                                _taskCollection[i].Task.IsCompletedSuccessfully
+                                        _taskCollection[i].Task.IsCompletedSuccessfully || _taskCollection[i].Task.IsCompleted || 
 #else
-                                                _taskCollection[i].Task.IsCompleted
+                                        _taskCollection[i].Task.IsCompleted || 
 #endif
-                                                || _taskCollection[i].Task.Status == TaskStatus.Canceled || _taskCollection[i].Task.Status == TaskStatus.Faulted ||
-                                                _taskCollection[i].Task.IsCanceled || _taskCollection[i].Task.IsFaulted)
-                                                doDispose = true;
-                                            else
-                                            {
-                                                if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond)
+                                        _taskCollection[i].Task.IsCanceled || _taskCollection[i].Task.IsFaulted)
+                                        doDispose = true;
+                                    else
+                                    {
+                                        if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond)
 
+                                        {
+                                            doDispose = true;
+                                            try
+                                            {
+                                                if (_taskCollection[i].Cancellation != null)
                                                 {
-                                                    doDispose = true;
-                                                    try
-                                                    {
-                                                        if (_taskCollection[i].Cancellation != null)
-                                                        {
-                                                            if (!_taskCollection[i].Cancellation.IsCancellationRequested)
-                                                                _taskCollection[i].Cancellation.Cancel();
-                                                        }
-                                                    }
-                                                    catch
-                                                    {
-                                                        // Ignored.
-                                                    }
+                                                    if (!_taskCollection[i].Cancellation.IsCancellationRequested)
+                                                        _taskCollection[i].Cancellation.Cancel();
                                                 }
                                             }
-
-                                            if (doDispose)
+                                            catch
                                             {
-                                               
-                                                ClassUtility.CloseSocket(_taskCollection[i].Socket);
-                                                _taskCollection[i].Task.Dispose();
-                                                _taskCollection[i].Disposed = true;
-                                                listTaskToRemove.Add(i);
+                                                // Ignored.
                                             }
                                         }
+                                    }
 
-                                        if (listTaskToRemove.Count > 0)
-                                        {
-                                            foreach (int taskId in listTaskToRemove.GetList)
-                                                _taskCollection.RemoveAt(taskId);
+                                    if (doDispose)
+                                    {
 
-                                            _taskCollection.TrimExcess();
-
-                                            cleanUpDone = true;
-                                        }
+                                        ClassUtility.CloseSocket(_taskCollection[i].Socket);
+                                        _taskCollection[i].Task.Dispose();
+                                        _taskCollection[i].Disposed = true;
+                                        listTaskToRemove.Add(i);
                                     }
                                 }
 
-                                if (cleanUpDone)
-                                    Monitor.PulseAll(_taskCollection);
-                            }
+                                if (listTaskToRemove.Count >= MaxTaskClean)
+                                {
+                                    foreach (int taskId in listTaskToRemove.GetList)
+                                        _taskCollection.RemoveAt(taskId);
 
+                                    _taskCollection.TrimExcess();
+                                    listTaskToRemove.Clear();
+                                }
+                            }
                         }
-                        finally
-                        {
-                            if (isLocked)
-                                Monitor.Exit(_taskCollection);
-                        }
+
                         await Task.Delay(1000);
                     }
                     
@@ -153,19 +133,7 @@ namespace SeguraChain_Lib.TaskManager
             }
             catch
             {
-
-                try
-                {
-                    if (cancellation != null)
-                    {
-                        if (!cancellation.IsCancellationRequested)
-                            cancellation.Cancel();
-                    }
-                }
-                catch
-                {
-                    // Ignored.
-                }
+                // Ignored, catch the exception once the task is canceled.
             }
 
         }
