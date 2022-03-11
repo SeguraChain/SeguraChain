@@ -121,44 +121,36 @@ namespace SeguraChain_Lib.TaskManager
         /// <param name="cancellation"></param>
         public static void InsertTask(Action action, long timestampEnd, CancellationTokenSource cancellation, Socket socket = null)
         {
-            bool isLocked = false;
 
             try
             {
+                _taskCollection.Add(new ClassTaskObject()
+                {
+                    Socket = socket,
+                    TimestampEnd = timestampEnd,
+                    Task = Task.Factory.StartNew(action, CancellationTokenSource.CreateLinkedTokenSource(_cancelTaskManager.Token,
+                       cancellation != null ?
+                       cancellation.Token : new CancellationToken(),
+                       timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - CurrentTimestampMillisecond)).Token : new CancellationToken()).Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current)
+                });
+            }
+            catch
+            {
+
                 try
                 {
-                    if (Monitor.TryEnter(_taskCollection))
+                    if (cancellation != null)
                     {
-                        isLocked = true;
-
-
-                        _taskCollection.Add(new ClassTaskObject()
-                        {
-                            Socket = socket,
-                            TimestampEnd = timestampEnd,
-                            Task = new Task(action, CancellationTokenSource.CreateLinkedTokenSource(_cancelTaskManager.Token,
-                            cancellation != null ?
-                            cancellation.Token : new CancellationToken(),
-                            timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - CurrentTimestampMillisecond)).Token : new CancellationToken()).Token)
-                        });
-
-                        _taskCollection[_taskCollection.Count - 1].Task.Start();
-
-                        Monitor.PulseAll(_taskCollection);
+                        if (!cancellation.IsCancellationRequested)
+                            cancellation.Cancel();
                     }
                 }
                 catch
                 {
-                    if (cancellation != null)
-                        cancellation.Cancel();
-
+                    // Ignored.
                 }
             }
-            finally
-            {
-                if (isLocked)
-                    Monitor.Exit(_taskCollection);
-            }
+
         }
 
         /// <summary>
