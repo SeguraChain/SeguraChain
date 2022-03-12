@@ -68,9 +68,8 @@ namespace SeguraChain_Lib.TaskManager
 
                                     if (doDispose)
                                     {
-
                                         ClassUtility.CloseSocket(_taskCollection[i].Socket);
-                                        _taskCollection[i].Task.Dispose();
+                                        _taskCollection[i].Task?.Dispose();
                                         _taskCollection[i].Disposed = true;
                                         listTaskToRemove.Add(i);
                                     }

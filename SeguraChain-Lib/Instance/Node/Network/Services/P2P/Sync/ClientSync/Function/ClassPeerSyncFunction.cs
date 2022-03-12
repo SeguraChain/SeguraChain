@@ -546,7 +546,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         /// <param name="refuseLockedBlock"></param>
         /// <param name="cancellation"></param>
         /// <param name="packetSendBlockData"></param>
-        /// 
         /// <returns></returns>
         public bool TryGetPacketBlockData(ClassPeerNetworkClientSyncObject peerNetworkClientSyncObject, string peerIp, ClassPeerNetworkSettingObject peerNetworkSettingObject, long blockHeightTarget, bool refuseLockedBlock, CancellationTokenSource cancellation, out ClassPeerPacketSendBlockData packetSendBlockData)
         {
@@ -566,11 +565,28 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
             if (!DeserializePacketContent(packetDecrypted.GetStringFromByteArrayUtf8(), out packetSendBlockData))
                 return false;
 
-            Task<bool> result = CheckPacketBlockData(packetSendBlockData, blockHeightTarget, refuseLockedBlock, peerNetworkSettingObject, cancellation);
-            result.Wait(cancellation.Token);
+            Task<bool> result;
 
+            try
+            {
+                result = CheckPacketBlockData(packetSendBlockData, blockHeightTarget, refuseLockedBlock, peerNetworkSettingObject, cancellation);
+                result.Wait(cancellation.Token);
+            }
+            catch
+            {
+                return false;
+            }
+
+            if (result == null)
+                return false;
+
+#if NET5_0_OR_GREATER
+            if (!result.IsCompletedSuccessfully)
+                return false;
+#else
             if (!result.IsCompleted)
                 return false;
+#endif
 
             if (!result.Result)
                 return false;
@@ -654,11 +670,28 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
             if (!ClassUtility.CheckPacketTimestamp(packetSendBlockTransactionData.PacketTimestamp, peerNetworkSettingObject.PeerMaxTimestampDelayPacket, peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
                 return false;
 
-            Task<bool> checkBlockTransactionData = CheckPacketBlockTransactionData(packetSendBlockTransactionData, blockHeightTarget, null, cancellation);
-            checkBlockTransactionData.Wait(cancellation.Token);
+            Task<bool> checkBlockTransactionData;
 
+            try
+            {
+                checkBlockTransactionData = CheckPacketBlockTransactionData(packetSendBlockTransactionData, blockHeightTarget, null, cancellation);
+                checkBlockTransactionData.Wait(cancellation.Token);
+            }
+            catch
+            {
+                return false;
+            }
+
+            if (checkBlockTransactionData == null)
+                return false;
+
+#if NET5_0_OR_GREATER
+            if (!checkBlockTransactionData.IsCompletedSuccessfully)
+                return false;
+#else
             if (!checkBlockTransactionData.IsCompleted)
                 return false;
+#endif
 
             if (!checkBlockTransactionData.Result)
                 return false;
@@ -708,8 +741,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
             Task<bool> checkBlockTransactionData = CheckBlockTransactionByRange(packetSendBlockTransactionDataByRange, blockHeightTarget, listWalletAndPublicKeys, cancellation);
             checkBlockTransactionData.Wait(cancellation.Token);
 
+            if (checkBlockTransactionData == null)
+                return false;
+
+#if NET5_0_OR_GREATER
+            if (!checkBlockTransactionData.IsCompletedSuccessfully)
+                return false;
+#else
             if (!checkBlockTransactionData.IsCompleted)
                 return false;
+#endif
 
             if (!checkBlockTransactionData.Result)
                 return false;
