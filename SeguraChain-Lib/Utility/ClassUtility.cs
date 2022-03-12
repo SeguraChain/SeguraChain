@@ -750,15 +750,18 @@ namespace SeguraChain_Lib.Utility
         {
             try
             {
-                if (socket != null)
-                    return !((socket.Poll(10, SelectMode.SelectRead) && (socket.Available == 0)) || !socket.Connected);
+                if (socket == null)
+                    return false;
+
+                if (!socket.Connected)
+                    return false;
+
+                    return !((socket.Poll(10, SelectMode.SelectRead) && (socket.Available == 0)));
             }
             catch
             {
                 return false;
             }
-
-            return false;
         }
 
         /// <summary>
@@ -780,10 +783,7 @@ namespace SeguraChain_Lib.Utility
                         finally
                         {
                             if (tcpClient != null)
-                            {
                                 tcpClient?.Close();
-                                tcpClient?.Dispose();
-                            }
                         }
                     }
                     else
@@ -818,10 +818,7 @@ namespace SeguraChain_Lib.Utility
                         finally
                         {
                             if (socket != null)
-                            {
                                 socket?.Close();
-                                socket?.Dispose();
-                            }
                         }
                     }
                     else

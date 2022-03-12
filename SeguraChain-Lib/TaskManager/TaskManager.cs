@@ -12,6 +12,7 @@ namespace SeguraChain_Lib.TaskManager
 {
     public class TaskManager
     {
+        private static bool TaskManagerEnabled;
         private static CancellationTokenSource _cancelTaskManager = new CancellationTokenSource();
         private static List<ClassTaskObject> _taskCollection = new List<ClassTaskObject>();
         private const int MaxTaskClean = 10000;
@@ -22,13 +23,15 @@ namespace SeguraChain_Lib.TaskManager
         /// </summary>
         public static void EnableTaskManager()
         {
+            TaskManagerEnabled = true;
+
             try
             {
                 Task.Factory.StartNew(async () =>
                 {
                     using (DisposableList<int> listTaskToRemove = new DisposableList<int>())
                     {
-                        while (!_cancelTaskManager.IsCancellationRequested)
+                        while (TaskManagerEnabled)
                         {
 
                             for (int i = 0; i < _taskCollection.Count; i++)
@@ -37,13 +40,11 @@ namespace SeguraChain_Lib.TaskManager
                                 {
                                     bool doDispose = false;
 
-                                    if (
+                                    if (_taskCollection[i].Task != null && (
 #if NET5_0_OR_GREATER
-                                        _taskCollection[i].Task.IsCompletedSuccessfully || _taskCollection[i].Task.IsCompleted || 
-#else
-                                        _taskCollection[i].Task.IsCompleted || 
+                                        _taskCollection[i].Task.IsCompletedSuccessfully ||
 #endif
-                                        _taskCollection[i].Task.IsCanceled || _taskCollection[i].Task.IsFaulted)
+                                        _taskCollection[i].Task.IsCanceled || _taskCollection[i].Task.IsFaulted))
                                         doDispose = true;
                                     else
                                     {
@@ -68,9 +69,9 @@ namespace SeguraChain_Lib.TaskManager
 
                                     if (doDispose)
                                     {
+                                        _taskCollection[i].Disposed = true;
                                         ClassUtility.CloseSocket(_taskCollection[i].Socket);
                                         _taskCollection[i].Task?.Dispose();
-                                        _taskCollection[i].Disposed = true;
                                         listTaskToRemove.Add(i);
                                     }
                                 }
@@ -84,11 +85,11 @@ namespace SeguraChain_Lib.TaskManager
                                     listTaskToRemove.Clear();
                                 }
                             }
+                            await Task.Delay(1000);
                         }
 
-                        await Task.Delay(1000);
                     }
-                    
+
                 }, _cancelTaskManager.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
 
                 Task.Factory.StartNew(async () =>
@@ -117,18 +118,21 @@ namespace SeguraChain_Lib.TaskManager
 
             try
             {
-                CancellationTokenSource cancellationTask = CancellationTokenSource.CreateLinkedTokenSource(_cancelTaskManager.Token,
-                       cancellation != null ?
-                       cancellation.Token : new CancellationToken(),
-                       timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - CurrentTimestampMillisecond)).Token : new CancellationToken());
-
-                _taskCollection.Add(new ClassTaskObject()
+                if (TaskManagerEnabled)
                 {
-                    Socket = socket,
-                    TimestampEnd = timestampEnd,
-                    Cancellation = cancellation,
-                    Task = Task.Factory.StartNew(action, cancellationTask.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current)
-                });
+                    CancellationTokenSource cancellationTask = CancellationTokenSource.CreateLinkedTokenSource(
+                           cancellation != null ?
+                           cancellation.Token : new CancellationToken(),
+                           timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - CurrentTimestampMillisecond)).Token : new CancellationToken());
+
+                    _taskCollection.Add(new ClassTaskObject()
+                    {
+                        Socket = socket,
+                        TimestampEnd = timestampEnd,
+                        Cancellation = cancellationTask,
+                        Task = Task.Factory.StartNew(action, cancellationTask.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current)
+                    });
+                }
             }
             catch
             {
@@ -142,7 +146,9 @@ namespace SeguraChain_Lib.TaskManager
         /// </summary>
         public static void StopTaskManager()
         {
-            _cancelTaskManager.Cancel();
+            TaskManagerEnabled = false;
+            if (!_cancelTaskManager.IsCancellationRequested)
+                _cancelTaskManager.Cancel();
         }
     }
 }

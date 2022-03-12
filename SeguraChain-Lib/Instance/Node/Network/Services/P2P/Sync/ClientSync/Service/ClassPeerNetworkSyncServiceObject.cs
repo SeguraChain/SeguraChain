@@ -2969,6 +2969,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     return new Tuple<bool, List<string>>(true, packetPeerSovereignUpdateList.SovereignUpdateHashList);
                 }
 
+                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_SIGNATURE ||
+                peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_ENCRYPTION)
+                {
+                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
+                    return new Tuple<bool, List<string>>(false, null);
+                }
+
 
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.NOT_YET_SYNCED)
                 {
@@ -3042,6 +3049,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     });
                 }
 
+                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_SIGNATURE ||
+                peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_ENCRYPTION)
+                {
+                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
+                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassSovereignUpdateObject>>(false, null);
+                }
 
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.NOT_YET_SYNCED)
                 {
@@ -3127,6 +3140,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 }
 
+                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_SIGNATURE ||
+                    peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_ENCRYPTION)
+                {
+                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
+                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendNetworkInformation>>(false, null);
+                }
+
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.NOT_YET_SYNCED)
                 {
                     ClassLog.WriteLine(peerIp + ":" + peerPort + " is not enoguth synced yet.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
@@ -3204,6 +3224,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     });
                 }
 
+                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_SIGNATURE ||
+                    peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_ENCRYPTION)
+                {
+                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
+                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>>(false, null);
+                }
 
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.NOT_YET_SYNCED)
                 {
@@ -3289,6 +3315,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 }
 
+                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_SIGNATURE ||
+                 peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_ENCRYPTION)
+                {
+                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
+                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionData>>(false, null);
+                }
 
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.NOT_YET_SYNCED)
                 {
@@ -3374,6 +3406,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         PacketNumericSignature = packetSendBlockTransactionDataByRange.PacketNumericSignature
                     });
 
+                }
+
+                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_SIGNATURE ||
+                    peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_ENCRYPTION)
+                {
+                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
+                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionDataByRange>>(false, null);
                 }
 
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.NOT_YET_SYNCED)

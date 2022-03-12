@@ -36,6 +36,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// Packet received.
         /// </summary>
         public ClassPeerPacketRecvObject PeerPacketReceived;
+        public ClassPeerEnumPacketResponse PeerPacketTypeReceived;
         public bool PeerPacketReceivedStatus;
         public bool PeerPacketReceivedIgnored;
         private long _lastPacketReceivedTimestamp;
@@ -355,6 +356,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         private void TaskWaitPeerPacketResponse(CancellationTokenSource cancellation)
         {
             PeerPacketReceived = null;
+            PeerPacketTypeReceived = ClassPeerEnumPacketResponse.INVALID_PEER_PACKET;
             CancelTaskListenPeerPacketResponse();
             _peerCancellationTokenTaskListenPeerPacketResponse = CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, _peerCancellationTokenMain.Token);
 
@@ -458,17 +460,22 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                                         }
                                                     }
 
+                                                    PeerPacketTypeReceived = peerPacketReceived.PacketOrder;
+
                                                     if (peerPacketReceived.PacketOrder != _packetResponseExpected)
                                                     {
                                                         if (peerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.INVALID_PEER_PACKET ||
                                                             peerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_ENCRYPTION ||
                                                             peerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_TIMESTAMP ||
+                                                            peerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_SIGNATURE ||
                                                             peerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.NOT_YET_SYNCED)
                                                         {
                                                             PeerPacketReceivedIgnored = true;
                                                         }
                                                         else
                                                             ClassPeerCheckManager.InputPeerClientInvalidPacket(PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject);
+
+
                                                     }
                                                     else
                                                     {
