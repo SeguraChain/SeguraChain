@@ -226,6 +226,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Object.Structure
                     BlockTransactions = retrieveTx ? new SortedList<string, ClassBlockTransaction>(_blockTransactions.ToDictionary(x => x.Key.DeepCopy(), x => x.Value.Clone())) : new SortedList<string, ClassBlockTransaction>()
                 };
 
+
                 blockObjectCopy.TotalTransaction = retrieveTx ? blockObjectCopy.BlockTransactions.Count : _blockTransactions.Count;
             }
             catch

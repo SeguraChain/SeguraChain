@@ -108,53 +108,37 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                             await _tcpListenerPeer.AcceptSocketAsync().ContinueWith(async clientTask =>
                             {
 
-                                bool useSemaphore = false;
-
                                 try
                                 {
-                                    try
+                                    var clientPeerTcp = await clientTask;
+
+                                    await Task.Factory.StartNew(async () =>
                                     {
 
-                                        Socket clientPeerTcp = await clientTask;
+                                        string clientIp = ((IPEndPoint)(clientPeerTcp.RemoteEndPoint)).Address.ToString();
 
-                                        if (clientPeerTcp != null)
+                                        switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
                                         {
-                                            await _semaphoreHandleIncomingConnection.WaitAsync(_cancellationTokenSourcePeerServer.Token);
-                                            useSemaphore = true;
-
-                                            await Task.Factory.StartNew(async () => 
-                                            {
-
-                                                string clientIp = ((IPEndPoint)(clientPeerTcp.RemoteEndPoint)).Address.ToString();
-
-                                                switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
-                                                {
-                                                    case ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
-                                                    case ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS:
-                                                        if (_firewallSettingObject.PeerEnableFirewallLink)
-                                                            ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
-                                                        break;
-                                                }
-
-                                                ClassUtility.CloseSocket(clientPeerTcp);
-
-
-                                            }, _cancellationTokenSourcePeerServer.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+                                            case ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
+                                            case ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS:
+                                                if (_firewallSettingObject.PeerEnableFirewallLink)
+                                                    ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
+                                                break;
                                         }
-                                    }
-                                    catch
-                                    {
-                                        // Ignored, catch the exception once the task is completed.
-                                    }
-                                }
-                                finally
-                                {
-                                    if (useSemaphore)
-                                        _semaphoreHandleIncomingConnection.Release();
-                                }
-                              
 
-                            }, _cancellationTokenSourcePeerServer.Token);
+                                        ClassUtility.CloseSocket(clientPeerTcp);
+
+                                    }, _cancellationTokenSourcePeerServer.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+
+                                }
+                                catch
+                                {
+                                    // Ignored, catch the exception once the task is completed.
+                                }
+
+
+
+                            }, _cancellationTokenSourcePeerServer.Token).ConfigureAwait(false);
                         }
                         catch
                         {

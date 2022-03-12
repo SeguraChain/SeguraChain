@@ -597,7 +597,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                 break;
                             }
 
-                            await Task.Delay(5000, _peerCancellationTokenTaskSendPeerPacketKeepAlive.Token);
+                            await Task.Delay(5000);
                         }
                         catch (SocketException)
                         {

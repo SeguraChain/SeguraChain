@@ -11,5 +11,17 @@ namespace SeguraChain_Lib.TaskManager.Object
         public CancellationTokenSource Cancellation;
         public long TimestampEnd;
         public Socket Socket;
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        public ClassTaskObject(Task task, CancellationTokenSource cancellation, long timestampEnd, Socket socket)
+        {
+            Task = task;
+            Cancellation = cancellation;
+            TimestampEnd = timestampEnd;
+            Socket = socket;
+            Task.Start();
+        }
     }
 }

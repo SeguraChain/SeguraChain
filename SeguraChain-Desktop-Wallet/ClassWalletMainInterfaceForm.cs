@@ -2439,7 +2439,7 @@ namespace SeguraChain_Desktop_Wallet
             if (!long.TryParse(textBoxSendTransactionPaymentId.Text, out long paymendId))
                 paymendId = 0;
 
-            using (ClassWalletSendTransactionWaitRequestForm walletSendTransactionWaitRequestForm = new ClassWalletSendTransactionWaitRequestForm(_currentWalletFilename, textBoxSendTransactionWalletAddressTarget.Text, amountToSpend, feeToPay, paymendId, totalConfirmationsTarget, walletPrivateKey, sendTransactionFeeCostCalculationResult.TransactionAmountSourceList, _cancellationTokenTaskUpdateWalletContentInformations))
+            using (ClassWalletSendTransactionWaitRequestForm walletSendTransactionWaitRequestForm = new ClassWalletSendTransactionWaitRequestForm(_currentWalletFilename, textBoxSendTransactionWalletAddressTarget.Text, amountToSpend, feeToPay, paymendId, totalConfirmationsTarget, walletPrivateKey, sendTransactionFeeCostCalculationResult.TransactionAmountSourceList, CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenTaskUpdateWalletContentInformations.Token, new CancellationTokenSource(ClassWalletDefaultSetting.DefaultWalletSendTransactionMaxDelayRequest).Token)))
             {
                 walletSendTransactionWaitRequestForm.ShowDialog(this);
 

@@ -71,63 +71,66 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                             if (!peerIpTarget.IsNullOrEmpty(false, out _))
                             {
-                                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIpTarget].Count > 0)
+                                if (ClassPeerDatabase.DictionaryPeerDataObject.ContainsKey(peerIpTarget))
                                 {
-                                    foreach (string peerUniqueIdTarget in ClassPeerDatabase.DictionaryPeerDataObject[peerIpTarget].Keys.ToArray())
+                                    if (ClassPeerDatabase.DictionaryPeerDataObject[peerIpTarget].Count > 0)
                                     {
-
-                                        bool success = false;
-
-                                        if (!peerUniqueIdTarget.IsNullOrEmpty(false, out _))
+                                        foreach (string peerUniqueIdTarget in ClassPeerDatabase.DictionaryPeerDataObject[peerIpTarget].Keys.ToArray())
                                         {
-                                            if (ClassPeerCheckManager.CheckPeerClientStatus(peerIpTarget, peerUniqueIdTarget, false, _peerNetworkSettingObject, _peerFirewallSettingObject))
+
+                                            bool success = false;
+
+                                            if (!peerUniqueIdTarget.IsNullOrEmpty(false, out _))
                                             {
-                                                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIpTarget][peerUniqueIdTarget].PeerIsPublic)
+                                                if (ClassPeerCheckManager.CheckPeerClientStatus(peerIpTarget, peerUniqueIdTarget, false, _peerNetworkSettingObject, _peerFirewallSettingObject))
                                                 {
-                                                    int peerPortTarget = ClassPeerDatabase.DictionaryPeerDataObject[peerIpTarget][peerUniqueIdTarget].PeerPort;
-
-
-                                                    // Build receiver instance.
-                                                    if (!_listPeerNetworkClientBroadcastMemPoolReceiver.ContainsKey(peerIpTarget))
-                                                        _listPeerNetworkClientBroadcastMemPoolReceiver.Add(peerIpTarget, new Dictionary<string, ClassPeerNetworkClientBroadcastMemPool>());
-
-                                                    if (!_listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].ContainsKey(peerUniqueIdTarget))
+                                                    if (ClassPeerDatabase.DictionaryPeerDataObject[peerIpTarget][peerUniqueIdTarget].PeerIsPublic)
                                                     {
-                                                        _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].Add(peerUniqueIdTarget, new ClassPeerNetworkClientBroadcastMemPool(peerIpTarget,
-                                                                                                                                               peerUniqueIdTarget,
-                                                                                                                                               peerPortTarget,
-                                                                                                                                               false,
-                                                                                                                                               _peerNetworkSettingObject,
-                                                                                                                                               _peerFirewallSettingObject));
+                                                        int peerPortTarget = ClassPeerDatabase.DictionaryPeerDataObject[peerIpTarget][peerUniqueIdTarget].PeerPort;
 
-                                                        if (!await RunPeerNetworkClientBroadcastMemPool(peerIpTarget, peerUniqueIdTarget, false))
+
+                                                        // Build receiver instance.
+                                                        if (!_listPeerNetworkClientBroadcastMemPoolReceiver.ContainsKey(peerIpTarget))
+                                                            _listPeerNetworkClientBroadcastMemPoolReceiver.Add(peerIpTarget, new Dictionary<string, ClassPeerNetworkClientBroadcastMemPool>());
+
+                                                        if (!_listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].ContainsKey(peerUniqueIdTarget))
                                                         {
-                                                            _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].StopTaskAndDisconnect();
-                                                            _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].Remove(peerUniqueIdTarget);
-                                                        }
-                                                        else
-                                                            success = true;
-                                                    }
-
-                                                    // Build sender instance if the node is in public node.
-                                                    if (success && _peerNetworkSettingObject.PublicPeer)
-                                                    {
-                                                        if (!_listPeerNetworkClientBroadcastMemPoolSender.ContainsKey(peerIpTarget))
-                                                            _listPeerNetworkClientBroadcastMemPoolSender.Add(peerIpTarget, new Dictionary<string, ClassPeerNetworkClientBroadcastMemPool>());
-
-                                                        if (!_listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget].ContainsKey(peerUniqueIdTarget))
-                                                        {
-                                                            _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget].Add(peerUniqueIdTarget, new ClassPeerNetworkClientBroadcastMemPool(peerIpTarget,
+                                                            _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].Add(peerUniqueIdTarget, new ClassPeerNetworkClientBroadcastMemPool(peerIpTarget,
                                                                                                                                                    peerUniqueIdTarget,
                                                                                                                                                    peerPortTarget,
-                                                                                                                                                   true,
+                                                                                                                                                   false,
                                                                                                                                                    _peerNetworkSettingObject,
                                                                                                                                                    _peerFirewallSettingObject));
 
-                                                            if (!await RunPeerNetworkClientBroadcastMemPool(peerIpTarget, peerUniqueIdTarget, true))
+                                                            if (!await RunPeerNetworkClientBroadcastMemPool(peerIpTarget, peerUniqueIdTarget, false))
                                                             {
-                                                                _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].StopTaskAndDisconnect();
-                                                                _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget].Remove(peerUniqueIdTarget);
+                                                                _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].StopTaskAndDisconnect();
+                                                                _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].Remove(peerUniqueIdTarget);
+                                                            }
+                                                            else
+                                                                success = true;
+                                                        }
+
+                                                        // Build sender instance if the node is in public node.
+                                                        if (success && _peerNetworkSettingObject.PublicPeer)
+                                                        {
+                                                            if (!_listPeerNetworkClientBroadcastMemPoolSender.ContainsKey(peerIpTarget))
+                                                                _listPeerNetworkClientBroadcastMemPoolSender.Add(peerIpTarget, new Dictionary<string, ClassPeerNetworkClientBroadcastMemPool>());
+
+                                                            if (!_listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget].ContainsKey(peerUniqueIdTarget))
+                                                            {
+                                                                _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget].Add(peerUniqueIdTarget, new ClassPeerNetworkClientBroadcastMemPool(peerIpTarget,
+                                                                                                                                                       peerUniqueIdTarget,
+                                                                                                                                                       peerPortTarget,
+                                                                                                                                                       true,
+                                                                                                                                                       _peerNetworkSettingObject,
+                                                                                                                                                       _peerFirewallSettingObject));
+
+                                                                if (!await RunPeerNetworkClientBroadcastMemPool(peerIpTarget, peerUniqueIdTarget, true))
+                                                                {
+                                                                    _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].StopTaskAndDisconnect();
+                                                                    _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget].Remove(peerUniqueIdTarget);
+                                                                }
                                                             }
                                                         }
                                                     }

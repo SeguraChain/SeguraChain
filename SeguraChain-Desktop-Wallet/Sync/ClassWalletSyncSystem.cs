@@ -174,7 +174,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                             using (CancellationTokenSource cancellationUpdateWalletSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationSyncCache.Token))
                             {
                                 int totalTask = walletAddresses.Length;
-
+                                int totalTaskDone = 0;
                                 using (DisposableDictionary<string, bool> walletAddressUpdateSyncCacheState = new DisposableDictionary<string, bool>())
                                 {
 
@@ -197,6 +197,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                                             await UpdateWalletSyncTransactionCache(walletAddress, walletFileName, lastBlockHeightTransactionConfirmation, cancellationUpdateWalletSync);
 
                                                             walletAddressUpdateSyncCacheState[walletAddress] = true;
+                                                            totalTaskDone++;
                                                         }
 #if DEBUG
                                                         catch (Exception error)
@@ -206,7 +207,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                                         catch
                                                         {
 #endif
-
+                                                            totalTaskDone++;
                                                         }
                                                     }
 
@@ -227,6 +228,9 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                         if (_cancellationSyncCache.IsCancellationRequested)
                                             break;
 
+                                        if (totalTaskDone >= totalTask)
+                                            break;
+
                                         try
                                         {
                                             await Task.Delay(100, _cancellationSyncCache.Token);
@@ -239,11 +243,8 @@ namespace SeguraChain_Desktop_Wallet.Sync
 
                                     cancellationUpdateWalletSync.Cancel();
                                 }
-
                             }
                         }
-
-
 
                         try
                         {

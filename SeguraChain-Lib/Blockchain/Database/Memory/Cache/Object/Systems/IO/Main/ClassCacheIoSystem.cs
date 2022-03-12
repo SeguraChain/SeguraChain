@@ -151,16 +151,16 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                     {
                         try
                         {
-                            TaskManager.TaskManager.InsertTask(new Action(async () =>
+                            await Task.Factory.StartNew(async () =>
                             {
                                 await _dictionaryCacheIoIndexObject[ioFileName].PurgeIoBlockDataMemory(false, cancellation, 0, false);
                                 totalTaskDone++;
 
-                            }), 0, cancellation, null);
+                            }, cancellation.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
                         }
                         catch
                         {
-                            // Ignored, catch the exception the task is cancelled.
+                            totalTaskDone++;
                         }
                     }
                     else
@@ -217,7 +217,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                         {
                             try
                             {
-                                TaskManager.TaskManager.InsertTask(new Action(() =>
+                                await Task.Factory.StartNew(() =>
                                 {
                                     string ioFilePath = _blockchainDatabaseSetting.GetBlockchainCacheDirectoryPath + ioFileName;
                                     _dictionaryCacheIoIndexObject[ioFileName].CloseLockStream();
@@ -225,11 +225,11 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                     File.Delete(ioFilePath);
                                     totalTaskDone++;
 
-                                }), 0, cancellation, null);
+                                }, cancellation.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
                             }
                             catch
                             {
-                                // Ignored, catch the exception the task is cancelled.
+                                totalTaskDone++;
                             }
                         }
                         else
@@ -486,25 +486,18 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                         {
                             if (_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask && ioFileNameArray.Length > 1)
                             {
-                                try
+                                await Task.Factory.StartNew(async () =>
                                 {
-                                    TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                    cancellationIoCache?.Token.ThrowIfCancellationRequested();
+
+                                    if (!cancel)
                                     {
-                                        cancellationIoCache?.Token.ThrowIfCancellationRequested();
+                                        if (!await _dictionaryCacheIoIndexObject[ioFileName].PushOrUpdateListIoBlockData(listBlockObject[ioFileName], keepAlive, cancellation))
+                                            result = false;
+                                    }
 
-                                        if (!cancel)
-                                        {
-                                            if (!await _dictionaryCacheIoIndexObject[ioFileName].PushOrUpdateListIoBlockData(listBlockObject[ioFileName], keepAlive, cancellation))
-                                                result = false;
-                                        }
-
-                                        totalTaskDone++;
-                                    }), 0, cancellation, null);
-                                }
-                                catch
-                                {
-                                    // Ignored, catch the exception once tasks are cancelled.
-                                }
+                                    totalTaskDone++;
+                                }, cancellation.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
                             }
                             else
                             {
@@ -681,7 +674,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                             {
                                 try
                                 {
-                                    TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                    await Task.Factory.StartNew(async () =>
                                     {
                                         cancellationIoCache?.Token.ThrowIfCancellationRequested();
 
@@ -689,11 +682,11 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                             result = false;
 
                                         totalTaskDone++;
-                                    }), 0, cancellation, null);
+                                    }, cancellation.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
                                 }
                                 catch
                                 {
-                                    // Ignored, catch the exception once tasks are cancelled.
+                                    totalTaskDone++;
                                 }
                             }
                             else
@@ -897,7 +890,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                 {
                                     try
                                     {
-                                        TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                        await Task.Factory.StartNew(async () =>
                                         {
 
                                             if (listBlockHeightIndexedByIoFile[ioFileName].Count > 0)
@@ -926,11 +919,11 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                                 totalTaskDone++;
                                             }
 
-                                        }), 0, cancellation, null);
+                                        }, cancellation.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
                                     }
                                     catch
                                     {
-                                        // Ignored, catch the exception once tasks are cancelled.
+                                        totalTaskDone++;
                                     }
                                 }
 

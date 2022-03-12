@@ -79,10 +79,20 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.SendTransaction
                     _taskComplete = true;
 
                 }, _cancellation.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+            }
+            catch
+            {
+                _taskComplete = true;
 
+                if (!_formClosed)
+                    Close();
+            }
+
+            try
+            {
                 Task.Factory.StartNew(async () =>
                 {
-                    while(!_taskComplete)
+                    while (!_taskComplete)
                     {
                         if (_cancellation.IsCancellationRequested)
                             break;
@@ -100,11 +110,18 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.SendTransaction
             }
             catch
             {
+                _taskComplete = true;
+
                 if (!_formClosed)
                     Close();
             }
         }
 
+        /// <summary>
+        /// Cancel the the task of sending a transaction
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ClassWalletSendTransactionWaitRequestForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             try
