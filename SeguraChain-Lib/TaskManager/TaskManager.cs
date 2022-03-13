@@ -125,7 +125,7 @@ namespace SeguraChain_Lib.TaskManager
                            cancellation.Token : new CancellationToken(),
                            timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - CurrentTimestampMillisecond)).Token : new CancellationToken());
 
-                    _taskCollection.Add(new ClassTaskObject(new Task(action, cancellationTask.Token), cancellationTask, timestampEnd, socket));
+                    _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
                 }
             }
             catch

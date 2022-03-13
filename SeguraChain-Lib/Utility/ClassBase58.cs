@@ -176,7 +176,11 @@ namespace SeguraChain_Lib.Utility
             return ConcatArrays(data, GetCheckSum(data));
         }
 
-        //Check and remove the check, returns null if the checksum is invalid.
+        /// <summary>
+        /// Check and remove the check, returns null if the checksum is invalid.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public static byte[] VerifyAndRemoveCheckSum(byte[] data)
         {
             if (data != null)

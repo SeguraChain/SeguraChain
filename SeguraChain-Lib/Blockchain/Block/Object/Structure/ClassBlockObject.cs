@@ -227,7 +227,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Object.Structure
                 };
 
 
-                blockObjectCopy.TotalTransaction = retrieveTx ? blockObjectCopy.BlockTransactions.Count : _blockTransactions.Count;
+                blockObjectCopy.TotalTransaction = retrieveTx ? blockObjectCopy.BlockTransactions.Count : (_blockTransactions != null ? _blockTransactions.Count : 0);
             }
             catch
             {

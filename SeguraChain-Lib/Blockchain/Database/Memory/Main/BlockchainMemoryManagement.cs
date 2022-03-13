@@ -3155,14 +3155,15 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         {
             try
             {
-                TaskManager.TaskManager.InsertTask(new Action(async () =>
+                Task.Factory.StartNew(async () =>
                 {
                     bool useSemaphoreMemory = false;
                     bool useSemaphoreUpdateTransactionConfirmation = false;
 
                     while (_cacheStatus)
                     {
-                        _cancellationTokenMemoryManagement.Token.ThrowIfCancellationRequested();
+                        if (_cancellationTokenMemoryManagement.IsCancellationRequested)
+                            break;
 
                         if (!_pauseMemoryManagement)
                         {
@@ -3374,7 +3375,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.GlobalTaskManageMemoryInterval);
                     }
 
-                }), 0, _cancellationTokenMemoryManagement, null);
+                }, _cancellationTokenMemoryManagement.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
             }
             catch
             {

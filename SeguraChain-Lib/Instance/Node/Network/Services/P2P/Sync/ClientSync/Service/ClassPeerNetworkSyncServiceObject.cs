@@ -613,8 +613,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                             peerTargetList = GenerateOrUpdatePeerTargetList(peerTargetList);
 
-                                // If true, run every peer check tasks functions.
-                                if (peerTargetList.Count > 0)
+                            // If true, run every peer check tasks functions.
+                            if (peerTargetList.Count > 0)
                             {
                                 long lastBlockHeight = ClassBlockchainStats.GetLastBlockHeight();
 
@@ -622,9 +622,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 {
                                     var currentPacketNetworkInformation = _packetNetworkInformation;
 
-                                        #region Sync block objects and transaction(s).
+                                    #region Sync block objects and transaction(s).
 
-                                        long lastBlockHeightUnlocked = await ClassBlockchainStats.GetLastBlockHeightUnlocked(_cancellationTokenServiceSync);
+                                    long lastBlockHeightUnlocked = await ClassBlockchainStats.GetLastBlockHeightUnlocked(_cancellationTokenServiceSync);
                                     long lastBlockHeightUnlockedChecked = await ClassBlockchainStats.GetLastBlockHeightNetworkConfirmationChecked(_cancellationTokenServiceSync);
                                     long lastBlockHeightNetworkUnlocked = GetHighestBlockHeightUnlockedFromPeerList(_listPeerNetworkInformationStats);
 
@@ -686,9 +686,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                         }
                                     }
 
-                                        #endregion
+                                    #endregion
 
-                                    }
+                                }
                             }
 
                             ClearPeerTargetList(peerTargetList);
