@@ -21,9 +21,8 @@ namespace SeguraChain_Lib.TaskManager.Object
             Cancellation = cancellation;
             TimestampEnd = timestampEnd;
             Socket = socket;
-            Task = new Task(action, Cancellation.Token);
+            Task = Task.Factory.StartNew(action, Cancellation.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current);
             Task.ConfigureAwait(false);
-            Task.Start();
         }
     }
 }
