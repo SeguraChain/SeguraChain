@@ -9,6 +9,7 @@ namespace SeguraChain_Lib.TaskManager.Object
     {
         public bool Started;
         public bool Disposed;
+        public Action Action;
         public Task Task;
         public CancellationTokenSource Cancellation;
         public long TimestampEnd;
@@ -22,7 +23,7 @@ namespace SeguraChain_Lib.TaskManager.Object
             Cancellation = cancellation;
             TimestampEnd = timestampEnd;
             Socket = socket;
-            Task = new Task(action, Cancellation.Token);
+            Action = action;
         }
     }
 }

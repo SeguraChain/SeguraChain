@@ -36,7 +36,7 @@ namespace SeguraChain_Lib.TaskManager
 
                             for (int i = 0; i < _taskCollection.Count; i++)
                             {
-                                if (!_taskCollection[i].Disposed && _taskCollection[i].Started)
+                                if (!_taskCollection[i].Disposed && _taskCollection[i].Started && _taskCollection[i].Task != null)
                                 {
                                     bool doDispose = false;
 
@@ -94,28 +94,32 @@ namespace SeguraChain_Lib.TaskManager
 
                 Task.Factory.StartNew(async () =>
                 {
-                    while(!_cancelTaskManager.IsCancellationRequested)
+                    while(TaskManagerEnabled)
                     {
                         CurrentTimestampMillisecond = ClassUtility.GetCurrentTimestampInMillisecond();
 
                         for (int i = 0; i < _taskCollection.Count; i++)
                         {
-                            if (i < _taskCollection.Count)
-                            {
-                                if (!_taskCollection[i].Started)
-                                {
-                                    try
-                                    {
-                                        _taskCollection[i].Task.Start();
-                                    }
-                                    catch
-                                    {
-                                        // Catch the exception if the task cannot start.
-                                    }
+                            if (i > _taskCollection.Count)
+                                break;
 
-                                    _taskCollection[i].Started = true;
+                            if (!_taskCollection[i].Started)
+                            {
+
+                                try
+                                {
+                                    _taskCollection[i].Task = Task.Run(_taskCollection[i].Action, _taskCollection[i].Cancellation.Token);
+                                    await _taskCollection[i].Task.ConfigureAwait(false);
+                                    
                                 }
+                                catch
+                                {
+                                    // Catch the exception if the task cannot start.
+                                }
+                                _taskCollection[i].Started = true;
+
                             }
+
                         }
                         await Task.Delay(10);
                     }
