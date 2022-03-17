@@ -18,6 +18,7 @@ namespace SeguraChain_Lib.TaskManager
         private static List<ClassTaskObject> _taskCollection = new List<ClassTaskObject>();
         private const int MaxTaskClean = 10000;
         public static long CurrentTimestampMillisecond { get; private set; }
+        private static DisposableList<int> listTaskToRemove = new DisposableList<int>();
 
         /// <summary>
         /// Enable the task manager. Check tasks, dispose them if they are faulted, completed, cancelled, or if a timestamp of end has been set and has been reached.
@@ -30,66 +31,56 @@ namespace SeguraChain_Lib.TaskManager
             {
                 Task.Factory.StartNew(async () =>
                 {
-                    using (DisposableList<int> listTaskToRemove = new DisposableList<int>())
+
+                    while (TaskManagerEnabled)
                     {
-                        while (TaskManagerEnabled)
+
+                        for (int i = 0; i < _taskCollection.Count; i++)
                         {
-
-                            for (int i = 0; i < _taskCollection.Count; i++)
+                            if (!_taskCollection[i].Disposed && _taskCollection[i].Started && _taskCollection[i].Task != null)
                             {
-                                if (!_taskCollection[i].Disposed && _taskCollection[i].Started && _taskCollection[i].Task != null)
-                                {
-                                    bool doDispose = false;
+                                bool doDispose = false;
 
-                                    if (_taskCollection[i].Task != null && (
+                                if (_taskCollection[i].Task != null && (
 #if NET5_0_OR_GREATER
                                         _taskCollection[i].Task.IsCompletedSuccessfully ||
 #endif
                                         _taskCollection[i].Task.IsCanceled || _taskCollection[i].Task.IsFaulted))
-                                        doDispose = true;
-                                    else
-                                    {
-                                        if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond)
+                                    doDispose = true;
+                                else
+                                {
+                                    if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond)
 
+                                    {
+                                        doDispose = true;
+                                        try
                                         {
-                                            doDispose = true;
-                                            try
+                                            if (_taskCollection[i].Cancellation != null)
                                             {
-                                                if (_taskCollection[i].Cancellation != null)
-                                                {
-                                                    if (!_taskCollection[i].Cancellation.IsCancellationRequested)
-                                                        _taskCollection[i].Cancellation.Cancel();
-                                                }
-                                            }
-                                            catch
-                                            {
-                                                // Ignored.
+                                                if (!_taskCollection[i].Cancellation.IsCancellationRequested)
+                                                    _taskCollection[i].Cancellation.Cancel();
                                             }
                                         }
-                                    }
-
-                                    if (doDispose)
-                                    {
-                                        _taskCollection[i].Disposed = true;
-                                        ClassUtility.CloseSocket(_taskCollection[i].Socket);
-                                        _taskCollection[i].Task?.Dispose();
-                                        listTaskToRemove.Add(i);
+                                        catch
+                                        {
+                                            // Ignored.
+                                        }
                                     }
                                 }
 
-                                if (listTaskToRemove.Count >= MaxTaskClean)
+                                if (doDispose)
                                 {
-                                    foreach (int taskId in listTaskToRemove.GetList)
-                                        _taskCollection.RemoveAt(taskId);
-
-                                    _taskCollection.TrimExcess();
-                                    listTaskToRemove.Clear();
+                                    _taskCollection[i].Disposed = true;
+                                    ClassUtility.CloseSocket(_taskCollection[i].Socket);
+                                    _taskCollection[i].Task?.Dispose();
+                                    listTaskToRemove.Add(i);
                                 }
                             }
-                            await Task.Delay(1000);
                         }
-
+                        await Task.Delay(1000);
                     }
+
+
 
                 }, _cancelTaskManager.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
 
@@ -141,6 +132,24 @@ namespace SeguraChain_Lib.TaskManager
 
                         }
                         await Task.Delay(1);
+                    }
+                }, _cancelTaskManager.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+
+                Task.Factory.StartNew(async () =>
+                {
+                    while(TaskManagerEnabled)
+                    {
+
+                        if (listTaskToRemove.Count >= MaxTaskClean)
+                        {
+                            foreach (int taskId in listTaskToRemove.GetList)
+                                _taskCollection.RemoveAt(taskId);
+
+                            _taskCollection.TrimExcess();
+                            listTaskToRemove.Clear();
+                        }
+
+                        await Task.Delay(60 * 1000);
                     }
                 }, _cancelTaskManager.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
             }
