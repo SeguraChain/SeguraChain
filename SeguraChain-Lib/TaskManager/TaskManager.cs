@@ -97,6 +97,25 @@ namespace SeguraChain_Lib.TaskManager
                     while(!_cancelTaskManager.IsCancellationRequested)
                     {
                         CurrentTimestampMillisecond = ClassUtility.GetCurrentTimestampInMillisecond();
+
+                        for (int i = 0; i < _taskCollection.Count; i++)
+                        {
+                            if (i < _taskCollection.Count)
+                            {
+                                if (!_taskCollection[i].Started)
+                                {
+                                    _taskCollection[i].Started = true;
+                                    try
+                                    {
+                                        _taskCollection[i].Task.Start();
+                                    }
+                                    catch
+                                    {
+                                        // Catch the exception if the task cannot start.
+                                    }
+                                }
+                            }
+                        }
                         await Task.Delay(10);
                     }
                 }, _cancelTaskManager.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
@@ -116,22 +135,18 @@ namespace SeguraChain_Lib.TaskManager
         public static void InsertTask(Action action, long timestampEnd, CancellationTokenSource cancellation, Socket socket = null)
         {
 
-            try
-            {
-                if (TaskManagerEnabled)
-                {
-                    CancellationTokenSource cancellationTask = CancellationTokenSource.CreateLinkedTokenSource(
-                           cancellation != null ?
-                           cancellation.Token : new CancellationToken(),
-                           timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - CurrentTimestampMillisecond)).Token : new CancellationToken());
 
-                    _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
-                }
-            }
-            catch
+            if (TaskManagerEnabled)
             {
-                // Ignored, catch the exception once the task is canceled.
+
+                CancellationTokenSource cancellationTask = CancellationTokenSource.CreateLinkedTokenSource(
+                       cancellation != null ?
+                       cancellation.Token : new CancellationToken(),
+                       timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - CurrentTimestampMillisecond)).Token : new CancellationToken());
+
+                _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
             }
+
 
         }
 

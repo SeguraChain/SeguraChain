@@ -463,19 +463,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     Task taskConnect = _peerSocketClient.ConnectAsync(_peerIpTarget, _peerPortTarget);
                     taskConnect.Wait(_peerNetworkSettingObject.PeerMaxDelayToConnectToTarget * 1000, _peerDoConnectionCancellationToken.Token);
 
-#if NET5_0_OR_GREATER
-                    if (taskConnect.IsCompletedSuccessfully)
-                    {
-                        if (ClassUtility.SocketIsConnected(_peerSocketClient))
-                            successConnect = true;
-                    }
-#else
+
                     if (taskConnect.IsCompleted)
                     {
                         if (ClassUtility.SocketIsConnected(_peerSocketClient))
                             successConnect = true;
                     }
-#endif
 
                     if (!successConnect)
                     {
@@ -1412,8 +1405,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                         if (listTransactionObject.Count > 0)
                         {
+                            if (!_memPoolListBlockHeightTransactionReceived.ContainsKey(blockHeight))
+                                _memPoolListBlockHeightTransactionReceived.Add(blockHeight, new HashSet<string>());
+
                             foreach (ClassTransactionObject transactionObject in listTransactionObject.GetAll)
                             {
+
                                 if (!_memPoolListBlockHeightTransactionReceived[blockHeight].Contains(transactionObject.TransactionHash))
                                 {
 
