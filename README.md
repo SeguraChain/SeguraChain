@@ -36,19 +36,21 @@ Everything has been developed in C#, and support Net5, a downgrade to NetFramewo
   - English (100%)
   - French (100%)
 
-> Complete wallets balance checkpoint disk cache process. (40% done)
+> **Complete wallets balance checkpoint disk cache process. (40% done)**
 
-> Complete Desktop Wallet features and options. (90% done)
+> **Complete Desktop Wallet features and options. (90% done)**
 
-> Develop the IO Cache Network mode. (5% done)
+> **Develop the IO Cache Network mode. (5% done)**
 
-> Develop the RPC Wallet. (50% done)
+> **Develop the RPC Wallet. (50% done)**
 
-> Develop an example of Mining Pool. (0% done)
+> **Develop an example of Mining Pool. (0% done)**
 
-> Finish optimizations. (85% done)
+> **Finish optimizations. (87% done)**
 
-> Develop a block explorer page inside of the node API. (10% done)
+> **Develop a block explorer page inside of the node API. (10% done)**
+
+> **Clean up the source code. (10% done)**
 
 <h3>Setup:</h3>
 
