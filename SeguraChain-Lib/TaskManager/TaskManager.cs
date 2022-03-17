@@ -4,6 +4,7 @@ using SeguraChain_Lib.Utility;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -98,30 +99,48 @@ namespace SeguraChain_Lib.TaskManager
                     {
                         CurrentTimestampMillisecond = ClassUtility.GetCurrentTimestampInMillisecond();
 
+                        await Task.Delay(10);
+                    }
+                }, _cancelTaskManager.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+
+                Task.Factory.StartNew(async () =>
+                {
+                    while (TaskManagerEnabled)
+                    {
                         for (int i = 0; i < _taskCollection.Count; i++)
                         {
                             if (i > _taskCollection.Count)
                                 break;
 
-                            if (!_taskCollection[i].Started)
+                            try
                             {
-
-                                try
+                                if (!_taskCollection[i].Started)
                                 {
-                                    _taskCollection[i].Task = Task.Run(_taskCollection[i].Action, _taskCollection[i].Cancellation.Token);
-                                    await _taskCollection[i].Task.ConfigureAwait(false);
-                                    
-                                }
-                                catch
-                                {
-                                    // Catch the exception if the task cannot start.
-                                }
-                                _taskCollection[i].Started = true;
+                                    _taskCollection[i].Started = true;
 
+                                    await Task.Factory.StartNew(() =>
+                                    {
+
+                                        try
+                                        {
+                                            _taskCollection[i].Task = Task.Run(_taskCollection[i].Action, _taskCollection[i].Cancellation.Token);
+                                        }
+                                        catch
+                                        {
+                                            // Catch the exception if the task cannot start.
+                                        }
+                                    }).ConfigureAwait(false);
+
+                                }
+                            }
+                            catch
+                            {
+                                // If the amount change..
+                                break;
                             }
 
                         }
-                        await Task.Delay(10);
+                        await Task.Delay(1);
                     }
                 }, _cancelTaskManager.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
             }
@@ -143,13 +162,19 @@ namespace SeguraChain_Lib.TaskManager
 
             if (TaskManagerEnabled)
             {
+                try
+                {
+                    CancellationTokenSource cancellationTask = CancellationTokenSource.CreateLinkedTokenSource(
+                           cancellation != null ?
+                           cancellation.Token : new CancellationToken(),
+                           timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - CurrentTimestampMillisecond)).Token : new CancellationToken());
 
-                CancellationTokenSource cancellationTask = CancellationTokenSource.CreateLinkedTokenSource(
-                       cancellation != null ?
-                       cancellation.Token : new CancellationToken(),
-                       timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - CurrentTimestampMillisecond)).Token : new CancellationToken());
-
-                _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
+                    _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
+                }
+                catch
+                {
+                    // If the insert of the task failed.
+                }
             }
 
 
