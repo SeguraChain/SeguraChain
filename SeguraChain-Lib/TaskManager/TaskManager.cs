@@ -36,7 +36,7 @@ namespace SeguraChain_Lib.TaskManager
 
                             for (int i = 0; i < _taskCollection.Count; i++)
                             {
-                                if (!_taskCollection[i].Disposed)
+                                if (!_taskCollection[i].Disposed && _taskCollection[i].Started)
                                 {
                                     bool doDispose = false;
 
@@ -104,7 +104,6 @@ namespace SeguraChain_Lib.TaskManager
                             {
                                 if (!_taskCollection[i].Started)
                                 {
-                                    _taskCollection[i].Started = true;
                                     try
                                     {
                                         _taskCollection[i].Task.Start();
@@ -113,6 +112,8 @@ namespace SeguraChain_Lib.TaskManager
                                     {
                                         // Catch the exception if the task cannot start.
                                     }
+
+                                    _taskCollection[i].Started = true;
                                 }
                             }
                         }
