@@ -85,6 +85,7 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Object
         /// API.
         /// </summary>
         public string ListenApiIp;
+        public string ListenApiIpV6;
         public int ListenApiPort;
         public int PeerMaxApiConnectionPerIp;
         public int PeerApiMaxConnectionDelay;
@@ -137,6 +138,7 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Object
             // API Part.
             ListenApiIp = BlockchainSetting.PeerDefaultApiIp;
             ListenApiPort = BlockchainSetting.PeerDefaultApiPort;
+            ListenApiIpV6 = string.Empty;
             PeerMaxApiConnectionPerIp = BlockchainSetting.PeerMaxApiConnectionPerIp;
             PeerApiMaxConnectionDelay = BlockchainSetting.PeerApiMaxConnectionDelay;
             PeerApiMaxEarlierPacketDelay = BlockchainSetting.PeerApiMaxEarlierPacketDelay;

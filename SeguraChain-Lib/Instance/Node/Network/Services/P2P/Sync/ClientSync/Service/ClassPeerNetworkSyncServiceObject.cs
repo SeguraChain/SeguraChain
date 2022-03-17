@@ -1159,13 +1159,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 TaskManager.TaskManager.InsertTask(new Action(async () =>
                 {
-                    if (peerListTarget.ContainsKey(i1))
+                    string peerIpTarget = peerListTarget[i1].PeerIpTarget;
+                    int peerPortTarget = peerListTarget[i1].PeerPortTarget;
+                    if (await SendAskPeerList(peerListTarget[i1].PeerNetworkClientSyncObject, cancellationTokenSourceTaskSync))
                     {
-                        if (await SendAskPeerList(peerListTarget[i1].PeerNetworkClientSyncObject, cancellationTokenSourceTaskSync))
-                        {
-                            totalResponseOk++;
-                            ClassLog.WriteLine("Peer list asked to peer target: " + peerListTarget[i1].PeerIpTarget + ":" + peerListTarget[i1].PeerPortTarget + " successfully received.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
-                        }
+                        totalResponseOk++;
+                        ClassLog.WriteLine("Peer list asked to peer target: " + peerIpTarget + ":" + peerPortTarget + " successfully received.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
                     }
 
                     totalTaskComplete++;
@@ -1180,6 +1179,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
             // Await the task is complete.
             while (totalTaskComplete < totalTaskCount)
             {
+
+                if (totalResponseOk >= totalTaskCount)
+                    break;
 
                 if (timestampEnd <= TaskManager.TaskManager.CurrentTimestampMillisecond ||
                     totalTaskComplete + totalTaskCancelled >= totalTaskCount || _cancellationTokenServiceSync.IsCancellationRequested)

@@ -72,11 +72,11 @@ namespace SeguraChain_Solo_Miner.Setting.Function
 
             while (!CheckWalletAddressFormat(walletAddress))
             {
-                ClassLog.SimpleWriteLine("Write your wallet address: ", ConsoleColor.Yellow);
+                ClassLog.SimpleWriteLine("The wallet address is invalid, please try again:", ConsoleColor.Yellow);
                 walletAddress = Console.ReadLine() ?? string.Empty;
             }
 
-            ClassLog.SimpleWriteLine("Write your amount of threads [" + Environment.ProcessorCount + " thread(s) detected]: ", ConsoleColor.Yellow);
+            ClassLog.SimpleWriteLine("Write an amount of threads [Note: " + Environment.ProcessorCount + " thread(s) detected]: ", ConsoleColor.Yellow);
 
             int maxThread = 0;
             bool firstCheckDone = false;
@@ -85,8 +85,8 @@ namespace SeguraChain_Solo_Miner.Setting.Function
             {
                 while (!int.TryParse(Console.ReadLine() ?? string.Empty, out maxThread))
                 {
-                    ClassLog.SimpleWriteLine("The input thread is invalid.", ConsoleColor.Red);
-                    ClassLog.SimpleWriteLine("Write your amount of threads [" + Environment.ProcessorCount + " thread(s) detected]: ", ConsoleColor.Yellow);
+                    ClassLog.SimpleWriteLine("The amount of thread is invalid.", ConsoleColor.Red);
+                    ClassLog.SimpleWriteLine("Please try again. [Note: " + Environment.ProcessorCount + " thread(s) detected]: ", ConsoleColor.Yellow);
                     firstCheckDone = true;
                 }
             }
@@ -110,20 +110,16 @@ namespace SeguraChain_Solo_Miner.Setting.Function
             int peerApiPortTarget = 0;
 
             while (!CheckPeerIpTarget(peerIpTarget, true))
-            {
-                ClassLog.SimpleWriteLine("The input peer ip is invalid.", ConsoleColor.Red);
                 peerIpTarget = Console.ReadLine();
-            }
-
-            ClassLog.SimpleWriteLine("Write the api peer port target: ", ConsoleColor.Yellow);
+            
+            ClassLog.SimpleWriteLine("Write the API port of the Peer target: ", ConsoleColor.Yellow);
 
             firstCheckDone = false;
             while (!CheckPeerApiPortTarget(peerApiPortTarget, firstCheckDone))
             {
                 while (!int.TryParse(Console.ReadLine() ?? string.Empty, out peerApiPortTarget))
                 {
-                    ClassLog.SimpleWriteLine("The input api port is invalid.", ConsoleColor.Red);
-                    ClassLog.SimpleWriteLine("Write the api peer port target: ", ConsoleColor.Yellow);
+                    ClassLog.SimpleWriteLine("The input API port is invalid. Please try again:", ConsoleColor.Red);
                     firstCheckDone = true;
                 }
             }
@@ -207,10 +203,15 @@ namespace SeguraChain_Solo_Miner.Setting.Function
         /// <returns></returns>
         public static bool CheckPeerIpTarget(string peerIpTarget, bool noticeError = false)
         {
-            if (noticeError)
-                ClassLog.SimpleWriteLine("The peer ip target: " + peerIpTarget + " selected is invalid.", ConsoleColor.Red);
+            if (!IPAddress.TryParse(peerIpTarget, out _))
+            {
+                if (noticeError)
+                    ClassLog.SimpleWriteLine("The peer ip target: " + peerIpTarget + " selected is invalid.", ConsoleColor.Red);
 
-            return IPAddress.TryParse(peerIpTarget, out _);
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -221,10 +222,13 @@ namespace SeguraChain_Solo_Miner.Setting.Function
         /// <returns></returns>
         public static bool CheckPeerApiPortTarget(int peerApiPortTarget, bool noticeError = false)
         {
-            if (noticeError)
-                ClassLog.SimpleWriteLine("The peer api port target: " + peerApiPortTarget + " selected is invalid.", ConsoleColor.Red);
+            if (peerApiPortTarget < BlockchainSetting.PeerMinPort || peerApiPortTarget > BlockchainSetting.PeerMaxPort)
+            {
+                if (noticeError)
+                    ClassLog.SimpleWriteLine("The peer api port target: " + peerApiPortTarget + " selected is invalid.", ConsoleColor.Red);
+            }
 
-            return peerApiPortTarget >= BlockchainSetting.PeerMinPort && peerApiPortTarget <= BlockchainSetting.PeerMaxPort;
+            return true;
         }
 
         #endregion

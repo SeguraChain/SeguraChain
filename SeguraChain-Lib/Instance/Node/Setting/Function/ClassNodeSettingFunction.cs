@@ -59,6 +59,12 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Function
 
             string peerIp = Console.ReadLine();
 
+            while(!IPAddress.TryParse(peerIp, out _))
+            {
+                Console.WriteLine("The input ip is invalid, please try again: ");
+                peerIp = Console.ReadLine();
+            }
+
             Console.WriteLine("Write your peer port (Example: " + BlockchainSetting.PeerDefaultPort + "): ");
 
             int peerPort = 0;
@@ -66,10 +72,10 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Function
             while (peerPort < BlockchainSetting.PeerMinPort || peerPort > BlockchainSetting.PeerMaxPort)
             {
                 while (!int.TryParse(Console.ReadLine(), out peerPort))
-                    Console.WriteLine("Invalid input for the port, please try again:");
+                    Console.WriteLine("Invalid input port, please try again:");
 
                 if (peerPort < BlockchainSetting.PeerMinPort || peerPort > BlockchainSetting.PeerMaxPort)
-                    Console.WriteLine("Invalid input for the port, the port is lower or higher than the average allowed, please try again.");
+                    Console.WriteLine("Invalid input port, this one is not inside of the range [" + BlockchainSetting.PeerMinPort + ":" + BlockchainSetting.PeerMaxPort + "], please try again.");
             }
 
             Console.WriteLine("Write your peer API port, it's usually for Wallets and web API client (exchanges and more): ");
@@ -80,14 +86,14 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Function
             while (peerApiPort < BlockchainSetting.PeerMinPort || peerApiPort > BlockchainSetting.PeerMaxPort)
             {
                 while (!int.TryParse(Console.ReadLine(), out peerApiPort))
-                    Console.WriteLine("Invalid input for the API port, please try again:");
+                    Console.WriteLine("Invalid input API port, please try again:");
 
                 if (peerApiPort < BlockchainSetting.PeerMinPort || peerApiPort > BlockchainSetting.PeerMaxPort)
-                    Console.WriteLine("Invalid input for the API port, the port is lower or higher than the average allowed, please try again.");
+                    Console.WriteLine("Invalid input API port, this one is not inside of the range [" + BlockchainSetting.PeerMinPort + ":" + BlockchainSetting.PeerMaxPort + "], please try again.");
 
                 if (peerApiPort == peerPort)
                 {
-                    Console.WriteLine("Invalid input for the API port, the port is the same of the peer port.");
+                    Console.WriteLine("Invalid input API port, the port is the same of the peer port.");
                     peerApiPort = 0;
                 }
             }
