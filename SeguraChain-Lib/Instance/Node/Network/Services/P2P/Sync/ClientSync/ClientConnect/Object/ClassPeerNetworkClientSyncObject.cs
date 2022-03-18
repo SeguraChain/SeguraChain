@@ -252,7 +252,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                     await Task.Delay(10);
                 }
 
-            }), 0, _peerCancellationTokenDoConnection, null);
+            }), timestampEnd, _peerCancellationTokenDoConnection, null);
 
 
             while (!successConnect)

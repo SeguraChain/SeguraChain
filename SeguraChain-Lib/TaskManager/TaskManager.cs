@@ -39,53 +39,58 @@ namespace SeguraChain_Lib.TaskManager
 
                         for (int i = 0; i < _taskCollection.Count; i++)
                         {
-                            if (!_taskCollection[i].Disposed && _taskCollection[i].Started && _taskCollection[i].Task != null)
+                            try
                             {
-                                bool doDispose = false;
-
-                                if (_taskCollection[i].Task != null && (
-#if NET5_0_OR_GREATER
-                                        _taskCollection[i].Task.IsCompletedSuccessfully ||
-#endif
-                                        _taskCollection[i].Task.IsCanceled || _taskCollection[i].Task.IsFaulted))
-                                    doDispose = true;
-                                else
+                                if (!_taskCollection[i].Disposed && _taskCollection[i].Started && _taskCollection[i].Task != null)
                                 {
-                                    if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond)
+                                    bool doDispose = false;
 
-                                    {
+                                    if (_taskCollection[i].Task != null && (
+
+                                            _taskCollection[i].Task.IsCanceled || _taskCollection[i].Task.IsFaulted))
                                         doDispose = true;
+                                    else
+                                    {
+                                        if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond)
+
+                                        {
+                                            doDispose = true;
+                                            try
+                                            {
+                                                if (_taskCollection[i].Cancellation != null)
+                                                {
+                                                    if (!_taskCollection[i].Cancellation.IsCancellationRequested)
+                                                        _taskCollection[i].Cancellation.Cancel();
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                // Ignored.
+                                            }
+                                        }
+                                    }
+
+                                    if (doDispose)
+                                    {
+                                        _taskCollection[i].Disposed = true;
+                                        if (_taskCollection[i].Socket != null)
+                                            ClassUtility.CloseSocket(_taskCollection[i].Socket);
                                         try
                                         {
-                                            if (_taskCollection[i].Cancellation != null)
-                                            {
-                                                if (!_taskCollection[i].Cancellation.IsCancellationRequested)
-                                                    _taskCollection[i].Cancellation.Cancel();
-                                            }
+
+                                            _taskCollection[i].Task?.Dispose();
                                         }
                                         catch
                                         {
-                                            // Ignored.
+                                            // Ignored, the task dispose can failed.
                                         }
+                                        listTaskToRemove.Add(i);
                                     }
                                 }
-
-                                if (doDispose)
-                                {
-                                    _taskCollection[i].Disposed = true;
-                                    if (_taskCollection[i].Socket != null)
-                                        ClassUtility.CloseSocket(_taskCollection[i].Socket);
-                                    try
-                                    {
-
-                                        _taskCollection[i].Task?.Dispose();
-                                    }
-                                    catch
-                                    {
-                                        // Ignored, the task dispose can failed.
-                                    }
-                                    listTaskToRemove.Add(i);
-                                }
+                            }
+                            catch
+                            {
+                                break;
                             }
                         }
                         await Task.Delay(10);
