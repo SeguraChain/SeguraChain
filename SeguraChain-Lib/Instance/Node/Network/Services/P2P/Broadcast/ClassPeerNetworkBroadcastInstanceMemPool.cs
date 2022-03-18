@@ -237,7 +237,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             {
                 if (!onSendingMode)
                 {
-                    if (_listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].TryConnect(_cancellation))
+                    if (await _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].TryConnectAsync(_cancellation))
                     {
                         if (await _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].TryAskBroadcastMode())
                         {
@@ -248,7 +248,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 }
                 else
                 {
-                    if (_listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].TryConnect(_cancellation))
+                    if (await _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].TryConnectAsync(_cancellation))
                     {
                         if (await _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].TryAskBroadcastMode())
                         {
@@ -434,7 +434,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             /// Try to connect to the peer target.
             /// </summary>
             /// <returns></returns>
-            public bool TryConnect(CancellationTokenSource mainCancellation)
+            public async Task<bool> TryConnectAsync(CancellationTokenSource mainCancellation)
             {
                 if (_peerCheckConnectionCancellationToken != null)
                 {
@@ -460,36 +460,55 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                 bool successConnect = false;
 
-                try
+                long timestampEnd = ClassUtility.GetCurrentTimestampInMillisecond() + (_peerNetworkSettingObject.PeerMaxDelayToConnectToTarget * 1000);
+                
+                TaskManager.TaskManager.InsertTask(new Action(async () =>
                 {
-                    _peerSocketClient = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                    Task taskConnect = _peerSocketClient.ConnectAsync(_peerIpTarget, _peerPortTarget);
-                    taskConnect.Wait(_peerNetworkSettingObject.PeerMaxDelayToConnectToTarget * 1000, _peerDoConnectionCancellationToken.Token);
-
-
-                    if (taskConnect.IsCompleted)
+                    while (!successConnect)
                     {
-                        if (ClassUtility.SocketIsConnected(_peerSocketClient))
-                            successConnect = true;
+                        try
+                        {
+                            _peerSocketClient = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                            await _peerSocketClient.ConnectAsync(_peerIpTarget, _peerPortTarget);
+
+                            if (_peerSocketClient.Connected)
+                            {
+                                successConnect = true;
+                                break;
+                            }
+                        }
+                        catch
+                        {
+                                // Ignored, catch the exception once the attempt to connect to a peer failed.
+                            }
+                        await Task.Delay(10);
                     }
 
-                    if (!successConnect)
-                    {
-                        IsAlive = false;
-                        return false;
-                    }
+                }), 0, _peerDoConnectionCancellationToken, null);
 
-                    _peerDoConnectionCancellationToken.Cancel();
 
-                    IsAlive = true;
-                    _peerCheckConnectionCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(mainCancellation.Token);
-                    _peerCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(mainCancellation.Token);
+
+                while (!successConnect)
+                {
+                    if (timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond ||
+                        _peerDoConnectionCancellationToken.Token.IsCancellationRequested)
+                        break;
+
+                    await Task.Delay(10);
                 }
-                catch
+
+
+                if (!successConnect)
                 {
                     IsAlive = false;
                     return false;
                 }
+
+
+                IsAlive = true;
+                _peerCheckConnectionCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(mainCancellation.Token);
+                _peerCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(mainCancellation.Token);
+
 
                 return successConnect;
             }
@@ -500,9 +519,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             /// <returns></returns>
             public async Task<bool> TryAskBroadcastMode()
             {
+                var peerObject = ClassPeerDatabase.GetPeerObject(_peerIpTarget, _peerUniqueIdTarget);
+
+                if (peerObject == null)
+                    return false;
+
                 ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId,
-                    ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerInternPublicKey,
-                    ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                    peerObject.PeerInternPublicKey,
+                    peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                 {
                     PacketOrder = ClassPeerEnumPacketSend.ASK_MEM_POOL_BROADCAST_MODE,
                 };

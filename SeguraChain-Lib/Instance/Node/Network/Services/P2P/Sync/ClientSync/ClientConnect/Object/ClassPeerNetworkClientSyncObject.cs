@@ -230,37 +230,35 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
             _peerCancellationTokenDoConnection = CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, _peerCancellationTokenMain.Token);
 
-            try
+            TaskManager.TaskManager.InsertTask(new Action(async () =>
             {
-                TaskManager.TaskManager.InsertTask(new Action(async () =>
+                while (!successConnect)
                 {
-
-                    while (!successConnect)
+                    try
                     {
-                        try
-                        {
-                            _peerSocketClient = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                        _peerSocketClient = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                        await _peerSocketClient.ConnectAsync(PeerIpTarget, PeerPortTarget);
 
-                            await _peerSocketClient.ConnectAsync(PeerIpTarget, PeerPortTarget);
-                            successConnect = true;
-                        }
-                        catch
+                        if (_peerSocketClient.Connected)
                         {
-                           // Ignored.
+                            successConnect = true;
+                            break;
                         }
                     }
+                    catch
+                    {
+                        // Ignored, catch the exception once the attempt to connect to a peer failed.
+                    }
+                    await Task.Delay(10);
+                }
 
-                }), timestampEnd, _peerCancellationTokenDoConnection, _peerSocketClient);
-            }
-            catch
-            {
-                // ignored, catch the exception once the task is cancelled.
-            }
+            }), 0, _peerCancellationTokenDoConnection, null);
 
 
             while (!successConnect)
             {
-                if (timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond)
+                if (timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond || 
+                    _peerCancellationTokenDoConnection.IsCancellationRequested)
                     break;
 
                 try
@@ -317,14 +315,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                     break;
                 }
 
-                try
-                {
-                    await Task.Delay(10, cancellation.Token);
-                }
-                catch
-                {
-                    break;
-                }
+                await Task.Delay(10);
             }
 
             CancelTaskListenPeerPacketResponse();

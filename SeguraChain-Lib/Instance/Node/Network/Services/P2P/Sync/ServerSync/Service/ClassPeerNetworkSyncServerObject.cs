@@ -108,13 +108,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                             await _tcpListenerPeer.AcceptSocketAsync().ContinueWith(async clientTask =>
                             {
 
-                                try
+                                var clientPeerTcp = await clientTask;
+
+                                TaskManager.TaskManager.InsertTask(new Action(async () =>
                                 {
-                                    var clientPeerTcp = await clientTask;
-
-                                    await Task.Factory.StartNew(async () =>
+                                    try
                                     {
-
                                         string clientIp = ((IPEndPoint)(clientPeerTcp.RemoteEndPoint)).Address.ToString();
 
                                         switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
@@ -125,18 +124,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                                     ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
                                                 break;
                                         }
+                                    }
+                                    catch
+                                    {
+                                        // The socket can be dead.
+                                    }
+                                    ClassUtility.CloseSocket(clientPeerTcp);
 
-                                        ClassUtility.CloseSocket(clientPeerTcp);
-
-                                    }, _cancellationTokenSourcePeerServer.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
-
-                                }
-                                catch
-                                {
-                                    // Ignored, catch the exception once the task is completed.
-                                }
-
-
+                                }), 0, null, clientPeerTcp);
 
                             }, _cancellationTokenSourcePeerServer.Token);
                         }

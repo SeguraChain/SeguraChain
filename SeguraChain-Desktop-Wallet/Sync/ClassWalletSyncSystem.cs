@@ -1148,7 +1148,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
 
                                 if (blockObjectInformation.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
                                 {
-                                    using (ClassBlockObject blockObject = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(blockHeight, false, true, cancellation))
+                                    using (ClassBlockObject blockObject = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(blockHeight, true, true, cancellation))
                                     {
                                         if (blockObject == null)
                                             cancelled = true;

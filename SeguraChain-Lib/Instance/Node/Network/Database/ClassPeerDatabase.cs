@@ -372,10 +372,29 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
             return listPeerInfo;
         }
 
+        /// <summary>
+        /// Return a collection of peer informations by a peer ip target.
+        /// </summary>
+        /// <param name="peerIp"></param>
+        /// <returns></returns>
         public static ConcurrentDictionary<string,ClassPeerObject>  GetPeerCollectionObject(string peerIp)
         {
             if (DictionaryPeerDataObject.ContainsKey(peerIp))
                 return DictionaryPeerDataObject[peerIp];
+
+            return null;
+        }
+
+        /// <summary>
+        /// Return a peer object.
+        /// </summary>
+        /// <param name="peerIp"></param>
+        /// <param name="peerUniqueId"></param>
+        /// <returns></returns>
+        public static ClassPeerObject GetPeerObject(string peerIp, string peerUniqueId)
+        {
+            if (ContainsPeer(peerIp, peerUniqueId))
+                return DictionaryPeerDataObject[peerIp][peerUniqueId];
 
             return null;
         }

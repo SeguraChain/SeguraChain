@@ -953,64 +953,68 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     packetSendAskBlockTransactionDataByRange.TransactionIdEndRange >= 0 &&
                                     packetSendAskBlockTransactionDataByRange.TransactionIdStartRange < packetSendAskBlockTransactionDataByRange.TransactionIdEndRange)
                                 {
-
                                     int blockTransactionCount = await ClassBlockchainStats.GetBlockTransactionCount(packetSendAskBlockTransactionDataByRange.BlockHeight, _cancellationTokenAccessData);
 
                                     if (blockTransactionCount > packetSendAskBlockTransactionDataByRange.TransactionIdStartRange &&
                                         blockTransactionCount >= packetSendAskBlockTransactionDataByRange.TransactionIdEndRange)
                                     {
-                                        using (DisposableSortedList<string, ClassBlockTransaction> transactionList = await ClassBlockchainStats.GetTransactionListFromBlockHeightTarget(packetSendAskBlockTransactionDataByRange.BlockHeight, true, _cancellationTokenAccessData))
+                                        TaskManager.TaskManager.InsertTask(async () =>
                                         {
 
-                                            if (transactionList.Count > packetSendAskBlockTransactionDataByRange.TransactionIdStartRange &&
-                                                transactionList.Count >= packetSendAskBlockTransactionDataByRange.TransactionIdEndRange)
+                                            using (DisposableSortedList<string, ClassBlockTransaction> transactionList = await ClassBlockchainStats.GetTransactionListFromBlockHeightTarget(packetSendAskBlockTransactionDataByRange.BlockHeight, true, _cancellationTokenAccessData))
                                             {
-                                                #region Generate the list of transaction asked by range.
 
-                                                SortedDictionary<string, ClassTransactionObject> transactionListRangeToSend = new SortedDictionary<string, ClassTransactionObject>();
-
-                                                foreach (var transactionPair in transactionList.GetList.Skip(packetSendAskBlockTransactionDataByRange.TransactionIdStartRange).Take(packetSendAskBlockTransactionDataByRange.TransactionIdEndRange - packetSendAskBlockTransactionDataByRange.TransactionIdStartRange))
-                                                    transactionListRangeToSend.Add(transactionPair.Key, transactionPair.Value.TransactionObject);
-
-                                                #endregion
-
-                                                ClassPeerPacketSendBlockTransactionDataByRange packetSendBlockTransactionData = new ClassPeerPacketSendBlockTransactionDataByRange()
+                                                if (transactionList.Count > packetSendAskBlockTransactionDataByRange.TransactionIdStartRange &&
+                                                    transactionList.Count >= packetSendAskBlockTransactionDataByRange.TransactionIdEndRange)
                                                 {
-                                                    BlockHeight = packetSendAskBlockTransactionDataByRange.BlockHeight,
-                                                    ListTransactionObject = transactionListRangeToSend,
-                                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
-                                                };
+                                                    #region Generate the list of transaction asked by range.
+
+                                                    SortedDictionary<string, ClassTransactionObject> transactionListRangeToSend = new SortedDictionary<string, ClassTransactionObject>();
+
+                                                    foreach (var transactionPair in transactionList.GetList.Skip(packetSendAskBlockTransactionDataByRange.TransactionIdStartRange).Take(packetSendAskBlockTransactionDataByRange.TransactionIdEndRange - packetSendAskBlockTransactionDataByRange.TransactionIdStartRange))
+                                                        transactionListRangeToSend.Add(transactionPair.Key, transactionPair.Value.TransactionObject);
+
+                                                    #endregion
+
+                                                    ClassPeerPacketSendBlockTransactionDataByRange packetSendBlockTransactionData = new ClassPeerPacketSendBlockTransactionDataByRange()
+                                                    {
+                                                        BlockHeight = packetSendAskBlockTransactionDataByRange.BlockHeight,
+                                                        ListTransactionObject = transactionListRangeToSend,
+                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                    };
 
 
-                                                SignPacketWithNumericPrivateKey(packetSendBlockTransactionData, out string hashNumeric, out string signatureNumeric);
+                                                    SignPacketWithNumericPrivateKey(packetSendBlockTransactionData, out string hashNumeric, out string signatureNumeric);
 
-                                                packetSendBlockTransactionData.PacketNumericHash = hashNumeric;
-                                                packetSendBlockTransactionData.PacketNumericSignature = signatureNumeric;
+                                                    packetSendBlockTransactionData.PacketNumericHash = hashNumeric;
+                                                    packetSendBlockTransactionData.PacketNumericSignature = signatureNumeric;
 
-                                                bool sendError = false;
+                                                    bool sendError = false;
 
-                                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
-                                                {
-                                                    PacketOrder = ClassPeerEnumPacketResponse.SEND_BLOCK_TRANSACTION_DATA_BY_RANGE,
-                                                    PacketContent = ClassUtility.SerializeData(packetSendBlockTransactionData)
-                                                }, true))
-                                                {
-                                                    ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
-                                                    sendError = true;
+                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                    {
+                                                        PacketOrder = ClassPeerEnumPacketResponse.SEND_BLOCK_TRANSACTION_DATA_BY_RANGE,
+                                                        PacketContent = ClassUtility.SerializeData(packetSendBlockTransactionData)
+                                                    }, true))
+                                                    {
+                                                        ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
+                                                        sendError = true;
+                                                    }
+
+
+                                                    // Clean up.
+                                                    transactionList.Clear();
+                                                    transactionListRangeToSend.Clear();
+
+                                                    if (sendError)
+                                                        ClassPeerCheckManager.InputPeerClientAttemptConnect(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
                                                 }
-
 
                                                 // Clean up.
                                                 transactionList.Clear();
-                                                transactionListRangeToSend.Clear();
-
-                                                if (sendError)
-                                                    return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
                                             }
 
-                                            // Clean up.
-                                            transactionList.Clear();
-                                        }
+                                        }, 0, _cancellationTokenAccessData, _clientSocket);
                                     }
                                     else
                                     {
