@@ -29,6 +29,8 @@ namespace SeguraChain_Lib.TaskManager
 
             try
             {
+                #region Auto clean up dead tasks.
+
                 Task.Factory.StartNew(async () =>
                 {
 
@@ -71,18 +73,29 @@ namespace SeguraChain_Lib.TaskManager
                                 if (doDispose)
                                 {
                                     _taskCollection[i].Disposed = true;
-                                    ClassUtility.CloseSocket(_taskCollection[i].Socket);
-                                    _taskCollection[i].Task?.Dispose();
+                                    if (_taskCollection[i].Socket != null)
+                                        ClassUtility.CloseSocket(_taskCollection[i].Socket);
+                                    try
+                                    {
+
+                                        _taskCollection[i].Task?.Dispose();
+                                    }
+                                    catch
+                                    {
+                                        // Ignored, the task dispose can failed.
+                                    }
                                     listTaskToRemove.Add(i);
                                 }
                             }
                         }
-                        await Task.Delay(1000);
+                        await Task.Delay(10);
                     }
 
-
-
                 }, _cancelTaskManager.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+
+                #endregion
+
+                #region Auto update current timestamp in millisecond.
 
                 Task.Factory.StartNew(async () =>
                 {
@@ -93,6 +106,10 @@ namespace SeguraChain_Lib.TaskManager
                         await Task.Delay(10);
                     }
                 }, _cancelTaskManager.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+
+                #endregion
+
+                #region Auto run task stored.
 
                 Task.Factory.StartNew(async () =>
                 {
@@ -107,7 +124,6 @@ namespace SeguraChain_Lib.TaskManager
                             {
                                 if (!_taskCollection[i].Started)
                                 {
-                                    _taskCollection[i].Started = true;
 
                                     await Task.Factory.StartNew(() =>
                                     {
@@ -115,12 +131,13 @@ namespace SeguraChain_Lib.TaskManager
                                         try
                                         {
                                             _taskCollection[i].Task = Task.Run(_taskCollection[i].Action, _taskCollection[i].Cancellation.Token);
+                                            _taskCollection[i].Started = true;
                                         }
                                         catch
                                         {
                                             // Catch the exception if the task cannot start.
                                         }
-                                    }).ConfigureAwait(false);
+                                    }, _cancelTaskManager.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
 
                                 }
                             }
@@ -134,6 +151,10 @@ namespace SeguraChain_Lib.TaskManager
                         await Task.Delay(1);
                     }
                 }, _cancelTaskManager.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+
+                #endregion
+
+                #region Auto clean up dead tasks.
 
                 Task.Factory.StartNew(async () =>
                 {
@@ -152,6 +173,8 @@ namespace SeguraChain_Lib.TaskManager
                         await Task.Delay(60 * 1000);
                     }
                 }, _cancelTaskManager.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+
+                #endregion
             }
             catch
             {

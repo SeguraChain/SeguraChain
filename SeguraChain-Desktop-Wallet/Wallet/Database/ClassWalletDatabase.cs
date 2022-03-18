@@ -327,6 +327,9 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Database
         /// <returns></returns>
         public ClassWalletDataObject GetWalletFileOpenedData(string walletFileOpened)
         {
+            if (walletFileOpened.IsNullOrEmpty(false, out _))
+                return null;
+
             return DictionaryWalletData.ContainsKey(walletFileOpened) ? DictionaryWalletData[walletFileOpened] : null;
         }
 
