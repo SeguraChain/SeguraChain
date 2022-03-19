@@ -4,6 +4,8 @@ Summary: SeguraChain (Secured Chain translated from Spanish) is a technology dev
 it allows to easily create and understand a decentralized blockchain process, it can be configured to support a sovereign update system,
 allowing to include updates on it without editing the content of the Blockchain. 
 
+Planned for the hard fork of Xenophyte > https://xenophyte.com/
+
 Please read the whitepaper document, the document is not yet complete but most of important details are actually written.
 
 Once the whitepaper is complete, I will make the translation of this one into english.
