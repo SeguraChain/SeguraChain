@@ -717,7 +717,7 @@ namespace SeguraChain_Test_Tool
         {
             ClassLog.SimpleWriteLine("[Note] Be sure to have generate your dev wallet, and updating the BlockchainSetting.cs file before.", ConsoleColor.Red);
             ClassLog.SimpleWriteLine("[Note] You need at least 2 two public nodes to run your own decentralized network.", ConsoleColor.Red);
-
+            ClassLog.SimpleWriteLine("[Warning] " + (BlockchainSetting.GenesisBlockAmount / BlockchainSetting.CoinDecimal) + " " + BlockchainSetting.CoinMinName + ", if you want to change the amount you need to edit the BlockchainSetting.cs file manually.", ConsoleColor.Red);
             Console.WriteLine("Write the wallet address of the developer: ");
 
             string walletAddress = Console.ReadLine();
