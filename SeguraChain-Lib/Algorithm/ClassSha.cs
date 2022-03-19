@@ -51,5 +51,13 @@ namespace SeguraChain_Lib.Algorithm
 
             return hash;
         }
+
+        /*public static byte[] DoCustomSha(byte[] data, CancellationTokenSource cancellation)
+        {
+
+            long dataLength = data.Length;
+            //long dataSplitLength = dataLength > dataLength / ShaSplitDataSizeLimit : 1024;
+
+        }*/
     }
 }

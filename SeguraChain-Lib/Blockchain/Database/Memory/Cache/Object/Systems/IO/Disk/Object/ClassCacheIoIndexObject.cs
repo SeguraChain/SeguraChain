@@ -320,15 +320,23 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// <returns></returns>
         public async Task<ClassBlockObject> GetIoBlockDataFromBlockHeight(long blockHeight, bool keepAlive, bool clone, CancellationTokenSource cancellationIoCache)
         {
-            ClassBlockObject blockObject;
+            ClassBlockObject blockObject = null;
             bool useSemaphore = false;
 
             try
             {
-                await _ioSemaphoreAccess.WaitAsync(cancellationIoCache.Token);
-                useSemaphore = true;
+                try
+                {
+                    await _ioSemaphoreAccess.WaitAsync(cancellationIoCache.Token);
+                    useSemaphore = true;
+                }
+                catch
+                {
+                    // Ignored, the task has been cancelled.
+                }
 
-                blockObject = await CallGetRetrieveDataAccess(blockHeight, keepAlive, false, clone, cancellationIoCache);
+                if (useSemaphore)
+                    blockObject = await CallGetRetrieveDataAccess(blockHeight, keepAlive, false, clone, cancellationIoCache);
             }
             finally
             {

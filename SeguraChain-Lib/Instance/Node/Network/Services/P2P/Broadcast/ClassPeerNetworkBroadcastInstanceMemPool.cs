@@ -163,25 +163,32 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     {
                         foreach (string peerIp in _listPeerNetworkClientBroadcastMemPoolReceiver.Keys.ToArray())
                         {
-                            if (_listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Count > 0)
+                            try
                             {
-                                foreach (string peerUniqueId in _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Keys.ToArray())
+                                if (_listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Count > 0)
                                 {
-                                    if (!_listPeerNetworkClientBroadcastMemPoolReceiver[peerIp][peerUniqueId].IsAlive)
+                                    foreach (string peerUniqueId in _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Keys.ToArray())
                                     {
-                                        _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp][peerUniqueId].StopTaskAndDisconnect();
-
-                                        if (!await RunPeerNetworkClientBroadcastMemPool(peerIp, peerUniqueId, false))
+                                        if (!_listPeerNetworkClientBroadcastMemPoolReceiver[peerIp][peerUniqueId].IsAlive)
                                         {
-                                            _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp][peerUniqueId].Dispose();
-                                            _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Remove(peerUniqueId);
+                                            _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp][peerUniqueId].StopTaskAndDisconnect();
+
+                                            if (!await RunPeerNetworkClientBroadcastMemPool(peerIp, peerUniqueId, false))
+                                            {
+                                                _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp][peerUniqueId].Dispose();
+                                                _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Remove(peerUniqueId);
+                                            }
                                         }
                                     }
                                 }
-                            }
 
-                            if (_listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Count == 0)
-                                _listPeerNetworkClientBroadcastMemPoolReceiver.Remove(peerIp);
+                                if (_listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Count == 0)
+                                    _listPeerNetworkClientBroadcastMemPoolReceiver.Remove(peerIp);
+                            }
+                            catch
+                            {
+                                break;
+                            }
                         }
                     }
 
@@ -192,26 +199,39 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         {
                             foreach (string peerIp in _listPeerNetworkClientBroadcastMemPoolSender.Keys.ToArray())
                             {
-                                if (_listPeerNetworkClientBroadcastMemPoolSender[peerIp].Count > 0)
+                                try
                                 {
-                                    foreach (string peerUniqueId in _listPeerNetworkClientBroadcastMemPoolSender[peerIp].Keys.ToArray())
+                                    if (_listPeerNetworkClientBroadcastMemPoolSender[peerIp].Count > 0)
                                     {
-
-                                        if (!_listPeerNetworkClientBroadcastMemPoolSender[peerIp][peerUniqueId].IsAlive)
+                                        foreach (string peerUniqueId in _listPeerNetworkClientBroadcastMemPoolSender[peerIp].Keys.ToArray())
                                         {
-                                            _listPeerNetworkClientBroadcastMemPoolSender[peerIp][peerUniqueId].StopTaskAndDisconnect();
-
-                                            if (!await RunPeerNetworkClientBroadcastMemPool(peerIp, peerUniqueId, true))
+                                            try
                                             {
-                                                _listPeerNetworkClientBroadcastMemPoolSender[peerIp][peerUniqueId].Dispose();
-                                                _listPeerNetworkClientBroadcastMemPoolSender[peerIp].Remove(peerUniqueId);
+                                                if (!_listPeerNetworkClientBroadcastMemPoolSender[peerIp][peerUniqueId].IsAlive)
+                                                {
+                                                    _listPeerNetworkClientBroadcastMemPoolSender[peerIp][peerUniqueId].StopTaskAndDisconnect();
+
+                                                    if (!await RunPeerNetworkClientBroadcastMemPool(peerIp, peerUniqueId, true))
+                                                    {
+                                                        _listPeerNetworkClientBroadcastMemPoolSender[peerIp][peerUniqueId].Dispose();
+                                                        _listPeerNetworkClientBroadcastMemPoolSender[peerIp].Remove(peerUniqueId);
+                                                    }
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                break;
                                             }
                                         }
                                     }
-                                }
 
-                                if (_listPeerNetworkClientBroadcastMemPoolSender[peerIp].Count == 0)
-                                    _listPeerNetworkClientBroadcastMemPoolSender.Remove(peerIp);
+                                    if (_listPeerNetworkClientBroadcastMemPoolSender[peerIp].Count == 0)
+                                        _listPeerNetworkClientBroadcastMemPoolSender.Remove(peerIp);
+                                }
+                                catch
+                                {
+                                    break;
+                                }
                             }
                         }
                     }
