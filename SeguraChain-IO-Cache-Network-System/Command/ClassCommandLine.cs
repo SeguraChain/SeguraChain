@@ -22,6 +22,7 @@ namespace SeguraChain_IO_Cache_Network_System.Command
         {
             _ioCacheServerObject = ioCacheServerObject;
             _ioCacheSystemObject = ioCacheSystemObject;
+            _serverStatus = true;
         }
 
         /// <summary>
@@ -61,7 +62,7 @@ namespace SeguraChain_IO_Cache_Network_System.Command
                             break;
                         case ClassCommandLineEnum.exitCommand:
                             {
-
+                                _serverStatus = false;
                             }
                             break;
                     }

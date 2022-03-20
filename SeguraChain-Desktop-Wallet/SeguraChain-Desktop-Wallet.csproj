@@ -30,6 +30,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Sync\ClassWalletSyncSystem.cs~RF11c11ab1.TMP" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="5.0.1" />
     <PackageReference Include="ZXing.Net" Version="0.16.6" />
   </ItemGroup>

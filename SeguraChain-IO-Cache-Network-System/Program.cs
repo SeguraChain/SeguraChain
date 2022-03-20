@@ -10,6 +10,11 @@ using System.Threading.Tasks;
 
 namespace SeguraChain_IO_Cache_Network_System
 {
+    /// <summary>
+    /// Note: The IO Cache server, is a TCP Server, this one have a IO Cache instance.
+    /// This one permit to store the blockchain database, outside of a node.
+    /// This one can be splitted too, across multiple dedicated servers.
+    /// </summary>
     class Program
     {
         private static ClassCacheIoSystem _cacheIoSystem;

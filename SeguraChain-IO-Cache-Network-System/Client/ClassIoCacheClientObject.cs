@@ -137,12 +137,14 @@ namespace SeguraChain_IO_Cache_Network_System.Client
             {
                 switch (ioCacheBlockRecv.IoPacketRecvType)
                 {
+                    // Retrieve back the list of block height indexed from the IO Cache server. 
                     case ClassIoPacketRecvEnumType.GetIoBlockIndexes:
                         {
                             if (!await SendPacketData(new ClassPacketIoCacheBlockIndexes(await _cacheIoSystem.GetIoCacheBlockIndexes(_cancellationIoCacheClient))))
                                 return false;
                         }
                         break;
+                    // Retrieve back a io block data stored. 
                     case ClassIoPacketRecvEnumType.GetIoBlock:
                         {
                             if (!ClassUtility.TryDeserialize(ioCacheBlockRecv.IoPacketReceived, out ClassPacketIoCacheAskBlock ioCacheBlockAskBlock, ObjectCreationHandling.Auto))
@@ -152,6 +154,7 @@ namespace SeguraChain_IO_Cache_Network_System.Client
                             }
                         }
                         break;
+                    // Save change of block stored into the IO Cache server. 
                     case ClassIoPacketRecvEnumType.PushIoBlock:
                         {
                             if (!ClassUtility.TryDeserialize(ioCacheBlockRecv.IoPacketReceived, out ClassPacketIoCachePushBlock ioCachePushBlock, ObjectCreationHandling.Auto))

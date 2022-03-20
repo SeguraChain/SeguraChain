@@ -1050,9 +1050,12 @@ namespace SeguraChain_Desktop_Wallet
 
                             while (!complete)
                             {
+                                if (_cancellationTokenTaskUpdateWalletContentInformations.IsCancellationRequested)
+                                    break;
+
                                 try
                                 {
-                                    await Task.Delay(ClassWalletDefaultSetting.DefaultAwaitInvokeDesktopWalletFormDelay, _cancellationTokenTaskUpdateWalletContentInformations.Token);
+                                    await Task.Delay(ClassWalletDefaultSetting.DefaultAwaitInvokeDesktopWalletFormDelay);
                                 }
                                 catch
                                 {
@@ -1095,6 +1098,8 @@ namespace SeguraChain_Desktop_Wallet
 
                     while (ClassDesktopWalletCommonData.DesktopWalletStarted)
                     {
+                        if (_cancellationTokenTaskUpdateWalletContentInformations.IsCancellationRequested)
+                            break;
 
                         try
                         {
@@ -1109,16 +1114,10 @@ namespace SeguraChain_Desktop_Wallet
                                 _walletRecentTransactionHistorySystemInstance.ClearRecentTransactionHistory();
                         }
 
-                        try
-                        {
-                            await Task.Delay(ClassWalletDefaultSetting.DefaultTaskUpdateWalletRecentTransactionsInterval, _cancellationTokenTaskUpdateWalletContentInformations.Token);
-                        }
-                        catch
-                        {
-                            break;
-                        }
+                        await Task.Delay(ClassWalletDefaultSetting.DefaultTaskUpdateWalletRecentTransactionsInterval);
+
                     }
-                    
+
                 }, _cancellationTokenTaskUpdateWalletContentInformations.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
             }
             catch
@@ -1140,6 +1139,9 @@ namespace SeguraChain_Desktop_Wallet
                     {
                         try
                         {
+                            if (_cancellationTokenTaskUpdateWalletContentInformations.IsCancellationRequested)
+                                break;
+
                             if (!ClassDesktopWalletCommonData.WalletDatabase.GetWalletRescanStatus(_currentWalletFilename))
                             {
                                 if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
@@ -1159,14 +1161,10 @@ namespace SeguraChain_Desktop_Wallet
 
                                         while (!complete)
                                         {
-                                            try
-                                            {
-                                                await Task.Delay(ClassWalletDefaultSetting.DefaultAwaitInvokeDesktopWalletFormDelay, _cancellationTokenTaskUpdateWalletContentInformations.Token);
-                                            }
-                                            catch
-                                            {
+                                            await Task.Delay(ClassWalletDefaultSetting.DefaultAwaitInvokeDesktopWalletFormDelay);
+
+                                            if (_cancellationTokenTaskUpdateWalletContentInformations.IsCancellationRequested)
                                                 break;
-                                            }
                                         }
                                     }
                                 }
@@ -1184,14 +1182,10 @@ namespace SeguraChain_Desktop_Wallet
 
                                     while (!complete)
                                     {
-                                        try
-                                        {
-                                            await Task.Delay(ClassWalletDefaultSetting.DefaultAwaitInvokeDesktopWalletFormDelay, _cancellationTokenTaskUpdateWalletContentInformations.Token);
-                                        }
-                                        catch
-                                        {
+                                        await Task.Delay(ClassWalletDefaultSetting.DefaultAwaitInvokeDesktopWalletFormDelay);
+
+                                        if (_cancellationTokenTaskUpdateWalletContentInformations.IsCancellationRequested)
                                             break;
-                                        }
                                     }
                                 }
                             }
@@ -1202,7 +1196,7 @@ namespace SeguraChain_Desktop_Wallet
                                 break;
                         }
 
-                        await Task.Delay(ClassWalletDefaultSetting.DefaultTaskUpdateWalletTransactionHistoryInterval, _cancellationTokenTaskUpdateWalletContentInformations.Token);
+                        await Task.Delay(ClassWalletDefaultSetting.DefaultTaskUpdateWalletTransactionHistoryInterval);
                     }
                 }, _cancellationTokenTaskUpdateWalletContentInformations.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
             }
