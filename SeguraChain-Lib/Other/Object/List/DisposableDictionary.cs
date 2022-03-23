@@ -6,6 +6,11 @@ namespace SeguraChain_Lib.Other.Object.List
 {
     public class DisposableDictionary<V, T> : IDisposable
     {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="capacity"></param>
+        /// <param name="sourceDictionary"></param>
         public DisposableDictionary(int capacity = 0, Dictionary<V, T> sourceDictionary = null)
         {
             if (sourceDictionary == null)
@@ -46,18 +51,21 @@ namespace SeguraChain_Lib.Other.Object.List
 
         #endregion
 
-        public int Count => GetList.Count;
+        public int Count => GetList != null ? GetList.Count : 0;
 
-        public void Add(V key, T data) => GetList.Add(key, data);
-
-        public bool ContainsKey(V key) => GetList.ContainsKey(key);
+        public void Add(V key, T data)
+        {
+            if (GetList != null)
+                GetList.Add(key, data);
+        }
+        public bool ContainsKey(V key) => GetList != null ? GetList.ContainsKey(key) : false;
 
 
         public bool Remove(V key)
         {
             try
             {
-                return GetList.Remove(key);
+                return GetList != null ? GetList.Remove(key) : false;
             }
             catch
             {
@@ -68,29 +76,46 @@ namespace SeguraChain_Lib.Other.Object.List
 
         public T this[V key]
         {
-            get => GetList[key];
-            set => GetList[key] = value;
+            get
+            {
+               return GetList != null ? GetList[key] : default;
+            }
+            set
+            {
+                if (GetList != null)
+                    GetList[key] = value;
+            }
         }
 
         public void Clear()
         {
             try
             {
-                if (GetList != null)
+                if (GetList?.Count > 0)
                 {
-                    if (GetList.Count > 0)
+                    foreach (V key in GetList.Keys)
                     {
-                        foreach (V key in GetList.Keys.ToArray())
+                        try
                         {
                             GetList[key] = default(T);
-                            GetList.Remove(key);
+                            if(!GetList.Remove(key))
+                            {
+                                if (GetList == null || GetList.Count == 0)
+                                    break;
+                            }
                         }
+                        catch
+                        {
+                            if (GetList == null || GetList.Count == 0)
+                                break;
+                        }
+
                     }
                 }
             }
             catch
             {
-                // Ignored.
+                // Ignored, collection can changed or has been cleaned.
             }
 
             GetList?.Clear();

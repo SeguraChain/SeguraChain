@@ -7,12 +7,13 @@ namespace SeguraChain_Lib.Other.Object.List
 {
     public class DisposableConcurrentDictionary<V, T> : IDisposable
     {
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="sourceDictionary"></param>
         public DisposableConcurrentDictionary(ConcurrentDictionary<V, T> sourceDictionary = null)
         {
-            if (sourceDictionary == null)
-                GetList = new ConcurrentDictionary<V, T>();
-            else
-                GetList = new ConcurrentDictionary<V, T>(sourceDictionary);
+            GetList = sourceDictionary == null ? new ConcurrentDictionary<V, T>() : new ConcurrentDictionary<V, T>(sourceDictionary);
         }
 
         #region Dispose functions
@@ -47,45 +48,68 @@ namespace SeguraChain_Lib.Other.Object.List
 
         #endregion
 
-        public int Count => GetList.Count;
+        public int Count => GetList != null ? GetList.Count : 0;
 
-        public bool TryAdd(V key, T data) => GetList.TryAdd(key, data);
+        public bool TryAdd(V key, T data)
+        {
+            return GetList != null ? GetList.TryAdd(key, data) : false;
+        }
 
-        public bool ContainsKey(V key) => GetList.ContainsKey(key);
+        public bool ContainsKey(V key){
 
+            return GetList != null ? GetList.ContainsKey(key) : false;
+        }
 
         public bool TryRemove(V key)
         {
-            return GetList.TryRemove(key, out _);
+            return GetList != null ? GetList.TryRemove(key, out _) : false;
         }
 
 
         public T this[V key]
         {
-            get => GetList[key];
-            set => GetList[key] = value;
+            get
+            {
+                return GetList != null ? GetList[key] : default;
+            }
+            set
+            {
+                if (GetList != null && value != null)
+                    GetList[key] = value;
+            }
         }
 
         public void Clear()
         {
-            try
+
+            if (GetList?.Count > 0)
             {
-                if (GetList != null)
+                try
                 {
-                    if (GetList.Count > 0)
+                    foreach (V key in GetList.Keys)
                     {
-                        foreach (V key in GetList.Keys.ToArray())
+                        try
                         {
-                            GetList[key] = default(T);
-                            GetList.TryRemove(key, out _);
+                            GetList[key] = default;
+                            if (!GetList.TryRemove(key, out _))
+                            {
+                                if (GetList == null || GetList.Count == 0)
+                                    break;
+                            }
+                        }
+                        catch
+                        {
+                            if (GetList == null || GetList.Count == 0)
+                                break;
                         }
                     }
                 }
+                catch
+                {
+                    // Keys can are removed or the collection has changed.
+                }
             }
-            catch
-            {
-                // Ignored.
-            }
+
 
             GetList?.Clear();
         }
