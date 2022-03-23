@@ -182,31 +182,26 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
         /// </summary>
         private void StartTaskManageApiFirewall()
         {
-            try
+
+            TaskManager.TaskManager.InsertTask(new Action(async () =>
             {
-                Task.Factory.StartNew(async () =>
+                while (_nodeInstance.PeerToolStatus)
                 {
-                    while (_nodeInstance.PeerToolStatus)
+
+                    try
                     {
                         _cancellationTokenSourceUpdateTask.Token.ThrowIfCancellationRequested();
-
-                        try
-                        {
-                            ClassPeerFirewallManager.ManageFirewallLink(_nodeInstance.PeerSettingObject.PeerFirewallSettingObject.PeerFirewallName, _nodeInstance.PeerSettingObject.PeerFirewallSettingObject.PeerFirewallChainName);
-                        }
-                        catch (Exception error)
-                        {
-                            ClassLog.WriteLine("Error on the task who manage the Firewall of the API. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_FIREWALL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                        }
-                        await Task.Delay(ManageApiFirewallInterval, _cancellationTokenSourceUpdateTask.Token);
-
+                        ClassPeerFirewallManager.ManageFirewallLink(_nodeInstance.PeerSettingObject.PeerFirewallSettingObject.PeerFirewallName, _nodeInstance.PeerSettingObject.PeerFirewallSettingObject.PeerFirewallChainName);
                     }
-                }, _cancellationTokenSourceUpdateTask.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
-            }
-            catch
-            {
-                // Ignored, catch the exception once this one is cancelled.
-            }
+                    catch (Exception error)
+                    {
+                        ClassLog.WriteLine("Error on the task who manage the Firewall of the API. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_FIREWALL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                    }
+                    await Task.Delay(ManageApiFirewallInterval);
+
+                }
+            }), 0, _cancellationTokenSourceUpdateTask);
+
         }
 
         /// <summary>
@@ -214,34 +209,29 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
         /// </summary>
         private void StartTaskCleanUpClosedApiClientConnection()
         {
-            try
+
+            TaskManager.TaskManager.InsertTask(new Action(async () =>
             {
-                Task.Factory.StartNew(async () =>
+                while (_nodeInstance.PeerToolStatus)
                 {
-                    while (_nodeInstance.PeerToolStatus)
+
+                    try
                     {
                         _cancellationTokenSourceUpdateTask.Token.ThrowIfCancellationRequested();
 
-                        try
-                        {
+                        long totalClosed = _nodeInstance.PeerApiServerObject.CleanUpAllIncomingClosedConnection(out int totalIp);
 
-                            long totalClosed = _nodeInstance.PeerApiServerObject.CleanUpAllIncomingClosedConnection(out int totalIp);
-
-                            if (totalClosed > 0)
-                                ClassLog.WriteLine("Total incoming dead api connection cleaned: " + totalClosed + " | Total IP: " + totalIp, ClassEnumLogLevelType.LOG_LEVEL_API_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
-                        }
-                        catch
-                        {
-                            // Ignored.
-                        }
-                        await Task.Delay(CleanUpApiDeadConnectionInterval, _cancellationTokenSourceUpdateTask.Token);
+                        if (totalClosed > 0)
+                            ClassLog.WriteLine("Total incoming dead api connection cleaned: " + totalClosed + " | Total IP: " + totalIp, ClassEnumLogLevelType.LOG_LEVEL_API_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
                     }
-                }, _cancellationTokenSourceUpdateTask.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
-            }
-            catch
-            {
-                // Ignored, catch the exception once the task is cancelled.
-            }
+                    catch
+                    {
+                        // Ignored.
+                    }
+                    await Task.Delay(CleanUpApiDeadConnectionInterval);
+                }
+            }), 0, _cancellationTokenSourceUpdateTask);
+
         }
 
         /// <summary>
@@ -249,35 +239,30 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
         /// </summary>
         private void StartTaskCleanUpClosedPeerClientConnection()
         {
-            try
+
+            TaskManager.TaskManager.InsertTask(new Action(async () =>
             {
-                Task.Factory.StartNew(async () =>
+                while (_nodeInstance.PeerToolStatus)
                 {
-                    while (_nodeInstance.PeerToolStatus)
+
+                    try
                     {
                         _cancellationTokenSourceUpdateTask.Token.ThrowIfCancellationRequested();
 
-                        try
-                        {
+                        long totalClosed = _nodeInstance.PeerNetworkServerObject.CleanUpAllIncomingClosedConnection(out int totalIp);
 
-                            long totalClosed = _nodeInstance.PeerNetworkServerObject.CleanUpAllIncomingClosedConnection(out int totalIp);
-
-                            if (totalClosed > 0)
-                                ClassLog.WriteLine("Total incoming dead peer connection cleaned: " + totalClosed + " | Total IP: " + totalIp, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
-
-                        }
-                        catch
-                        {
-                            // Ignored.
-                        }
-                        await Task.Delay(CleanUpPeerDeadConnectionInterval, _cancellationTokenSourceUpdateTask.Token);
+                        if (totalClosed > 0)
+                            ClassLog.WriteLine("Total incoming dead peer connection cleaned: " + totalClosed + " | Total IP: " + totalIp, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
                     }
-                }, _cancellationTokenSourceUpdateTask.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
-            }
-            catch
-            {
-                // Ignored, catch the exception once the task is cancelled.
-            }
+                    catch
+                    {
+                        // Ignored.
+                    }
+                    await Task.Delay(CleanUpPeerDeadConnectionInterval);
+                }
+
+            }), 0, _cancellationTokenSourceUpdateTask);
+          
         }
 
         /// <summary>
@@ -285,22 +270,24 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
         /// </summary>
         private void StartTaskUpdateBlockchainNetworkStats()
         {
-            try
+
+            TaskManager.TaskManager.InsertTask(new Action(async () =>
             {
-                Task.Factory.StartNew(async () =>
+                while (_nodeInstance.PeerToolStatus)
                 {
-                    while (_nodeInstance.PeerToolStatus)
+                    try
                     {
                         _cancellationTokenSourceUpdateTask.Token.ThrowIfCancellationRequested();
                         await ClassBlockchainStats.UpdateBlockchainNetworkStats(true, _cancellationTokenSourceUpdateTask);
-                        await Task.Delay(UpdateBlockchainStatsInterval, _cancellationTokenSourceUpdateTask.Token);
                     }
-                }, _cancellationTokenSourceUpdateTask.Token, TaskCreationOptions.PreferFairness, TaskScheduler.Current).ConfigureAwait(false);
-            }
-            catch
-            {
-                // Ignored, catch the exception once the task is cancelled.
-            }
+                    catch
+                    {
+                        // Ignored.
+                    }
+                    await Task.Delay(UpdateBlockchainStatsInterval);
+                }
+            }), 0, _cancellationTokenSourceUpdateTask);
+           
         }
 
         /// <summary>
@@ -308,104 +295,100 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
         /// </summary>
         private void StartTaskConfirmBlockTransaction()
         {
-            try
+
+            TaskManager.TaskManager.InsertTask(new Action(async () =>
             {
-                Task.Factory.StartNew(async () =>
+                Thread.CurrentThread.Priority = ThreadPriority.Lowest;
+
+                long previousBlockHeightUnlockedChecked = 0;
+                while (_nodeInstance.PeerToolStatus)
                 {
-                    Thread.CurrentThread.Priority = ThreadPriority.Lowest;
-
-                    long previousBlockHeightUnlockedChecked = 0;
-                    while (_nodeInstance.PeerToolStatus)
+                    try
                     {
-                        try
+                        _cancellationTokenSourceUpdateTask.Token.ThrowIfCancellationRequested();
+
+                        if (ClassBlockchainStats.BlockCount > 0)
                         {
-                            if (ClassBlockchainStats.BlockCount > 0)
+                            bool blockMissing = false;
+
+                            using (DisposableList<long> listBlockMissing = ClassBlockchainStats.GetListBlockMissing(ClassBlockchainStats.GetLastBlockHeight(), false, true, _cancellationTokenSourceUpdateTask, 0))
                             {
-                                bool blockMissing = false;
-
-                                using (DisposableList<long> listBlockMissing = ClassBlockchainStats.GetListBlockMissing(ClassBlockchainStats.GetLastBlockHeight(), false, true, _cancellationTokenSourceUpdateTask, 0))
+                                if (listBlockMissing.Count > 0)
                                 {
-                                    if (listBlockMissing.Count > 0)
-                                    {
-                                        blockMissing = true;
-                                        ClassLog.WriteLine("Can't start to confirm block transaction(s) synced at the moment, their is " + listBlockMissing.Count + " block(s) missed to sync.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_TRANSACTION_CONFIRMATION, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
-                                    }
+                                    blockMissing = true;
+                                    ClassLog.WriteLine("Can't start to confirm block transaction(s) synced at the moment, their is " + listBlockMissing.Count + " block(s) missed to sync.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_TRANSACTION_CONFIRMATION, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
                                 }
+                            }
 
-                                #region Travel blocks and select blocks unlocked where the task of confirmations are not done.
+                            #region Travel blocks and select blocks unlocked where the task of confirmations are not done.
 
-                                if (!blockMissing)
+                            if (!blockMissing)
+                            {
+                                long lastBlockHeightUnlockedChecked = await ClassBlockchainStats.GetLastBlockHeightNetworkConfirmationChecked(_cancellationTokenSourceUpdateTask);
+
+                                if (lastBlockHeightUnlockedChecked >= BlockchainSetting.GenesisBlockHeight)
                                 {
-                                    long lastBlockHeightUnlockedChecked = await ClassBlockchainStats.GetLastBlockHeightNetworkConfirmationChecked(_cancellationTokenSourceUpdateTask);
-
-                                    if (lastBlockHeightUnlockedChecked >= BlockchainSetting.GenesisBlockHeight)
+                                    if (previousBlockHeightUnlockedChecked < lastBlockHeightUnlockedChecked)
                                     {
-                                        if (previousBlockHeightUnlockedChecked < lastBlockHeightUnlockedChecked)
+                                        ClassBlockchainBlockConfirmationResultObject blockConfirmationResultObject = await ClassBlockchainDatabase.BlockchainMemoryManagement.UpdateBlockDataTransactionConfirmations(lastBlockHeightUnlockedChecked, _cancellationTokenSourceUpdateTask);
+                                        if (blockConfirmationResultObject.Status)
                                         {
-                                            ClassBlockchainBlockConfirmationResultObject blockConfirmationResultObject = await ClassBlockchainDatabase.BlockchainMemoryManagement.UpdateBlockDataTransactionConfirmations(lastBlockHeightUnlockedChecked, _cancellationTokenSourceUpdateTask);
-                                            if (blockConfirmationResultObject.Status)
+                                            if (blockConfirmationResultObject.LastBlockHeightConfirmationDone > 0)
                                             {
-                                                if (blockConfirmationResultObject.LastBlockHeightConfirmationDone > 0)
+                                                if (blockConfirmationResultObject.ListBlockHeightConfirmed.Count > 0)
                                                 {
-                                                    if (blockConfirmationResultObject.ListBlockHeightConfirmed.Count > 0)
+                                                    while (!await ClassBlockchainDatabase.BlockchainMemoryManagement.IncrementBlockTransactionConfirmationOnBlockFullyConfirmed(blockConfirmationResultObject.ListBlockHeightConfirmed.GetList, lastBlockHeightUnlockedChecked, _cancellationTokenSourceUpdateTask))
                                                     {
-                                                        while (!await ClassBlockchainDatabase.BlockchainMemoryManagement.IncrementBlockTransactionConfirmationOnBlockFullyConfirmed(blockConfirmationResultObject.ListBlockHeightConfirmed.GetList, lastBlockHeightUnlockedChecked, _cancellationTokenSourceUpdateTask))
-                                                        {
-                                                            _cancellationTokenSourceUpdateTask.Token.ThrowIfCancellationRequested();
+                                                        _cancellationTokenSourceUpdateTask.Token.ThrowIfCancellationRequested();
 
-                                                            ClassLog.WriteLine("Failed to confirm back every block heights transactions fully confirmed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_TRANSACTION_CONFIRMATION, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                                                        ClassLog.WriteLine("Failed to confirm back every block heights transactions fully confirmed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_TRANSACTION_CONFIRMATION, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
 
 #if DEBUG
-                                                            Debug.WriteLine("Failed to confirm back every block heights transactions fully confirmed.");
+                                                        Debug.WriteLine("Failed to confirm back every block heights transactions fully confirmed.");
 #endif
-                                                        }
-
-                                                        ClassLog.WriteLine("New block height transaction confirmation reach: " + previousBlockHeightUnlockedChecked + " Total block fully confirmed: " + blockConfirmationResultObject.ListBlockHeightConfirmed.Count, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_TRANSACTION_CONFIRMATION, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
-#if DEBUG
-                                                        Debug.WriteLine("New block height transaction confirmation reach: " + previousBlockHeightUnlockedChecked + " Total block fully confirmed: " + blockConfirmationResultObject.ListBlockHeightConfirmed.Count);
-#endif
-
-                                                        blockConfirmationResultObject.ListBlockHeightConfirmed.Clear();
                                                     }
 
-                                                    previousBlockHeightUnlockedChecked = blockConfirmationResultObject.LastBlockHeightConfirmationDone;
+                                                    ClassLog.WriteLine("New block height transaction confirmation reach: " + previousBlockHeightUnlockedChecked + " Total block fully confirmed: " + blockConfirmationResultObject.ListBlockHeightConfirmed.Count, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_TRANSACTION_CONFIRMATION, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
+#if DEBUG
+                                                    Debug.WriteLine("New block height transaction confirmation reach: " + previousBlockHeightUnlockedChecked + " Total block fully confirmed: " + blockConfirmationResultObject.ListBlockHeightConfirmed.Count);
+#endif
+
+                                                    blockConfirmationResultObject.ListBlockHeightConfirmed.Clear();
                                                 }
+
+                                                previousBlockHeightUnlockedChecked = blockConfirmationResultObject.LastBlockHeightConfirmationDone;
                                             }
                                         }
                                     }
                                 }
-
-                                #endregion
-
-
                             }
 
-                            if (_enableCallStopTaskUpdateBlockTransaction)
-                            {
-                                _enableCallStopTaskUpdateBlockTransaction = false;
-#if DEBUG
-                                Debug.WriteLine("Stop task of block transaction confirmation asked.");
-#endif
-                                break;
-                            }
-
-
-                            await Task.Delay(UpdateBlockTransactionConfirmationInterval, _cancellationTokenSourceUpdateTask.Token);
+                            #endregion
                         }
-                        catch (Exception error)
+
+                        if (_enableCallStopTaskUpdateBlockTransaction)
                         {
-                            if (!_cancellationTokenSourceUpdateTask.IsCancellationRequested)
-                                ClassLog.WriteLine("Error on the task who confirm automatically blockchain transactions. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_TRANSACTION_CONFIRMATION, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
-                            else
-                                break;
+                            _enableCallStopTaskUpdateBlockTransaction = false;
+#if DEBUG
+                            Debug.WriteLine("Stop task of block transaction confirmation asked.");
+#endif
+                            break;
                         }
+
+
+                        await Task.Delay(UpdateBlockTransactionConfirmationInterval);
                     }
-                }, _cancellationTokenSourceUpdateTask.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
-            }
-            catch
-            {
-                // Ignored, catch the exception on the task is cancelled.
-            }
+                    catch (Exception error)
+                    {
+                        if (!_cancellationTokenSourceUpdateTask.IsCancellationRequested)
+                            ClassLog.WriteLine("Error on the task who confirm automatically blockchain transactions. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_TRANSACTION_CONFIRMATION, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
+                        else
+                            break;
+                    }
+                }
+
+            }), 0, _cancellationTokenSourceUpdateTask);
+
         }
 
         /// <summary>
@@ -413,38 +396,33 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
         /// </summary>
         private void StartTaskUpdateNodeInternalStats()
         {
-            try
+            TaskManager.TaskManager.InsertTask(new Action(async () =>
             {
-                Task.Factory.StartNew(async () =>
+                while (_nodeInstance.PeerToolStatus)
                 {
-                    while (_nodeInstance.PeerToolStatus)
+
+                    try
                     {
                         _cancellationTokenSourceUpdateTask.Token.ThrowIfCancellationRequested();
 
-                        try
-                        {
-                            _nodeInstance.NodeInternalStatsReportObject.NodeCacheMemoryUsage = ClassBlockchainDatabase.BlockchainMemoryManagement.GetActiveMemoryUsageFromCache();
-                            _nodeInstance.NodeInternalStatsReportObject.NodeCacheMaxMemoryAllocation = _nodeInstance.PeerSettingObject.PeerBlockchainDatabaseSettingObject.BlockchainCacheSetting.GlobalMaxActiveMemoryAllocationFromCache;
-                            _nodeInstance.NodeInternalStatsReportObject.NodeCacheTransactionMemoryUsage = ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockTransactionCachedMemorySize();
-                            _nodeInstance.NodeInternalStatsReportObject.NodeCacheTransactionMaxMemoryAllocation = _nodeInstance.PeerSettingObject.PeerBlockchainDatabaseSettingObject.BlockchainCacheSetting.GlobalCacheMaxBlockTransactionKeepAliveMemorySize;
-                            _nodeInstance.NodeInternalStatsReportObject.NodeCacheWalletIndexMemoryUsage = ClassBlockchainDatabase.BlockchainMemoryManagement.BlockchainWalletIndexMemoryCacheObject.LastMemoryUsage;
-                            _nodeInstance.NodeInternalStatsReportObject.NodeCacheWalletIndexMaxMemoryAllocation = _nodeInstance.PeerSettingObject.PeerBlockchainDatabaseSettingObject.BlockchainCacheSetting.GlobalCacheMaxWalletIndexKeepMemorySize;
-                            _nodeInstance.NodeInternalStatsReportObject.NodeTotalMemoryUsage = ClassUtility.GetMemoryAllocationFromProcess();
-                        }
-                        catch
-                        {
-                            // Ignored, can happen depending the state of the node, for example if this one is in pending to close for example.
-                        }
-
-
-                        await Task.Delay(UpdateNodeInternalStats, _cancellationTokenSourceUpdateTask.Token);
+                        _nodeInstance.NodeInternalStatsReportObject.NodeCacheMemoryUsage = ClassBlockchainDatabase.BlockchainMemoryManagement.GetActiveMemoryUsageFromCache();
+                        _nodeInstance.NodeInternalStatsReportObject.NodeCacheMaxMemoryAllocation = _nodeInstance.PeerSettingObject.PeerBlockchainDatabaseSettingObject.BlockchainCacheSetting.GlobalMaxActiveMemoryAllocationFromCache;
+                        _nodeInstance.NodeInternalStatsReportObject.NodeCacheTransactionMemoryUsage = ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockTransactionCachedMemorySize();
+                        _nodeInstance.NodeInternalStatsReportObject.NodeCacheTransactionMaxMemoryAllocation = _nodeInstance.PeerSettingObject.PeerBlockchainDatabaseSettingObject.BlockchainCacheSetting.GlobalCacheMaxBlockTransactionKeepAliveMemorySize;
+                        _nodeInstance.NodeInternalStatsReportObject.NodeCacheWalletIndexMemoryUsage = ClassBlockchainDatabase.BlockchainMemoryManagement.BlockchainWalletIndexMemoryCacheObject.LastMemoryUsage;
+                        _nodeInstance.NodeInternalStatsReportObject.NodeCacheWalletIndexMaxMemoryAllocation = _nodeInstance.PeerSettingObject.PeerBlockchainDatabaseSettingObject.BlockchainCacheSetting.GlobalCacheMaxWalletIndexKeepMemorySize;
+                        _nodeInstance.NodeInternalStatsReportObject.NodeTotalMemoryUsage = ClassUtility.GetMemoryAllocationFromProcess();
                     }
-                }, _cancellationTokenSourceUpdateTask.Token, TaskCreationOptions.PreferFairness, TaskScheduler.Current).ConfigureAwait(false);
-            }
-            catch
-            {
-                // Ignored, catch the exception once the task is cancelled.
-            }
+                    catch
+                    {
+                        // Ignored, can happen depending the state of the node, for example if this one is in pending to close for example.
+                    }
+
+
+                    await Task.Delay(UpdateNodeInternalStats);
+                }
+
+            }), 0, _cancellationTokenSourceUpdateTask);
         }
 
         /// <summary>
@@ -452,24 +430,25 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
         /// </summary>
         private void StartTaskUpdateGarbageCollection()
         {
-            try
+
+            TaskManager.TaskManager.InsertTask(new Action(async () =>
             {
-                Task.Factory.StartNew(async () =>
+                while (_nodeInstance.PeerToolStatus)
                 {
-                    while (_nodeInstance.PeerToolStatus)
+                    try
                     {
                         _cancellationTokenSourceUpdateTask.Token.ThrowIfCancellationRequested();
-
-                        ClassUtility.CleanGc();
-
-                        await Task.Delay(CleanUpGcInterval, _cancellationTokenSourceUpdateTask.Token);
                     }
-                }, _cancellationTokenSourceUpdateTask.Token, TaskCreationOptions.PreferFairness, TaskScheduler.Current).ConfigureAwait(false);
-            }
-            catch
-            {
-                // Ignored, catch the exception once the task is cancelled.
-            }
+                    catch
+                    {
+                        // Ignored.
+                    }
+                    ClassUtility.CleanGc();
+
+                    await Task.Delay(CleanUpGcInterval);
+                }
+            }), 0, _cancellationTokenSourceUpdateTask);
+
         }
 
         #endregion
