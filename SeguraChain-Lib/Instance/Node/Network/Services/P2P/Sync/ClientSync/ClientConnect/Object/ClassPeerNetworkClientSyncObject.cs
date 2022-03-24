@@ -200,16 +200,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         private bool CheckConnection()
         {
             if (_peerSocketClient != null)
-            {
-                try
-                {
-                    PeerConnectStatus = ClassUtility.SocketIsConnected(_peerSocketClient);
-                }
-                catch
-                {
-                    PeerConnectStatus = false;
-                }
-            }
+                PeerConnectStatus = ClassUtility.SocketIsConnected(_peerSocketClient);
             else
                 PeerConnectStatus = false;
 

@@ -352,7 +352,6 @@ namespace SeguraChain_Lib.Blockchain.Database
                 if (!await CheckBlockchainDatabase(blockchainDatabaseSetting))
                     return false;
 
-
                 #endregion
             }
 

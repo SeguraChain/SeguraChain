@@ -214,12 +214,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                 foreach (var peerValuePair in GetRandomListPeerTargetAlive(peerServerIp, peerOpenNatServerIp, peerToExcept, null, peerNetworkSetting, peerFirewallSettingObject, new CancellationTokenSource()))
                 {
-                    try
+
+                    TaskManager.TaskManager.InsertTask(new Action(async () =>
                     {
-                        TaskManager.TaskManager.InsertTask(new Action(async () =>
+                        try
                         {
                             string peerIpTarget = peerValuePair.Value.PeerIpTarget;
-                            string peerUniqueIdTarget = peerValuePair.Value.PeerIpTarget;
+                            string peerUniqueIdTarget = peerValuePair.Value.PeerUniqueIdTarget;
+
 
                             ClassPeerPacketSendMiningShareVote peerPacketSendMiningShareVote = null;
 
@@ -245,12 +247,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                                 peerValuePair.Value.PeerNetworkClientSyncObject.DisconnectFromTarget();
                             }
-                        }), 0, null);
-                    }
-                    catch
-                    {
-                        // Ignored, catch the exception once the task is cancelled.
-                    }
+
+                        }
+                        catch
+                        {
+                            // Ignored.
+                        }
+                    }), 0, null);
                 }
             }), 0, null);
         }
