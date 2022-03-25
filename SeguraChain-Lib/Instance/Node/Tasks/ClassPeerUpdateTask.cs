@@ -262,7 +262,7 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
                 }
 
             }), 0, _cancellationTokenSourceUpdateTask);
-          
+
         }
 
         /// <summary>
@@ -287,7 +287,7 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
                     await Task.Delay(UpdateBlockchainStatsInterval);
                 }
             }), 0, _cancellationTokenSourceUpdateTask);
-           
+
         }
 
         /// <summary>

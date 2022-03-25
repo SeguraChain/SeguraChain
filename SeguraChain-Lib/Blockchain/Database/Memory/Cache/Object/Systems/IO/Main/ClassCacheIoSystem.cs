@@ -290,7 +290,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
 
             foreach (string ioFileFileIndex in _dictionaryCacheIoIndexObject.Keys.ToArray())
             {
-                cancellation?.Token.ThrowIfCancellationRequested();
 
                 if (ioFileFileIndex != ioFileNameSource)
                 {
@@ -336,7 +335,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
 
                         foreach (var blockHeight in listBlockHeight.GetList)
                         {
-                            cancellationIoCache?.Token.ThrowIfCancellationRequested();
 
                             string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
 
@@ -355,11 +353,9 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                         {
                             foreach (string ioFileName in dictionaryRangeBlockHeightIoCacheFile.GetList.Keys)
                             {
-                                cancellationIoCache?.Token.ThrowIfCancellationRequested();
 
                                 foreach (ClassBlockObject blockObject in await _dictionaryCacheIoIndexObject[ioFileName].GetIoListBlockDataInformationFromListBlockHeight(dictionaryRangeBlockHeightIoCacheFile[ioFileName], cancellationIoCache))
                                 {
-                                    cancellationIoCache?.Token.ThrowIfCancellationRequested();
 
                                     if (blockObject != null)
                                         listBlockInformation.Add(blockObject.BlockHeight, blockObject);
@@ -444,7 +440,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                 // Generate a list of block object linked to the io file index.
                 foreach (var blockObject in blockObjectList)
                 {
-                    cancellationIoCache?.Token.ThrowIfCancellationRequested();
 
                     string ioFileName = GetIoFileNameFromBlockHeight(blockObject.BlockHeight);
 
@@ -488,7 +483,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                             {
                                 await Task.Factory.StartNew(async () =>
                                 {
-                                    cancellationIoCache?.Token.ThrowIfCancellationRequested();
 
                                     if (!cancel)
                                     {
@@ -501,7 +495,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                             }
                             else
                             {
-                                cancellationIoCache?.Token.ThrowIfCancellationRequested();
 
                                 if (!cancel)
                                 {
@@ -676,7 +669,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                 {
                                     await Task.Factory.StartNew(async () =>
                                     {
-                                        cancellationIoCache?.Token.ThrowIfCancellationRequested();
 
                                         if (!await _dictionaryCacheIoIndexObject[ioFileName].PushOrUpdateListIoBlockTransactionData(listBlockTransactionToInsertOrUpdate[ioFileName], keepAlive, cancellation))
                                             result = false;
@@ -691,8 +683,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                             }
                             else
                             {
-                                cancellationIoCache?.Token.ThrowIfCancellationRequested();
-
                                 if (!await _dictionaryCacheIoIndexObject[ioFileName].PushOrUpdateListIoBlockTransactionData(listBlockTransactionToInsertOrUpdate[ioFileName], keepAlive, cancellation))
                                 {
                                     result = false;
@@ -903,7 +893,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                                         {
                                                             foreach (ClassBlockObject blockObject in listBlockObject.GetAll)
                                                             {
-                                                                cancellationIoCache?.Token.ThrowIfCancellationRequested();
 
                                                                 if (blockObject != null)
                                                                 {
@@ -952,7 +941,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                         {
                             foreach (string ioFileName in ioFileNameArray)
                             {
-                                cancellationIoCache?.Token.ThrowIfCancellationRequested();
 
                                 if (listBlockHeightIndexedByIoFile[ioFileName].Count > 0)
                                 {
@@ -964,7 +952,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                             {
                                                 foreach (ClassBlockObject blockObject in listBlockObject.GetAll)
                                                 {
-                                                    cancellationIoCache?.Token.ThrowIfCancellationRequested();
 
                                                     if (blockObject != null)
                                                     {
@@ -1033,12 +1020,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
 
                 foreach (string ioFileName in _dictionaryCacheIoIndexObject.Keys.ToArray())
                 {
-                    if (cancellation != null)
-                    {
-                        if (cancellation.IsCancellationRequested)
-                            break;
-                    }
-
                     totalMemoryUsagePendingCalculation += _dictionaryCacheIoIndexObject[ioFileName].GetIoMemoryUsage(cancellation, out int indexTotalBlockKeepAlive);
                     totalBlockKeepAlive += indexTotalBlockKeepAlive;
                 }
