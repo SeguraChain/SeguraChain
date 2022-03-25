@@ -70,16 +70,20 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
             bool semaphoreUsed = false;
             try
             {
-                _semaphoreRecentTransactionHistoryAccess.Wait(cancellation.Token);
-                semaphoreUsed = true;
+                if (cancellation != null)
+                {
+                    _semaphoreRecentTransactionHistoryAccess.Wait(cancellation.Token);
+                    semaphoreUsed = true;
 
-                return _bitmapRecentTransactionHistory;
+                    return _bitmapRecentTransactionHistory;
+                }
             }
             finally
             {
                 if (semaphoreUsed)
                     _semaphoreRecentTransactionHistoryAccess.Release();
             }
+            return null;
         }
 
 
