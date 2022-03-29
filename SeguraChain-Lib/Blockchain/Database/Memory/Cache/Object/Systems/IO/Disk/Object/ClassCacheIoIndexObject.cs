@@ -983,7 +983,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
                     foreach (long ioBlockHeight in _ioStructureObjectsDictionary.Keys)
                     {
-                        cancellation?.Token.ThrowIfCancellationRequested();
+                        
 
                         if (!_ioStructureObjectsDictionary[ioBlockHeight].IsDeleted)
                         {
@@ -1190,8 +1190,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
             foreach (long blockHeight in _ioStructureObjectsDictionary.Keys.ToArray())
             {
-                cancellation?.Token.ThrowIfCancellationRequested();
-
                 if (!_ioStructureObjectsDictionary[blockHeight].IsNull)
                 {
                     memoryUsage += _ioStructureObjectsDictionary[blockHeight].IoDataSizeOnMemory;
@@ -1260,7 +1258,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
             // Direct research.
             foreach (long blockHeight in listBlockHeight)
             {
-                cancellation?.Token.ThrowIfCancellationRequested();
+                
 
                 if (!_ioStructureObjectsDictionary[blockHeight].IsDeleted)
                 {
@@ -1679,7 +1677,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
                         foreach (long blockHeight in blockListObject.Keys.ToArray())
                         {
-                            cancellation?.Token.ThrowIfCancellationRequested();
+                            
 
                             long position = _ioDataStructureFileLockStream.Position;
                             long dataLength = 0;

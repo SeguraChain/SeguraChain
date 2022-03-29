@@ -646,7 +646,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             {
                 foreach (long blockHeight in listBlockHeight.GetList.OrderBy(x => x))
                 {
-                    cancellation.Token.ThrowIfCancellationRequested();
+                    
 
                     ClassBlockObject blockObject = await GetBlockMirrorObject(blockHeight, cancellation);
 
@@ -796,7 +796,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     {
                         foreach (var blockObjectPair in listBlockObject.GetList)
                         {
-                            cancellation.Token.ThrowIfCancellationRequested();
+                            
 
                             if (blockObjectPair.Value != null)
                             {
@@ -966,7 +966,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         {
                             foreach (var blockObjectPair in listBlockObject.GetList)
                             {
-                                cancellation.Token.ThrowIfCancellationRequested();
+                                
 
                                 if (blockObjectPair.Value != null)
                                 {
@@ -1057,7 +1057,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         {
                             foreach (var blockObjectPair in listBlockInformation.GetList)
                             {
-                                cancellation.Token.ThrowIfCancellationRequested();
+                                
 
                                 if (blockObjectPair.Value != null)
                                 {
@@ -1413,7 +1413,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                                 for (long i = 0; i < lastBlockHeightTransactionConfirmationDone; i++)
                                 {
-                                    cancellation.Token.ThrowIfCancellationRequested();
+                                    
 
                                     long blockHeight = i + 1;
 
@@ -1462,7 +1462,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                     // Build a list of block height by range to proceed and ignore block height's fully confirmed.
                                     foreach (List<long> blockRange in listRange.GetList)
                                     {
-                                        cancellation.Token.ThrowIfCancellationRequested();
+                                        
 
                                         if (blockRange.Count > 0)
                                         {
@@ -1484,7 +1484,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                             // Retrieve by range blocks from the active memory if possible or by the cache system.
                                                             foreach (ClassBlockObject blockObject in blockDataListRetrievedRead.GetList.Values)
                                                             {
-                                                                cancellation.Token.ThrowIfCancellationRequested();
+                                                                
 
                                                                 if (blockObject != null)
                                                                 {
@@ -1570,7 +1570,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                     // Update block cached confirmed retrieved.
                                                                     foreach (var txHash in blockObjectUpdated.BlockTransactions.Keys)
                                                                     {
-                                                                        cancellation.Token.ThrowIfCancellationRequested();
+                                                                        
 
                                                                         if (blockObjectUpdated.BlockTransactions[txHash].TransactionStatus)
                                                                         {
@@ -1734,7 +1734,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                     foreach (long blockHeight in listBlockHeightConfirmed)
                     {
-                        cancellation.Token.ThrowIfCancellationRequested();
+                        
 
                         try
                         {
@@ -1772,7 +1772,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             // Update block cached confirmed retrieved.
                             foreach (var txHash in blockObjectUpdated.BlockTransactions.Keys)
                             {
-                                cancellation.Token.ThrowIfCancellationRequested();
+                                
 
                                 if (lastBlockHeight != GetLastBlockHeight)
                                 {
@@ -1918,7 +1918,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                         foreach (var blockTxPair in blockObject.BlockTransactions.OrderBy(x => x.Value.TransactionObject.TimestampSend))
                                         {
 
-                                            cancellation.Token.ThrowIfCancellationRequested();
+                                            
 
                                             string blockTransactionHash = blockTxPair.Key;
 
@@ -2050,7 +2050,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         foreach (var amountHashSourceObject in blockTransactionToCheck.TransactionObject.AmountTransactionSource)
                         {
 
-                            cancellation.Token.ThrowIfCancellationRequested();
+                            
 
                             long blockHeightSource = ClassTransactionUtility.GetBlockHeightFromTransactionHash(amountHashSourceObject.Key);
 
@@ -2128,13 +2128,13 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             {
                                 foreach (long blockHeightSource in listBlockTransactionSpendOriginal.GetList.Keys)
                                 {
-                                    cancellation.Token.ThrowIfCancellationRequested();
+                                    
 
                                     if (listBlockObjectUpdated.ContainsKey(blockHeightSource))
                                     {
                                         foreach (ClassBlockTransaction blockTransaction in listBlockTransactionSpendOriginal[blockHeightSource])
                                         {
-                                            cancellation.Token.ThrowIfCancellationRequested();
+                                            
                                             listBlockObjectUpdated[blockHeightSource].BlockTransactions[blockTransaction.TransactionObject.TransactionHash] = blockTransaction;
                                         }
                                     }
@@ -2148,13 +2148,13 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         {
                             foreach (long blockHeightSource in listBlockTransactionSpendUpdated.GetList.Keys)
                             {
-                                cancellation.Token.ThrowIfCancellationRequested();
+                                
 
                                 if (listBlockObjectUpdated.ContainsKey(blockHeightSource))
                                 {
                                     foreach (ClassBlockTransaction blockTransaction in listBlockTransactionSpendUpdated[blockHeightSource])
                                     {
-                                        cancellation.Token.ThrowIfCancellationRequested();
+                                        
                                         listBlockObjectUpdated[blockHeightSource].BlockTransactions[blockTransaction.TransactionObject.TransactionHash] = blockTransaction;
                                     }
                                 }
@@ -2398,7 +2398,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             {
                 foreach (var blockTransaction in blockData.BlockTransactions)
                 {
-                    cancellation.Token.ThrowIfCancellationRequested();
+                    
 
                     if (blockTransaction.Value.TransactionObject.TransactionType == ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION ||
                         blockTransaction.Value.TransactionObject.TransactionType == ClassTransactionEnumType.DEV_FEE_TRANSACTION)
@@ -2413,7 +2413,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     {
                         foreach (var blockTransaction in _dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions)
                         {
-                            cancellation.Token.ThrowIfCancellationRequested();
+                            
 
                             if (blockTransaction.Value.TransactionObject.TransactionType == ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION ||
                                 blockTransaction.Value.TransactionObject.TransactionType == ClassTransactionEnumType.DEV_FEE_TRANSACTION)
@@ -2435,7 +2435,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                 foreach (var tx in blockTransactions.GetList)
                 {
-                    cancellation.Token.ThrowIfCancellationRequested();
+                    
 
                     if (tx.Value.TransactionObject.TransactionType == ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION)
                     {
@@ -2471,7 +2471,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                 {
                     foreach (var tx in listMemPoolTransactionObject.GetList)
                     {
-                        cancellation.Token.ThrowIfCancellationRequested();
+                        
 
                         if (tx.TransactionType == ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION)
                         {
@@ -2525,7 +2525,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
             foreach (string transactionHash in transactionObject.AmountTransactionSource.Keys)
             {
-                cancellation.Token.ThrowIfCancellationRequested();
+                
 
                 long blockHeightSource = ClassTransactionUtility.GetBlockHeightFromTransactionHash(transactionHash);
 
@@ -3672,7 +3672,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                 foreach (var blockTransaction in listBlockTransaction)
                 {
-                    cancellation.Token.ThrowIfCancellationRequested();
+                    
 
                     if (_dictionaryBlockObjectMemory[blockTransaction.TransactionBlockHeightInsert].Content != null)
                         _dictionaryBlockObjectMemory[blockTransaction.TransactionBlockHeightInsert].Content.BlockTransactions[blockTransaction.TransactionObject.TransactionHash] = blockTransaction;
@@ -3784,7 +3784,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             {
                                 foreach (ClassBlockObject blockObject in listBlockObjects)
                                 {
-                                    cancellation.Token.ThrowIfCancellationRequested();
+                                    
 
                                     if (_dictionaryBlockObjectMemory[blockObject.BlockHeight].Content != null)
                                         _dictionaryBlockObjectMemory[blockObject.BlockHeight].Content = blockObject;
@@ -3802,7 +3802,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             {
                 foreach (ClassBlockObject blockObject in listBlockObjects)
                 {
-                    cancellation.Token.ThrowIfCancellationRequested();
+                    
 
                     if (_dictionaryBlockObjectMemory[blockObject.BlockHeight].Content != null)
                         _dictionaryBlockObjectMemory[blockObject.BlockHeight].Content = blockObject;
@@ -3898,7 +3898,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                 {
                     foreach (string transactionHash in listTransactionHash)
                     {
-                        cancellation.Token.ThrowIfCancellationRequested();
+                        
 
                         if (_dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions.ContainsKey(transactionHash))
                             listBlockTransaction.Add(_dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions[transactionHash].Clone());
@@ -3949,7 +3949,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     {
                         foreach (var blockTransaction in _dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions)
                         {
-                            cancellation.Token.ThrowIfCancellationRequested();
+                            if (cancellation.Token.IsCancellationRequested)
+                                break;
 
                             listBlockTransaction.Add(blockTransaction.Key, blockTransaction.Value.Clone());
                         }
@@ -3986,7 +3987,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         {
                             foreach (ClassCacheIoBlockTransactionObject blockTransaction in getListBlockTransaction)
                             {
-                                cancellation.Token.ThrowIfCancellationRequested();
+                                
 
                                 if (blockTransaction.BlockTransaction != null)
                                 {
@@ -4022,7 +4023,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         {
                             foreach (var blockTransaction in await _cacheIoSystem.GetBlockTransactionListFromBlockHeightTarget(blockHeight, keepAlive, cancellation))
                             {
-                                cancellation.Token.ThrowIfCancellationRequested();
+                                
 
                                 if (blockTransaction.Value != null)
                                 {
@@ -4076,7 +4077,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     // Check if some data are in the active memory first.
                     for (long i = blockHeightStart - 1; i < blockHeightEnd; i++)
                     {
-                        cancellation.Token.ThrowIfCancellationRequested();
+                        
 
                         if (i <= blockHeightEnd)
                         {
@@ -4137,7 +4138,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                 // Check if some data are in the active memory first.
                 for (long i = blockHeightStart - 1; i < blockHeightEnd; i++)
                 {
-                    cancellation.Token.ThrowIfCancellationRequested();
+                    
 
                     if (i <= blockHeightEnd)
                     {
@@ -4176,7 +4177,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                                 foreach (var blockPair in listBlockInformation.GetList)
                                 {
-                                    cancellation.Token.ThrowIfCancellationRequested();
+                                    
                                     AddOrUpdateBlockMirrorObject(blockPair.Value);
                                 }
                             }
@@ -4207,7 +4208,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             {
                                 foreach (var block in listBlockObject.GetList)
                                 {
-                                    cancellation.Token.ThrowIfCancellationRequested();
+                                    
 
                                     if (block.Value != null)
                                     {
@@ -4477,7 +4478,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                         foreach (long blockHeight in _dictionaryBlockObjectMemory.Keys.ToArray())
                         {
-                            cancellation.Token.ThrowIfCancellationRequested();
+                            
 
                             if (_dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache.Count > 0)
                             {
@@ -4485,7 +4486,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                                 foreach (string transactionHash in _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache.Keys.ToArray())
                                 {
-                                    cancellation.Token.ThrowIfCancellationRequested();
+                                    
 
                                     totalTransaction++;
 
@@ -4685,7 +4686,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                 {
                                                                     foreach (var txHash in listBlockTransactionHash.GetList)
                                                                     {
-                                                                        cancellation.Token.ThrowIfCancellationRequested();
+                                                                        
 
                                                                         if (_dictionaryBlockObjectMemory[blockHeightIndex].BlockTransactionCache.TryGetValue(txHash, out var cacheIoBlockTransactionObject))
                                                                         {
@@ -4715,7 +4716,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                 {
                                                                     foreach (string txHash in listTxHashToRemove.GetList)
                                                                     {
-                                                                        cancellation.Token.ThrowIfCancellationRequested();
+                                                                        
                                                                         _dictionaryBlockObjectMemory[blockHeightIndex].BlockTransactionCache.TryRemove(txHash, out _);
                                                                     }
                                                                 }
@@ -4929,7 +4930,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                         {
                                                                             foreach (var txHash in listBlockTransactionHash.GetList)
                                                                             {
-                                                                                cancellation.Token.ThrowIfCancellationRequested();
+                                                                                
 
                                                                                 if (_dictionaryBlockObjectMemory[blockHeightIndex].BlockTransactionCache.TryGetValue(txHash, out var cacheIoBlockTransactionObject))
                                                                                 {
@@ -4958,7 +4959,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                         {
                                                                             foreach (string txHash in listTxHashToRemove.GetList)
                                                                             {
-                                                                                cancellation.Token.ThrowIfCancellationRequested();
+                                                                                
                                                                                 _dictionaryBlockObjectMemory[blockHeightIndex].BlockTransactionCache.TryRemove(txHash, out _);
                                                                             }
                                                                         }
@@ -5147,7 +5148,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         long currentTimestamp = ClassUtility.GetCurrentTimestampInSecond();
                         foreach (string transactionHash in listTransactionHash)
                         {
-                            cancellation.Token.ThrowIfCancellationRequested();
+                            
 
                             if (_dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache.ContainsKey(transactionHash))
                             {
@@ -5270,7 +5271,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
             for (long i = 0; i < lastBlockHeightUnlocked; i++)
             {
-                cancellation.Token.ThrowIfCancellationRequested();
+                
 
                 long blockHeight = i + 1;
 
