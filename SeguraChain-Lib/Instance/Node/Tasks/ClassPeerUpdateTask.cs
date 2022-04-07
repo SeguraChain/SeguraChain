@@ -95,15 +95,25 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
         /// <returns></returns>
         public async Task StopAutomaticBlockTransactionConfirmation()
         {
-            ClassLog.WriteLine("Waiting the last block transaction confirmation task has been done..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
-            _enableCallStopTaskUpdateBlockTransaction = true;
+            try
+            {
+                ClassLog.WriteLine("Waiting the last block transaction confirmation task has been done..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
+                _enableCallStopTaskUpdateBlockTransaction = true;
 
-            // Await to complete the last task of block transaction confirmations.
-            while (_enableCallStopTaskUpdateBlockTransaction)
-                await Task.Delay(100);
+                // Await to complete the last task of block transaction confirmations.
+                while (_enableCallStopTaskUpdateBlockTransaction)
+                    await Task.Delay(100);
 
-            ClassLog.WriteLine("The last block transaction confirmation task has been done, continue to closing of the node.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
-
+                ClassLog.WriteLine("The last block transaction confirmation task has been done, continue to closing of the node.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
+            }
+#if !DEBUG
+            catch
+#else
+            catch (Exception error)
+            {
+                Debug.WriteLine("Error on waiting the last block transaction confirmation: " + error.Message);
+#endif
+            }
         }
 
         /// <summary>
