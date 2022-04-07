@@ -498,7 +498,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
             {
                 using (DisposableList<string> peerIncomingConnectionKeyList = new DisposableList<string>(false, 0, _listApiIncomingConnectionObject.Keys.ToList()))
                 {
-                    long currentTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                    long currentTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
 
                     foreach (string clientIp in peerIncomingConnectionKeyList.GetList)
                     {

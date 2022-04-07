@@ -2,9 +2,7 @@
 using SeguraChain_Lib.TaskManager.Object;
 using SeguraChain_Lib.Utility;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +16,7 @@ namespace SeguraChain_Lib.TaskManager
         private static List<ClassTaskObject> _taskCollection = new List<ClassTaskObject>();
         private const int MaxTaskClean = 10000;
         public static long CurrentTimestampMillisecond { get; private set; }
+        public static long CurrentTimestampSecond { get; private set; }
         private static DisposableList<int> listTaskToRemove = new DisposableList<int>();
 
         /// <summary>
@@ -43,32 +42,33 @@ namespace SeguraChain_Lib.TaskManager
 
                             try
                             {
-                                if (!_taskCollection[i].Started)
+                                if (_taskCollection[i].Started)
+                                    continue;
+
+
+                                await Task.Factory.StartNew(() =>
                                 {
 
-                                    await Task.Factory.StartNew(() =>
+                                    try
                                     {
+                                        _taskCollection[i].Task = Task.Run(_taskCollection[i].Action, _taskCollection[i].Cancellation.Token);
+                                        _taskCollection[i].Started = true;
+                                    }
+                                    catch
+                                    {
+                                        // Catch the exception if the task cannot start.
+                                    }
+                                }, _cancelTaskManager.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
 
-                                        try
-                                        {
-                                            _taskCollection[i].Task = Task.Run(_taskCollection[i].Action, _taskCollection[i].Cancellation.Token);
-                                            _taskCollection[i].Started = true;
-                                        }
-                                        catch
-                                        {
-                                            // Catch the exception if the task cannot start.
-                                        }
-                                    }, _cancelTaskManager.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
 
-                                }
                             }
                             catch
                             {
                                 // If the amount change..
                                 break;
                             }
-
                         }
+
                         await Task.Delay(1);
                     }
 
@@ -97,47 +97,45 @@ namespace SeguraChain_Lib.TaskManager
                             {
                                 bool doDispose = false;
 
-                                if (_taskCollection[i].Task != null && (
-
-                                        _taskCollection[i].Task.IsCanceled || _taskCollection[i].Task.IsFaulted))
+                                /*
+                                if (_taskCollection[i].Task != null && (_taskCollection[i].Task.IsCanceled || _taskCollection[i].Task.IsFaulted))
                                     doDispose = true;
-                                else
-                                {
-                                    if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond)
+                                */
 
-                                    {
-                                        doDispose = true;
-                                        try
-                                        {
-                                            if (_taskCollection[i].Cancellation != null)
-                                            {
-                                                if (!_taskCollection[i].Cancellation.IsCancellationRequested)
-                                                    _taskCollection[i].Cancellation.Cancel();
-                                            }
-                                        }
-                                        catch
-                                        {
-                                            // Ignored.
-                                        }
-                                    }
-                                }
-
-                                if (doDispose)
+                                if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond)
                                 {
-                                    _taskCollection[i].Disposed = true;
-                                    if (_taskCollection[i].Socket != null)
-                                        ClassUtility.CloseSocket(_taskCollection[i].Socket);
+                                    doDispose = true;
                                     try
                                     {
-
-                                        _taskCollection[i].Task?.Dispose();
+                                        if (_taskCollection[i].Cancellation != null)
+                                        {
+                                            if (!_taskCollection[i].Cancellation.IsCancellationRequested)
+                                                _taskCollection[i].Cancellation.Cancel();
+                                        }
                                     }
                                     catch
                                     {
-                                        // Ignored, the task dispose can failed.
+                                        // Ignored.
                                     }
-                                    listTaskToRemove.Add(i);
                                 }
+
+
+                                if (!doDispose)
+                                    continue;
+
+                                _taskCollection[i].Disposed = true;
+
+                                ClassUtility.CloseSocket(_taskCollection[i].Socket);
+                                try
+                                {
+                                    _taskCollection[i].Task?.Dispose();
+                                }
+                                catch
+                                {
+                                    // Ignored, the task dispose can failed.
+                                }
+
+                                listTaskToRemove.Add(i);
                             }
                         }
                         catch
@@ -159,6 +157,7 @@ namespace SeguraChain_Lib.TaskManager
                 while (TaskManagerEnabled)
                 {
                     CurrentTimestampMillisecond = ClassUtility.GetCurrentTimestampInMillisecond();
+                    CurrentTimestampSecond = ClassUtility.GetCurrentTimestampInSecond();
 
                     await Task.Delay(10);
                 }
@@ -170,12 +169,16 @@ namespace SeguraChain_Lib.TaskManager
 
             InsertTask(new Action(async () =>
             {
+
                 while (TaskManagerEnabled)
                 {
 
-                    if (listTaskToRemove.Count >= MaxTaskClean)
+                    if (listTaskToRemove.Count < MaxTaskClean)
+                        continue;
+
+                    bool cleaned = false;
+                    try
                     {
-                        bool cleaned = false;
                         foreach (int taskId in listTaskToRemove.GetList.ToArray())
                         {
                             try
@@ -189,20 +192,26 @@ namespace SeguraChain_Lib.TaskManager
                                 continue;
                             }
                         }
-
-                        try
-                        {
-                            if (cleaned)
-                                _taskCollection.TrimExcess();
-                        }
-                        catch
-                        {
-                            // Ignored.
-                        }
                     }
+                    catch
+                    {
+                        // Collection generic list changed exception.
+                    }
+
+                    try
+                    {
+                        if (cleaned)
+                            _taskCollection.TrimExcess();
+                    }
+                    catch
+                    {
+                        // Ignored.
+                    }
+
 
                     await Task.Delay(60 * 1000);
                 }
+
             }), 0, _cancelTaskManager);
 
             #endregion
@@ -214,22 +223,30 @@ namespace SeguraChain_Lib.TaskManager
         /// <param name="action"></param>
         /// <param name="timestampEnd"></param>
         /// <param name="cancellation"></param>
+        /// <param name="socket"></param>
         public static void InsertTask(Action action, long timestampEnd, CancellationTokenSource cancellation, Socket socket = null)
         {
             if (TaskManagerEnabled)
             {
-                try
-                {
-                    CancellationTokenSource cancellationTask = CancellationTokenSource.CreateLinkedTokenSource(
-                           cancellation != null ?
-                           cancellation.Token : new CancellationToken(),
-                           timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - CurrentTimestampMillisecond)).Token : new CancellationToken());
+                CancellationTokenSource cancellationTask = CancellationTokenSource.CreateLinkedTokenSource(
+                               cancellation != null ?
+                               cancellation.Token : new CancellationToken(),
+                               timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - CurrentTimestampMillisecond)).Token : new CancellationToken());
 
-                    _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
-                }
-                catch
+                while (!cancellationTask.IsCancellationRequested)
                 {
-                    // If the insert of the task failed.
+                    if (!TaskManagerEnabled)
+                        break;
+
+                    try
+                    {
+                        _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
+                        break;
+                    }
+                    catch
+                    {
+                        // If the insert of the task failed.
+                    }
                 }
             }
         }

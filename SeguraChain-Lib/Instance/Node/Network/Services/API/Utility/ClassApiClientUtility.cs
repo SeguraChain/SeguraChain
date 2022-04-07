@@ -73,7 +73,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Utility
             ClassApiPeerPacketSendMiningShareResponse peerPacketSendMiningShareResponse = await SendPostRequestToExternalSyncNode<ClassApiPeerPacketSendMiningShareResponse>(peerApiIp, peerApiPort, peerApiMaxConnectionDelay, ClassUtility.SerializeData(new ClassApiPeerPacketSendMiningShare
             {
                 MiningPowShareObject = miningPoWaCShareObject,
-                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
             }), ClassPeerApiPostPacketSendEnum.PUSH_MINING_SHARE, cancellation);
 
             return peerPacketSendMiningShareResponse != null ? peerPacketSendMiningShareResponse.MiningPoWShareStatus : ClassMiningPoWaCEnumStatus.SUBMIT_NETWORK_ERROR;
@@ -103,7 +103,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Utility
             {
                 BlockHeight = blockHeight,
                 TransactionHash = transactionHash,
-                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
             }), ClassPeerApiPostPacketSendEnum.ASK_BLOCK_TRANSACTION, cancellation);
 
             return peerPacketSendBlockTransaction != null ? peerPacketSendBlockTransaction.BlockTransaction : null;
@@ -120,7 +120,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Utility
             ClassApiPeerPacketSendBlockInformation peerPacketSendBlockInformation = await SendPostRequestToExternalSyncNode<ClassApiPeerPacketSendBlockInformation>(peerApiIp, peerApiPort, peerApiMaxConnectionDelay, ClassUtility.SerializeData(new ClassApiPeerPacketAskBlockInformation()
             {
                 BlockHeight = blockHeight,
-                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
             }), ClassPeerApiPostPacketSendEnum.ASK_BLOCK_INFORMATION, cancellation);
 
             return peerPacketSendBlockInformation != null ? peerPacketSendBlockInformation.BlockObject : null;
@@ -137,7 +137,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Utility
             ClassApiPeerPacketSendBlockInformation peerPacketSendBlockInformation = await SendPostRequestToExternalSyncNode<ClassApiPeerPacketSendBlockInformation>(peerApiIp, peerApiPort, peerApiMaxConnectionDelay, ClassUtility.SerializeData(new ClassApiPeerPacketAskBlockInformation()
             {
                 BlockHeight = blockHeight,
-                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
             }), ClassPeerApiPostPacketSendEnum.ASK_BLOCK_INFORMATION, cancellation);
 
             return peerPacketSendBlockInformation != null ? peerPacketSendBlockInformation.BlockObject.TimestampCreate : 0;
@@ -155,7 +155,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Utility
             {
                 BlockHeight = 0,
                 TransactionHash = transactionHash,
-                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
             }), ClassPeerApiPostPacketSendEnum.ASK_MEMPOOL_TRANSACTION, cancellation);
 
             return peerPacketSendMemPoolTransaction != null ? peerPacketSendMemPoolTransaction.TransactionObject : null;
@@ -177,7 +177,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Utility
                 LastBlockHeightUnlocked = lastBlockHeightUnlocked,
                 BlockHeightConfirmationStart = blockHeightConfirmationStart,
                 BlockHeightConfirmationTarget = blockHeightConfirmationTarget,
-                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
             }), ClassPeerApiPostPacketSendEnum.ASK_FEE_COST_TRANSACTION, cancellation);
 
 
@@ -232,7 +232,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Utility
             {
                 LastBlockHeightUnlocked = lastBlockHeightUnlocked,
                 LastBlockHeight = lastBlockHeight,
-                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
             }), ClassPeerApiPostPacketSendEnum.ASK_GENERATE_BLOCK_HEIGHT_START_TRANSACTION_CONFIRMATION, cancellation);
 
             return peerPacketSendGenerateBlockHeightStartTransactionConfirmation != null ? peerPacketSendGenerateBlockHeightStartTransactionConfirmation.BlockHeight : 0;
@@ -250,7 +250,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Utility
             ClassApiPeerPacketSendMemPoolTransactionCount peerPacketSendMemPoolTransactionCount = await SendPostRequestToExternalSyncNode<ClassApiPeerPacketSendMemPoolTransactionCount>(peerApiIp, peerApiPort, peerApiMaxConnectionDelay, ClassUtility.SerializeData(new ClassApiPeerPacketAskMemPoolTxCountByBlockHeight()
             {
                 BlockHeight = blockHeight,
-                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
             }), ClassPeerApiPostPacketSendEnum.ASK_MEMPOOL_TRANSACTION_COUNT_BY_BLOCK_HEIGHT, cancellation);
 
             return (int)(peerPacketSendMemPoolTransactionCount != null ? peerPacketSendMemPoolTransactionCount.TransactionCount : 0);
@@ -295,7 +295,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Utility
                 BlockHeight = blockHeight,
                 Start = start,
                 End = end,
-                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
             }), ClassPeerApiPostPacketSendEnum.ASK_MEMPOOL_TRANSACTION_BY_RANGE, cancellation);
 
             return peerPacketSendMemPoolTransactionByRange?.ListTransaction != null ? new DisposableList<ClassTransactionObject>(false, 0, peerPacketSendMemPoolTransactionByRange.ListTransaction) : new DisposableList<ClassTransactionObject>();
@@ -316,7 +316,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Utility
                 BlockHeight = blockHeight,
                 Start = start,
                 End = end,
-                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
             }), ClassPeerApiPostPacketSendEnum.ASK_BLOCK_TRANSACTION_BY_RANGE, cancellation);
 
             return peerPacketSendListBlockTransaction?.ListBlockTransaction != null ? new DisposableList<ClassBlockTransaction>(false, 0, peerPacketSendListBlockTransaction.ListBlockTransaction) : new DisposableList<ClassBlockTransaction>();
@@ -336,7 +336,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Utility
             {
                 BlockHeight = blockHeight,
                 ListTransactionHash = listTransactionHash,
-                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
             }), ClassPeerApiPostPacketSendEnum.ASK_BLOCK_TRANSACTION_BY_HASH_LIST, cancellation);
 
 
@@ -354,7 +354,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Utility
             ClassApiPeerPacketSendPushWalletTransactionResponse peerPacketSendPushWalletTransactionResponse = await SendPostRequestToExternalSyncNode<ClassApiPeerPacketSendPushWalletTransactionResponse>(peerApiIp, peerApiPort, peerApiMaxConnectionDelay, ClassUtility.SerializeData(new ClassApiPeerPacketPushWalletTransaction()
             {
                 TransactionObject = transactionObject,
-                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
             }), ClassPeerApiPostPacketSendEnum.PUSH_WALLET_TRANSACTION, cancellation);
 
             return peerPacketSendPushWalletTransactionResponse != null ? 

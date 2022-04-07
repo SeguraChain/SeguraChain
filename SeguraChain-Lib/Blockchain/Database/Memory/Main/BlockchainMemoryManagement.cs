@@ -1323,7 +1323,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             blockchainNetworkStatsObject.LastAverageMiningTimespendDone = averageMiningTotalTimespend;
                             blockchainNetworkStatsObject.LastAverageMiningTimespendExpected = averageMiningTimespendExpected;
                             blockchainNetworkStatsObject.LastBlockHeightTransactionConfirmationDone = lastBlockHeightTransactionConfirmationDone;
-                            blockchainNetworkStatsObject.LastUpdateStatsDateTime = ClassUtility.GetDatetimeFromTimestamp(ClassUtility.GetCurrentTimestampInSecond());
+                            blockchainNetworkStatsObject.LastUpdateStatsDateTime = ClassUtility.GetDatetimeFromTimestamp(TaskManager.TaskManager.CurrentTimestampSecond);
                             blockchainNetworkStatsObject.BlockchainStatsTimestampToGenerate = ClassUtility.GetCurrentTimestampInMillisecond() - timestampTaskStart;
                         }
 
@@ -3233,7 +3233,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                         useSemaphoreMemory = true;
 
 
-                                        long timestamp = ClassUtility.GetCurrentTimestampInSecond();
+                                        long timestamp = TaskManager.TaskManager.CurrentTimestampSecond;
                                         long lastBlockHeight = GetLastBlockHeight;
                                         long limitIndexToCache = lastBlockHeight - _blockchainDatabaseSetting.BlockchainCacheSetting.GlobalMaxBlockCountToKeepInMemory;
                                         bool changeDone = false;
@@ -4474,7 +4474,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                         long totalTransaction = 0;
                         long totalTransactionKeepAlive = 0;
-                        long currentTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                        long currentTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
 
                         foreach (long blockHeight in _dictionaryBlockObjectMemory.Keys.ToArray())
                         {
@@ -4587,7 +4587,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                             if (_dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache.TryAdd(blockTransaction.TransactionObject.TransactionHash, new ClassCacheIoBlockTransactionObject()
                                             {
                                                 BlockTransaction = blockTransaction.Clone(),
-                                                LastUpdateTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                                                LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                                                 BlockTransactionMemorySize = blockTransactionMemorySize
                                             }))
                                             {
@@ -4601,7 +4601,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                         else
                                         {
                                             _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].BlockTransaction = blockTransaction.Clone();
-                                            _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].LastUpdateTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                                            _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
 
                                             // Remove previous size.
                                             _totalBlockTransactionMemorySize -= _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].BlockTransactionMemorySize;
@@ -4623,7 +4623,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                 if (_dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache.TryAdd(blockTransaction.TransactionObject.TransactionHash, new ClassCacheIoBlockTransactionObject()
                                                 {
                                                     BlockTransaction = blockTransaction.Clone(),
-                                                    LastUpdateTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                                                    LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                                                     BlockTransactionMemorySize = blockTransactionMemorySize
                                                 }))
                                                 {
@@ -4637,7 +4637,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                             else
                                             {
                                                 _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].BlockTransaction = blockTransaction.Clone();
-                                                _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].LastUpdateTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                                                _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
 
                                                 // Remove previous size.
                                                 _totalBlockTransactionMemorySize -= _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].BlockTransactionMemorySize;
@@ -4655,7 +4655,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                             if (_dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache.ContainsKey(blockTransaction.TransactionObject.TransactionHash))
                                             {
                                                 _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].BlockTransaction = blockTransaction.Clone();
-                                                _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].LastUpdateTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                                                _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
 
                                                 // Remove previous size.
                                                 _totalBlockTransactionMemorySize -= _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].BlockTransactionMemorySize;
@@ -4735,7 +4735,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                         if (_dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache.TryAdd(blockTransaction.TransactionObject.TransactionHash, new ClassCacheIoBlockTransactionObject()
                                                         {
                                                             BlockTransaction = blockTransaction.Clone(),
-                                                            LastUpdateTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                                                            LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                                                             BlockTransactionMemorySize = blockTransactionMemorySize
                                                         }))
                                                         {
@@ -4749,7 +4749,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                     else
                                                     {
                                                         _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].BlockTransaction = blockTransaction.Clone();
-                                                        _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].LastUpdateTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                                                        _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
 
                                                         // Remove previous size.
                                                         _totalBlockTransactionMemorySize -= _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].BlockTransactionMemorySize;
@@ -4824,7 +4824,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                 if (_dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache.TryAdd(blockTransaction.TransactionObject.TransactionHash, new ClassCacheIoBlockTransactionObject()
                                                 {
                                                     BlockTransaction = blockTransaction.Clone(),
-                                                    LastUpdateTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                                                    LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                                                     BlockTransactionMemorySize = blockTransactionMemorySize
                                                 }))
                                                 {
@@ -4838,7 +4838,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                             else
                                             {
                                                 _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].BlockTransaction = blockTransaction.Clone();
-                                                _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].LastUpdateTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                                                _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
 
                                                 // Remove previous size.
                                                 _totalBlockTransactionMemorySize -= _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].BlockTransactionMemorySize;
@@ -4862,7 +4862,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                         if (_dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache.TryAdd(blockTransaction.TransactionObject.TransactionHash, new ClassCacheIoBlockTransactionObject()
                                                         {
                                                             BlockTransaction = blockTransaction.Clone(),
-                                                            LastUpdateTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                                                            LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                                                             BlockTransactionMemorySize = blockTransactionMemorySize
                                                         }))
                                                         {
@@ -4877,7 +4877,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                 else
                                                 {
                                                     _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].BlockTransaction = blockTransaction.Clone();
-                                                    _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].LastUpdateTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                                                    _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
 
                                                     // Remove previous size.
                                                     _totalBlockTransactionMemorySize -= _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].BlockTransactionMemorySize;
@@ -4896,7 +4896,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                 if (_dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache.ContainsKey(blockTransaction.TransactionObject.TransactionHash))
                                                 {
                                                     _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].BlockTransaction = blockTransaction.Clone();
-                                                    _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].LastUpdateTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                                                    _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
 
                                                     // Remove previous size.
                                                     _totalBlockTransactionMemorySize -= _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].BlockTransactionMemorySize;
@@ -4978,7 +4978,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                 if (_dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache.TryAdd(blockTransaction.TransactionObject.TransactionHash, new ClassCacheIoBlockTransactionObject()
                                                                 {
                                                                     BlockTransaction = blockTransaction.Clone(),
-                                                                    LastUpdateTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                                                                    LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                                                                     BlockTransactionMemorySize = blockTransactionMemorySize
                                                                 }))
                                                                 {
@@ -4992,7 +4992,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                             else
                                                             {
                                                                 _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].BlockTransaction = blockTransaction.Clone();
-                                                                _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].LastUpdateTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                                                                _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
 
                                                                 // Remove previous size.
                                                                 _totalBlockTransactionMemorySize -= _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[blockTransaction.TransactionObject.TransactionHash].BlockTransactionMemorySize;
@@ -5087,7 +5087,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                         if (_dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache.ContainsKey(transactionHash))
                         {
-                            long currentTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                            long currentTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
                             if (_dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[transactionHash].LastUpdateTimestamp + _blockchainDatabaseSetting.BlockchainCacheSetting.GlobalMaxDelayKeepAliveBlockTransactionCached >= currentTimestamp)
                                 blockTransaction = _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache[transactionHash].BlockTransaction.Clone();
                             else
@@ -5145,7 +5145,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     if (blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight)
                     {
 
-                        long currentTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                        long currentTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
                         foreach (string transactionHash in listTransactionHash)
                         {
                             
@@ -5217,7 +5217,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                 {
                     if (blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight)
                     {
-                        long currentTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                        long currentTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
 
                         if (_dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache.Count > 0)
                             result = _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache.Values.TakeWhile(x => (x.LastUpdateTimestamp + _blockchainDatabaseSetting.BlockchainCacheSetting.GlobalMaxDelayKeepAliveBlockTransactionCached >= currentTimestamp)).ToList();

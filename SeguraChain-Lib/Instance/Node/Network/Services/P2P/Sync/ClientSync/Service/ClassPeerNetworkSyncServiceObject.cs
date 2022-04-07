@@ -248,9 +248,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                         }
                                         else
                                         {
-                                            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus == ClassPeerEnumStatus.PEER_BANNED && ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerBanDate + _peerNetworkSettingObject.PeerBanDelay < ClassUtility.GetCurrentTimestampInSecond())
+                                            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus == ClassPeerEnumStatus.PEER_BANNED && ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerBanDate + _peerNetworkSettingObject.PeerBanDelay < TaskManager.TaskManager.CurrentTimestampSecond)
                                                 peerListToInitialize.Add(new Tuple<string, string>(peerIp, peerUniqueId));
-                                            else if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus == ClassPeerEnumStatus.PEER_DEAD && ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerBanDate + _peerNetworkSettingObject.PeerDeadDelay < ClassUtility.GetCurrentTimestampInSecond())
+                                            else if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus == ClassPeerEnumStatus.PEER_DEAD && ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerBanDate + _peerNetworkSettingObject.PeerDeadDelay < TaskManager.TaskManager.CurrentTimestampSecond)
                                                 peerListToInitialize.Add(new Tuple<string, string>(peerIp, peerUniqueId));
                                         }
                                     }
@@ -2705,7 +2705,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     NumericPublicKey = _peerNetworkSettingObject.PeerNumericPublicKey,
                     PeerPort = _peerNetworkSettingObject.ListenPort,
                     PeerIsPublic = _peerNetworkSettingObject.PublicPeer,
-                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                 }),
             };
             sendObject.PacketHash = ClassUtility.GenerateSha256FromString(sendObject.PacketContent + sendObject.PacketOrder);
@@ -2807,7 +2807,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 PacketOrder = ClassPeerEnumPacketSend.ASK_PEER_LIST,
                 PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskPeerList()
                 {
-                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                 })
             };
 
@@ -2911,7 +2911,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 PacketOrder = ClassPeerEnumPacketSend.ASK_LIST_SOVEREIGN_UPDATE,
                 PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskListSovereignUpdate()
                 {
-                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                 })
             };
 
@@ -2986,7 +2986,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskSovereignUpdateFromHash()
                 {
                     SovereignUpdateHash = sovereignHash,
-                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                 })
             };
 
@@ -3067,7 +3067,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 PacketOrder = ClassPeerEnumPacketSend.ASK_NETWORK_INFORMATION,
                 PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskPeerList()
                 {
-                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                 })
             };
 
@@ -3157,7 +3157,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskBlockData()
                 {
                     BlockHeight = blockHeightTarget,
-                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                 })
             };
 
@@ -3243,7 +3243,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 {
                     BlockHeight = blockHeightTarget,
                     TransactionId = transactionId,
-                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                 })
             };
 
@@ -3336,7 +3336,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     BlockHeight = blockHeightTarget,
                     TransactionIdStartRange = transactionIdRangeStart,
                     TransactionIdEndRange = transactionIdRangeEnd,
-                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                 })
             };
 
@@ -3725,7 +3725,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 bool doPeerKeysUpdate = false;
                 bool forceUpdate = false;
-                long timestamp = ClassUtility.GetCurrentTimestampInSecond();
+                long timestamp = TaskManager.TaskManager.CurrentTimestampSecond;
                 bool exist = ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId);
 
 
@@ -3803,7 +3803,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         ClassLog.WriteLine("Auth keys generated successfully sent, peer target auth keys successfully received and updated.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
                         if (ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
                         {
-                            ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastUpdateOfKeysTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                            ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastUpdateOfKeysTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
                             result = true;
                         }
                     }

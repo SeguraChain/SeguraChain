@@ -35,7 +35,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         {
             bool result = false;
 
-            long currentTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+            long currentTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
 
             if (!ClassPeerDatabase.DictionaryPeerDataObject.ContainsKey(peerIp))
                 ClassPeerDatabase.DictionaryPeerDataObject.Add(peerIp, new ConcurrentDictionary<string, ClassPeerObject>());
@@ -105,7 +105,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                 peerObject.PeerInternPacketEncryptionKeyIv = ClassAes.GenerateIv(peerObject.PeerInternPacketEncryptionKey, BlockchainSetting.PeerIvIterationCount);
                 peerObject.PeerInternPrivateKey = GeneratePeerPrivateKey();
                 peerObject.PeerInternPublicKey = GeneratePeerPublicKeyFromPrivateKey(peerObject.PeerInternPrivateKey);
-                peerObject.PeerInternTimestampKeyGenerated = ClassUtility.GetCurrentTimestampInSecond();
+                peerObject.PeerInternTimestampKeyGenerated = TaskManager.TaskManager.CurrentTimestampSecond;
                 peerObject.GetInternCryptoStreamObject = new ClassPeerCryptoStreamObject(peerObject.PeerInternPacketEncryptionKey, peerObject.PeerInternPacketEncryptionKeyIv, peerObject.PeerInternPublicKey, peerObject.PeerInternPrivateKey, cancellation);
             }
 
@@ -138,7 +138,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                     ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerIsPublic = sendAskPeerAuthKeysObject.PeerIsPublic;
                     ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerUniqueId = peerUniqueId;
                     ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerNumericPublicKey = sendAskPeerAuthKeysObject.NumericPublicKey;
-                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastValidPacket = ClassUtility.GetCurrentTimestampInSecond();
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastValidPacket = TaskManager.TaskManager.CurrentTimestampSecond;
 
                     if (sendAskPeerAuthKeysObject.AesEncryptionKey != null && sendAskPeerAuthKeysObject.AesEncryptionIv != null)
                     {
@@ -164,7 +164,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                     PeerIp = peerIp,
                     PeerNumericPublicKey = sendAskPeerAuthKeysObject.NumericPublicKey,
                     PeerIsPublic = sendAskPeerAuthKeysObject.PeerIsPublic,
-                    PeerLastValidPacket = ClassUtility.GetCurrentTimestampInSecond()
+                    PeerLastValidPacket = TaskManager.TaskManager.CurrentTimestampSecond
                 }))
                 {
                     if (sendAskPeerAuthKeysObject.AesEncryptionKey != null && sendAskPeerAuthKeysObject.AesEncryptionIv != null)
@@ -207,7 +207,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                     ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerUniqueId = peerUniqueId;
                     ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerPort = sendPeerAuthKeysObject.PeerPort;
                     ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerNumericPublicKey = sendPeerAuthKeysObject.NumericPublicKey;
-                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastValidPacket = ClassUtility.GetCurrentTimestampInSecond();
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastValidPacket = TaskManager.TaskManager.CurrentTimestampSecond;
 
                     if (sendPeerAuthKeysObject.AesEncryptionKey != null && sendPeerAuthKeysObject.AesEncryptionIv != null)
                     {
@@ -233,7 +233,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                     PeerNumericPublicKey = sendPeerAuthKeysObject.NumericPublicKey,
                     PeerUniqueId = peerUniqueId,
                     PeerIp = peerIp,
-                    PeerLastValidPacket = ClassUtility.GetCurrentTimestampInSecond()
+                    PeerLastValidPacket = TaskManager.TaskManager.CurrentTimestampSecond
                 }))
                 {
 

@@ -65,8 +65,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         /// </summary>
         public ClassPeerObject()
         {
-            PeerTimestampInsert = ClassUtility.GetCurrentTimestampInSecond();
-            PeerLastPacketReceivedTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+            PeerTimestampInsert = TaskManager.TaskManager.CurrentTimestampSecond;
+            PeerLastPacketReceivedTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
         }
 
     }

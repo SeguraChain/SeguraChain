@@ -81,7 +81,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         // Protected implementation of Dispose pattern.
         protected virtual void Dispose(bool disposing)
         {
-
             PeerTaskStatus = false;
             CleanUpTask();
             DisconnectFromTarget();
@@ -134,7 +133,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                 if (PeerConnectStatus)
                 {
-                    if (!CheckConnection())
+                    if (!CheckConnection)
                         DisconnectFromTarget();
                 }
                 else
@@ -144,9 +143,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                 #region Reconnect to the target ip if the connection is not opened or dead.
 
-                if (!PeerConnectStatus)
+                if (!PeerConnectStatus || CheckConnection)
                 {
-                    if (!await DoConnection(cancellation))
+                    if (!await DoConnection())
                         return false;
                 }
 
@@ -197,33 +196,26 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// <summary>
         /// Check the connection.
         /// </summary>
-        private bool CheckConnection()
-        {
-            if (_peerSocketClient != null)
-                PeerConnectStatus = ClassUtility.SocketIsConnected(_peerSocketClient);
-            else
-                PeerConnectStatus = false;
-
-            return PeerConnectStatus;
-        }
+        private bool CheckConnection => ClassUtility.SocketIsConnected(_peerSocketClient);
 
         /// <summary>
         /// Do connection.
         /// </summary>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        private async Task<bool> DoConnection(CancellationTokenSource cancellation)
+        private async Task<bool> DoConnection()
         {
             bool successConnect = false;
             CancelTaskDoConnection();
 
+            bool taskDone = false;
             long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSetting.PeerMaxDelayToConnectToTarget * 1000);
 
-            _peerCancellationTokenDoConnection = CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, _peerCancellationTokenMain.Token);
+            _peerCancellationTokenDoConnection = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationTokenMain.Token);
 
             TaskManager.TaskManager.InsertTask(new Action(async () =>
             {
-                while (!successConnect)
+                while (!successConnect && timestampEnd > TaskManager.TaskManager.CurrentTimestampMillisecond)
                 {
                     try
                     {
@@ -233,11 +225,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                         _peerSocketClient = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
                         await _peerSocketClient.ConnectAsync(PeerIpTarget, PeerPortTarget);
 
-                        if (_peerSocketClient.Connected)
-                        {
-                            successConnect = true;
-                            break;
-                        }
+                        successConnect = true;
+                        break;
                     }
                     catch
                     {
@@ -246,13 +235,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                     await Task.Delay(10);
                 }
 
+                taskDone = true;
+
             }), timestampEnd, _peerCancellationTokenDoConnection, null);
 
 
             while (!successConnect)
             {
                 if (timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond || 
-                    _peerCancellationTokenDoConnection.IsCancellationRequested)
+                    _peerCancellationTokenDoConnection.IsCancellationRequested || taskDone)
                     break;
 
                 try
@@ -303,7 +294,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                     _lastPacketReceivedTimestamp + (_peerNetworkSetting.PeerMaxDelayAwaitResponse * 1000) < TaskManager.TaskManager.CurrentTimestampMillisecond ||
                     PeerPacketReceived != null)
                 {
-                    PeerConnectStatus = false;
                     PeerTaskStatus = false;
                     break;
                 }
@@ -354,7 +344,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                     {
                         bool peerTargetExist = false;
                         long packetSizeCount = 0;
-                        int countPacketCompleted = 0;
 
                         listPacketReceived?.Clear();
 
@@ -381,27 +370,46 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                         //Stopwatch stopwatch = new Stopwatch();
                                         //stopwatch.Start();
 #endif
-                                        foreach (byte dataByte in packetBufferOnReceive)
+
+                                        string packetData = packetBufferOnReceive.GetStringFromByteArrayUtf8().Replace("\0", "");
+
+                                        if (packetData.Contains(ClassPeerPacketSetting.PacketPeerSplitSeperator))
                                         {
-                                            if (IsCancelledOrDisconnected()) break;
+                                            int countSeperator = packetData.Count(x => x == ClassPeerPacketSetting.PacketPeerSplitSeperator);
 
-                                            char character = (char)dataByte;
+                                            string[] splitPacketData = packetData.Split(new[] { ClassPeerPacketSetting.PacketPeerSplitSeperator }, StringSplitOptions.None);
 
-                                            if (character != '\0')
+                                            int completed = 0;
+                                            foreach (string data in splitPacketData)
                                             {
-                                                if (character == ClassPeerPacketSetting.PacketPeerSplitSeperator)
+                                                string dataFormatted = data.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
+
+                                                if (dataFormatted.IsNullOrEmpty(false, out _) || dataFormatted.Length == 0 || !ClassUtility.CheckBase64String(dataFormatted))
+                                                    continue;
+
+                                                listPacketReceived[listPacketReceived.Count - 1].Packet += dataFormatted;
+
+                                                if (completed < countSeperator)
                                                 {
                                                     listPacketReceived[listPacketReceived.Count - 1].Complete = true;
-                                                    countPacketCompleted++;
                                                     break;
+                                                    //listPacketReceived.Add(new ClassReadPacketSplitted());
                                                 }
-                                                else if (ClassUtility.CharIsABase64Character(character))
-                                                {
-                                                    listPacketReceived[listPacketReceived.Count - 1].Packet += character;
-                                                    packetSizeCount++;
-                                                }
+
+                                                completed++;
                                             }
                                         }
+                                        else
+                                        {
+                                            string data = packetData.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
+
+                                            if (data.IsNullOrEmpty(false, out _) || data.Length == 0 || !ClassUtility.CheckBase64String(data))
+                                                continue;
+
+                                            listPacketReceived[listPacketReceived.Count - 1].Packet += data;
+                                        }
+
+
 
 #if DEBUG
                                         //stopwatch.Stop();
@@ -410,7 +418,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                                         #endregion
 
-                                        if (countPacketCompleted > 0)
+                                        if (listPacketReceived.GetList.Count(x => x.Complete) > 0)
                                         {
 
                                             byte[] base64Packet = null;
@@ -427,7 +435,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                                             listPacketReceived[listPacketReceived.Count - 1].Packet.Clear();
                                             listPacketReceived[listPacketReceived.Count - 1].Complete = false;
-                                            countPacketCompleted = 0;
 
                                             if (!failed)
                                             {
@@ -440,7 +447,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                                         if (ClassPeerDatabase.ContainsPeer(PeerIpTarget, PeerUniqueIdTarget))
                                                         {
                                                             peerTargetExist = true;
-                                                            ClassPeerDatabase.DictionaryPeerDataObject[PeerIpTarget][PeerUniqueIdTarget].PeerLastPacketReceivedTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                                                            ClassPeerDatabase.DictionaryPeerDataObject[PeerIpTarget][PeerUniqueIdTarget].PeerLastPacketReceivedTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
                                                         }
                                                     }
 
@@ -503,7 +510,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                     {
                         PeerTaskStatus = false;
 
-                        if (!CheckConnection())
+                        if (!CheckConnection)
                             PeerConnectStatus = false;
                     }
 
@@ -559,7 +566,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                         PacketOrder = ClassPeerEnumPacketSend.ASK_KEEP_ALIVE,
                         PacketContent = ClassUtility.SerializeData(new ClassPeerPacketAskKeepAlive()
                         {
-                            PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                            PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                         }),
                     };
 
@@ -575,7 +582,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                             
                             sendObject.PacketContent = ClassUtility.SerializeData(new ClassPeerPacketAskKeepAlive()
                             {
-                                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                             });
 
                             if (!await SendPeerPacket(sendObject.GetPacketData(), _peerCancellationTokenTaskSendPeerPacketKeepAlive))
@@ -591,7 +598,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                         {
                             _peerTaskKeepAliveStatus = false;
 
-                            if (!CheckConnection())
+                            if (!CheckConnection)
                                 PeerConnectStatus = false;
 
                             break;

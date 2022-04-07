@@ -87,7 +87,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         public ClassPeerNetworkClientServerObject(Socket clientSocket, CancellationTokenSource cancellationTokenHandlePeerConnection, string peerClientIp, string peerServerOpenNatIp, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject)
         {
             ClientPeerConnectionStatus = true;
-            ClientPeerLastPacketReceived = ClassUtility.GetCurrentTimestampInSecond();
+            ClientPeerLastPacketReceived = TaskManager.TaskManager.CurrentTimestampSecond;
             CancellationTokenHandlePeerConnection = cancellationTokenHandlePeerConnection;
             _clientSocket = clientSocket;
             _peerNetworkSettingObject = peerNetworkSettingObject;
@@ -148,7 +148,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                     if (!_onSendingPacketResponse && !(_enableMemPoolBroadcastClientMode || _onSendingMemPoolTransaction))
                     {
                         // If any packet are received after the delay, the function close the peer client connection to listen.
-                        if (ClientPeerLastPacketReceived + _peerNetworkSettingObject.PeerMaxDelayConnection < ClassUtility.GetCurrentTimestampInSecond())
+                        if (ClientPeerLastPacketReceived + _peerNetworkSettingObject.PeerMaxDelayConnection < TaskManager.TaskManager.CurrentTimestampSecond)
                         {
                             // On this case, insert invalid attempt of connection.
                             if (!_clientPeerPacketReceivedStatus)
@@ -261,31 +261,46 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                 if (packetLength > 0)
                                 {
-                                    ClientPeerLastPacketReceived = ClassUtility.GetCurrentTimestampInSecond();
+                                    ClientPeerLastPacketReceived = TaskManager.TaskManager.CurrentTimestampSecond;
 
-                                    bool containSeperator = false;
+                                    string packetData = packetBufferOnReceive.GetStringFromByteArrayUtf8().Replace("\0", "");
 
-                                    foreach (byte dataByte in packetBufferOnReceive)
+                                    if (packetData.Contains(ClassPeerPacketSetting.PacketPeerSplitSeperator))
                                     {
-                                        char character = (char)dataByte;
-                                        if (character != '\0')
+                                        int countSeperator = packetData.Count(x => x == ClassPeerPacketSetting.PacketPeerSplitSeperator);
+
+                                        string[] splitPacketData = packetData.Split(new[] { ClassPeerPacketSetting.PacketPeerSplitSeperator }, StringSplitOptions.None);
+
+                                        int completed = 0;
+                                        foreach (string data in splitPacketData)
                                         {
-                                            if (character == ClassPeerPacketSetting.PacketPeerSplitSeperator)
+                                            string dataFormatted = data.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
+
+                                            if (dataFormatted.IsNullOrEmpty(false, out _) || dataFormatted.Length == 0 || !ClassUtility.CheckBase64String(dataFormatted))
+                                                continue;
+
+                                            listPacketReceived[listPacketReceived.Count - 1].Packet += dataFormatted;
+
+                                            if (completed < countSeperator)
                                             {
                                                 listPacketReceived[listPacketReceived.Count - 1].Complete = true;
                                                 listPacketReceived.Add(new ClassReadPacketSplitted());
-                                                containSeperator = true;
-                                            }
-                                            else if (ClassUtility.CharIsABase64Character(character))
-                                            {
-                                                listPacketReceived[listPacketReceived.Count - 1].Packet += character;
-                                                packetSizeCount++;
                                             }
 
+                                            completed++;
                                         }
                                     }
+                                    else
+                                    {
+                                        string data = packetData.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
 
-                                    if (listPacketReceived.Count > 0 && containSeperator)
+                                        if (data.IsNullOrEmpty(false, out _) || data.Length == 0 || !ClassUtility.CheckBase64String(data))
+                                            continue;
+
+                                        listPacketReceived[listPacketReceived.Count - 1].Packet += data;
+                                    }
+
+                                    if (listPacketReceived.GetList.Count(x => x.Complete) > 0)
                                     {
                                         for (int i = 0; i < listPacketReceived.Count; i++)
                                         {
@@ -348,7 +363,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                         }
 
                                         listPacketReceived.GetList.RemoveAll(x => x.Complete);
-                                        containSeperator = false;
                                     }
 
                                     // If above the max data to receive.
@@ -534,7 +548,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     NumericPublicKey = _peerNetworkSettingObject.PeerNumericPublicKey,
                                     PeerPort = _peerNetworkSettingObject.ListenPort,
                                     PeerApiPort = _peerNetworkSettingObject.ListenApiPort,
-                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                 })
                             }, false))
                             {
@@ -564,7 +578,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     PeerIpList = new List<string>(listPeerInfo.Keys),
                                     PeerPortList = new List<int>(listPeerInfo.Values.Select(x => x.Item1)),
                                     PeerUniqueIdList = new List<string>(listPeerInfo.Values.Select(x => x.Item2)),
-                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                 })
                             }, true))
                             {
@@ -586,7 +600,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                             ClassPeerPacketSendListSovereignUpdate packetContent = new ClassPeerPacketSendListSovereignUpdate()
                             {
                                 SovereignUpdateHashList = ClassSovereignUpdateDatabase.GetSovereignUpdateListHash().GetList,
-                                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                             };
 
                             SignPacketWithNumericPrivateKey(packetContent, out string numericHash, out string numericSignature);
@@ -640,7 +654,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     SovereignUpdateObject = ClassSovereignUpdateDatabase.DictionarySovereignUpdateObject[packetSendAskSovereignUpdateFromHash.SovereignUpdateHash],
                                     PacketNumericHash = hashNumeric,
                                     PacketNumericSignature = signatureNumeric,
-                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                 })
                             }, true))
                             {
@@ -677,7 +691,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                         CurrentBlockDifficulty = blockObject.BlockDifficulty,
                                         CurrentBlockHash = blockObject.BlockHash,
                                         TimestampBlockCreate = blockObject.TimestampCreate,
-                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                     };
 
                                     SignPacketWithNumericPrivateKey(packetSendNetworkInformation, out string hashNumeric, out string signatureNumeric);
@@ -707,7 +721,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     CurrentBlockDifficulty = 0,
                                     CurrentBlockHash = string.Empty,
                                     TimestampBlockCreate = 0,
-                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                 };
 
                                 SignPacketWithNumericPrivateKey(packetSendNetworkInformation, out string hashNumeric, out string signatureNumeric);
@@ -764,7 +778,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     ClassPeerPacketSendBlockData packetSendBlockData = new ClassPeerPacketSendBlockData()
                                     {
                                         BlockData = blockObjectCopy,
-                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                     };
 
                                     if (blockObject.BlockHeight > BlockchainSetting.GenesisBlockHeight && blockObject.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
@@ -830,7 +844,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                         BlockHeight = packetSendAskBlockHeightInformation.BlockHeight,
                                         BlockFinalTransactionHash = blockObject.BlockFinalHashTransaction,
                                         BlockHash = blockObject.BlockHash,
-                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                     };
 
 
@@ -896,7 +910,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                             {
                                                 BlockHeight = packetSendAskBlockTransactionData.BlockHeight,
                                                 TransactionObject = transactionList.GetList.ElementAt(packetSendAskBlockTransactionData.TransactionId).Value.TransactionObject,
-                                                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                             };
 
                                             SignPacketWithNumericPrivateKey(packetSendBlockTransactionData, out string hashNumeric, out string signatureNumeric);
@@ -980,7 +994,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                     {
                                                         BlockHeight = packetSendAskBlockTransactionDataByRange.BlockHeight,
                                                         ListTransactionObject = transactionListRangeToSend,
-                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                     };
 
 
@@ -1072,7 +1086,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     {
                                         BlockHeight = packetSendAskMemPoolMiningShareVote.MiningPowShareObject.BlockHeight,
                                         VoteStatus = ClassPeerPacketMiningShareVoteEnum.REFUSED,
-                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                     };
 
                                     SignPacketWithNumericPrivateKey(packetSendMiningShareVote, out string hashNumeric, out string numericSignature);
@@ -1102,7 +1116,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                             {
                                                 BlockHeight = lastBlockHeight,
                                                 VoteStatus = ClassPeerPacketMiningShareVoteEnum.NOT_SYNCED,
-                                                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                             })
                                         }, true))
                                         {
@@ -1147,7 +1161,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                                 {
                                                                     BlockHeight = packetSendAskMemPoolMiningShareVote.MiningPowShareObject.BlockHeight,
                                                                     VoteStatus = ClassPeerPacketMiningShareVoteEnum.ACCEPTED,
-                                                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                                 };
 
                                                                 SignPacketWithNumericPrivateKey(packetSendMiningShareVote, out string hashNumeric, out string numericSignature);
@@ -1179,7 +1193,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                                     {
                                                                         BlockHeight = packetSendAskMemPoolMiningShareVote.MiningPowShareObject.BlockHeight,
                                                                         VoteStatus = ClassPeerPacketMiningShareVoteEnum.ACCEPTED,
-                                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                                     };
 
                                                                     SignPacketWithNumericPrivateKey(packetSendMiningShareVote, out string hashNumeric, out string numericSignature);
@@ -1204,7 +1218,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                                     {
                                                                         BlockHeight = packetSendAskMemPoolMiningShareVote.MiningPowShareObject.BlockHeight,
                                                                         VoteStatus = ClassPeerPacketMiningShareVoteEnum.REFUSED,
-                                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                                     };
 
                                                                     SignPacketWithNumericPrivateKey(packetSendMiningShareVote, out string hashNumeric, out string numericSignature);
@@ -1232,7 +1246,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                                     {
                                                                         BlockHeight = packetSendAskMemPoolMiningShareVote.MiningPowShareObject.BlockHeight,
                                                                         VoteStatus = ClassPeerPacketMiningShareVoteEnum.ACCEPTED,
-                                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                                     };
 
                                                                     SignPacketWithNumericPrivateKey(packetSendMiningShareVote, out string hashNumeric, out string numericSignature);
@@ -1259,7 +1273,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                                         {
                                                                             BlockHeight = lastBlockHeight,
                                                                             VoteStatus = ClassPeerPacketMiningShareVoteEnum.REFUSED,
-                                                                            PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                                            PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                                         })
                                                                     }, true))
                                                                     {
@@ -1278,7 +1292,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                                     {
                                                                         BlockHeight = lastBlockHeight,
                                                                         VoteStatus = ClassPeerPacketMiningShareVoteEnum.NOT_SYNCED,
-                                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                                     })
                                                                 }, true))
                                                                 {
@@ -1305,7 +1319,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                                 {
                                                                     BlockHeight = packetSendAskMemPoolMiningShareVote.MiningPowShareObject.BlockHeight,
                                                                     VoteStatus = voteStatus,
-                                                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                                 };
 
                                                                 SignPacketWithNumericPrivateKey(packetSendMiningShareVote, out string hashNumeric, out string numericSignature);
@@ -1333,7 +1347,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                     {
                                                         BlockHeight = packetSendAskMemPoolMiningShareVote.MiningPowShareObject.BlockHeight,
                                                         VoteStatus = ClassPeerPacketMiningShareVoteEnum.REFUSED,
-                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                     };
 
                                                     SignPacketWithNumericPrivateKey(packetSendMiningShareVote, out string hashNumeric, out string numericSignature);
@@ -1367,7 +1381,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                 {
                                                     BlockHeight = packetSendAskMemPoolMiningShareVote.MiningPowShareObject.BlockHeight,
                                                     VoteStatus = voteStatus,
-                                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                 };
 
                                                 SignPacketWithNumericPrivateKey(packetSendMiningShareVote, out string hashNumeric, out string numericSignature);
@@ -1401,7 +1415,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                     {
                                                         BlockHeight = packetSendAskMemPoolMiningShareVote.MiningPowShareObject.BlockHeight,
                                                         VoteStatus = ClassPeerPacketMiningShareVoteEnum.ACCEPTED,
-                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                     };
 
                                                     SignPacketWithNumericPrivateKey(packetSendMiningShareVote, out string hashNumeric, out string numericSignature);
@@ -1425,7 +1439,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                     {
                                                         BlockHeight = packetSendAskMemPoolMiningShareVote.MiningPowShareObject.BlockHeight,
                                                         VoteStatus = ClassPeerPacketMiningShareVoteEnum.REFUSED,
-                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                     };
 
                                                     SignPacketWithNumericPrivateKey(packetSendMiningShareVote, out string hashNumeric, out string numericSignature);
@@ -1452,7 +1466,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                     {
                                                         BlockHeight = lastBlockHeight,
                                                         VoteStatus = ClassPeerPacketMiningShareVoteEnum.NOT_SYNCED,
-                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                     })
                                                 }, true))
                                                 {
@@ -1474,7 +1488,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     {
                                         BlockHeight = 0,
                                         VoteStatus = ClassPeerPacketMiningShareVoteEnum.NOT_SYNCED,
-                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                     })
                                 }, true))
                                 {
@@ -1565,7 +1579,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     ClassPeerPacketSendMemPoolTransactionVote packetSendMemPoolTransactionVote = new ClassPeerPacketSendMemPoolTransactionVote()
                                     {
                                         ListTransactionHashResult = listTransactionResult.GetList,
-                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                     };
 
                                     SignPacketWithNumericPrivateKey(packetSendMemPoolTransactionVote, out string hashNumeric, out string numericSignature);
@@ -1623,7 +1637,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                             ClassPeerPacketSendBroadcastMemPoolResponse packetSendBroadcastMemPoolResponse = new ClassPeerPacketSendBroadcastMemPoolResponse()
                             {
                                 Status = _enableMemPoolBroadcastClientMode,
-                                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                             };
 
                             // Do not encrypt packet.
@@ -1665,7 +1679,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                             ClassPeerPacketSendMemPoolBlockHeightList packetSendMemPoolBlockHeightList = new ClassPeerPacketSendMemPoolBlockHeightList()
                             {
                                 MemPoolBlockHeightListAndCount = listMemPoolBlockHeightAndCount,
-                                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                             };
 
                             if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
@@ -1753,7 +1767,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                                     ClassPeerPacketSendMemPoolTransaction packetSendMemPoolTransaction = new ClassPeerPacketSendMemPoolTransaction()
                                                                     {
                                                                         ListTransactionObject = listToSend.GetList,
-                                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                                     };
 
                                                                     _onWaitingMemPoolTransactionConfirmationReceived = true;
@@ -1809,7 +1823,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                             ClassPeerPacketSendMemPoolTransaction packetSendMemPoolTransaction = new ClassPeerPacketSendMemPoolTransaction()
                                                             {
                                                                 ListTransactionObject = listToSend.GetList,
-                                                                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                             };
 
                                                             _onWaitingMemPoolTransactionConfirmationReceived = true;

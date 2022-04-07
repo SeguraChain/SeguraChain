@@ -50,7 +50,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
                 bool peerIgnorePacketSignature = ClassPeerCheckManager.CheckPeerClientWhitelistStatus(peerIp, peerUniqueId, peerNetworkSetting);
 
                 if (!peerIgnorePacketSignature)
-                    peerIgnorePacketSignature = ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist >= ClassUtility.GetCurrentTimestampInSecond();
+                    peerIgnorePacketSignature = ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist >= TaskManager.TaskManager.CurrentTimestampSecond;
 
                 bool peerPacketSignatureValid = true;
 

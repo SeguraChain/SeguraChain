@@ -17,7 +17,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Net
         {
             BlockHeightStart = blockTupleHeight.Item1;
             BlockHeightEnd = blockTupleHeight.Item2;
-            PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+            PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
         }
     }
 }

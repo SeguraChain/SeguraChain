@@ -928,7 +928,7 @@ namespace SeguraChain_Lib.Blockchain.Database
                                                     && BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus == ClassBlockEnumStatus.LOCKED)
                                                 {
                                                     // Directly from request.
-                                                    long timestampDiff = ClassUtility.GetCurrentTimestampInSecond() - miningPowShareObject.Timestamp;
+                                                    long timestampDiff = TaskManager.TaskManager.CurrentTimestampSecond - miningPowShareObject.Timestamp;
                                                     bool timestampDiffCheck = miningPowShareObject.Timestamp >= BlockchainMemoryManagement[blockHeight, cancellation].TimestampCreate && timestampDiff <= BlockchainSetting.BlockMiningUnlockShareTimestampMaxDelay;
 
                                                     if ((!fromSync && timestampDiffCheck)

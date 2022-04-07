@@ -26,13 +26,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.Firewall.Manager
             {
                 if (_dictionaryFirewallObjects[clientIp].BanStatus)
                 {
-                    if (_dictionaryFirewallObjects[clientIp].BanTimestamp + ApiBanDelay >= ClassUtility.GetCurrentTimestampInSecond())
+                    if (_dictionaryFirewallObjects[clientIp].BanTimestamp + ApiBanDelay >= TaskManager.TaskManager.CurrentTimestampSecond)
                         return false;
 
                     _dictionaryFirewallObjects[clientIp].BanStatus = false;
                 }
 
-                if (_dictionaryFirewallObjects[clientIp].LastInvalidPacketTimestamp + ApiInvalidPacketDelay <= ClassUtility.GetCurrentTimestampInSecond())
+                if (_dictionaryFirewallObjects[clientIp].LastInvalidPacketTimestamp + ApiInvalidPacketDelay <= TaskManager.TaskManager.CurrentTimestampSecond)
                     _dictionaryFirewallObjects[clientIp].TotalInvalidPacket = 0;
             }
             else
@@ -71,18 +71,18 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.Firewall.Manager
             {
                 if (InsertClient(clientIp))
                 {
-                    _dictionaryFirewallObjects[clientIp].LastInvalidPacketTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                    _dictionaryFirewallObjects[clientIp].LastInvalidPacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
                     _dictionaryFirewallObjects[clientIp].TotalInvalidPacket++;
                 }
             }
             else
             {
-                _dictionaryFirewallObjects[clientIp].LastInvalidPacketTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                _dictionaryFirewallObjects[clientIp].LastInvalidPacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
                 _dictionaryFirewallObjects[clientIp].TotalInvalidPacket++;
 
                 if (_dictionaryFirewallObjects[clientIp].TotalInvalidPacket >= MaxApiInvalidPacket)
                 {
-                    _dictionaryFirewallObjects[clientIp].BanTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                    _dictionaryFirewallObjects[clientIp].BanTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
                     _dictionaryFirewallObjects[clientIp].BanStatus = true;   
                 }
             }
@@ -104,7 +104,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.Firewall.Manager
                     {
                         if (_dictionaryFirewallObjects[clientIp].BanStatus)
                         {
-                            if (_dictionaryFirewallObjects[clientIp].BanTimestamp + ApiBanDelay >= ClassUtility.GetCurrentTimestampInSecond())
+                            if (_dictionaryFirewallObjects[clientIp].BanTimestamp + ApiBanDelay >= TaskManager.TaskManager.CurrentTimestampSecond)
                             {
                                 _dictionaryFirewallObjects[clientIp].BanStatusFirewallLink = true;
 
@@ -138,7 +138,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.Firewall.Manager
                     }
                     else
                     {
-                        if (_dictionaryFirewallObjects[clientIp].BanTimestamp + ApiBanDelay < ClassUtility.GetCurrentTimestampInSecond())
+                        if (_dictionaryFirewallObjects[clientIp].BanTimestamp + ApiBanDelay < TaskManager.TaskManager.CurrentTimestampSecond)
                         {
                             _dictionaryFirewallObjects[clientIp].BanStatusFirewallLink = false;
 

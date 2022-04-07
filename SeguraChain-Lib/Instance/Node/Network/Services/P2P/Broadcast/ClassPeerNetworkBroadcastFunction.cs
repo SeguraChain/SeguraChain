@@ -237,7 +237,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                                                                         {
                                                                                                             BlockHeight = miningPowShareObject.BlockHeight,
                                                                                                             MiningPowShareObject = miningPowShareObject,
-                                                                                                            PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                                                                                                            PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                                                                                                         }, peerIpTarget, peerUniqueIdTarget, peerNetworkSetting, ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE, new CancellationTokenSource());
                                 if (peerPacketSendMiningShareVote != null)
                                 {
@@ -332,7 +332,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                     {
                                                         BlockHeight = miningPowShareObject.BlockHeight,
                                                         MiningPowShareObject = miningPowShareObject,
-                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                                                     }, peerIpTarget, peerUniqueIdTarget, peerNetworkSetting, ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE, cancellationTokenSourceMiningShareVote);
 
 
@@ -761,7 +761,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                                                                                     new ClassPeerPacketSendAskMemPoolTransactionVote()
                                                                                                                     {
                                                                                                                         ListTransactionObject = listTransactionObject,
-                                                                                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                                                                                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                                                                                                                     }, peerIpTarget, peerUniqueIdTarget, peerNetworkSetting, ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_VOTE, cancellationTokenSourceMemPoolTxVote);
 
                                             if (packetSendMemPoolTransactionVote == null)

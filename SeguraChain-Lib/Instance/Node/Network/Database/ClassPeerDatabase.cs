@@ -82,9 +82,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
                                         {
                                             // Ignore dead peers.
                                             bool insert = !(peerObject.PeerStatus == ClassPeerEnumStatus.PEER_DEAD ||
-                                                            peerObject.PeerLastDeadTimestamp + peerNetworkSetting.PeerDeadDelay > ClassUtility.GetCurrentTimestampInSecond() ||
-                                                            peerObject.PeerLastPacketReceivedTimestamp + peerNetworkSetting.PeerDelayDeleteDeadPeer < ClassUtility.GetCurrentTimestampInSecond() ||
-                                                            peerObject.PeerLastDeadTimestamp + peerNetworkSetting.PeerDelayDeleteDeadPeer >= ClassUtility.GetCurrentTimestampInSecond());
+                                                            peerObject.PeerLastDeadTimestamp + peerNetworkSetting.PeerDeadDelay > TaskManager.TaskManager.CurrentTimestampSecond ||
+                                                            peerObject.PeerLastPacketReceivedTimestamp + peerNetworkSetting.PeerDelayDeleteDeadPeer < TaskManager.TaskManager.CurrentTimestampSecond ||
+                                                            peerObject.PeerLastDeadTimestamp + peerNetworkSetting.PeerDelayDeleteDeadPeer >= TaskManager.TaskManager.CurrentTimestampSecond);
 
 
                                             if (insert)

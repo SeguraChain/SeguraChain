@@ -618,7 +618,7 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
         /// <returns></returns>
         public static byte[] UpdateRandomPocDataTimestampAndBlockHeightTarget(ClassMiningPoWaCSettingObject currentMiningSetting, byte[] pocRandomData, long blockHeight, long nonce, out long timestampShare)
         {
-            timestampShare = ClassUtility.GetCurrentTimestampInSecond();
+            timestampShare = TaskManager.TaskManager.CurrentTimestampSecond;
 
             Buffer.BlockCopy(BitConverter.GetBytes(timestampShare), 0, pocRandomData, currentMiningSetting.RandomDataShareTimestampSize, currentMiningSetting.RandomDataShareTimestampSize);
             Buffer.BlockCopy(BitConverter.GetBytes(blockHeight), 0, pocRandomData, currentMiningSetting.RandomDataShareNumberSize + currentMiningSetting.RandomDataShareTimestampSize + currentMiningSetting.RandomDataShareChecksum + currentMiningSetting.WalletAddressDataSize, currentMiningSetting.RandomDataShareBlockHeightSize);

@@ -774,7 +774,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                 PacketOrder = ClassPeerEnumPacketSend.ASK_KEEP_ALIVE,
                                 PacketContent = ClassUtility.SerializeData(new ClassPeerPacketAskKeepAlive()
                                 {
-                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                 }),
                             };
 
@@ -830,7 +830,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                 PacketOrder = ClassPeerEnumPacketSend.ASK_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE,
                                 PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskMemPoolBlockHeightList()
                                 {
-                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                 }),
                             };
 
@@ -907,7 +907,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                     {
                                                         BlockHeight = blockHeight,
                                                         TotalTransactionProgress = 0,
-                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                     }),
                                                 };
 
@@ -992,7 +992,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                     PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskMemPoolTransactionVote()
                                                     {
                                                         ListTransactionObject = listTransactionObjectToSend.GetList,
-                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                                                     })
                                                 };
 
@@ -1382,7 +1382,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                                                     PacketOrder = ClassPeerEnumPacketSend.ASK_MEM_POOL_TRANSACTION_BROADCAST_CONFIRMATION_RECEIVED,
                                                                                     PacketContent = ClassUtility.SerializeData(new ClassPeerPacketAskMemPoolTransactionBroadcastConfirmationReceived()
                                                                                     {
-                                                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                                                     })
                                                                                 }.GetPacketData()))
                                                                                 {
@@ -1665,7 +1665,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         bool peerIgnorePacketSignature = ClassPeerCheckManager.CheckPeerClientWhitelistStatus(_peerIpTarget, _peerUniqueIdTarget, _peerNetworkSettingObject);
 
                         if (!peerIgnorePacketSignature)
-                            peerIgnorePacketSignature = ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerTimestampSignatureWhitelist >= ClassUtility.GetCurrentTimestampInSecond();
+                            peerIgnorePacketSignature = ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerTimestampSignatureWhitelist >= TaskManager.TaskManager.CurrentTimestampSecond;
 
                         bool packetSignatureStatus = true;
 

@@ -68,16 +68,14 @@ namespace SeguraChain_Peer.CommandLine
         {
             ClassLog.SimpleWriteLine("Command lines system enabled: ");
 
-            _threadConsoleCommandLine = new Thread(delegate ()
+            _threadConsoleCommandLine = new Thread(async delegate ()
             {
-                HandleCommandLineAsync(ClassConsoleCommandLineEnumeration.HelpCommand).Wait();
+                await HandleCommandLineAsync(ClassConsoleCommandLineEnumeration.HelpCommand);
 
                 while (_nodeInstance.PeerToolStatus)
                 {
-                   if(!HandleCommandLineAsync(Console.ReadLine()).Result)
-                   {
+                   if(!await HandleCommandLineAsync(Console.ReadLine()))
                         break;
-                   }
                 }
 
             });

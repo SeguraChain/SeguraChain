@@ -449,7 +449,7 @@ namespace SeguraChain_Lib.Log
                                         {
                                             LogContent = logLine,
                                             Written = false,
-                                            Timestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                            Timestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                         });
 
                                         Monitor.PulseAll(_logListOnCollect[logLevelType]);

@@ -95,7 +95,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
             _cancellationTokenApiClient = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokenApiServer.Token);
             _cancellationTokenApiClientCheck = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokenApiServer.Token);
             ClientConnectionStatus = true;
-            ClientConnectTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+            ClientConnectTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
         }
 
         #region Manage Client API connection
@@ -142,7 +142,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
                                     packetSizeCount += packetLength;
 
-                                    ClientConnectTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                                    ClientConnectTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
 
                                     if (listPacket.Count > 0)
                                     {
@@ -286,7 +286,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                     // Timeout.
                     if (!OnHandlePacket)
                     {
-                        if (ClientConnectTimestamp + _peerNetworkSettingObject.PeerApiMaxConnectionDelay < ClassUtility.GetCurrentTimestampInSecond())
+                        if (ClientConnectTimestamp + _peerNetworkSettingObject.PeerApiMaxConnectionDelay < TaskManager.TaskManager.CurrentTimestampSecond)
                             break;
                     }
 
@@ -387,7 +387,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                                 if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendBlockInformation()
                                                 {
                                                     BlockObject = await ClassBlockchainStats.GetBlockInformationData(apiPeerPacketAskBlockinformation.BlockHeight, _cancellationTokenApiClient),
-                                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
 
                                                 }, ClassPeerApiPacketResponseEnum.SEND_BLOCK_INFORMATION)))
                                                 {
@@ -419,7 +419,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                                 if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendBlockTransaction()
                                                 {
                                                     BlockTransaction = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockTransactionFromSpecificTransactionHashAndHeight(apiPeerPacketAskBlockTransaction.TransactionHash, apiPeerPacketAskBlockTransaction.BlockHeight, true, true, _cancellationTokenApiClient),
-                                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
 
                                                 }, ClassPeerApiPacketResponseEnum.SEND_BLOCK_TRANSACTION)))
                                                 {
@@ -452,7 +452,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                                 {
                                                     BlockHeight = await ClassTransactionUtility.GenerateBlockHeightStartTransactionConfirmation(apiPeerPacketAskGenerateBlockHeightStartTransactionConfirmation.LastBlockHeightUnlocked,
                                                     apiPeerPacketAskGenerateBlockHeightStartTransactionConfirmation.LastBlockHeight, _cancellationTokenApiClient),
-                                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
 
                                                 }, ClassPeerApiPacketResponseEnum.SEND_GENERATE_BLOCK_HEIGHT_START_TRANSACTION_CONFIRMATION)))
                                                 {
@@ -483,7 +483,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                                 if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendMemPoolTransaction()
                                                 {
                                                     TransactionObject = await ClassMemPoolDatabase.GetMemPoolTxFromTransactionHash(apiPeerPacketAskMemPoolTransaction.TransactionHash, apiPeerPacketAskMemPoolTransaction.BlockHeight, _cancellationTokenApiClient),
-                                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
 
                                                 }, ClassPeerApiPacketResponseEnum.SEND_MEMPOOL_TRANSACTION)))
                                                 {
@@ -523,7 +523,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                                     {
                                                         FeeCost = feeCostCalculation.Item1,
                                                         Status = feeCostCalculation.Item2,
-                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
 
                                                     }, ClassPeerApiPacketResponseEnum.SEND_FEE_COST_TRANSACTION)))
                                                     {
@@ -555,7 +555,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                             if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendMemPoolTransactionCount()
                                             {
                                                 TransactionCount = await ClassMemPoolDatabase.GetCountMemPoolTxFromBlockHeight(apiPeerPacketAskMemPoolTxCountByBlockHeight.BlockHeight, true, _cancellationTokenApiClient),
-                                                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
 
                                             }, ClassPeerApiPacketResponseEnum.SEND_MEMPOOL_TRANSACTION_COUNT_BY_BLOCK_HEIGHT)))
                                             {
@@ -583,7 +583,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                                 if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendMemPoolTransactionByRange()
                                                 {
                                                     ListTransaction = listMemPoolTransaction.GetList.Skip(apiPeerPacketAsMemPoolTransactionByRange.Start).Take(apiPeerPacketAsMemPoolTransactionByRange.End).ToList(),
-                                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
 
                                                 }, ClassPeerApiPacketResponseEnum.SEND_MEMPOOL_TRANSACTION_COUNT_BY_BLOCK_HEIGHT)))
                                                 {
@@ -620,7 +620,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                                         if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendListBlockTransaction()
                                                         {
                                                             ListBlockTransaction = disposableBlockTransactionList.GetList.Values.Skip(apiPeerPacketAskBlockTransactionByRange.Start).Take(apiPeerPacketAskBlockTransactionByRange.End).ToList(),
-                                                            PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                            PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
 
                                                         }, ClassPeerApiPacketResponseEnum.SEND_BLOCK_TRANSACTION_BY_RANGE)))
                                                         {
@@ -657,7 +657,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                                 {
                                                     ListBlockTransaction = (await ClassBlockchainDatabase.BlockchainMemoryManagement.GetListBlockTransactionFromListTransactionHashAndHeight(apiPeerPacketAskBlockTransactionByHashList.ListTransactionHash,
                                                     apiPeerPacketAskBlockTransactionByHashList.BlockHeight, true, true, _cancellationTokenApiClient)).GetList,
-                                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
 
                                                 }, ClassPeerApiPacketResponseEnum.SEND_BLOCK_TRANSACTION_BY_HASH_LIST)))
                                                 {
@@ -710,7 +710,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                                             if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendPushWalletTransactionResponse()
                                                             {
                                                                 BlockTransactionInsertStatus = blockTransactionInsertStatus,
-                                                                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                             }, ClassPeerApiPacketResponseEnum.SEND_REPLY_WALLET_TRANSACTION_PUSHED)))
                                                             {
                                                                 // Can't send packet.
@@ -728,7 +728,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                         if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendPushWalletTransactionResponse()
                                         {
                                             BlockTransactionInsertStatus = ClassBlockTransactionInsertEnumStatus.BLOCK_TRANSACTION_INVALID,
-                                            PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                            PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                         }, ClassPeerApiPacketResponseEnum.SEND_REPLY_WALLET_TRANSACTION_PUSHED)))
                                         {
                                             // Can't send packet.
@@ -802,7 +802,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                                     if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendMiningShareResponse()
                                                     {
                                                         MiningPoWShareStatus = miningPowShareStatus,
-                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                     }, ClassPeerApiPacketResponseEnum.SEND_MINING_SHARE_RESPONSE)))
                                                     {
                                                         // Can't send packet.
@@ -814,7 +814,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                                     if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendMiningShareResponse()
                                                     {
                                                         MiningPoWShareStatus = ClassMiningPoWaCEnumStatus.BLOCK_ALREADY_FOUND,
-                                                        PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                     }, ClassPeerApiPacketResponseEnum.SEND_MINING_SHARE_RESPONSE)))
                                                     {
                                                         // Can't send packet.
@@ -827,7 +827,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                                 if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendMiningShareResponse()
                                                 {
                                                     MiningPoWShareStatus = ClassMiningPoWaCEnumStatus.INVALID_BLOCK_HEIGHT,
-                                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                 }, ClassPeerApiPacketResponseEnum.SEND_MINING_SHARE_RESPONSE)))
                                                 {
                                                     // Can't send packet.
@@ -889,7 +889,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                     CurrentBlockHash = ClassBlockchainDatabase.BlockchainMemoryManagement[currentBlockHeight, _cancellationTokenApiClient].BlockHash,
                                     LastTimestampBlockFound = ClassBlockchainDatabase.BlockchainMemoryManagement[currentBlockHeight, _cancellationTokenApiClient].TimestampCreate,
                                     CurrentMiningPoWaCSetting = BlockchainSetting.CurrentMiningPoWaCSettingObject(currentBlockHeight),
-                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                 }, ClassPeerApiPacketResponseEnum.SEND_BLOCK_TEMPLATE)))
                                     return false;
                             }
@@ -902,7 +902,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                             if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendNetworkStats()
                             {
                                 BlockchainNetworkStatsObject = ClassBlockchainStats.BlockchainNetworkStatsObject,
-                                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                             }, ClassPeerApiPacketResponseEnum.SEND_NETWORK_STATS)))
                                 return false;
                         }
@@ -912,7 +912,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                             if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendBlockHeight()
                             {
                                 BlockHeight = await ClassBlockchainStats.GetLastBlockHeightUnlocked(_cancellationTokenApiClient),
-                                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                             }, ClassPeerApiPacketResponseEnum.SEND_LAST_BLOCK_HEIGHT_UNLOCKED)))
                                 return false;
                         }
@@ -922,7 +922,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                             if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendBlockHeight()
                             {
                                 BlockHeight = ClassBlockchainStats.GetLastBlockHeight(),
-                                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                             }, ClassPeerApiPacketResponseEnum.SEND_LAST_BLOCK_HEIGHT)))
                                 return false;
                         }
@@ -932,7 +932,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                             if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendBlockHeight()
                             {
                                 BlockHeight = await ClassBlockchainStats.GetLastBlockHeightTransactionConfirmationDone(_cancellationTokenApiClient),
-                                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                             }, ClassPeerApiPacketResponseEnum.SEND_LAST_BLOCK_HEIGHT_TRANSACTION_CONFIRMATION)))
                                 return false;
                         }
@@ -942,7 +942,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                             if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendMemPoolTransactionCount()
                             {
                                 TransactionCount = ClassMemPoolDatabase.GetCountMemPoolTx,
-                                PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                             }, ClassPeerApiPacketResponseEnum.SEND_MEMPOOL_TRANSACTION_COUNT)))
                                 return false;
                         }
@@ -954,7 +954,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                 if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendMemPoolBlockHeights()
                                 {
                                     ListBlockHeights = listMemPoolBlockHeights.GetList,
-                                    PacketTimestamp = ClassUtility.GetCurrentTimestampInSecond()
+                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                 }, ClassPeerApiPacketResponseEnum.SEND_MEMPOOL_TRANSACTION_COUNT)))
                                     return false;
                             }

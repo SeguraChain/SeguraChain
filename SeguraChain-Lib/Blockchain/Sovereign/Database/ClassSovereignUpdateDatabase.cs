@@ -441,7 +441,7 @@ namespace SeguraChain_Lib.Blockchain.Sovereign.Database
                 {
                     case (int)ClassSovereignEnumUpdateType.SOVEREIGN_SEED_NODE_GRANT_RANK_UPDATE:
                         {
-                            string devWalletAddress = GetLastDevWalletAddress(ClassUtility.GetCurrentTimestampInSecond());
+                            string devWalletAddress = GetLastDevWalletAddress(TaskManager.TaskManager.CurrentTimestampSecond);
 
                             if (ClassBase58.DecodeWithCheckSum(devWalletAddress, true) != null)
                             {
@@ -451,10 +451,10 @@ namespace SeguraChain_Lib.Blockchain.Sovereign.Database
 
                                 if (ClassBase58.DecodeWithCheckSum(peerNumericPublicKey, false) != null)
                                 {
-                                    Console.WriteLine("Input the date in second of max delay of rank (Current date in second: " + ClassUtility.GetCurrentTimestampInSecond() + "): ");
+                                    Console.WriteLine("Input the date in second of max delay of rank (Current date in second: " + TaskManager.TaskManager.CurrentTimestampSecond + "): ");
                                     if (long.TryParse(Console.ReadLine(), out var timestamp))
                                     {
-                                        if (timestamp > ClassUtility.GetCurrentTimestampInSecond())
+                                        if (timestamp > TaskManager.TaskManager.CurrentTimestampSecond)
                                         {
                                             Console.WriteLine("Write a description about the sovereign update: ");
 
@@ -467,7 +467,7 @@ namespace SeguraChain_Lib.Blockchain.Sovereign.Database
                                                     PossibleContent2 = timestamp.ToString(),
                                                     Description = description
                                                 },
-                                                SovereignUpdateTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                                                SovereignUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                                                 SovereignUpdateDevWalletAddress = devWalletAddress,
                                                 SovereignUpdateType = ClassSovereignEnumUpdateType.SOVEREIGN_SEED_NODE_GRANT_RANK_UPDATE
                                             };
@@ -493,7 +493,7 @@ namespace SeguraChain_Lib.Blockchain.Sovereign.Database
                         break;
                     case (int)ClassSovereignEnumUpdateType.SOVEREIGN_SEED_NODE_REVOKE_RANK_UPDATE:
                         {
-                            string devWalletAddress = GetLastDevWalletAddress(ClassUtility.GetCurrentTimestampInSecond());
+                            string devWalletAddress = GetLastDevWalletAddress(TaskManager.TaskManager.CurrentTimestampSecond);
 
                             if (ClassBase58.DecodeWithCheckSum(devWalletAddress, true) != null)
                             {
@@ -510,10 +510,10 @@ namespace SeguraChain_Lib.Blockchain.Sovereign.Database
                                         SovereignUpdateContent = new ClassSovereignUpdateContentObject()
                                         {
                                             PossibleContent1 = peerNumericPublicKey,
-                                            PossibleContent2 = ClassUtility.GetCurrentTimestampInSecond().ToString(),
+                                            PossibleContent2 = TaskManager.TaskManager.CurrentTimestampSecond.ToString(),
                                             Description = description
                                         },
-                                        SovereignUpdateTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                                        SovereignUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                                         SovereignUpdateDevWalletAddress = devWalletAddress,
                                         SovereignUpdateType = ClassSovereignEnumUpdateType.SOVEREIGN_SEED_NODE_REVOKE_RANK_UPDATE
                                     };
@@ -534,7 +534,7 @@ namespace SeguraChain_Lib.Blockchain.Sovereign.Database
                         break;
                     case (int)ClassSovereignEnumUpdateType.SOVEREIGN_DEV_SIGNATURE_CHANGE_UPDATE:
                         {
-                            string lastDevWalletAddress = GetLastDevWalletAddress(ClassUtility.GetCurrentTimestampInSecond());
+                            string lastDevWalletAddress = GetLastDevWalletAddress(TaskManager.TaskManager.CurrentTimestampSecond);
 
                             Console.WriteLine("Write the new dev wallet address: ");
                             string newDevWalletAddress = Console.ReadLine();
@@ -558,7 +558,7 @@ namespace SeguraChain_Lib.Blockchain.Sovereign.Database
                                             PossibleContent2 = newDevPublicKey,
                                             Description = description
                                         },
-                                        SovereignUpdateTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                                        SovereignUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                                         SovereignUpdateDevWalletAddress = lastDevWalletAddress,
                                         SovereignUpdateType = ClassSovereignEnumUpdateType.SOVEREIGN_DEV_SIGNATURE_CHANGE_UPDATE
                                     };
@@ -648,7 +648,7 @@ namespace SeguraChain_Lib.Blockchain.Sovereign.Database
                                                                             PossibleContent2 = blockHeight.ToString(),
                                                                             Description = description
                                                                         },
-                                                                        SovereignUpdateTimestamp = ClassUtility.GetCurrentTimestampInSecond(),
+                                                                        SovereignUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                                                                         SovereignUpdateDevWalletAddress = devWalletAddress,
                                                                         SovereignUpdateType = ClassSovereignEnumUpdateType.SOVEREIGN_MINING_POWAC_SETTING_UPDATE
                                                                     };
@@ -906,7 +906,7 @@ namespace SeguraChain_Lib.Blockchain.Sovereign.Database
                                             {
                                                 if (long.TryParse(DictionarySovereignUpdateObject[sovereignUpdateHash.Value].SovereignUpdateContent.PossibleContent2, out var maxDelay))
                                                 {
-                                                    if (maxDelay > ClassUtility.GetCurrentTimestampInSecond())
+                                                    if (maxDelay > TaskManager.TaskManager.CurrentTimestampSecond)
                                                     {
                                                         peerIsRanked = true;
                                                         sovereignUpdateTimestamp = DictionarySovereignUpdateObject[sovereignUpdateHash.Value].SovereignUpdateTimestamp;

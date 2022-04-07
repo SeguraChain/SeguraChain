@@ -1261,7 +1261,9 @@ namespace SeguraChain_Lib.Utility
 
                     while (!cancellation.Token.IsCancellationRequested)
                     {
-                        cancellation?.Token.ThrowIfCancellationRequested();
+
+                        if (cancellation.IsCancellationRequested)
+                            break;
 
                         int packetSize = packetMaxSize;
 
@@ -1280,6 +1282,7 @@ namespace SeguraChain_Lib.Utility
 
                         if (countPacketSendLength >= packetLength)
                             break;
+
                     }
 
                     await networkStream.FlushAsync(cancellation.Token);
