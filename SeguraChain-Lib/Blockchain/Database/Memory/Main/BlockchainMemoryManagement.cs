@@ -3461,8 +3461,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                 semaphoreMemoryAccessUsed = true;
 
                 if (_cancellationTokenMemoryManagement != null)
+                {
                     if (!_cancellationTokenMemoryManagement.IsCancellationRequested)
                         _cancellationTokenMemoryManagement.Cancel();
+                }
             }
             finally
             {

@@ -1261,10 +1261,6 @@ namespace SeguraChain_Lib.Utility
 
                     while (!cancellation.Token.IsCancellationRequested)
                     {
-
-                        if (cancellation.IsCancellationRequested)
-                            break;
-
                         int packetSize = packetMaxSize;
 
                         if (countPacketSendLength + packetSize > packetLength)

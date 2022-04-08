@@ -232,6 +232,8 @@ namespace SeguraChain_Lib.Instance.Node
         {
             ClassLog.WriteLine("Close Peer Tool, please wait a moment..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
+            PeerToolStatus = false;
+
             TaskManager.TaskManager.StopTaskManager();
 
             #region Close OpenNAT port.
@@ -277,7 +279,7 @@ namespace SeguraChain_Lib.Instance.Node
 
             #region Stop the task of blockchain transaction confirmation.
 
-            await _peerUpdateTask?.StopAutomaticBlockTransactionConfirmation();
+            //await _peerUpdateTask?.StopAutomaticBlockTransactionConfirmation();
 
             #endregion
 
@@ -309,8 +311,6 @@ namespace SeguraChain_Lib.Instance.Node
 
             #endregion
 
-            PeerToolStatus = false;
-
             #region Save Mem Pool Data.
 
             ClassLog.WriteLine("Save MemPool data..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
@@ -335,6 +335,7 @@ namespace SeguraChain_Lib.Instance.Node
                 ClassLog.WriteLine("Blockchain data saved failed.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
 
             #endregion
+
 
             if (!forceClose)
             {
@@ -366,17 +367,13 @@ namespace SeguraChain_Lib.Instance.Node
             {
                 ClassLog.WriteLine("Do you want to initialize again the peer setting? [Y/N]", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                 string choose = Console.ReadLine() ?? string.Empty;
-                if (!choose.IsNullOrEmpty(false, out _))
+                if (!choose.IsNullOrEmpty(true, out string chooseTrimmed) && chooseTrimmed?.ToLower() == "y")
                 {
-                    if (choose.ToLower() == "y")
-                    {
-                        loadPeerSetting = ClassPeerNodeSettingFunction.InitializePeerSetting(out PeerSettingObject);
 
-                        if (loadPeerSetting)
-                            return true;
-                    }
-                    else
-                        break;
+                    loadPeerSetting = ClassPeerNodeSettingFunction.InitializePeerSetting(out PeerSettingObject);
+
+                    if (loadPeerSetting)
+                        return true;
                 }
                 else
                     break;

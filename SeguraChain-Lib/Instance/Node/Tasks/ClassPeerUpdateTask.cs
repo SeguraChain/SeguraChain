@@ -152,7 +152,8 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
                 {
                     while (_nodeInstance.PeerToolStatus)
                     {
-                        _cancellationTokenSourceUpdateTask.Token.ThrowIfCancellationRequested();
+                        if (_cancellationTokenSourceUpdateTask.IsCancellationRequested)
+                            break;
 
                         try
                         {
@@ -200,7 +201,9 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
 
                     try
                     {
-                        _cancellationTokenSourceUpdateTask.Token.ThrowIfCancellationRequested();
+                        if (_cancellationTokenSourceUpdateTask.IsCancellationRequested)
+                            break;
+
                         ClassPeerFirewallManager.ManageFirewallLink(_nodeInstance.PeerSettingObject.PeerFirewallSettingObject.PeerFirewallName, _nodeInstance.PeerSettingObject.PeerFirewallSettingObject.PeerFirewallChainName);
                     }
                     catch (Exception error)
@@ -227,7 +230,8 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
 
                     try
                     {
-                        _cancellationTokenSourceUpdateTask.Token.ThrowIfCancellationRequested();
+                        if (_cancellationTokenSourceUpdateTask.IsCancellationRequested)
+                            break;
 
                         long totalClosed = _nodeInstance.PeerApiServerObject.CleanUpAllIncomingClosedConnection(out int totalIp);
 
@@ -257,7 +261,8 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
 
                     try
                     {
-                        _cancellationTokenSourceUpdateTask.Token.ThrowIfCancellationRequested();
+                        if (_cancellationTokenSourceUpdateTask.IsCancellationRequested)
+                            break;
 
                         long totalClosed = _nodeInstance.PeerNetworkServerObject.CleanUpAllIncomingClosedConnection(out int totalIp);
 
@@ -287,7 +292,8 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
                 {
                     try
                     {
-                        _cancellationTokenSourceUpdateTask.Token.ThrowIfCancellationRequested();
+                        if (_cancellationTokenSourceUpdateTask.IsCancellationRequested)
+                            break;
                         await ClassBlockchainStats.UpdateBlockchainNetworkStats(true, _cancellationTokenSourceUpdateTask);
                     }
                     catch
@@ -315,7 +321,8 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
                 {
                     try
                     {
-                        _cancellationTokenSourceUpdateTask.Token.ThrowIfCancellationRequested();
+                        if (_cancellationTokenSourceUpdateTask.IsCancellationRequested)
+                            break;
 
                         if (ClassBlockchainStats.BlockCount > 0)
                         {
@@ -349,7 +356,9 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
                                                 {
                                                     while (!await ClassBlockchainDatabase.BlockchainMemoryManagement.IncrementBlockTransactionConfirmationOnBlockFullyConfirmed(blockConfirmationResultObject.ListBlockHeightConfirmed.GetList, lastBlockHeightUnlockedChecked, _cancellationTokenSourceUpdateTask))
                                                     {
-                                                        _cancellationTokenSourceUpdateTask.Token.ThrowIfCancellationRequested();
+                                                        if (_cancellationTokenSourceUpdateTask.IsCancellationRequested)
+                                                            break;
+
 
                                                         ClassLog.WriteLine("Failed to confirm back every block heights transactions fully confirmed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_TRANSACTION_CONFIRMATION, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
 
@@ -413,7 +422,8 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
 
                     try
                     {
-                        _cancellationTokenSourceUpdateTask.Token.ThrowIfCancellationRequested();
+                        if (_cancellationTokenSourceUpdateTask.IsCancellationRequested)
+                            break;
 
                         _nodeInstance.NodeInternalStatsReportObject.NodeCacheMemoryUsage = ClassBlockchainDatabase.BlockchainMemoryManagement.GetActiveMemoryUsageFromCache();
                         _nodeInstance.NodeInternalStatsReportObject.NodeCacheMaxMemoryAllocation = _nodeInstance.PeerSettingObject.PeerBlockchainDatabaseSettingObject.BlockchainCacheSetting.GlobalMaxActiveMemoryAllocationFromCache;
@@ -447,7 +457,8 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
                 {
                     try
                     {
-                        _cancellationTokenSourceUpdateTask.Token.ThrowIfCancellationRequested();
+                        if (_cancellationTokenSourceUpdateTask.IsCancellationRequested)
+                            break;
                     }
                     catch
                     {

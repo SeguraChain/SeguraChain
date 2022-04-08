@@ -469,7 +469,6 @@ namespace SeguraChain_Lib.Blockchain.Database
                 {
                     for (long i = 0; i < countBlock; i++)
                     {
-
                         long blockHeight = i + 1;
 
                         ClassBlockObject blockObject = await BlockchainMemoryManagement.GetBlockDataStrategy(blockHeight, false, true, _cancellationTokenStopBlockchain);
