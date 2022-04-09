@@ -480,7 +480,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                 bool successConnect = false;
 
-                long timestampEnd = ClassUtility.GetCurrentTimestampInMillisecond() + (_peerNetworkSettingObject.PeerMaxDelayToConnectToTarget * 1000);
+                long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayToConnectToTarget * 1000);
                 
                 TaskManager.TaskManager.InsertTask(new Action(async () =>
                 {

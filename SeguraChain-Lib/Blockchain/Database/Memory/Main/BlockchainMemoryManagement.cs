@@ -1265,7 +1265,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                         int totalTravel = 0;
 
-                        long timestampTaskStart = ClassUtility.GetCurrentTimestampInMillisecond();
+                        long timestampTaskStart = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
                         try
                         {
@@ -1324,7 +1324,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             blockchainNetworkStatsObject.LastAverageMiningTimespendExpected = averageMiningTimespendExpected;
                             blockchainNetworkStatsObject.LastBlockHeightTransactionConfirmationDone = lastBlockHeightTransactionConfirmationDone;
                             blockchainNetworkStatsObject.LastUpdateStatsDateTime = ClassUtility.GetDatetimeFromTimestamp(TaskManager.TaskManager.CurrentTimestampSecond);
-                            blockchainNetworkStatsObject.BlockchainStatsTimestampToGenerate = ClassUtility.GetCurrentTimestampInMillisecond() - timestampTaskStart;
+                            blockchainNetworkStatsObject.BlockchainStatsTimestampToGenerate = TaskManager.TaskManager.CurrentTimestampMillisecond - timestampTaskStart;
                         }
 
                     }
@@ -1383,7 +1383,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         bool canceled = false;
                         bool changeDone = false;
 
-                        long timestampStart = ClassUtility.GetCurrentTimestampInMillisecond();
+                        long timestampStart = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
                         ClassBlockObject lastBlockHeightUnlockedObject = await GetBlockInformationDataStrategy(lastBlockHeightUnlockedChecked, cancellation);
                         long lastBlockHeightTransactionConfirmationDone = await GetLastBlockHeightTransactionConfirmationDone(cancellation);
@@ -1592,7 +1592,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                         }
                                                                     }
 
-                                                                    blockObjectUpdated.BlockLastChangeTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                                                                    blockObjectUpdated.BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
 
                                                                     changeDone = true;
@@ -1668,7 +1668,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         {
                             if (totalBlockTravel >= lastBlockHeightUnlockedChecked)
                             {
-                                long timestampProceedTx = ClassUtility.GetCurrentTimestampInMillisecond() - timestampStart;
+                                long timestampProceedTx = TaskManager.TaskManager.CurrentTimestampMillisecond - timestampStart;
 #if DEBUG
                                 Debug.WriteLine("Time spend to confirm: " + lastBlockHeightUnlockedChecked + " blocks and to travel: " + lastBlockHeightUnlocked + " blocks: " + timestampProceedTx + " ms. Last block height confirmation done:" + lastBlockHeightTransactionConfirmationDone);
 #endif
@@ -1730,7 +1730,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                 {
                     long totalPassed = 0;
                     long lastBlockHeight = GetLastBlockHeight;
-                    long taskStartTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                    long taskStartTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
                     foreach (long blockHeight in listBlockHeightConfirmed)
                     {
@@ -1802,7 +1802,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             if (cancelConfirmations)
                                 break;
 
-                            blockObjectUpdated.BlockLastChangeTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                            blockObjectUpdated.BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
                             // Update the active memory if this one is available on the active memory.
                             if (_dictionaryBlockObjectMemory[blockHeight].Content != null)
@@ -1824,7 +1824,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         }
                     }
 
-                    long taskDoneTimestamp = ClassUtility.GetCurrentTimestampInMillisecond();
+                    long taskDoneTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
 #if DEBUG
                     Debug.WriteLine("Total block fully confirmed on their tx passed: " + totalPassed + ". Task done in: " + (taskDoneTimestamp - taskStartTimestamp) + "ms.");
@@ -3882,53 +3882,72 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         /// <returns></returns>
         private async Task<DisposableList<ClassBlockTransaction>> GetListBlockTransactionByListTransactionHashFromMemoryDataCache(List<string> listTransactionHash, long blockHeight, bool useBlockTransactionCache, bool keepAlive, CancellationTokenSource cancellation)
         {
-            DisposableList<ClassBlockTransaction> listBlockTransaction = new DisposableList<ClassBlockTransaction>();
-
-            if (useBlockTransactionCache)
+            using (DisposableList<string> listTransactionHashTarget = new DisposableList<string>(false, 0, listTransactionHash.ToArray()))
             {
-                listBlockTransaction = await GetListBlockTransactionCache(listTransactionHash, blockHeight, cancellation);
+                DisposableList<ClassBlockTransaction> listBlockTransaction = new DisposableList<ClassBlockTransaction>();
 
-                if (listBlockTransaction.Count == listTransactionHash.Count)
-                    return listBlockTransaction;
-                else
-                    listBlockTransaction.Clear();
-            }
-
-            if (_dictionaryBlockObjectMemory[blockHeight].Content != null)
-            {
-                try
+                if (useBlockTransactionCache)
                 {
-                    foreach (string transactionHash in listTransactionHash)
+                    listBlockTransaction = await GetListBlockTransactionCache(listTransactionHashTarget.GetList, blockHeight, cancellation);
+
+                    if (listBlockTransaction.Count == listTransactionHashTarget.Count)
+                        return listBlockTransaction;
+                    else
+                        listBlockTransaction.Clear();
+                }
+
+                if (_dictionaryBlockObjectMemory[blockHeight].Content != null ||
+                    _dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions != null ||
+                    _dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions.Count > 0)
+                {
+                    try
                     {
-                        
-
-                        if (_dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions.ContainsKey(transactionHash))
-                            listBlockTransaction.Add(_dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions[transactionHash].Clone());
-                    }
-
-                    return listBlockTransaction;
-                }
-                catch
-                {
-                    listBlockTransaction.Clear();
-                }
-            }
-
-            if (_blockchainDatabaseSetting.BlockchainCacheSetting.EnableCacheDatabase)
-            {
-                switch (_blockchainDatabaseSetting.BlockchainCacheSetting.CacheName)
-                {
-                    case CacheEnumName.IO_CACHE:
+                        foreach (string transactionHash in listTransactionHashTarget.GetList)
                         {
-                            listBlockTransaction.GetList = await _cacheIoSystem.GetListBlockTransactionFromListTransactionHashAndBlockHeightTarget(listTransactionHash, blockHeight, keepAlive, cancellation);
-                            if (listBlockTransaction.Count == listTransactionHash.Count && useBlockTransactionCache)
-                                await UpdateListBlockTransactionCache(listBlockTransaction.GetList.ToList(), cancellation, false);
-                        }
-                        break;
-                }
-            }
 
-            return listBlockTransaction;
+                            if (_dictionaryBlockObjectMemory[blockHeight].Content == null ||
+                                _dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions == null ||
+                                _dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions.Count == 0)
+                                continue;
+
+                            if (_dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions.ContainsKey(transactionHash))
+                            {
+                                var blockTransaction = _dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions[transactionHash].Clone();
+
+                                if (blockTransaction == null)
+                                    break;
+
+                                listBlockTransaction.Add(blockTransaction);
+                            }
+                        }
+
+                        return listBlockTransaction;
+                    }
+                    catch
+                    {
+                        listBlockTransaction.Clear();
+                    }
+                }
+
+                if (_blockchainDatabaseSetting.BlockchainCacheSetting.EnableCacheDatabase)
+                {
+                    switch (_blockchainDatabaseSetting.BlockchainCacheSetting.CacheName)
+                    {
+                        case CacheEnumName.IO_CACHE:
+                            {
+                                listBlockTransaction.GetList = await _cacheIoSystem.GetListBlockTransactionFromListTransactionHashAndBlockHeightTarget(listTransactionHashTarget.GetList, blockHeight, keepAlive, cancellation);
+                                if (listTransactionHashTarget.Count == listTransactionHashTarget.Count && useBlockTransactionCache)
+                                    await UpdateListBlockTransactionCache(listBlockTransaction.GetList.ToList(), cancellation, false);
+                            }
+                            break;
+                    }
+                }
+
+                if (listTransactionHash.Count != listBlockTransaction.Count)
+                    listBlockTransaction.Clear();
+
+                return listBlockTransaction;
+            }
         }
 
         /// <summary>

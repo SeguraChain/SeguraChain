@@ -232,7 +232,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                     if (totalTaskDone >= totalTask)
                                         break;
 
-                                    await Task.Delay(100);
+                                    await Task.Delay(1000);
 
                                 }
 

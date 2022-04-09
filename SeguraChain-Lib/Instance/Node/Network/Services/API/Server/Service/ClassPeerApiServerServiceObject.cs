@@ -119,23 +119,36 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
 
                                     if (clientApiTcp != null)
                                     {
-                                        await Task.Factory.StartNew(async() =>
+                                        TaskManager.TaskManager.InsertTask(new Action(async () =>
                                         {
-                                            string clientIp = ((IPEndPoint)(clientApiTcp.RemoteEndPoint)).Address.ToString();
+                                            string clientIp = string.Empty;
+                                            bool exception = false;
 
-                                            switch (await HandleIncomingConnection(clientIp, clientApiTcp))
+
+                                            try
                                             {
-
-                                                case ClassPeerApiHandleIncomingConnectionEnum.INSERT_CLIENT_IP_EXCEPTION:
-                                                case ClassPeerApiHandleIncomingConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
-                                                    if (_firewallSettingObject.PeerEnableFirewallLink)
-                                                        ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
-                                                    break;
+                                                clientIp = ((IPEndPoint)(clientApiTcp.RemoteEndPoint)).Address.ToString();
+                                            }
+                                            catch
+                                            {
+                                                exception = true;
                                             }
 
-                                            ClassUtility.CloseSocket(clientApiTcp);
+                                            if (!exception)
+                                            {
+                                                switch (await HandleIncomingConnection(clientIp, clientApiTcp))
+                                                {
 
-                                        }, _cancellationTokenSourcePeerApiServer.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+                                                    case ClassPeerApiHandleIncomingConnectionEnum.INSERT_CLIENT_IP_EXCEPTION:
+                                                    case ClassPeerApiHandleIncomingConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
+                                                        if (_firewallSettingObject.PeerEnableFirewallLink)
+                                                            ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
+                                                        break;
+                                                }
+
+                                                ClassUtility.CloseSocket(clientApiTcp);
+                                            }
+                                        }), 0, _cancellationTokenSourcePeerApiServer, clientApiTcp);
                                     }
                                 }
                                 catch

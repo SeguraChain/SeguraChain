@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Threading;
 using Newtonsoft.Json;
 using SeguraChain_Lib.Blockchain.Transaction.Enum;
 using SeguraChain_Lib.Blockchain.Transaction.Object;
@@ -75,9 +76,28 @@ namespace SeguraChain_Lib.Blockchain.Block.Object.Structure
         [JsonIgnore]
         public bool IsConfirmed => TransactionTotalConfirmation >= (TransactionObject.BlockHeightTransactionConfirmationTarget - TransactionObject.BlockHeightTransaction);
 
+        /// <summary>
+        /// Clone safe function.
+        /// </summary>
+        /// <returns></returns>
         public ClassBlockTransaction Clone()
         {
-            ClassTransactionUtility.StringToBlockTransaction(ClassTransactionUtility.SplitBlockTransactionObject(this), out ClassBlockTransaction blockTransaction);
+            ClassBlockTransaction blockTransaction = null;
+
+            bool isLocked = false;
+
+            try
+            {
+                isLocked = Monitor.TryEnter(this);
+
+                if (isLocked)
+                    ClassTransactionUtility.StringToBlockTransaction(ClassTransactionUtility.SplitBlockTransactionObject(this), out blockTransaction);
+            }
+            finally
+            {
+                if (isLocked)
+                    Monitor.Exit(this);
+            }
 
             return blockTransaction;
         }

@@ -279,7 +279,7 @@ namespace SeguraChain_Lib.Instance.Node
 
             #region Stop the task of blockchain transaction confirmation.
 
-            //await _peerUpdateTask?.StopAutomaticBlockTransactionConfirmation();
+            _peerUpdateTask?.StopAutomaticBlockTransactionConfirmation();
 
             #endregion
 

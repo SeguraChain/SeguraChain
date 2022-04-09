@@ -256,12 +256,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 {
                     try
                     {
-                        long timestampEnd = ClassUtility.GetCurrentTimestampInMillisecond() + _peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay;
+                        long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + _peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay;
 
-                        while (ClassUtility.GetCurrentTimestampInMillisecond() < timestampEnd)
+                        while (TaskManager.TaskManager.CurrentTimestampMillisecond < timestampEnd)
                         {
                             if (await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.WaitAsync(1000, _cancellationTokenSourcePeerServer.Token))
                             {
+                                if (!ClassUtility.SocketIsConnected(clientPeerTcp))
+                                    break;
+
                                 _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
                                 semaphoreUsed = true;
                                 break;

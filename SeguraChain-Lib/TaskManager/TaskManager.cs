@@ -184,8 +184,8 @@ namespace SeguraChain_Lib.TaskManager
                             try
                             {
                                 _taskCollection.RemoveAt(taskId);
-                                listTaskToRemove.Remove(taskId);
-                                cleaned = true;
+                                if (listTaskToRemove.Remove(taskId))
+                                    cleaned = true;
                             }
                             catch
                             {
