@@ -3893,7 +3893,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     if (listBlockTransaction.Count == listTransactionHashTarget.Count)
                         return listBlockTransaction;
                     else
-                        listBlockTransaction.Clear();
+                        listBlockTransaction.GetList?.Clear();
                 }
 
                 if (_dictionaryBlockObjectMemory[blockHeight].Content != null ||
@@ -3929,22 +3929,26 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     }
                 }
 
-                if (_blockchainDatabaseSetting.BlockchainCacheSetting.EnableCacheDatabase)
+                if (_blockchainDatabaseSetting.BlockchainCacheSetting.EnableCacheDatabase && useBlockTransactionCache)
                 {
                     switch (_blockchainDatabaseSetting.BlockchainCacheSetting.CacheName)
                     {
                         case CacheEnumName.IO_CACHE:
                             {
                                 listBlockTransaction.GetList = await _cacheIoSystem.GetListBlockTransactionFromListTransactionHashAndBlockHeightTarget(listTransactionHashTarget.GetList, blockHeight, keepAlive, cancellation);
-                                if (listTransactionHashTarget.Count == listTransactionHashTarget.Count && useBlockTransactionCache)
-                                    await UpdateListBlockTransactionCache(listBlockTransaction.GetList.ToList(), cancellation, false);
+
+                                if (listBlockTransaction.GetList != null)
+                                {
+                                    if (listBlockTransaction.Count == listTransactionHashTarget.Count)
+                                        await UpdateListBlockTransactionCache(listBlockTransaction.GetList.ToList(), cancellation, false);
+                                }
                             }
                             break;
                     }
                 }
 
-                if (listTransactionHash.Count != listBlockTransaction.Count)
-                    listBlockTransaction.Clear();
+                if (listTransactionHashTarget.Count != listBlockTransaction.Count)
+                    listBlockTransaction.GetList.Clear();
 
                 return listBlockTransaction;
             }

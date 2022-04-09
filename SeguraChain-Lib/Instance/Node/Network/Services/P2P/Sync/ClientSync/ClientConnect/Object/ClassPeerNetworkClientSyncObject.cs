@@ -256,7 +256,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                 }
             }
 
-            CancelTaskDoConnection();
+            //CancelTaskDoConnection();
 
             if (successConnect)
             {
