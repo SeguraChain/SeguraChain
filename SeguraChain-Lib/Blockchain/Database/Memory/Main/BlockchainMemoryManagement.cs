@@ -3886,46 +3886,68 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             {
                 DisposableList<ClassBlockTransaction> listBlockTransaction = new DisposableList<ClassBlockTransaction>();
 
-                if (useBlockTransactionCache)
-                {
-                    listBlockTransaction = await GetListBlockTransactionCache(listTransactionHashTarget.GetList, blockHeight, cancellation);
+                if (listBlockTransaction.Count == 0)
+                    return listBlockTransaction;
 
-                    if (listBlockTransaction.Count == listTransactionHashTarget.Count)
-                        return listBlockTransaction;
-                    else
-                        listBlockTransaction.GetList?.Clear();
+                if (useBlockTransactionCache && _blockchainDatabaseSetting.BlockchainCacheSetting.EnableCacheDatabase)
+                {
+                    switch (_blockchainDatabaseSetting.BlockchainCacheSetting.CacheType)
+                    {
+                        case ClassBlockchainDatabaseCacheTypeEnum.CACHE_DISK:
+                            {
+                                listBlockTransaction = await GetListBlockTransactionCache(listTransactionHashTarget.GetList, blockHeight, cancellation);
+
+                                if (listBlockTransaction.Count == listTransactionHashTarget.Count)
+                                    return listBlockTransaction;
+                                else
+                                    listBlockTransaction.GetList?.Clear();
+                            }
+                            break;
+                        case ClassBlockchainDatabaseCacheTypeEnum.CACHE_NETWORK:
+                            {
+
+                            }
+                            break;
+                    }
+
                 }
 
-                if (_dictionaryBlockObjectMemory[blockHeight].Content != null ||
-                    _dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions != null ||
-                    _dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions.Count > 0)
+                if (_dictionaryBlockObjectMemory.ContainsKey(blockHeight))
                 {
-                    try
+                    if (_dictionaryBlockObjectMemory[blockHeight].Content != null ||
+                        _dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions != null ||
+                        _dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions.Count > 0)
                     {
-                        foreach (string transactionHash in listTransactionHashTarget.GetList)
+                        try
                         {
-
-                            if (_dictionaryBlockObjectMemory[blockHeight].Content == null ||
-                                _dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions == null ||
-                                _dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions.Count == 0)
-                                continue;
-
-                            if (_dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions.ContainsKey(transactionHash))
+                            foreach (string transactionHash in listTransactionHashTarget.GetList)
                             {
-                                var blockTransaction = _dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions[transactionHash].Clone();
 
-                                if (blockTransaction == null)
-                                    break;
+                                if (_dictionaryBlockObjectMemory[blockHeight].Content == null ||
+                                    _dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions == null ||
+                                    _dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions.Count == 0)
+                                    continue;
 
-                                listBlockTransaction.Add(blockTransaction);
+                                if (_dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions.ContainsKey(transactionHash))
+                                {
+                                    var blockTransaction = _dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions[transactionHash].Clone();
+
+                                    if (blockTransaction == null)
+                                        break;
+
+                                    listBlockTransaction.Add(blockTransaction);
+                                }
                             }
-                        }
 
-                        return listBlockTransaction;
-                    }
-                    catch
-                    {
-                        listBlockTransaction.Clear();
+                            if (listTransactionHashTarget.Count != listBlockTransaction.Count)
+                                listBlockTransaction.GetList.Clear();
+                            else
+                                return listBlockTransaction;
+                        }
+                        catch
+                        {
+                            listBlockTransaction.GetList.Clear();
+                        }
                     }
                 }
 

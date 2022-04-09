@@ -265,7 +265,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                 if (!ClassUtility.SocketIsConnected(clientPeerTcp))
                                     break;
 
-                                _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
                                 semaphoreUsed = true;
                                 break;
                             }
@@ -280,6 +279,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
                     if (semaphoreUsed)
                     {
+                        _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
                         semaphoreUsed = false;
                         await _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
                     }
@@ -292,8 +292,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     if (semaphoreUsed)
                         _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
                 }
-                _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].Dispose();
-                _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryRemove(randomId, out _);
+
+                if (_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.ContainsKey(randomId))
+                {
+                    _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].Dispose();
+                    _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryRemove(randomId, out _);
+                }
 
                 if (failed)
                     return ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT;
