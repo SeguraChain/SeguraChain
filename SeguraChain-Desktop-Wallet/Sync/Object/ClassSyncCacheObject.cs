@@ -339,7 +339,8 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
                 {
                     foreach (string transactionHash in _syncCacheDatabase[blockHeight].Keys.ToArray())
                     {
-                        cancellation.Token.ThrowIfCancellationRequested();
+                        if (cancellation.IsCancellationRequested)
+                            break;
 
                         if (!_syncCacheDatabase[blockHeight][transactionHash].IsMemPool && _syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionStatus)
                         {
@@ -388,7 +389,8 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
                 {
                     foreach (string transactionHash in _syncCacheDatabase[blockHeight].Keys.ToArray())
                     {
-                        cancellation.Token.ThrowIfCancellationRequested();
+                        if (cancellation.IsCancellationRequested)
+                            break;
 
                         if (!_syncCacheDatabase[blockHeight][transactionHash].IsMemPool && _syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionStatus)
                         {
@@ -593,13 +595,15 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
 
                 foreach(long blockHeight in BlockHeightKeys.GetList)
                 {
-                    cancellation.Token.ThrowIfCancellationRequested();
+                    if (cancellation.IsCancellationRequested)
+                        break;
 
                     using (DisposableList<string> listTransactionHash = new DisposableList<string>(false, 0, _syncCacheDatabase[blockHeight].Keys.ToList()))
                     {
                         foreach (var transactionHash in listTransactionHash.GetList)
                         {
-                            cancellation.Token.ThrowIfCancellationRequested();
+                            if (cancellation.IsCancellationRequested)
+                                break;
 
                             if (_syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionStatus)
                             {

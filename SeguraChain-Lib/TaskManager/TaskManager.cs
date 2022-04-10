@@ -51,8 +51,8 @@ namespace SeguraChain_Lib.TaskManager
 
                                     try
                                     {
-                                        _taskCollection[i].Task = Task.Run(_taskCollection[i].Action, _taskCollection[i].Cancellation.Token);
                                         _taskCollection[i].Started = true;
+                                        _taskCollection[i].Task = Task.Run(_taskCollection[i].Action, _taskCollection[i].Cancellation.Token);
                                     }
                                     catch
                                     {
@@ -184,8 +184,8 @@ namespace SeguraChain_Lib.TaskManager
                             try
                             {
                                 _taskCollection.RemoveAt(taskId);
-                                if (listTaskToRemove.Remove(taskId))
-                                    cleaned = true;
+                                listTaskToRemove.Remove(taskId);
+                                cleaned = true;
                             }
                             catch
                             {

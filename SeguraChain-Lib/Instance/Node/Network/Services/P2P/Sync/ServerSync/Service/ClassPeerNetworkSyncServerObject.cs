@@ -256,15 +256,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 {
                     try
                     {
-                        long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + _peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay;
+                        long timestampEnd = ClassUtility.GetCurrentTimestampInMillisecond() + _peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay;
 
-                        while (TaskManager.TaskManager.CurrentTimestampMillisecond < timestampEnd)
+                        while (ClassUtility.GetCurrentTimestampInMillisecond() < timestampEnd)
                         {
                             if (await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.WaitAsync(1000, _cancellationTokenSourcePeerServer.Token))
                             {
-                                if (!ClassUtility.SocketIsConnected(clientPeerTcp))
-                                    break;
-
+                                _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
                                 semaphoreUsed = true;
                                 break;
                             }
@@ -279,7 +277,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
                     if (semaphoreUsed)
                     {
-                        _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
                         semaphoreUsed = false;
                         await _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
                     }
@@ -292,12 +289,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     if (semaphoreUsed)
                         _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
                 }
-
-                if (_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.ContainsKey(randomId))
-                {
-                    _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].Dispose();
-                    _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryRemove(randomId, out _);
-                }
+                _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].Dispose();
+                _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryRemove(randomId, out _);
 
                 if (failed)
                     return ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT;

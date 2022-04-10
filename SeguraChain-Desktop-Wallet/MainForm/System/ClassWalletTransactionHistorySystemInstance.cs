@@ -141,7 +141,8 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                     {
                                         foreach (string memPoolTransactionHash in walletDataObject.WalletMemPoolTransactionList.ToArray())
                                         {
-                                            cancellation.Token.ThrowIfCancellationRequested();
+                                            if (cancellation.IsCancellationRequested)
+                                                break;
 
                                             ClassTransactionObject transactionObject = await ClassDesktopWalletCommonData.WalletSyncSystem.GetMemPoolTransactionObjectFromSync(walletAddress, memPoolTransactionHash, false, cancellation);
 
@@ -182,7 +183,8 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                                 {
                                                     foreach (long blockHeight in listBlockHeight.GetList.OrderBy(x => x))
                                                     {
-                                                        cancellation.Token.ThrowIfCancellationRequested();
+                                                        if (cancellation.IsCancellationRequested)
+                                                            break;
 
                                                         if (blockHeight < _dictionaryTransactionHistory[walletFileOpened].LastBlockHeight)
                                                             continue;
@@ -192,7 +194,8 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                                         {
                                                             foreach (var blockTransactionCached in listBlockTransactionCached.GetList)
                                                             {
-                                                                cancellation.Token.ThrowIfCancellationRequested();
+                                                                if (cancellation.IsCancellationRequested)
+                                                                    break;
 
                                                                 if (blockTransactionCached.Value != null)
                                                                 {
@@ -234,7 +237,8 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                     {
                                         foreach (var transactionShowed in _dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListedShowed.Keys)
                                         {
-                                            cancellation.Token.ThrowIfCancellationRequested();
+                                            if (cancellation.IsCancellationRequested)
+                                                break;
 
                                             try
                                             {
@@ -307,7 +311,8 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
 
                                                         foreach (TransactionHistoryInformationObject transactionHistoryInformationObject in GetTransactionHistoryInformationObjectOrdered(walletFileOpened, totalToSkip, totalToTake))
                                                         {
-                                                            cancellation.Token.ThrowIfCancellationRequested();
+                                                            if (cancellation.IsCancellationRequested)
+                                                                break;
 
                                                             ClassBlockTransaction blockTransaction = null;
 
@@ -918,7 +923,8 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                             {
                                 foreach (var rectangleTransaction in _dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListedShowed.ToArray())
                                 {
-                                    cancellation.Token.ThrowIfCancellationRequested();
+                                    if (cancellation.IsCancellationRequested)
+                                        break;
 
                                     if (rectangleTransaction.Value.RectangleTransaction.Contains(mouseClickPoint))
                                     {
@@ -1731,7 +1737,11 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                 {
                                     foreach (string transactionHash in _dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListedShowed.Keys.ToArray())
                                     {
-                                        cancellation?.Token.ThrowIfCancellationRequested();
+                                        if (cancellation != null)
+                                        {
+                                            if (cancellation.IsCancellationRequested)
+                                                break;
+                                        }
 
                                         TransactionHistoryInformationObject transactionHistoryInformationObject = _dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListed[transactionHash];
 
@@ -1766,7 +1776,11 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                 {
                                     foreach (var transactionHistoryInformationObject in _dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListed)
                                     {
-                                        cancellation?.Token.ThrowIfCancellationRequested();
+                                        if (cancellation != null)
+                                        {
+                                            if (cancellation.IsCancellationRequested)
+                                                break;
+                                        }
 
                                         if (transactionHistoryInformationObject.Value != null)
                                         {
@@ -1821,7 +1835,8 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                 // Search in content of the transaction history loaded.
                 foreach (string transactionHash in _dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListed.Keys.ToArray())
                 {
-                    cancellation.Token.ThrowIfCancellationRequested();
+                    if (cancellation.IsCancellationRequested)
+                        break;
 
                     if (isDate)
                     {

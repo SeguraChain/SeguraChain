@@ -1008,7 +1008,8 @@ namespace SeguraChain_Desktop_Wallet
                 {
                     while (ClassDesktopWalletCommonData.DesktopWalletStarted)
                     {
-                        _cancellationTokenTaskUpdateWalletContentInformations.Token.ThrowIfCancellationRequested();
+                        if (_cancellationTokenTaskUpdateWalletContentInformations.IsCancellationRequested)
+                            break;
 
                         try
                         {
@@ -1882,7 +1883,8 @@ namespace SeguraChain_Desktop_Wallet
 
                     foreach (var showedRecentTransactionHistoryObject in _walletRecentTransactionHistorySystemInstance.DictionaryRecentTransactionHistoryObjects.Values.ToArray())
                     {
-                        _cancellationTokenTaskUpdateWalletContentInformations.Token.ThrowIfCancellationRequested();
+                        if (_cancellationTokenTaskUpdateWalletContentInformations.IsCancellationRequested)
+                            break;
 
                         if (showedRecentTransactionHistoryObject?.TransactionDrawRectangle != null)
                         {

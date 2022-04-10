@@ -287,7 +287,11 @@ namespace SeguraChain_Desktop_Wallet.Sync
                     {
                         foreach (long blockHeight in blockHeightList.GetList)
                         {
-                            cancellationUpdateWalletSync.Token.ThrowIfCancellationRequested();
+                            if (cancellationUpdateWalletSync != null)
+                            {
+                                if (cancellationUpdateWalletSync.IsCancellationRequested)
+                                    break;
+                            }
 
                             if (!walletFileName.IsNullOrEmpty(false, out _))
                             {
@@ -310,7 +314,8 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                             {
                                                 foreach (ClassBlockTransaction blockTransaction in listBlockTransaction.GetList)
                                                 {
-                                                    cancellationUpdateWalletSync.Token.ThrowIfCancellationRequested();
+                                                    if (cancellationUpdateWalletSync.IsCancellationRequested)
+                                                        break;
 
                                                     if (ClassDesktopWalletCommonData.WalletDatabase.WalletOnResync(walletFileName))
                                                     {
@@ -336,8 +341,8 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                     {
                                         foreach (string transactionHash in listTransactionHash.GetList)
                                         {
-                                            cancellationUpdateWalletSync.Token.ThrowIfCancellationRequested();
-
+                                            if (cancellationUpdateWalletSync.IsCancellationRequested)
+                                                break;
 
                                             if (ClassDesktopWalletCommonData.WalletDatabase.WalletOnResync(walletFileName))
                                             {
@@ -453,7 +458,11 @@ namespace SeguraChain_Desktop_Wallet.Sync
 
                 while (!insertBlockHeight)
                 {
-                    cancellation?.Token.ThrowIfCancellationRequested();
+                    if (cancellation != null)
+                    {
+                        if (cancellation.IsCancellationRequested)
+                            break;
+                    }
 
                     if (!DatabaseSyncCache[walletAddress].ContainsBlockHeight(blockTransaction.TransactionObject.BlockHeightTransaction))
                         insertBlockHeight = await DatabaseSyncCache[walletAddress].InsertBlockHeight(blockTransaction.TransactionObject.BlockHeightTransaction, cancellation);
@@ -1138,7 +1147,8 @@ namespace SeguraChain_Desktop_Wallet.Sync
 
                         for (long blockHeight = blockHeightStart; blockHeight <= lastBlockHeight; blockHeight++)
                         {
-                            cancellation.Token.ThrowIfCancellationRequested();
+                            if (cancellation.IsCancellationRequested)
+                                break;
 
                             if (blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= lastBlockHeight)
                             {
@@ -1156,7 +1166,8 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                             {
                                                 foreach (var transactionPair in blockObject.BlockTransactions)
                                                 {
-                                                    cancellation.Token.ThrowIfCancellationRequested();
+                                                    if (cancellation.IsCancellationRequested)
+                                                        break;
 
                                                     if (transactionPair.Value.TransactionObject.WalletAddressReceiver == walletAddress || transactionPair.Value.TransactionObject.WalletAddressSender == walletAddress)
                                                     {
@@ -1417,7 +1428,11 @@ namespace SeguraChain_Desktop_Wallet.Sync
 
                                     while (startRange < transactionCount)
                                     {
-                                        cancellation?.Token.ThrowIfCancellationRequested();
+                                        if (cancellation != null)
+                                        {
+                                            if (cancellation.IsCancellationRequested)
+                                                break;
+                                        }
 
                                         // Increase end range.
                                         int incremented = 0;
@@ -1536,7 +1551,8 @@ namespace SeguraChain_Desktop_Wallet.Sync
 
                             for (long blockHeight = blockHeightStart; blockHeight <= lastBlockHeight; blockHeight++)
                             {
-                                cancellation.Token.ThrowIfCancellationRequested();
+                                if (cancellation.IsCancellationRequested)
+                                    break;
 
                                 if (blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= lastBlockHeight)
                                 {
@@ -1546,8 +1562,8 @@ namespace SeguraChain_Desktop_Wallet.Sync
 
                                     while (blockObjectInformation == null)
                                     {
-                                        cancellation.Token.ThrowIfCancellationRequested();
-
+                                        if (cancellation.IsCancellationRequested)
+                                            break;
 #if DEBUG
                                         Debug.WriteLine("Block Height " + blockHeight + " received from external sync is empty.");
 #endif
@@ -1590,7 +1606,8 @@ namespace SeguraChain_Desktop_Wallet.Sync
 
                                     while (!retrieved)
                                     {
-                                        cancellation.Token.ThrowIfCancellationRequested();
+                                        if (cancellation.IsCancellationRequested)
+                                            break;
 
                                         int totalRetrieved = 0;
 
@@ -1603,7 +1620,11 @@ namespace SeguraChain_Desktop_Wallet.Sync
 
                                             while (startRange < blockObjectInformation.TotalTransaction)
                                             {
-                                                cancellation?.Token.ThrowIfCancellationRequested();
+                                                if (cancellation != null)
+                                                {
+                                                    if (cancellation.IsCancellationRequested)
+                                                        break;
+                                                }
 
                                                 // Increase end range.
                                                 int incremented = 0;
@@ -1647,7 +1668,8 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                                 retrieved = true;
                                                 foreach (var blockTransaction in listBlockTransaction.GetList)
                                                 {
-                                                    cancellation.Token.ThrowIfCancellationRequested();
+                                                    if (cancellation.IsCancellationRequested)
+                                                        break;
 
                                                     if (blockTransaction.TransactionObject.WalletAddressReceiver == walletAddress || blockTransaction.TransactionObject.WalletAddressSender == walletAddress)
                                                     {
@@ -1936,7 +1958,11 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                     {
                                         foreach (var txAmountSpent in transactionPair.Value.BlockTransaction.TransactionObject.AmountTransactionSource)
                                         {
-                                            cancellation?.Token.ThrowIfCancellationRequested();
+                                            if (cancellation != null)
+                                            {
+                                                if (cancellation.IsCancellationRequested)
+                                                    break;
+                                            }
 
                                             long blockHeightTxAmountSpend = ClassTransactionUtility.GetBlockHeightFromTransactionHash(txAmountSpent.Key);
 

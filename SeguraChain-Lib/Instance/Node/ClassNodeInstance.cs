@@ -234,7 +234,6 @@ namespace SeguraChain_Lib.Instance.Node
 
             PeerToolStatus = false;
 
-            TaskManager.TaskManager.StopTaskManager();
 
             #region Close OpenNAT port.
 
@@ -278,9 +277,16 @@ namespace SeguraChain_Lib.Instance.Node
             #endregion
 
             #region Stop the task of blockchain transaction confirmation.
-
-            _peerUpdateTask?.StopAutomaticBlockTransactionConfirmation();
-
+            /*
+            try
+            {
+                await _peerUpdateTask?.StopAutomaticBlockTransactionConfirmation();
+            }
+            catch (Exception error)
+            {
+                ClassLog.WriteLine("Error on closing the automatic block transaction confirmation task. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+            }
+            */
             #endregion
 
             #region Stop automatic peer tasks.
@@ -335,6 +341,8 @@ namespace SeguraChain_Lib.Instance.Node
                 ClassLog.WriteLine("Blockchain data saved failed.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
 
             #endregion
+
+            TaskManager.TaskManager.StopTaskManager();
 
 
             if (!forceClose)
