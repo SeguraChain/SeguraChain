@@ -97,11 +97,9 @@ namespace SeguraChain_Lib.TaskManager
                             {
                                 bool doDispose = false;
 
-                                /*
                                 if (_taskCollection[i].Task != null && (_taskCollection[i].Task.IsCanceled || _taskCollection[i].Task.IsFaulted))
                                     doDispose = true;
-                                */
-
+                                
                                 if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond)
                                 {
                                     doDispose = true;
@@ -181,11 +179,15 @@ namespace SeguraChain_Lib.TaskManager
                     {
                         foreach (int taskId in listTaskToRemove.GetList.ToArray())
                         {
+                            if (taskId >= _taskCollection.Count)
+                                break;
+
                             try
                             {
+
                                 _taskCollection.RemoveAt(taskId);
-                                listTaskToRemove.Remove(taskId);
-                                cleaned = true;
+                                if (listTaskToRemove.Remove(taskId))
+                                    cleaned = true;
                             }
                             catch
                             {
