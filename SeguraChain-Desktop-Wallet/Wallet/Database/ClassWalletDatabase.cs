@@ -576,8 +576,10 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Database
                         finally
                         {
                             if (useSemaphore)
+                            {
                                 _semaphoreGetWalletFileData.Release();
-
+                                useSemaphore = false;
+                            }
                         }
 
 

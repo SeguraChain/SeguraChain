@@ -593,49 +593,53 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
                 BigInteger availableBalance = 0;
                 BigInteger pendingBalance = 0;
 
-                foreach(long blockHeight in BlockHeightKeys.GetList)
+                using (DisposableList<long> listBlockHeight = new DisposableList<long>(false, 0, BlockHeightKeys.GetList))
                 {
-                    if (cancellation.IsCancellationRequested)
-                        break;
 
-                    using (DisposableList<string> listTransactionHash = new DisposableList<string>(false, 0, _syncCacheDatabase[blockHeight].Keys.ToList()))
+                    foreach (long blockHeight in listBlockHeight.GetList)
                     {
-                        foreach (var transactionHash in listTransactionHash.GetList)
+                        if (cancellation.IsCancellationRequested)
+                            break;
+
+                        using (DisposableList<string> listTransactionHash = new DisposableList<string>(false, 0, _syncCacheDatabase[blockHeight].Keys.ToList()))
                         {
-                            if (cancellation.IsCancellationRequested)
-                                break;
-
-                            if (_syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionStatus)
+                            foreach (var transactionHash in listTransactionHash.GetList)
                             {
-                                if (!_syncCacheDatabase[blockHeight][transactionHash].IsMemPool)
+                                if (cancellation.IsCancellationRequested)
+                                    break;
+
+                                if (_syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionStatus)
                                 {
-                                    if (_syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.IsConfirmed)
+                                    if (!_syncCacheDatabase[blockHeight][transactionHash].IsMemPool)
                                     {
-                                        if (!_syncCacheDatabase[blockHeight][transactionHash].IsSender)
-                                            availableBalance += _syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Amount;
+                                        if (_syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.IsConfirmed)
+                                        {
+                                            if (!_syncCacheDatabase[blockHeight][transactionHash].IsSender)
+                                                availableBalance += _syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Amount;
+                                            else
+                                                availableBalance -= (_syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Amount + _syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Fee);
+                                        }
                                         else
-                                            availableBalance -= (_syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Amount + _syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Fee);
+                                        {
+                                            if (!_syncCacheDatabase[blockHeight][transactionHash].IsSender)
+                                                pendingBalance += _syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Amount;
+                                            else
+                                                pendingBalance -= (_syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Amount + _syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Fee);
+                                        }
                                     }
                                     else
                                     {
-                                        if (!_syncCacheDatabase[blockHeight][transactionHash].IsSender)
-                                            pendingBalance += _syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Amount;
-                                        else
+                                        if (_syncCacheDatabase[blockHeight][transactionHash].IsSender)
+                                        {
+                                            if (availableBalance - (_syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Amount + _syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Fee) >= 0)
+                                                availableBalance -= (_syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Amount + _syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Fee);
+
                                             pendingBalance -= (_syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Amount + _syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Fee);
-                                    }
-                                }
-                                else
-                                {
-                                    if (_syncCacheDatabase[blockHeight][transactionHash].IsSender)
-                                    {
-                                        if (availableBalance - (_syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Amount + _syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Fee) >= 0)
-                                            availableBalance -= (_syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Amount + _syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Fee);
+                                        }
+                                        else
+                                            pendingBalance += _syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Amount;
 
-                                        pendingBalance -= (_syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Amount + _syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Fee);
                                     }
-                                    else
-                                        pendingBalance += _syncCacheDatabase[blockHeight][transactionHash].BlockTransaction.TransactionObject.Amount;
-
                                 }
                             }
                         }

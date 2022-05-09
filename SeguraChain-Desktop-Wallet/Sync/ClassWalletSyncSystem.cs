@@ -194,6 +194,9 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                                 {
                                                     try
                                                     {
+                                                        if (cancellationUpdateWalletSync.IsCancellationRequested)
+                                                            return;
+
                                                         await UpdateWalletSyncTransactionCache(walletAddress, walletFileName, lastBlockHeightTransactionConfirmation, cancellationUpdateWalletSync);
 
                                                         if (walletAddressUpdateSyncCacheState.GetList != null)

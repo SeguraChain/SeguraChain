@@ -93,23 +93,27 @@ namespace SeguraChain_Lib.Other.Object.List
             {
                 if (GetList?.Count > 0)
                 {
-                    foreach (V key in GetList.Keys)
+
+                    for(int i = 0; i < Count; i++)
                     {
+
                         try
                         {
-                            GetList[key] = default(T);
-                            if(!GetList.Remove(key))
+                            var element = GetList.ElementAt(i);
+
+   
+                            GetList[element.Key] = default(T);
+                            if (!GetList.Remove(element.Key))
                             {
-                                if (GetList == null || GetList.Count == 0)
+                                if (GetList == null || GetList.Count == 0 ||i > Count)
                                     break;
                             }
                         }
                         catch
                         {
-                            if (GetList == null || GetList.Count == 0)
+                            if (GetList == null || GetList.Count == 0 || i > Count)
                                 break;
                         }
-
                     }
                 }
             }

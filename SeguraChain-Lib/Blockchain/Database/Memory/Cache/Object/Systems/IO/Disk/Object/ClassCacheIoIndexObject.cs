@@ -68,7 +68,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
             _ioDataStructureFilePath = blockchainDatabaseSetting.GetBlockchainCacheDirectoryPath + ioDataStructureFilename;
             _ioStructureObjectsDictionary = new Dictionary<long, ClassCacheIoStructureObject>();
             _ioSemaphoreAccess = new SemaphoreSlim(1, 1);
-            _ioDataUtf8Encoding = new UTF8Encoding(false);
+            _ioDataUtf8Encoding = new UTF8Encoding(true, false);
         }
 
         #region Initialize Io Cache Index functions.

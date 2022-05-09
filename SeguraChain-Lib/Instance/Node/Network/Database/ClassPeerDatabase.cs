@@ -173,21 +173,24 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
                     {
                         using (StreamWriter peerUncompressedWriter = new StreamWriter(ClassUtility.ConvertPath(AppContext.BaseDirectory + ClassPeerDataSetting.PeerDataDirectoryName + ClassPeerDataSetting.PeerDataUncompressedFileName)))
                         {
-                            foreach (var peerIp in DictionaryPeerDataObject.Keys)
+                            using (DisposableList<string> listPeerData = new DisposableList<string>(false, 0, DictionaryPeerDataObject.Keys.ToList()))
                             {
-                                if (!peerIp.IsNullOrEmpty(false, out _))
+                                foreach (var peerIp in listPeerData.GetList)
                                 {
-                                    if (DictionaryPeerDataObject[peerIp].Count > 0)
+                                    if (!peerIp.IsNullOrEmpty(false, out _))
                                     {
-                                        foreach (string peerUniqueId in DictionaryPeerDataObject[peerIp].Keys)
+                                        if (DictionaryPeerDataObject[peerIp].Count > 0)
                                         {
-                                            // Serialize -> byte array -> compress LZ4 -> encryption -> base 64 string format.
-                                            if (ClassAes.EncryptionProcess(LZ4.LZ4Codec.Wrap(ClassUtility.GetByteArrayFromStringAscii(ClassUtility.SerializeData(DictionaryPeerDataObject[peerIp][peerUniqueId], Formatting.None))), _peerDataStandardEncryptionKey, _peerDataStandardEncryptionKeyIv, out var result))
+                                            foreach (string peerUniqueId in DictionaryPeerDataObject[peerIp].Keys)
                                             {
-                                                peerWriter.WriteLine(Convert.ToBase64String(result));
+                                                // Serialize -> byte array -> compress LZ4 -> encryption -> base 64 string format.
+                                                if (ClassAes.EncryptionProcess(LZ4.LZ4Codec.Wrap(ClassUtility.GetByteArrayFromStringAscii(ClassUtility.SerializeData(DictionaryPeerDataObject[peerIp][peerUniqueId], Formatting.None))), _peerDataStandardEncryptionKey, _peerDataStandardEncryptionKeyIv, out var result))
+                                                {
+                                                    peerWriter.WriteLine(Convert.ToBase64String(result));
 
-                                                // Uncompressed peer data.
-                                                peerUncompressedWriter.WriteLine(ClassUtility.SerializeData(DictionaryPeerDataObject[peerIp][peerUniqueId], Formatting.Indented));
+                                                    // Uncompressed peer data.
+                                                    peerUncompressedWriter.WriteLine(ClassUtility.SerializeData(DictionaryPeerDataObject[peerIp][peerUniqueId], Formatting.Indented));
+                                                }
                                             }
                                         }
                                     }

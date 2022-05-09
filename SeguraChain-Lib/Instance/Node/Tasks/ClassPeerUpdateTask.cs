@@ -459,12 +459,13 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
                     {
                         if (_cancellationTokenSourceUpdateTask.IsCancellationRequested)
                             break;
+
+                        ClassUtility.CleanGc();
                     }
                     catch
                     {
                         // Ignored.
                     }
-                    ClassUtility.CleanGc();
 
                     await Task.Delay(CleanUpGcInterval);
                 }

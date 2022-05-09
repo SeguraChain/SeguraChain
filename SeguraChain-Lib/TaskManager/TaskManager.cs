@@ -42,7 +42,7 @@ namespace SeguraChain_Lib.TaskManager
 
                             try
                             {
-                                if (_taskCollection[i].Started)
+                                if (_taskCollection[i] == null || _taskCollection[i].Started)
                                     continue;
 
 
@@ -93,11 +93,15 @@ namespace SeguraChain_Lib.TaskManager
                     {
                         try
                         {
+                            if (_taskCollection[i] == null || _taskCollection[i].Task == null || _taskCollection[i].Disposed || !_taskCollection[i].Started)
+                                continue;
+
                             if (!_taskCollection[i].Disposed && _taskCollection[i].Started && _taskCollection[i].Task != null)
                             {
                                 bool doDispose = false;
 
-                                if (_taskCollection[i].Task != null && (_taskCollection[i].Task.IsCanceled || _taskCollection[i].Task.IsFaulted))
+                                if (_taskCollection[i].Task != null && (_taskCollection[i].Task.IsCanceled ||
+                                _taskCollection[i].Task.IsFaulted))
                                     doDispose = true;
                                 
                                 if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond)
@@ -124,9 +128,20 @@ namespace SeguraChain_Lib.TaskManager
                                 _taskCollection[i].Disposed = true;
 
                                 ClassUtility.CloseSocket(_taskCollection[i].Socket);
+
                                 try
                                 {
-                                    _taskCollection[i].Task?.Dispose();
+                                    if (_taskCollection[i].Cancellation != null)
+                                    {
+                                        if (_taskCollection[i].Cancellation.IsCancellationRequested)
+                                            _taskCollection[i].Task?.Dispose();
+                                    }
+                                    else
+                                    {
+                                        if ((_taskCollection[i].Task.IsCanceled ||
+                                            _taskCollection[i].Task.IsFaulted || _taskCollection[i].Task.Status == TaskStatus.RanToCompletion))
+                                            _taskCollection[i].Task?.Dispose();
+                                    }
                                 }
                                 catch
                                 {
@@ -184,8 +199,8 @@ namespace SeguraChain_Lib.TaskManager
 
                             try
                             {
-
                                 _taskCollection.RemoveAt(taskId);
+
                                 if (listTaskToRemove.Remove(taskId))
                                     cleaned = true;
                             }
@@ -202,8 +217,12 @@ namespace SeguraChain_Lib.TaskManager
 
                     try
                     {
+
                         if (cleaned)
+                        {
+                            _taskCollection.RemoveAll(x => x == null || x.Disposed);
                             _taskCollection.TrimExcess();
+                        }
                     }
                     catch
                     {
@@ -247,7 +266,14 @@ namespace SeguraChain_Lib.TaskManager
                     }
                     catch
                     {
-                        // If the insert of the task failed.
+                        try
+                        {
+                            Task.Factory.StartNew(() => action, cancellation.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+                        }
+                        catch
+                        {
+                            // Ignored, catch the exception once the task is completed.
+                        }
                     }
                 }
             }

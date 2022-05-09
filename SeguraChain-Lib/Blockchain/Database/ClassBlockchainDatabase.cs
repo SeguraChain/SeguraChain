@@ -460,7 +460,7 @@ namespace SeguraChain_Lib.Blockchain.Database
 
                 ClassLog.WriteLine("Save " + countBlock + " block(s) file(s)..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-                UTF8Encoding utf8Encoding = new UTF8Encoding(false);
+                UTF8Encoding utf8Encoding = new UTF8Encoding(true, false);
 
                 // Initialize Stream Block Writer.
                 using (StreamWriter writerBlock = blockchainDatabaseSetting.DataSetting.EnableCompressDatabase ?

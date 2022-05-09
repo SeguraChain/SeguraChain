@@ -109,7 +109,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                         try
                         {
                             while (!_tcpListenerPeerApi.Pending())
-                                await Task.Delay(1, _cancellationTokenSourcePeerApiServer.Token);
+                            {
+                                if (!_cancellationTokenSourcePeerApiServer.IsCancellationRequested)
+                                    break;
+
+                                await Task.Delay(1);
+                            }
 
                             await _tcpListenerPeerApi.AcceptSocketAsync().ContinueWith(async clientTask =>
                             {

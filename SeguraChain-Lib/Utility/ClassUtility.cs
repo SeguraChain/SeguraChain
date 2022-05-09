@@ -28,7 +28,7 @@ namespace SeguraChain_Lib.Utility
 
         private const string Base64Regex = @"^[a-zA-Z0-9\+/]*={0,3}$";
 
-        private static readonly UTF8Encoding Utf8Encoding = new UTF8Encoding(false);
+        private static readonly UTF8Encoding Utf8Encoding = new UTF8Encoding(true, false);
 
         private static readonly List<string> ListOfCharacters = new List<string>
         {
@@ -629,40 +629,46 @@ namespace SeguraChain_Lib.Utility
         /// <param name="handling"></param>
         public static bool TryDeserialize<T>(string content, out T result, ObjectCreationHandling handling = ObjectCreationHandling.Auto)
         {
-            if (!content.IsNullOrEmpty(true, out string contentTrimmed))
+            if (content.IsNullOrEmpty(true, out string contentTrimmed) || contentTrimmed.Length == 0 || 
+                contentTrimmed.Contains("�"))
+            {
+                result = default;
+                return false;
+            }
+
+            bool isNull = false;
+            try
             {
 
-                bool isNull = false;
+                result = JObject.Parse(contentTrimmed).ToObject<T>();
+
+                if (result == null)
+                    isNull = true;
+                else
+                    return true;
+            }
+            catch
+            {
+#if DEBUG
+                Debug.WriteLine("Failed to parse: " + contentTrimmed);
+#endif
+            }
+
+            if (isNull)
+            {
+
                 try
                 {
-
-                    result = JObject.Parse(contentTrimmed).ToObject<T>();
-
-                    if (result == null)
-                        isNull = true;
-                    else
-                        return true;
+                    result = JsonConvert.DeserializeObject<T>(contentTrimmed, new JsonSerializerSettings() { ObjectCreationHandling = handling });
+                    return true;
                 }
                 catch
                 {
                     // Ignored.
                 }
-
-                if (isNull)
-                {
-
-                    try
-                    {
-                        result = JsonConvert.DeserializeObject<T>(contentTrimmed, new JsonSerializerSettings() { ObjectCreationHandling = handling });
-                        return true;
-                    }
-                    catch
-                    {
-                        // Ignored.
-                    }
-                }
-
             }
+
+
 
             result = default;
             return false;
@@ -1203,7 +1209,8 @@ namespace SeguraChain_Lib.Utility
     /// </summary>
     public static class ClassUtilityByteArrayExtension
     {
-   
+        private static readonly UTF8Encoding Utf8Encoding = new UTF8Encoding(true, false);
+
         /// <summary>
         /// Get a string from a byte array object.
         /// </summary>
@@ -1221,7 +1228,14 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         public static string GetStringFromByteArrayUtf8(this byte[] content)
         {
-            return content != null && content?.Length > 0 ? new UTF8Encoding().GetString(content) : null;
+            try
+            {
+                return content != null && content?.Length > 0 ? Utf8Encoding.GetString(content) : null;
+            }
+            catch
+            {
+                return content != null && content?.Length > 0 ? Encoding.UTF8.GetString(content) : null;
+            }
         }
 
         /// <summary>

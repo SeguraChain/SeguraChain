@@ -364,8 +364,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                         _onSendingPacketResponse = false;
 
                                     }), 0, _cancellationTokenListenPeerPacket, _clientSocket);
-
-
                                 }
 
                                 listPacketReceived.GetList.RemoveAll(x => x.Complete);
