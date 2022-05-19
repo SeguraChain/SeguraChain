@@ -9,6 +9,7 @@ using SeguraChain_Lib.Utility;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -277,28 +278,50 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
 
                         bool resultHandleRequest = false;
 
+#if DEBUG
+                        ClassLog.WriteLine("Start to handle the peer client IP: " + clientIp + " | " + randomId, ClassEnumLogLevelType.LOG_LEVEL_API_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                        Stopwatch stopwatch = new Stopwatch();
+                        stopwatch.Start();
+#endif
+
                         try
                         {
-                            semaphoreUsed = await _listApiIncomingConnectionObject[clientIp].SemaphoreHandleConnection.WaitAsync(_peerNetworkSettingObject.PeerApiSemaphoreDelay, _cancellationTokenSourcePeerApiServer.Token);
-
-                            #region Handle the incoming connection to the api.
-
-                            if (semaphoreUsed)
+                            try
                             {
-                                _listApiIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
-                                semaphoreUsed = false;
-                                failed = false;
+                                semaphoreUsed = await _listApiIncomingConnectionObject[clientIp].SemaphoreHandleConnection.WaitAsync(_peerNetworkSettingObject.PeerApiSemaphoreDelay, _cancellationTokenSourcePeerApiServer.Token);
 
-                                resultHandleRequest = await _listApiIncomingConnectionObject[clientIp].ListApiClientObject[randomId].HandleApiClientConnection();
+                                #region Handle the incoming connection to the API.
+
+                                if (semaphoreUsed)
+                                {
+                                    _listApiIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
+#if DEBUG
+                                    ClassLog.WriteLine("Complete to handle the peer client IP: " + clientIp + " | " + randomId + " into " + stopwatch.ElapsedMilliseconds + " ms.", ClassEnumLogLevelType.LOG_LEVEL_API_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+#endif
+                                    semaphoreUsed = false;
+                                    failed = false;
+
+                                    resultHandleRequest = await _listApiIncomingConnectionObject[clientIp].ListApiClientObject[randomId].HandleApiClientConnection();
+                                }
+
+
+                                #endregion
                             }
-
-                            #endregion
+                            catch (Exception error)
+                            {
+                                ClassLog.WriteLine("Failed to handle the client IP: " + clientIp + " | " + randomId + " | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_API_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                            }
                         }
                         finally
                         {
                             if (semaphoreUsed)
                                 _listApiIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
                         }
+
+#if DEBUG
+                        stopwatch.Stop();
+                        ClassLog.WriteLine("Complete the task who handle the peer client IP: " + clientIp + " | " + randomId + " into " + stopwatch.ElapsedMilliseconds + " ms.", ClassEnumLogLevelType.LOG_LEVEL_API_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+#endif
 
                         _listApiIncomingConnectionObject[clientIp].ListApiClientObject[randomId].Dispose();
 

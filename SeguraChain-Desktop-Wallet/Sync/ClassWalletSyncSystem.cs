@@ -224,7 +224,6 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                         }
                                     }
                                     else walletAddressUpdateSyncCacheState[walletAddress] = true;
-
                                 }
 
                                 while (walletAddressUpdateSyncCacheState.GetList.Count(x => x.Value == true) < totalTask)

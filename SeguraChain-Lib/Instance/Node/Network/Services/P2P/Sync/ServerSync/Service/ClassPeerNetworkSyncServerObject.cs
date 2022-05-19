@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -25,7 +26,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
         public string PeerIpOpenNatServer;
         private ClassPeerNetworkSettingObject _peerNetworkSettingObject;
         private ClassPeerFirewallSettingObject _firewallSettingObject;
-        private SemaphoreSlim _semaphoreHandleIncomingConnection = new SemaphoreSlim(1, Environment.ProcessorCount);
 
         #region Dispose functions
 
@@ -97,55 +97,72 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
             NetworkPeerServerStatus = true;
             _cancellationTokenSourcePeerServer = new CancellationTokenSource();
 
-            try
+
+            TaskManager.TaskManager.InsertTask(new Action(async () =>
             {
-                TaskManager.TaskManager.InsertTask(new Action(async () =>
+                while (NetworkPeerServerStatus)
                 {
-                    while (NetworkPeerServerStatus)
+                    try
                     {
-                        try
+                        while (!_tcpListenerPeer.Pending())
                         {
-                            await _tcpListenerPeer.AcceptSocketAsync().ContinueWith(async clientTask =>
+                            if (!_cancellationTokenSourcePeerServer.IsCancellationRequested)
+                                break;
+
+                            await Task.Delay(1);
+                        }
+
+                        await _tcpListenerPeer.AcceptSocketAsync().ContinueWith(async clientTask =>
+                        {
+
+                            var clientPeerTcp = await clientTask;
+
+                            string clientIp = string.Empty;
+                            bool exception = false;
+
+                            try
                             {
+                                clientIp = ((IPEndPoint)(clientPeerTcp.RemoteEndPoint)).Address.ToString();
+                            }
+                            catch
+                            {
+                                exception = true;
+                            }
 
-                                var clientPeerTcp = await clientTask;
-
+                            if (!exception)
+                            {
                                 TaskManager.TaskManager.InsertTask(new Action(async () =>
                                 {
-                                    try
-                                    {
-                                        string clientIp = ((IPEndPoint)(clientPeerTcp.RemoteEndPoint)).Address.ToString();
 
-                                        switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
-                                        {
-                                            case ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
-                                            case ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS:
+                                    switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
+                                    {
+                                        case ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
+                                        case ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS:
+                                        case ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION:
+                                        case ClassPeerNetworkServerHandleConnectionEnum.INSERT_CLIENT_IP_EXCEPTION:
+                                            {
                                                 if (_firewallSettingObject.PeerEnableFirewallLink)
                                                     ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
-                                                break;
-                                        }
+                                                ClassUtility.CloseSocket(clientPeerTcp);
+                                            }
+                                            break;
                                     }
-                                    catch
-                                    {
-                                        // The socket can be dead.
-                                    }
-                                    ClassUtility.CloseSocket(clientPeerTcp);
 
-                                }), 0, null, clientPeerTcp);
 
-                            }, _cancellationTokenSourcePeerServer.Token);
-                        }
-                        catch
-                        {
-                            // Ignored, catch the exception once the task is cancelled.
-                        }
+                                }), 0, null, null);
+                            }
+                            else
+                                ClassUtility.CloseSocket(clientPeerTcp);
+
+                        }, _cancellationTokenSourcePeerServer.Token);
                     }
-                }), 0, _cancellationTokenSourcePeerServer, null);
-            }
-            catch
-            {
-                // Ignored, catch the exception once the task is cancelled.
-            }
+                    catch
+                    {
+                        // Ignored, catch the exception once the task is cancelled.
+                    }
+                }
+            }), 0, _cancellationTokenSourcePeerServer, null);
+
             return true;
         }
 
@@ -202,7 +219,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                         return ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS;
                 }
 
-                if (GetTotalActiveConnection(clientIp) > _peerNetworkSettingObject.PeerMaxNodeConnectionPerIp)
+                CancellationTokenSource cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSourcePeerServer.Token, new CancellationTokenSource(_peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay).Token);
+
+                if (GetTotalActiveConnection(clientIp, cancellationToken) > _peerNetworkSettingObject.PeerMaxNodeConnectionPerIp)
                     return ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT;
 
                 if (_listPeerIncomingConnectionObject.Count >= int.MaxValue - 1)
@@ -212,20 +231,18 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 // If it's a new incoming connection, create a new index of incoming connection.
                 if (!_listPeerIncomingConnectionObject.ContainsKey(clientIp))
                 {
-                    if (!_listPeerIncomingConnectionObject.TryAdd(clientIp, new ClassPeerIncomingConnectionObject()))
+                    if (!_listPeerIncomingConnectionObject.TryAdd(clientIp, new ClassPeerIncomingConnectionObject(_peerNetworkSettingObject)))
                         return ClassPeerNetworkServerHandleConnectionEnum.INSERT_CLIENT_IP_EXCEPTION;
                 }
 
                 #region Ensure to not have too much incoming connection from the same ip.
 
-                long randomId = ClassUtility.GetRandomBetweenInt(0, int.MaxValue - 1);
 
-                while (_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.ContainsKey(randomId))
-                    randomId = ClassUtility.GetRandomBetweenInt(0, int.MaxValue - 1);
+                if (!GeneratePeerUniqueId(clientIp, cancellationToken, out long randomId))
+                    return ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION;
 
-                CancellationTokenSource cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSourcePeerServer.Token);
 
-                if (GetTotalActiveConnection(clientIp) < _peerNetworkSettingObject.PeerMaxNodeConnectionPerIp)
+                if (GetTotalActiveConnection(clientIp, cancellationToken) < _peerNetworkSettingObject.PeerMaxNodeConnectionPerIp)
                 {
                     if (!_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryAdd(randomId, 
                         new ClassPeerNetworkClientServerObject(clientPeerTcp, cancellationToken, clientIp, peerIpOpenNatServer, _peerNetworkSettingObject, _firewallSettingObject)))
@@ -241,7 +258,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     }
                     else
                     {
-                        if (GetTotalActiveConnection(clientIp) > _peerNetworkSettingObject.PeerMaxNodeConnectionPerIp)
+                        if (GetTotalActiveConnection(clientIp, cancellationToken) > _peerNetworkSettingObject.PeerMaxNodeConnectionPerIp)
                             return ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT;
                     }
                 }
@@ -252,6 +269,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 bool failed = false;
                 bool semaphoreUsed = false;
 
+#if DEBUG
+                ClassLog.WriteLine("Start to handle the peer client IP: " + clientIp + " | " + randomId, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+#endif
+
+
                 try
                 {
                     try
@@ -260,9 +284,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
                         while (ClassUtility.GetCurrentTimestampInMillisecond() < timestampEnd)
                         {
-                            if (await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.WaitAsync(1000, _cancellationTokenSourcePeerServer.Token))
+                            if (await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.WaitAsync(10, _cancellationTokenSourcePeerServer.Token))
                             {
-                                _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
                                 semaphoreUsed = true;
                                 break;
                             }
@@ -270,7 +293,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     }
                     catch
                     {
-                        // Ignored.
+                        failed = true;
+                        semaphoreUsed = false;
                     }
 
                     #region Handle the incoming connection to the P2P server.
@@ -278,8 +302,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     if (semaphoreUsed)
                     {
                         semaphoreUsed = false;
-                        await _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
+#if DEBUG
+                        ClassLog.WriteLine("Start the handle task of the peer client IP: " + clientIp + " | " + randomId + " in " + stopwatch.ElapsedMilliseconds + " ms.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+#endif
+                        _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
+
+                        _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
+
                     }
+                    else failed = true;
 
                     #endregion
                 }
@@ -289,11 +320,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     if (semaphoreUsed)
                         _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
                 }
-                _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].Dispose();
-                _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryRemove(randomId, out _);
+
 
                 if (failed)
+                {
+                    _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].Dispose();
+                    _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryRemove(randomId, out _);
                     return ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT;
+                }
             }
             catch
             {
@@ -307,12 +341,53 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
         #region Stats connections functions.
 
         /// <summary>
+        /// Generate peer unique id.
+        /// </summary>
+        /// <param name="clientIp"></param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
+        public bool GeneratePeerUniqueId(string clientIp, CancellationTokenSource cancellation, out long randomId)
+        {
+            bool result = true;
+
+#if DEBUG
+            ClassLog.WriteLine("Start to generate a peer unique id to the client IP: " + clientIp, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+#endif
+            randomId = ClassUtility.GetRandomBetweenInt(0, int.MaxValue - 1);
+
+            while (_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.ContainsKey(randomId))
+            {
+                if (cancellation.IsCancellationRequested)
+                {
+                    result = false;
+                    break;
+                }
+
+                 randomId = ClassUtility.GetRandomBetweenInt(0, int.MaxValue - 1);
+            }
+
+#if DEBUG
+            stopwatch.Stop();
+            ClassLog.WriteLine("The peer unique id "+randomId+" has been generated for the client: " + clientIp + " into "+stopwatch.ElapsedMilliseconds+" ms.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+#endif
+
+            return result;
+        }
+
+        /// <summary>
         /// Get the total active connection amount of a client ip.
         /// </summary>
         /// <param name="clientIp">The client IP.</param>
         /// <returns>Return the amount of total connection of a client IP.</returns>
-        private int GetTotalActiveConnection(string clientIp)
+        private int GetTotalActiveConnection(string clientIp, CancellationTokenSource cancellation)
         {
+#if DEBUG
+            ClassLog.WriteLine("Start to get the total active connection from client IP: " + clientIp, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+#endif
             int totalActiveConnection = 0;
 
             if (_listPeerIncomingConnectionObject.Count > 0)
@@ -323,6 +398,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     {
                         foreach (long key in _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.Keys.ToArray())
                         {
+                            if (cancellation.IsCancellationRequested)
+                                break;
 
                             try
                             {
@@ -340,7 +417,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     }
                 }
             }
- 
+
+#if DEBUG
+            stopwatch.Stop();
+            ClassLog.WriteLine("Total active connection generated: " + stopwatch.ElapsedMilliseconds + " ms. | " + clientIp, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+#endif
+
             return totalActiveConnection;
         }
 
@@ -350,6 +432,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
         /// <returns>Return the amount of total active connections.</returns>
         public long GetAllTotalActiveConnection()
         {
+#if DEBUG
+            ClassLog.WriteLine("Start to get the total active connection.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+#endif
             long totalActiveConnection = 0;
 
             if (_listPeerIncomingConnectionObject.Count > 0)
@@ -380,6 +467,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 }
             }
 
+#if DEBUG
+            stopwatch.Stop();
+            ClassLog.WriteLine("Total active connection " + totalActiveConnection + " generated into: " + stopwatch.ElapsedMilliseconds + " ms.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+#endif
+
             return totalActiveConnection;
         }
 
@@ -389,7 +481,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
         /// <param name="clientIp">The client IP.</param>
         public int CleanUpInactiveConnectionFromClientIpTarget(string clientIp)
         {
+#if DEBUG
+            ClassLog.WriteLine("Start to get the total active connection. Client IP: " + clientIp, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+#endif
             int totalRemoved = 0;
+
             if (_listPeerIncomingConnectionObject.Count > 0)
             {
                 if (_listPeerIncomingConnectionObject.ContainsKey(clientIp))
@@ -435,6 +533,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     }
                 }
             }
+
+#if DEBUG
+            stopwatch.Stop();
+            ClassLog.WriteLine("Total inactive connection " + totalRemoved + " cleaned up into: " + stopwatch.ElapsedMilliseconds + " ms.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+#endif
+
             return totalRemoved;
         }
 

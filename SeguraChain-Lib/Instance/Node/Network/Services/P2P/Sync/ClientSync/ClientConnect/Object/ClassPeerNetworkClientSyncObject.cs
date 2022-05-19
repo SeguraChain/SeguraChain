@@ -117,6 +117,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// <returns></returns>
         public async Task<bool> TrySendPacketToPeerTarget(byte[] packet, CancellationTokenSource cancellation, ClassPeerEnumPacketResponse packetResponseExpected, bool keepAlive, bool broadcast)
         {
+            bool result = false;
+#if DEBUG
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+#endif
             try
             {
 
@@ -146,7 +151,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                 if (!PeerConnectStatus || CheckConnection)
                 {
                     if (!await DoConnection())
-                        return false;
+                        result = false;
                 }
 
                 #endregion
@@ -160,7 +165,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                     DisconnectFromTarget();
                 }
                 else
-                    return broadcast ? true : await WaitPacketExpected(cancellation);
+                    result = broadcast ? true : await WaitPacketExpected(cancellation);
 
                 #endregion
 
@@ -171,8 +176,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                     Dispose();
             }
 
+#if DEBUG
+            stopwatch.Stop();
+            Debug.WriteLine("Packet send and received into: " + stopwatch.ElapsedMilliseconds + " ms.");
+#endif
 
-            return false;
+            return result;
         }
 
         #region Initialize connection functions.
@@ -211,7 +220,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             bool taskDone = false;
             long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSetting.PeerMaxDelayToConnectToTarget * 1000);
 
-            _peerCancellationTokenDoConnection = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationTokenMain.Token);
+            _peerCancellationTokenDoConnection = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationTokenMain.Token, new CancellationTokenSource(_peerNetworkSetting.PeerMaxDelayToConnectToTarget * 1000).Token);
 
             TaskManager.TaskManager.InsertTask(new Action(async () =>
             {

@@ -45,6 +45,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
         public long ClientConnectTimestamp;
         public bool PacketResponseSent;
         private bool _validPostRequest;
+
+
         public bool OnHandlePacket;
 
         #region Dispose functions
@@ -121,8 +123,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                     {
                         try
                         {
-                            _cancellationTokenApiClient.Token.ThrowIfCancellationRequested();
-
                             bool continueReading = true;
                             bool isPostRequest = false;
 

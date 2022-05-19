@@ -24,7 +24,7 @@ namespace SeguraChain_Lib.Log
         LOG_LEVEL_MINING = 7,
         LOG_LEVEL_PEER_MANAGER = 8,
         LOG_LEVEL_PEER_TASK_TRANSACTION_CONFIRMATION = 9,
-        LOG_LEVEL_MEMORY_MANAGER = 10
+        LOG_LEVEL_MEMORY_MANAGER = 10,
     }
 
     public enum ClassEnumLogWriteLevel
