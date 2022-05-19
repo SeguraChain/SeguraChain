@@ -34,6 +34,8 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Object
         public string ListenIp;
         public int ListenPort;
 
+
+
         public bool PublicPeer;
         public bool IsDedicatedServer;
 
@@ -85,7 +87,6 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Object
         /// API.
         /// </summary>
         public string ListenApiIp;
-        public string ListenApiIpV6;
         public int ListenApiPort;
         public int PeerMaxApiConnectionPerIp;
         public int PeerApiMaxConnectionDelay;
@@ -129,7 +130,7 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Object
             PeerMaxRangeTransactionToSyncPerRequest = BlockchainSetting.PeerMaxRangeTransactionToSyncPerRequest;
             PeerEnableSyncTransactionByRange = BlockchainSetting.PeerEnableSyncTransactionByRange;
             PeerEnableSovereignPeerVote = BlockchainSetting.PeerEnableSovereignPeerVote;
-            PeerMinThreadsPool = ClassUtility.GetMaxAvailableProcessorCount();
+            PeerMinThreadsPool = ClassUtility.GetMaxAvailableProcessorCount() * ClassUtility.GetMaxAvailableProcessorCount();
             PeerMinThreadsPoolCompletionPort = PeerMinThreadsPool * ClassUtility.GetMaxAvailableProcessorCount();
             PeerMaxThreadsPool = PeerMinThreadsPool * ClassUtility.GetMaxAvailableProcessorCount();
             PeerMaxThreadsPoolCompletionPort = PeerMinThreadsPoolCompletionPort  * ClassUtility.GetMaxAvailableProcessorCount();
@@ -138,7 +139,6 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Object
             // API Part.
             ListenApiIp = BlockchainSetting.PeerDefaultApiIp;
             ListenApiPort = BlockchainSetting.PeerDefaultApiPort;
-            ListenApiIpV6 = string.Empty;
             PeerMaxApiConnectionPerIp = BlockchainSetting.PeerMaxApiConnectionPerIp;
             PeerApiMaxConnectionDelay = BlockchainSetting.PeerApiMaxConnectionDelay;
             PeerApiMaxEarlierPacketDelay = BlockchainSetting.PeerApiMaxEarlierPacketDelay;

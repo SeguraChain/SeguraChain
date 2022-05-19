@@ -306,8 +306,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                     }
                                     catch
                                     {
-                                            // Ignored.
-                                        }
+                                        // Ignored.
+                                    }
 
                                     totalTaskComplete++;
                                 }), timestampEnd, cancellationTokenSourceTaskSync, null);

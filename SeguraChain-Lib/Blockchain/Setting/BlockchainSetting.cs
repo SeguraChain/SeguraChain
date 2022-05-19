@@ -160,12 +160,12 @@ namespace SeguraChain_Lib.Blockchain.Setting
         /// </summary>
         public const int PeerMaxNoPacketConnectionAttempt = 40;
         public const int PeerMaxInvalidPacket = 60; // Banned after 60 invalid packets.
-        public const int PeerMaxDelayAwaitResponse = 60; // Await a response from a peer target pending maximum 30 seconds per requests sent.
-        public const int PeerMaxDelayConnection = 30; // A maximum of 30 seconds on receive a packet.
+        public const int PeerMaxDelayAwaitResponse = 10; // Await a response from a peer target pending maximum 10 seconds per requests sent.
+        public const int PeerMaxDelayConnection = 10; // A maximum of 10 seconds on receive a packet.
         public const int PeerMaxTimestampDelayPacket = 360; // Await a maximum of 360 seconds on the timestamp of a packet, above the packet is considered has expired.
         public const int PeerMaxDelayKeepAliveStats = 60; // Keep alive packet stats of a peer pending 60 seconds.
         public const int PeerMaxEarlierPacketDelay = 600; // A maximum of 600 seconds is accepted on timestamp of packets.
-        public const int PeerMaxDelayToConnectToTarget = 10; // A maximum of 10 seconds delay on connect to a peer.
+        public const int PeerMaxDelayToConnectToTarget = 3; // A maximum of 3 seconds delay on connect to a peer.
         public const int PeerMaxAttemptConnection = 20; // After 20 retries to connect to a peer, the peer target is set has dead pending a certain amount of time.
         public const int PeerBanDelay = 30; // Ban delay pending 30 seconds.
         public const int PeerDeadDelay = 15; // Dead delay pending 15 seconds.
@@ -175,13 +175,13 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int MaxPeerPerSyncTask = 50;
         public const int PeerMinAvailablePeerSync = 1; // The minimum of required peer(s).
         public const int PeerMaxAuthKeysExpire = 86_400 * 7; // Each week, internal auth keys of a peer are renewed.
-        public const int PeerMaxPacketBufferSize = 65_535;
+        public const int PeerMaxPacketBufferSize = 8_192;
         public const int PeerMaxPacketSplitedSendSize = 1024;
         public const int PeerDelayDeleteDeadPeer = 600;
         public const int PeerMinPort = 1;
         public const int PeerMaxPort = 65_535;
         public const int PeerMaxNodeConnectionPerIp = 1000;
-        public const int PeerMaxSemaphoreConnectAwaitDelay = 30_000;
+        public const int PeerMaxSemaphoreConnectAwaitDelay = 2_000;
         public const int PeerMaxRangeBlockToSyncPerRequest = 5; // Amount of blocks to sync per range.
         public const int PeerMaxRangeTransactionToSyncPerRequest = 5; // Amount of transactions to sync per range.
         public const bool PeerEnableSyncTransactionByRange = true;
@@ -212,7 +212,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int PeerApiMaxEarlierPacketDelay = 60;
         public const int PeerApiMaxPacketDelay = 30;
         public const int PeerApiMaxRangeTransactionToSyncPerRequest = 10; // Amount of transactions to sync per range, by an API.
-        public const int PeerApiSemaphoreDelay = 30_000;
+        public const int PeerApiSemaphoreDelay = 2_000;
         public const int PeerApiMaxRetryRequest = 5;
 
         #endregion

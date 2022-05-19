@@ -21,6 +21,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
     {
         public bool NetworkPeerServerStatus;
         private TcpListener _tcpListenerPeer;
+        private TcpListener _tcpListenerPeerIpv6;
         private CancellationTokenSource _cancellationTokenSourcePeerServer;
         private ConcurrentDictionary<string, ClassPeerIncomingConnectionObject> _listPeerIncomingConnectionObject;
         public string PeerIpOpenNatServer;
@@ -133,7 +134,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                             {
                                 TaskManager.TaskManager.InsertTask(new Action(async () =>
                                 {
-
+#if DEBUG
+                                    ClassLog.WriteLine("Start handle incoming connection from client IP: " + clientIp, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+#endif
                                     switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
                                     {
                                         case ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:

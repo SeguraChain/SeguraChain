@@ -317,7 +317,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                             try
                                             {
                                                 base64Packet = Convert.FromBase64String(listPacketReceived[i].Packet);
-                                                if (base64Packet.Length == 0)
+                                                if (base64Packet == null || base64Packet.Length == 0)
                                                     failed = true;
                                             }
                                             catch
@@ -329,7 +329,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                         listPacketReceived[i].Packet.Clear();
 
-                                        if (failed)
+                                        if (failed || base64Packet == null)
                                             continue;
 
                                         TaskManager.TaskManager.InsertTask(new Action(async () =>
@@ -363,7 +363,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                             _onSendingPacketResponse = false;
 
-                                        }), 0, _cancellationTokenListenPeerPacket, _clientSocket);
+                                        }), 0, _cancellationTokenListenPeerPacket, null);
                                     }
 
                                     listPacketReceived.GetList.RemoveAll(x => x.Complete);
