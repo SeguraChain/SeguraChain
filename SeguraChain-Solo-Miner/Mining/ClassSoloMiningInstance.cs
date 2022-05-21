@@ -394,7 +394,7 @@ namespace SeguraChain_Solo_Miner.Mining
                                     _pocRandomData[idThread] = ClassMiningPoWaCUtility.UpdateRandomPocDataTimestampAndBlockHeightTarget(_currentMiningPocSettingObject, _pocRandomData[idThread], _currentBlockHeight, _nextNonce[idThread], out timestampShare);
 
                                 // Build a poc share.
-                                ClassMiningPoWaCShareObject pocShareObject = ClassMiningPoWaCUtility.DoPoWaCShare(_currentMiningPocSettingObject, _soloMinerSettingObject.SoloMinerWalletSetting.wallet_address, _currentBlockHeight, _currentBlockHash, _currentBlockDifficulty, _previousFinalBlockTransactionHashKey, _pocRandomData[idThread], _nextNonce[idThread], timestampShare, _sha3512Mining[idThread], _walletAddressDecoded);
+                                ClassMiningPoWaCShareObject pocShareObject = ClassMiningPoWaCUtility.DoPoWaCShare(_currentMiningPocSettingObject, _soloMinerSettingObject.SoloMinerWalletSetting.wallet_address, _currentBlockHeight, _currentBlockHash, _currentBlockDifficulty, _previousFinalBlockTransactionHashKey, _pocRandomData[idThread], _nextNonce[idThread], timestampShare, _sha3512Mining[idThread]);
 
                                 if (pocShareObject != null)
                                 {

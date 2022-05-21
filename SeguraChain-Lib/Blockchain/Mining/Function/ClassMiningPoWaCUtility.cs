@@ -40,9 +40,8 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
         /// <param name="nextNonce"></param>
         /// <param name="timestampShare"></param>
         /// <param name="sha3512Digest"></param>
-        /// <param name="walletAddressDecoded"></param>
         /// <returns></returns>
-        public static ClassMiningPoWaCShareObject DoPoWaCShare(ClassMiningPoWaCSettingObject currentMiningSetting, string walletAddress, long blockHeight, string blockHash, BigInteger blockDifficulty, byte[] previousFinalBlockTransactionHashKey, byte[] pocShareData, long nextNonce, long timestampShare, ClassSha3512DigestDisposable sha3512Digest, byte[] walletAddressDecoded)
+        public static ClassMiningPoWaCShareObject DoPoWaCShare(ClassMiningPoWaCSettingObject currentMiningSetting, string walletAddress, long blockHeight, string blockHash, BigInteger blockDifficulty, byte[] previousFinalBlockTransactionHashKey, byte[] pocShareData, long nextNonce, long timestampShare, ClassSha3512DigestDisposable sha3512Digest)
         {
             byte[] pocShareIv = BitConverter.GetBytes(nextNonce);
 
@@ -109,8 +108,6 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
                 Timestamp = timestampShare
             };
         }
-
-
 
         /// <summary>
         /// Check a pow share.
@@ -393,9 +390,9 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
         /// Generate random PoC data who return a perfect compatibility with the previous block transaction count provided.
         /// </summary>
         /// <param name="currentMiningSetting"></param>
-        /// <param name="previousBlockTransactionCount"></param>
+        /// <param name="previousBlockTransactionCount">previous transaction count.</param>
         /// <param name="blockHeight"></param>
-        /// <param name="timestampSecond"></param>
+        /// <param name="timestampSecond">8 bytes length</param>
         /// <param name="walletAddressDecoded"></param>
         /// <param name="pocTxCount"></param>
         /// <returns></returns>
@@ -412,8 +409,8 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
             {
                 #region Generate two numbers from random data for calculate the proof of compatibility.
 
-                int numberOne = ClassUtility.GetRandomBetweenInt(0, previousBlockTransactionCount);
-                int numberTwo = ClassUtility.GetRandomBetweenInt(0, previousBlockTransactionCount);
+                int numberOne = ClassUtility.GetRandomBetweenInt(0, previousBlockTransactionCount); // 4 bytes length.
+                int numberTwo = ClassUtility.GetRandomBetweenInt(0, previousBlockTransactionCount); // 4 bytes length.
 
                 #endregion
 
@@ -433,9 +430,9 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
                         Array.Copy(BitConverter.GetBytes(numberTwo), 0, pocRandomData, currentMiningSetting.RandomDataShareNumberSize / 2, currentMiningSetting.RandomDataShareNumberSize / 2);
                         Array.Copy(timestampSecondBytes, 0, pocRandomData, currentMiningSetting.RandomDataShareTimestampSize, currentMiningSetting.RandomDataShareTimestampSize);
 
-                        // Fill Poc random data with random data on the checksum part.
+                        // Fill Poc random data with random data on the checksum part. Increase by 32 bytes the length of the PoC share (Checksum 32 bytes size).
                         using (RNGCryptoServiceProvider rngCrypto = new RNGCryptoServiceProvider())
-                            rngCrypto.GetBytes(pocRandomData, currentMiningSetting.RandomDataShareNumberSize + currentMiningSetting.RandomDataShareTimestampSize, currentMiningSetting.RandomDataShareChecksum);
+                            rngCrypto.GetBytes(pocRandomData, currentMiningSetting.RandomDataShareNumberSize + currentMiningSetting.RandomDataShareTimestampSize, currentMiningSetting.RandomDataShareChecksum); 
 
                         // Copy wallet address decoded.
                         Array.Copy(walletAddressDecoded, 0, pocRandomData, currentMiningSetting.RandomDataShareNumberSize + currentMiningSetting.RandomDataShareTimestampSize + currentMiningSetting.RandomDataShareChecksum, currentMiningSetting.WalletAddressDataSize);

@@ -22,7 +22,7 @@ namespace SeguraChain_Desktop_Wallet.Settings.Enum
         /// Interval of update used of the sync of wallets files opened.
         /// </summary>
         public const int DefaultWalletUpdateSyncInterval = 1000;
-        public const int DefaultWalletUpdateSyncCacheInterval =  1000;
+        public const int DefaultWalletUpdateSyncCacheInterval =  5 * 1000;
 
         /// <summary>
         /// Interval of update to show latest blockchain network stats.

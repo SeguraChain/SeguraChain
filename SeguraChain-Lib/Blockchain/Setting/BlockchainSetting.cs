@@ -7,7 +7,10 @@ using SeguraChain_Lib.Utility;
 
 namespace SeguraChain_Lib.Blockchain.Setting
 {
-
+    /// <summary>
+    /// Note 1: Once a value change, especially of the part about the Blockchain Settings & Properties part, the compatibility change.
+    /// Note 2: Sovereign update(s), can provide the possibility to do few change(s) and keep the compatibility about previous data(s) generated pending of the life of this one.
+    /// </summary>
     public class BlockchainSetting
     {
         #region Blockchain Settings & Properties.
@@ -24,8 +27,8 @@ namespace SeguraChain_Lib.Blockchain.Setting
         /// Computations settings for wallet generator.
         /// </summary>
         public const int WalletPublicKeyByteArrayLength = 64;
-        public const int WalletPrivateKeyWifByteArrayLength = 71;
-        public const int WalletAddressByteArrayLength = 65;
+        public const int WalletPrivateKeyWifByteArrayLength = 71; // I select that length just for fun.
+        public const int WalletAddressByteArrayLength = 65; // The same.
 
         /// <summary>
         /// Signature Settings.
@@ -103,7 +106,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int BlockDifficultyPrecision = 100_000; // The precision put on the difficulty factor calculated.
         public const int GenesisBlockHeight = 1; // The genesis block height.
         public static readonly BigInteger GenesisBlockAmount = 2_973_370 * CoinDecimal; // The genesis block amount reward has pre-mining.
-		public const string GenesisBlockFinalTransactionHash ="C5EBFB236F09FE77E4717E6B06D8DECE4726DAB5555052AF37B0FB77E8DC25817A1D3FCAF5101C1CBE49A19AE6F1F0091C64F5F7192919D37915A056F3A720A7";
+		public const string GenesisBlockFinalTransactionHash ="D87DEE982292539511682FF4A76D66270E35AD394DDFEE5912BA629F36619985F9D2B4298ED64636B920E2893C0D863DCD13E2F89365D1D4F5F1E5541D79685B";
         public const int GenesisBlockTransactionCount = 1; // The maximum of transaction inserted on the genesis block.
         public const int BlockAmountNetworkConfirmations = 2; // The minimum amount of network checks on blocks to do with peers, before to enable the task of confirmations on the block.
         public const int BlockAmountSlowNetworkConfirmations = 5; // This amount increment another amount of network checks, once this one is reach, the network counter increment and this one return back to 0.

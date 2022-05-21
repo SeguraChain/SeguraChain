@@ -21,7 +21,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
     {
         public bool NetworkPeerServerStatus;
         private TcpListener _tcpListenerPeer;
-        private TcpListener _tcpListenerPeerIpv6;
         private CancellationTokenSource _cancellationTokenSourcePeerServer;
         private ConcurrentDictionary<string, ClassPeerIncomingConnectionObject> _listPeerIncomingConnectionObject;
         public string PeerIpOpenNatServer;
@@ -113,51 +112,47 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                             await Task.Delay(1);
                         }
 
-                        await _tcpListenerPeer.AcceptSocketAsync().ContinueWith(async clientTask =>
+                        var clientPeerTcp = await _tcpListenerPeer.AcceptSocketAsync();
+
+                        string clientIp = string.Empty;
+                        bool exception = false;
+
+                        try
                         {
+                            clientIp = ((IPEndPoint)(clientPeerTcp.RemoteEndPoint)).Address.ToString();
+                        }
+                        catch
+                        {
+                            exception = true;
+                        }
 
-                            var clientPeerTcp = await clientTask;
-
-                            string clientIp = string.Empty;
-                            bool exception = false;
-
-                            try
+                        if (!exception)
+                        {
+                            TaskManager.TaskManager.InsertTask(new Action(async () =>
                             {
-                                clientIp = ((IPEndPoint)(clientPeerTcp.RemoteEndPoint)).Address.ToString();
-                            }
-                            catch
-                            {
-                                exception = true;
-                            }
-
-                            if (!exception)
-                            {
-                                TaskManager.TaskManager.InsertTask(new Action(async () =>
-                                {
 #if DEBUG
-                                    ClassLog.WriteLine("Start handle incoming connection from client IP: " + clientIp, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                                ClassLog.WriteLine("Start handle incoming connection from client IP: " + clientIp, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 #endif
-                                    switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
-                                    {
-                                        case ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
-                                        case ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS:
-                                        case ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION:
-                                        case ClassPeerNetworkServerHandleConnectionEnum.INSERT_CLIENT_IP_EXCEPTION:
-                                            {
-                                                if (_firewallSettingObject.PeerEnableFirewallLink)
-                                                    ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
-                                                ClassUtility.CloseSocket(clientPeerTcp);
-                                            }
-                                            break;
-                                    }
+                                switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
+                                {
+                                    case ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
+                                    case ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS:
+                                    case ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION:
+                                    case ClassPeerNetworkServerHandleConnectionEnum.INSERT_CLIENT_IP_EXCEPTION:
+                                        {
+                                            if (_firewallSettingObject.PeerEnableFirewallLink)
+                                                ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
+                                            ClassUtility.CloseSocket(clientPeerTcp);
+                                        }
+                                        break;
+                                }
 
 
-                                }), 0, null, null);
-                            }
-                            else
-                                ClassUtility.CloseSocket(clientPeerTcp);
+                            }), 0, null, null);
+                        }
+                        else
+                            ClassUtility.CloseSocket(clientPeerTcp);
 
-                        }, _cancellationTokenSourcePeerServer.Token);
                     }
                     catch
                     {
@@ -247,7 +242,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
                 if (GetTotalActiveConnection(clientIp, cancellationToken) < _peerNetworkSettingObject.PeerMaxNodeConnectionPerIp)
                 {
-                    if (!_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryAdd(randomId, 
+                    if (!_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryAdd(randomId,
                         new ClassPeerNetworkClientServerObject(clientPeerTcp, cancellationToken, clientIp, peerIpOpenNatServer, _peerNetworkSettingObject, _firewallSettingObject)))
                         return ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION;
                 }
@@ -255,7 +250,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 {
                     if (CleanUpInactiveConnectionFromClientIpTarget(clientIp) > 0)
                     {
-                        if (!_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryAdd(randomId, 
+                        if (!_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryAdd(randomId,
                             new ClassPeerNetworkClientServerObject(clientPeerTcp, cancellationToken, clientIp, peerIpOpenNatServer, _peerNetworkSettingObject, _firewallSettingObject)))
                             return ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION;
                     }
@@ -279,51 +274,44 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 #endif
 
 
+
                 try
                 {
-                    try
-                    {
-                        long timestampEnd = ClassUtility.GetCurrentTimestampInMillisecond() + _peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay;
+                    long timestampEnd = ClassUtility.GetCurrentTimestampInMillisecond() + _peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay;
 
-                        while (ClassUtility.GetCurrentTimestampInMillisecond() < timestampEnd)
+                    while (ClassUtility.GetCurrentTimestampInMillisecond() < timestampEnd)
+                    {
+                        if (await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.WaitAsync(10, _cancellationTokenSourcePeerServer.Token))
                         {
-                            if (await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.WaitAsync(10, _cancellationTokenSourcePeerServer.Token))
-                            {
-                                semaphoreUsed = true;
-                                break;
-                            }
+                            semaphoreUsed = true;
+                            _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
+                            break;
                         }
                     }
-                    catch
-                    {
-                        failed = true;
-                        semaphoreUsed = false;
-                    }
-
-                    #region Handle the incoming connection to the P2P server.
-
-                    if (semaphoreUsed)
-                    {
-                        semaphoreUsed = false;
-#if DEBUG
-                        ClassLog.WriteLine("Start the handle task of the peer client IP: " + clientIp + " | " + randomId + " in " + stopwatch.ElapsedMilliseconds + " ms.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-#endif
-                        _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
-
-                        _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
-
-                    }
-                    else failed = true;
-
-                    #endregion
                 }
-
-                finally
+                catch
                 {
                     if (semaphoreUsed)
                         _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
+                    failed = true;
+                    semaphoreUsed = false;
                 }
 
+                #region Handle the incoming connection to the P2P server.
+
+                if (semaphoreUsed)
+                {
+                    semaphoreUsed = false;
+#if DEBUG
+                    ClassLog.WriteLine("Start the handle task of the peer client IP: " + clientIp + " | " + randomId + " in " + stopwatch.ElapsedMilliseconds + " ms.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+#endif
+
+                    _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
+
+                }
+                else failed = true;
+
+                #endregion
 
                 if (failed)
                 {
