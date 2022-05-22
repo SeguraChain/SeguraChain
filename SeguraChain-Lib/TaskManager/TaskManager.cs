@@ -35,10 +35,11 @@ namespace SeguraChain_Lib.TaskManager
 
                     while (TaskManagerEnabled)
                     {
-                        for (int i = 0; i < _taskCollection.Count; i++)
+
+
+                        int count = _taskCollection.Count;
+                        for (int i = 0; i < count; i++)
                         {
-                            if (i > _taskCollection.Count)
-                                break;
 
                             try
                             {
@@ -64,11 +65,13 @@ namespace SeguraChain_Lib.TaskManager
                             catch
                             {
                                 // If the amount change..
-                                break;
+                                if (i > _taskCollection.Count)
+                                    break;
                             }
                         }
 
-                        await Task.Delay(1);
+
+                        await Task.Delay(10);
                     }
 
                 }, _cancelTaskManager.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
@@ -207,46 +210,50 @@ namespace SeguraChain_Lib.TaskManager
 
                         try
                         {
+                            isLocked = Monitor.TryEnter(_taskCollection);
 
-                            try
-                            {
-                                foreach (int taskId in listTaskToRemove.GetList.ToArray())
+                            if (!isLocked)
+                                continue;
+
+                                try
                                 {
-                                    if (taskId >= _taskCollection.Count)
-                                        continue;
-
-                                    try
+                                    foreach (int taskId in listTaskToRemove.GetList.ToArray())
                                     {
-                                        _taskCollection.RemoveAt(taskId);
-                                        cleaned = true;
+                                        if (taskId >= _taskCollection.Count)
+                                            continue;
 
-                                        listTaskToRemove.Remove(taskId);
-                                    }
-                                    catch
-                                    {
-                                        continue;
+                                        try
+                                        {
+                                            _taskCollection.RemoveAt(taskId);
+                                            cleaned = true;
+
+                                            listTaskToRemove.Remove(taskId);
+                                        }
+                                        catch
+                                        {
+                                            continue;
+                                        }
                                     }
                                 }
-                            }
-                            catch
-                            {
-                                // Collection generic list changed exception.
-                            }
-
-                            try
-                            {
-
-                                if (cleaned)
+                                catch
                                 {
-                                    _taskCollection.RemoveAll(x => x == null || x.Disposed);
-                                    _taskCollection.TrimExcess();
+                                    // Collection generic list changed exception.
                                 }
-                            }
-                            catch
-                            {
-                                // Ignored.
-                            }
 
+                                try
+                                {
+
+                                    if (cleaned)
+                                    {
+                                        _taskCollection.RemoveAll(x => x == null || x.Disposed);
+                                        _taskCollection.TrimExcess();
+                                    }
+                                }
+                                catch
+                                {
+                                    // Ignored.
+                                }
+                            
                         }
                         finally
                         {

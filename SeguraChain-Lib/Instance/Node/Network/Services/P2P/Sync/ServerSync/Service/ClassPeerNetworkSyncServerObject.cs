@@ -265,7 +265,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
 
                 bool failed = false;
-                bool semaphoreUsed = false;
+                bool passed = false;
 
 #if DEBUG
                 ClassLog.WriteLine("Start to handle the peer client IP: " + clientIp + " | " + randomId, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
@@ -283,25 +283,23 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     {
                         if (await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.WaitAsync(10, _cancellationTokenSourcePeerServer.Token))
                         {
-                            semaphoreUsed = true;
                             _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
+                            passed = true;
                             break;
                         }
                     }
                 }
                 catch
                 {
-                    if (semaphoreUsed)
-                        _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
                     failed = true;
-                    semaphoreUsed = false;
+                    passed = false;
                 }
 
                 #region Handle the incoming connection to the P2P server.
 
-                if (semaphoreUsed)
+                if (passed)
                 {
-                    semaphoreUsed = false;
+                    passed = false;
 #if DEBUG
                     ClassLog.WriteLine("Start the handle task of the peer client IP: " + clientIp + " | " + randomId + " in " + stopwatch.ElapsedMilliseconds + " ms.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 #endif
@@ -379,35 +377,36 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 #endif
+
+            if (_listPeerIncomingConnectionObject.Count == 0 ||
+                !_listPeerIncomingConnectionObject.ContainsKey(clientIp) ||
+                _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.Count == 0)
+                return 0;
+
+
             int totalActiveConnection = 0;
 
-            if (_listPeerIncomingConnectionObject.Count > 0)
-            {
-                if (_listPeerIncomingConnectionObject.ContainsKey(clientIp))
-                {
-                    if (_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.Count > 0)
-                    {
-                        foreach (long key in _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.Keys.ToArray())
-                        {
-                            if (cancellation.IsCancellationRequested)
-                                break;
 
-                            try
-                            {
-                                if (_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.ContainsKey(key))
-                                {
-                                    if (_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[key].ClientPeerConnectionStatus)
-                                        totalActiveConnection++;
-                                }
-                            }
-                            catch
-                            {
-                                // Ignored.
-                            }
-                        }
-                    }
+            foreach (long key in _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.Keys.ToArray())
+            {
+                if (cancellation.IsCancellationRequested)
+                    break;
+
+                if (!_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.ContainsKey(key))
+                    continue;
+
+                try
+                {
+                    if (_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[key].ClientPeerConnectionStatus)
+                        totalActiveConnection++;
+                }
+                catch
+                {
+                    // Ignored.
                 }
             }
+               
+            
 
 #if DEBUG
             stopwatch.Stop();

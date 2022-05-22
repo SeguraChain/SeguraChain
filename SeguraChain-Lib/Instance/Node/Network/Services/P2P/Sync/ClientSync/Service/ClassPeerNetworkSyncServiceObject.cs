@@ -509,18 +509,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                             ClearPeerTargetList(peerTargetList);
                         }
-                        // Use default network points to get a peer list.
-                        else
-                            emergencyPeerCheckRunTaskStatus = true;
+                      
 
                         #region Enable emergency case if the sync fail, who check every peers status.
 
-                        if (emergencyPeerCheckRunTaskStatus)
-                        {
-                            if (!await StartEmergencyPeerTaskCheckFunctions())
-                                await StartContactDefaultPeerList();
-                        }
-
+                        await StartContactDefaultPeerList();
+                        await StartEmergencyPeerTaskCheckFunctions();
+                       
                         #endregion
 
                     }
