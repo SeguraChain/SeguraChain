@@ -7,9 +7,6 @@ using System.Threading.Tasks;
 using SeguraChain_Lib.Blockchain.Checkpoint.Enum;
 using SeguraChain_Lib.Blockchain.Database;
 using SeguraChain_Lib.Blockchain.Setting;
-using SeguraChain_Lib.Other.Object.List;
-
-using SeguraChain_Lib.Utility;
 
 namespace SeguraChain_Lib.Blockchain.Wallet.Object.Blockchain
 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
 using System.Numerics;
@@ -299,32 +300,36 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                         {
                                             _onSendingPacketResponse = true;
 
-
-                                            switch (await HandlePacket(base64Packet))
+                                            try
                                             {
-                                                case ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_TYPE_PACKET:
-                                                case ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET:
-                                                    {
-                                                        ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                                                        ClientPeerConnectionStatus = false;
-                                                    }
-                                                    break;
-                                                case ClassPeerNetworkClientServerHandlePacketEnumStatus.EXCEPTION_PACKET:
-                                                case ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET:
-                                                    {
-                                                        ClassPeerCheckManager.InputPeerClientAttemptConnect(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                                                        ClientPeerConnectionStatus = false;
-                                                    }
-                                                    break;
-                                                case ClassPeerNetworkClientServerHandlePacketEnumStatus.VALID_PACKET:
-                                                    {
-                                                        ClassPeerCheckManager.InputPeerClientValidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject);
-                                                        if (_clientAskDisconnection)
-                                                            ClientPeerConnectionStatus = _clientAskDisconnection;
-                                                    }
-                                                    break;
+                                                switch (await HandlePacket(base64Packet))
+                                                {
+                                                    case ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_TYPE_PACKET:
+                                                    case ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET:
+                                                        {
+                                                            ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                                                            ClientPeerConnectionStatus = false;
+                                                        }
+                                                        break;
+                                                    case ClassPeerNetworkClientServerHandlePacketEnumStatus.EXCEPTION_PACKET:
+                                                    case ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET:
+                                                        {
+                                                            ClassPeerCheckManager.InputPeerClientAttemptConnect(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                                                            ClientPeerConnectionStatus = false;
+                                                        }
+                                                        break;
+                                                    case ClassPeerNetworkClientServerHandlePacketEnumStatus.VALID_PACKET:
+                                                        {
+                                                            ClassPeerCheckManager.InputPeerClientValidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject);
+                                                            if (_clientAskDisconnection)
+                                                                ClientPeerConnectionStatus = _clientAskDisconnection;
+                                                        }
+                                                        break;
+                                                }
                                             }
-                                           
+                                            catch
+                                            {
+                                            }
 
                                             _onSendingPacketResponse = false;
 

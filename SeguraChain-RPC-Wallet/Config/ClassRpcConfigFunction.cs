@@ -1,4 +1,5 @@
 ﻿using SeguraChain_Lib.Algorithm;
+using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Utility;
 using System;
 using System.IO;
@@ -15,6 +16,8 @@ namespace SeguraChain_RPC_Wallet.Config
         public static ClassRpcConfig BuildRpcWalletConfig()
         {
             ClassRpcConfig rpcConfig = new ClassRpcConfig();
+
+            ClassLog.InitializeWriteLog();
 
             Console.WriteLine("Do you want to make a custom RPC Wallet config file? [Y/N]");
 
@@ -228,23 +231,35 @@ namespace SeguraChain_RPC_Wallet.Config
             {
                 if (rpcConfig.RpcApiSetting.RpcApiSecretIvArray == null || rpcConfig.RpcApiSetting.RpcApiSecretKeyArray == null || !rpcConfig.RpcApiSetting.RpcApiSecretKey.IsNullOrEmpty(false, out _))
                 {
-                    Console.WriteLine("The RPC Wallet database directory path " + rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabasePath + " is empty or empty.");
+                    Console.WriteLine("The RPC Wallet database encryption keys are empty.");
                     return false;
                 }
             }
 
-            if (!IPAddress.TryParse(rpcConfig.RpcApiSetting.RpcApiIp, out _) || !IPAddress.TryParse(rpcConfig.RpcNodeApiSetting.RpcNodeApiIp, out _))
+            if (!IPAddress.TryParse(rpcConfig.RpcApiSetting.RpcApiIp, out _))
             {
-                Console.WriteLine("The RPC Wallet database directory path " + rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabasePath + " is empty or empty.");
+                Console.WriteLine("The RPC API IP "+rpcConfig.RpcApiSetting.RpcApiIp+ " is invalid.");
                 return false;
             }
 
-            if (rpcConfig.RpcApiSetting.RpcApiPort <= 0 || rpcConfig.RpcApiSetting.RpcApiPort > 65535 ||
+            if (!IPAddress.TryParse(rpcConfig.RpcNodeApiSetting.RpcNodeApiIp, out _))
+            {
+                Console.WriteLine("The RPC API Node API IP " + rpcConfig.RpcNodeApiSetting.RpcNodeApiIp + " is invalid.");
+                return false;
+            }
+
+            if (rpcConfig.RpcApiSetting.RpcApiPort <= 0 || rpcConfig.RpcApiSetting.RpcApiPort > 65535)
+            {
+                Console.WriteLine("The RPC API Port is invalid " + rpcConfig.RpcApiSetting.RpcApiPort);
+                return false;
+            }
+
+            if (
                 rpcConfig.RpcApiSetting.RpcApiMaxConnectDelay <= 0 || rpcConfig.RpcApiSetting.RpcApiSemaphoreTimeout <= 0 ||
                 rpcConfig.RpcApiSetting.RpcApiMaxConnectDelay <= 0 ||
                 rpcConfig.RpcApiSetting.RpcApiSemaphoreTimeout <= 0)
             {
-                Console.WriteLine("One or some configurations of the RPC Wallet API configurations is/are invalid.");
+                Console.WriteLine("Few settings of the RPC Wallet API is/are invalid.");
                 return false;
             }
 

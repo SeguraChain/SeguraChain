@@ -1875,27 +1875,29 @@ namespace SeguraChain_Desktop_Wallet
 
                 if (tabControlWallet.SelectedTab == tabPageOverview)
                 {
-                    e.Graphics.DrawImageUnscaled(_walletRecentTransactionHistorySystemInstance.GetRecentTransactionHistoryBitmap(_cancellationTokenTaskUpdateWalletContentInformations), 0, 0);
+                    Bitmap bitmap = _walletRecentTransactionHistorySystemInstance.GetRecentTransactionHistoryBitmap(_cancellationTokenTaskUpdateWalletContentInformations);
 
-                    Point currentCursorPosition = Cursor.Current != null ? Cursor.Position : new Point(0, 0);
-
-                    Point point = panelInternalRecentTransactions.PointToClient(currentCursorPosition);
-
-                    foreach (var showedRecentTransactionHistoryObject in _walletRecentTransactionHistorySystemInstance.DictionaryRecentTransactionHistoryObjects.Values.ToArray())
+                    if (bitmap != null)
                     {
-                        if (_cancellationTokenTaskUpdateWalletContentInformations.IsCancellationRequested)
-                            break;
+                        e.Graphics.DrawImageUnscaled(bitmap, 0, 0);
 
-                        if (showedRecentTransactionHistoryObject?.TransactionDrawRectangle != null)
+                        Point currentCursorPosition = Cursor.Current != null ? Cursor.Position : new Point(0, 0);
+
+                        Point point = panelInternalRecentTransactions.PointToClient(currentCursorPosition);
+
+                        foreach (var showedRecentTransactionHistoryObject in _walletRecentTransactionHistorySystemInstance.DictionaryRecentTransactionHistoryObjects.Values.ToArray())
                         {
-                            if (showedRecentTransactionHistoryObject.TransactionDrawRectangle.Contains(point))
-                            {
-                                e.Graphics.DrawRectangle(new Pen(ClassWalletDefaultSetting.DefaultPictureBoxTransactionBorderColor, 1.0f), showedRecentTransactionHistoryObject.TransactionDrawRectangle.X, showedRecentTransactionHistoryObject.TransactionDrawRectangle.Y, showedRecentTransactionHistoryObject.TransactionDrawRectangle.Width - 2, showedRecentTransactionHistoryObject.TransactionDrawRectangle.Height - 2);
+                            if (_cancellationTokenTaskUpdateWalletContentInformations.IsCancellationRequested)
                                 break;
-                            }
+
+                            if (showedRecentTransactionHistoryObject == null || showedRecentTransactionHistoryObject.TransactionDrawRectangle == null || point == null ||
+                                !showedRecentTransactionHistoryObject.TransactionDrawRectangle.Contains(point))
+                                continue;
+
+                            e.Graphics.DrawRectangle(new Pen(ClassWalletDefaultSetting.DefaultPictureBoxTransactionBorderColor, 1.0f), showedRecentTransactionHistoryObject.TransactionDrawRectangle.X, showedRecentTransactionHistoryObject.TransactionDrawRectangle.Y, showedRecentTransactionHistoryObject.TransactionDrawRectangle.Width - 2, showedRecentTransactionHistoryObject.TransactionDrawRectangle.Height - 2);
+                            break;
                         }
                     }
-
                 }
             }
             catch
