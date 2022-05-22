@@ -72,6 +72,8 @@ namespace SeguraChain_Peer.CommandLine
             {
                 await HandleCommandLineAsync(ClassConsoleCommandLineEnumeration.HelpCommand);
 
+                ClassLog.WriteLine("Note: Please, if you forgot to setup your Blockchain Network, please reach this wiki-page: " + BlockchainSetting.BlockchainSetupWikiPage, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Magenta);
+
                 while (_nodeInstance.PeerToolStatus)
                 {
                    if(!await HandleCommandLineAsync(Console.ReadLine()))

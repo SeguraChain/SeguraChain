@@ -343,7 +343,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                 try
                 {
                     bool peerTargetExist = false;
-                    long packetSizeCount = 0;
 
                     listPacketReceived?.Clear();
 
@@ -366,55 +365,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                                     #region Compile the packet.
 
-#if DEBUG
-                                    //Stopwatch stopwatch = new Stopwatch();
-                                    //stopwatch.Start();
-#endif
-
-                                    string packetData = packetBufferOnReceive.GetStringFromByteArrayUtf8().Replace("\0", "");
-
-                                    if (packetData.Contains(ClassPeerPacketSetting.PacketPeerSplitSeperator))
-                                    {
-                                        int countSeperator = packetData.Count(x => x == ClassPeerPacketSetting.PacketPeerSplitSeperator);
-
-                                        string[] splitPacketData = packetData.Split(new[] { ClassPeerPacketSetting.PacketPeerSplitSeperator }, StringSplitOptions.None);
-
-                                        int completed = 0;
-                                        foreach (string data in splitPacketData)
-                                        {
-                                            string dataFormatted = data.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
-
-                                            if (dataFormatted.IsNullOrEmpty(false, out _) || dataFormatted.Length == 0 || !ClassUtility.CheckBase64String(dataFormatted))
-                                                continue;
-
-                                            listPacketReceived[listPacketReceived.Count - 1].Packet += dataFormatted;
-
-                                            if (completed < countSeperator)
-                                            {
-                                                listPacketReceived[listPacketReceived.Count - 1].Complete = true;
-                                                break;
-                                                //listPacketReceived.Add(new ClassReadPacketSplitted());
-                                            }
-
-                                            completed++;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        string data = packetData.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
-
-                                        if (data.IsNullOrEmpty(false, out _) || data.Length == 0 || !ClassUtility.CheckBase64String(data))
-                                            continue;
-
-                                        listPacketReceived[listPacketReceived.Count - 1].Packet += data;
-                                    }
-
-
-
-#if DEBUG
-                                    //stopwatch.Stop();
-                                    //Debug.WriteLine(stopwatch.ElapsedMilliseconds + " ms.");
-#endif
+                                    listPacketReceived = ClassUtility.GetEachPacketSplitted(packetBufferOnReceive, listPacketReceived, cancellation);
 
                                     #endregion
 
@@ -482,13 +433,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                         PeerTaskStatus = false;
                                         break;
 
-                                    }
-
-                                    // If above the max data to receive.
-                                    if (packetSizeCount > 0)
-                                    {
-                                        if (packetSizeCount / 1024 >= ClassPeerPacketSetting.PacketMaxLengthReceive)
-                                            listPacketReceived.Clear();
                                     }
                                 }
                                 else

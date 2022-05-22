@@ -26,6 +26,7 @@ namespace SeguraChain_Peer
             Thread.CurrentThread.Name = Path.GetFileName(Environment.GetCommandLineArgs()[0]);
             _nodeInstance = new ClassNodeInstance();
 
+
             if (ClassLog.InitializeWriteLog())
             {
                 ClassLog.EnableWriteLogTask();
@@ -41,12 +42,13 @@ namespace SeguraChain_Peer
                 }
                 else
                 {
-                    if(_nodeInstance.NodeStart(false))
+                    if (_nodeInstance.NodeStart(false))
                     {
                         _consoleCommandLine = new ClassConsoleCommandLine(_nodeInstance);
                         _consoleCommandLine.EnableConsoleCommandLine();
                     }
                 }
+
             }
             else
             {

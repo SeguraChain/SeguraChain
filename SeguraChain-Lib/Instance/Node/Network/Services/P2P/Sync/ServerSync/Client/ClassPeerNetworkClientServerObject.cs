@@ -255,48 +255,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                 try
                                 {
-
-
                                     ClientPeerLastPacketReceived = TaskManager.TaskManager.CurrentTimestampSecond;
 
                                     #region Handle packet content received, split the data.
 
-                                    string packetData = packetBufferOnReceive.GetStringFromByteArrayUtf8().Replace("\0", "");
-
-                                    if (packetData.Contains(ClassPeerPacketSetting.PacketPeerSplitSeperator))
-                                    {
-                                        int countSeperator = packetData.Count(x => x == ClassPeerPacketSetting.PacketPeerSplitSeperator);
-
-                                        string[] splitPacketData = packetData.Split(new[] { ClassPeerPacketSetting.PacketPeerSplitSeperator }, StringSplitOptions.None);
-
-                                        int completed = 0;
-                                        foreach (string data in splitPacketData)
-                                        {
-                                            string dataFormatted = data.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
-
-                                            if (dataFormatted.IsNullOrEmpty(false, out _) || dataFormatted.Length == 0 || !ClassUtility.CheckBase64String(dataFormatted))
-                                                continue;
-
-                                            listPacketReceived[listPacketReceived.Count - 1].Packet += dataFormatted;
-
-                                            if (completed < countSeperator)
-                                            {
-                                                listPacketReceived[listPacketReceived.Count - 1].Complete = true;
-                                                listPacketReceived.Add(new ClassReadPacketSplitted());
-                                            }
-
-                                            completed++;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        string data = packetData.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
-
-                                        if (data.IsNullOrEmpty(false, out _) || data.Length == 0 || !ClassUtility.CheckBase64String(data))
-                                            continue;
-
-                                        listPacketReceived[listPacketReceived.Count - 1].Packet += data;
-                                    }
+                                    listPacketReceived = ClassUtility.GetEachPacketSplitted(packetBufferOnReceive, listPacketReceived, _cancellationTokenListenPeerPacket);
 
                                     #endregion
 

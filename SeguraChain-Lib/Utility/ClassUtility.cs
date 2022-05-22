@@ -845,27 +845,49 @@ namespace SeguraChain_Lib.Utility
         /// </summary>
         /// <param name="packetDataToSplit"></param>
         /// <returns></returns>
-        public static DisposableList<string> GetEachPacketSplitted(byte[] packetDataToSplit, CancellationTokenSource cancellation, out int countFilled)
+        public static DisposableList<ClassReadPacketSplitted> GetEachPacketSplitted(byte[] packetBufferOnReceive, DisposableList<ClassReadPacketSplitted> listPacketReceived, CancellationTokenSource cancellation)
         {
-            countFilled = 0; // Default.
-            DisposableList<string> listPacketDataSplitted = new DisposableList<string>();
+            string packetData = packetBufferOnReceive.GetStringFromByteArrayUtf8().Replace("\0", "");
 
-            listPacketDataSplitted.Add(string.Empty);
-
-            foreach (char packetDataChar in packetDataToSplit.GetStringFromByteArrayUtf8())
+            if (packetData.Contains(ClassPeerPacketSetting.PacketPeerSplitSeperator))
             {
-                cancellation.Token.ThrowIfCancellationRequested();
+                int countSeperator = packetData.Count(x => x == ClassPeerPacketSetting.PacketPeerSplitSeperator);
 
-                if (packetDataChar != ClassPeerPacketSetting.PacketPeerSplitSeperator)
-                    listPacketDataSplitted[countFilled] += packetDataChar;
-                else
+                string[] splitPacketData = packetData.Split(new[] { ClassPeerPacketSetting.PacketPeerSplitSeperator }, StringSplitOptions.None);
+
+                int completed = 0;
+                foreach (string data in splitPacketData)
                 {
-                    listPacketDataSplitted.Add(string.Empty);
-                    countFilled++;
+                    if (cancellation.IsCancellationRequested)
+                        break;
+
+                    string dataFormatted = data.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
+
+                    if (dataFormatted.IsNullOrEmpty(false, out _) || dataFormatted.Length == 0 || !CheckBase64String(dataFormatted))
+                        continue;
+
+                    listPacketReceived[listPacketReceived.Count - 1].Packet += dataFormatted;
+
+                    if (completed < countSeperator)
+                    {
+                        listPacketReceived[listPacketReceived.Count - 1].Complete = true;
+                        break;
+                    }
+
+                    completed++;
                 }
             }
+            else
+            {
+                string data = packetData.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
 
-            return listPacketDataSplitted;
+                if (data.IsNullOrEmpty(false, out _) || data.Length == 0 || !CheckBase64String(data))
+                    return listPacketReceived;
+
+                listPacketReceived[listPacketReceived.Count - 1].Packet += data;
+            }
+
+            return listPacketReceived;
         }
 
         /// <summary>
