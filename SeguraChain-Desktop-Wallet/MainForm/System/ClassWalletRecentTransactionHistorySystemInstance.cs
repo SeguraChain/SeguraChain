@@ -66,6 +66,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         /// <returns></returns>
         public Bitmap GetRecentTransactionHistoryBitmap(CancellationTokenSource cancellation)
         {
+            Bitmap result = null;
 
             bool semaphoreUsed = false;
             try
@@ -77,7 +78,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                         _semaphoreRecentTransactionHistoryAccess.Wait(cancellation.Token);
                         semaphoreUsed = true;
 
-                        return _bitmapRecentTransactionHistory;
+                        result = _bitmapRecentTransactionHistory;
                     }
                     catch
                     {
@@ -90,7 +91,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                 if (semaphoreUsed)
                     _semaphoreRecentTransactionHistoryAccess.Release();
             }
-            return null;
+            return result;
         }
 
 

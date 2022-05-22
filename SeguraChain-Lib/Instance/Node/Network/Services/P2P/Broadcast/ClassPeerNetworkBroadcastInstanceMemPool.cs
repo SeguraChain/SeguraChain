@@ -1636,6 +1636,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             {
                 try
                 {
+                    if (!ClassUtility.SocketIsConnected(_peerSocketClient))
+                        return false;
+
                     using (NetworkStream networkStream = new NetworkStream(_peerSocketClient))
                         return await networkStream.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(Convert.ToBase64String(packetData) + ClassPeerPacketSetting.PacketPeerSplitSeperator), _peerCancellationToken, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
                 }

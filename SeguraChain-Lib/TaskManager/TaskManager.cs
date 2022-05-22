@@ -43,7 +43,7 @@ namespace SeguraChain_Lib.TaskManager
 
                             try
                             {
-                                if (_taskCollection[i] == null || _taskCollection[i].Started)
+                                if (_taskCollection[i] == null || _taskCollection[i].Started || _taskCollection[i].Disposed)
                                     continue;
 
 
@@ -71,7 +71,7 @@ namespace SeguraChain_Lib.TaskManager
                         }
 
 
-                        await Task.Delay(10);
+                        await Task.Delay(1);
                     }
 
                 }, _cancelTaskManager.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
@@ -173,7 +173,7 @@ namespace SeguraChain_Lib.TaskManager
                             Monitor.Exit(_taskCollection);
                         }
                     }
-                    await Task.Delay(10);
+                    await Task.Delay(1);
                 }
 
             }), 0, _cancelTaskManager);
@@ -189,7 +189,7 @@ namespace SeguraChain_Lib.TaskManager
                     CurrentTimestampMillisecond = ClassUtility.GetCurrentTimestampInMillisecond();
                     CurrentTimestampSecond = ClassUtility.GetCurrentTimestampInSecond();
 
-                    await Task.Delay(10);
+                    await Task.Delay(1);
                 }
             }), 0, _cancelTaskManager);
 
@@ -286,18 +286,22 @@ namespace SeguraChain_Lib.TaskManager
         {
             if (TaskManagerEnabled)
             {
-                CancellationTokenSource cancellationTask = CancellationTokenSource.CreateLinkedTokenSource(
-                               cancellation != null ?
-                               cancellation.Token : new CancellationToken(),
-                               timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - CurrentTimestampMillisecond)).Token : new CancellationToken());
 
                 bool isLocked = false;
 
+                CancellationTokenSource cancellationTask = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellation != null ?
+                cancellation.Token : new CancellationToken(),
+                timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - CurrentTimestampMillisecond)).Token : new CancellationToken());
+
                 try
                 {
+
+
+
                     while (!cancellationTask.IsCancellationRequested && TaskManagerEnabled && !_cancelTaskManager.IsCancellationRequested)
                     {
-                        if (!TaskManagerEnabled)
+                        if (!TaskManagerEnabled || (timestampEnd > 0 && timestampEnd < CurrentTimestampMillisecond))
                             break;
 
                         try

@@ -485,8 +485,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 while (_peerSyncStatus)
                 {
-                    bool emergencyPeerCheckRunTaskStatus = false;
-
                     try
                     {
                         if (ClassPeerDatabase.DictionaryPeerDataObject.Count > 0)
@@ -504,20 +502,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 ClassLog.WriteLine(countPeer + " peer lists are received.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
 
                             }
-                            else // On this case, launch an attempt to check "dead" a peers.
-                                emergencyPeerCheckRunTaskStatus = true;
 
                             ClearPeerTargetList(peerTargetList);
                         }
                       
 
-                        #region Enable emergency case if the sync fail, who check every peers status.
-
                         await StartContactDefaultPeerList();
                         await StartEmergencyPeerTaskCheckFunctions();
                        
-                        #endregion
-
                     }
                     catch (Exception error)
                     {

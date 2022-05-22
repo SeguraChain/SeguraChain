@@ -336,6 +336,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                         {
                                             _onSendingPacketResponse = true;
 
+
                                             switch (await HandlePacket(base64Packet))
                                             {
                                                 case ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_TYPE_PACKET:
@@ -360,10 +361,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                     }
                                                     break;
                                             }
+                                           
 
                                             _onSendingPacketResponse = false;
 
-                                        }), 0, _cancellationTokenListenPeerPacket, null);
+                                        }), 0, null, null);
                                     }
 
                                     listPacketReceived.GetList.RemoveAll(x => x.Complete);
