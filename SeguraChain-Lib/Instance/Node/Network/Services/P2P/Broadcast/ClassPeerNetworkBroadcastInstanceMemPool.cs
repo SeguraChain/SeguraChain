@@ -575,11 +575,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         {
                             using (NetworkStream networkStream = new NetworkStream(_peerSocketClient))
                             {
-                                while (!broadcastResponsePacketStatus)
-                                {
-                                    byte[] packetReceivedBuffer = new byte[_peerNetworkSettingObject.PeerMaxPacketBufferSize];
+                                byte[] packetReceivedBuffer = new byte[_peerNetworkSettingObject.PeerMaxPacketBufferSize];
+                                int packetLength = 0;
 
-                                    int packetLength = await networkStream.ReadAsync(packetReceivedBuffer, 0, packetReceivedBuffer.Length, cancellationReceiveBroadcastResponsePacket.Token);
+                                while (!broadcastResponsePacketStatus && (packetLength = await networkStream.ReadAsync(packetReceivedBuffer, 0, packetReceivedBuffer.Length, cancellationReceiveBroadcastResponsePacket.Token)) > 0)
+                                {
 
                                     if (packetLength > 0)
                                         listPacketReceived.GetList = ClassUtility.GetEachPacketSplitted(packetReceivedBuffer, listPacketReceived, cancellationReceiveBroadcastResponsePacket).GetList;

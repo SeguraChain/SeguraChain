@@ -219,7 +219,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                         catch
                                         {
                                             // Ignored, catch the exception once canceled.
-                                            walletAddressUpdateSyncCacheState[walletAddress] = true;
+                                            totalTaskDone++;
                                         }
                                     }
                                     else walletAddressUpdateSyncCacheState[walletAddress] = true;
@@ -392,6 +392,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
 #if DEBUG
                 Debug.WriteLine("Wallet Address " + walletAddress + " sync cache updated. Total transaction updated: " + totalTxUpdated);
 #endif
+                await Task.Delay(1);
             }
             catch
             {

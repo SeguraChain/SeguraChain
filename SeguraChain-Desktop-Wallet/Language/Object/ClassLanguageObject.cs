@@ -353,6 +353,7 @@ namespace SeguraChain_Desktop_Wallet.Language.Object
     public class ClassWalletSendTransactionWaitRequestFormLanguage
     {
         public string LABEL_SEND_TRANSACTION_WAIT_REQUEST_TEXT = "Broadcasting your transaction to peers, please wait a moment..";
+        public string BUTTON_SEND_TRANSACTION_WAIT_REQUEST_EXIT_TEXT = "Too long ? Click to close the form.";
     }
 
     /// <summary>

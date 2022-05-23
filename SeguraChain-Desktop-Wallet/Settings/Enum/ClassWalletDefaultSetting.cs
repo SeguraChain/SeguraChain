@@ -44,6 +44,11 @@ namespace SeguraChain_Desktop_Wallet.Settings.Enum
         /// </summary>
         public const int DefaultAwaitInvokeDesktopWalletFormDelay = 10;
 
+        /// <summary>
+        /// Max delay wait transaction response.
+        /// </summary>
+        public const int DefaultWalletMaxDelayWaitTransactionResponse = 5 * 1000;
+
         #region Receive transaction colors and settings.
 
         // Delay and settings of the event copy wallet address. 

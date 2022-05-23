@@ -23,6 +23,7 @@ using SeguraChain_Lib.Blockchain.Transaction.Utility;
 using SeguraChain_Lib.Blockchain.Wallet.Function;
 using SeguraChain_Lib.Instance.Node.Network.Database;
 using SeguraChain_Lib.Instance.Node.Network.Database.Manager;
+using SeguraChain_Lib.Instance.Node.Network.Database.Object;
 using SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Packet;
 using SeguraChain_Lib.Instance.Node.Network.Services.Firewall.Manager;
 using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast;
@@ -88,7 +89,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         public ClassPeerNetworkClientServerObject(Socket clientSocket, CancellationTokenSource cancellationTokenHandlePeerConnection, string peerClientIp, string peerServerOpenNatIp, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject)
         {
             ClientPeerConnectionStatus = true;
-            ClientPeerLastPacketReceived = TaskManager.TaskManager.CurrentTimestampSecond;
+            ClientPeerLastPacketReceived = TaskManager.TaskManager.CurrentTimestampSecond + peerNetworkSettingObject.PeerMaxDelayConnection;
             CancellationTokenHandlePeerConnection = cancellationTokenHandlePeerConnection;
             _clientSocket = clientSocket;
             _peerNetworkSettingObject = peerNetworkSettingObject;
@@ -383,6 +384,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             {
                 ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(packet, out bool status);
 
+                ClassPeerObject peerObject = null;
+
                 if (!status)
                     return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_TYPE_PACKET;
 
@@ -396,7 +399,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                     return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
 
                 if (ClassPeerDatabase.ContainsPeer(_peerClientIp, _peerUniqueId))
+                {
                     ClassPeerCheckManager.UpdatePeerClientLastPacketReceived(_peerClientIp, _peerUniqueId, packetSendObject.PeerLastTimestampSignatureWhitelist);
+                    peerObject = ClassPeerDatabase.GetPeerObject(_peerClientIp, _peerUniqueId);
+                }
                 // Not allow other packets until to get the node initialized.
                 else
                 {
@@ -406,7 +412,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                         {
                             PacketOrder = ClassPeerEnumPacketResponse.INVALID_PEER_PACKET,
                             PacketContent = string.Empty,
-                        }, false);
+                        }, peerObject, false);
 
                         return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
                     }
@@ -427,13 +433,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                         ClassPeerCheckManager.InputPeerClientValidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject);
                     else
                     {
-                        if (!CheckContentPacketSignaturePeer(packetSendObject))
+                        if (!CheckContentPacketSignaturePeer(packetSendObject, peerObject))
                         {
-                            await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                            await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                             {
                                 PacketOrder = ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_SIGNATURE,
                                 PacketContent = string.Empty,
-                            }, false);
+                            }, peerObject, false);
 
                             return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
                         }
@@ -480,57 +486,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 {
                     case ClassPeerEnumPacketSend.ASK_PEER_AUTH_KEYS: // ! This packet type is not encrypted because we exchange unique encryption keys, public key, numeric public key to the node who ask them. !
                         {
-                            ClassPeerPacketSendAskPeerAuthKeys packetSendPeerAuthKeysObject = JsonConvert.DeserializeObject<ClassPeerPacketSendAskPeerAuthKeys>(packetSendObject.PacketContent);
-
-                            if (!ClassUtility.CheckPacketTimestamp(packetSendPeerAuthKeysObject.PacketTimestamp, _peerNetworkSettingObject.PeerMaxTimestampDelayPacket, _peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
-                                return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET_TIMESTAMP;
-
-                            if (!ClassPeerKeysManager.UpdatePeerInternalKeys(_peerClientIp, packetSendPeerAuthKeysObject.PeerPort, _peerUniqueId, _cancellationTokenAccessData, _peerNetworkSettingObject, true))
-                            {
-                                await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
-                                {
-                                    PacketOrder = ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_SIGNATURE,
-                                    PacketContent = string.Empty,
-                                }, false);
-
-                                return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
-                            }
-
-                            if (!ClassPeerKeysManager.UpdatePeerKeysReceivedNetworkServer(_peerClientIp, _peerUniqueId, packetSendPeerAuthKeysObject, _cancellationTokenAccessData))
-                            {
-                                await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
-                                {
-                                    PacketOrder = ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_SIGNATURE,
-                                    PacketContent = string.Empty,
-                                }, false);
-
-                                return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
-                            }
-
-                            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
-                            {
-                                PacketOrder = ClassPeerEnumPacketResponse.SEND_PEER_AUTH_KEYS,
-                                PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendPeerAuthKeys()
-                                {
-                                    AesEncryptionIv = ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPacketEncryptionKeyIv,
-                                    AesEncryptionKey = ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPacketEncryptionKey,
-                                    PublicKey = ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey,
-                                    NumericPublicKey = _peerNetworkSettingObject.PeerNumericPublicKey,
-                                    PeerPort = _peerNetworkSettingObject.ListenPort,
-                                    PeerApiPort = _peerNetworkSettingObject.ListenApiPort,
-                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
-                                })
-                            }, false))
-                            {
-                                ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
-
-                                return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
-                            }
+                            return await SendAuthKeys(peerObject, packetSendObject, false);
                         }
-                        break;
                     case ClassPeerEnumPacketSend.ASK_PEER_LIST:
                         {
-                            ClassPeerPacketSendAskPeerList packetSendAskPeerList = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskPeerList>(packetSendObject.PacketContent);
+                            ClassPeerPacketSendAskPeerList packetSendAskPeerList = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskPeerList>(packetSendObject.PacketContent, peerObject);
 
                             if (packetSendAskPeerList == null)
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
@@ -540,7 +500,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                             Dictionary<string, Tuple<int, string>> listPeerInfo = ClassPeerDatabase.GetPeerListInfo(_peerClientIp);
 
-                            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                             {
                                 PacketOrder = ClassPeerEnumPacketResponse.SEND_PEER_LIST,
                                 PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendPeerList()
@@ -550,7 +510,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     PeerUniqueIdList = new List<string>(listPeerInfo.Values.Select(x => x.Item2)),
                                     PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                 })
-                            }, true))
+                            }, peerObject, true))
                             {
                                 ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
@@ -559,7 +519,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                         break;
                     case ClassPeerEnumPacketSend.ASK_LIST_SOVEREIGN_UPDATE:
                         {
-                            ClassPeerPacketSendAskListSovereignUpdate packetSendAskListSovereignUpdate = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskListSovereignUpdate>(packetSendObject.PacketContent);
+                            ClassPeerPacketSendAskListSovereignUpdate packetSendAskListSovereignUpdate = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskListSovereignUpdate>(packetSendObject.PacketContent, peerObject);
 
                             if (packetSendAskListSovereignUpdate == null)
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
@@ -577,11 +537,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                             packetContent.PacketNumericHash = numericHash;
                             packetContent.PacketNumericSignature = numericSignature;
 
-                            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                             {
                                 PacketOrder = ClassPeerEnumPacketResponse.SEND_LIST_SOVEREIGN_UPDATE,
                                 PacketContent = ClassUtility.SerializeData(packetContent)
-                            }, true))
+                            }, peerObject, true))
                             {
                                 ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
 
@@ -592,7 +552,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                         break;
                     case ClassPeerEnumPacketSend.ASK_SOVEREIGN_UPDATE_FROM_HASH:
                         {
-                            ClassPeerPacketSendAskSovereignUpdateFromHash packetSendAskSovereignUpdateFromHash = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskSovereignUpdateFromHash>(packetSendObject.PacketContent);
+                            ClassPeerPacketSendAskSovereignUpdateFromHash packetSendAskSovereignUpdateFromHash = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskSovereignUpdateFromHash>(packetSendObject.PacketContent, peerObject);
 
                             if (packetSendAskSovereignUpdateFromHash == null)
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
@@ -616,7 +576,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                             // Build numeric signature.
                             SignPacketWithNumericPrivateKey(ClassSovereignUpdateDatabase.DictionarySovereignUpdateObject[packetSendAskSovereignUpdateFromHash.SovereignUpdateHash], out string hashNumeric, out string signatureNumeric);
 
-                            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                             {
                                 PacketOrder = ClassPeerEnumPacketResponse.SEND_SOVEREIGN_UPDATE_FROM_HASH,
                                 PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendSovereignUpdateFromHash()
@@ -626,7 +586,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     PacketNumericSignature = signatureNumeric,
                                     PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                 })
-                            }, true))
+                            }, peerObject, true))
                             {
                                 ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
 
@@ -636,7 +596,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                         break;
                     case ClassPeerEnumPacketSend.ASK_NETWORK_INFORMATION:
                         {
-                            ClassPeerPacketSendAskNetworkInformation packetSendAskNetworkInformation = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskNetworkInformation>(packetSendObject.PacketContent);
+                            ClassPeerPacketSendAskNetworkInformation packetSendAskNetworkInformation = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskNetworkInformation>(packetSendObject.PacketContent, peerObject);
 
                             if (packetSendAskNetworkInformation == null)
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
@@ -669,11 +629,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     packetSendNetworkInformation.PacketNumericHash = hashNumeric;
                                     packetSendNetworkInformation.PacketNumericSignature = signatureNumeric;
 
-                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                     {
                                         PacketOrder = ClassPeerEnumPacketResponse.SEND_NETWORK_INFORMATION,
                                         PacketContent = ClassUtility.SerializeData(packetSendNetworkInformation)
-                                    }, true))
+                                    }, peerObject, true))
                                     {
                                         ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
 
@@ -699,11 +659,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                 packetSendNetworkInformation.PacketNumericHash = hashNumeric;
                                 packetSendNetworkInformation.PacketNumericSignature = signatureNumeric;
 
-                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                 {
                                     PacketOrder = ClassPeerEnumPacketResponse.SEND_NETWORK_INFORMATION,
                                     PacketContent = ClassUtility.SerializeData(packetSendNetworkInformation)
-                                }, true))
+                                }, peerObject, true))
                                 {
                                     ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
 
@@ -715,7 +675,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                         break;
                     case ClassPeerEnumPacketSend.ASK_BLOCK_DATA:
                         {
-                            ClassPeerPacketSendAskBlockData packetSendAskBlockData = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskBlockData>(packetSendObject.PacketContent);
+                            ClassPeerPacketSendAskBlockData packetSendAskBlockData = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskBlockData>(packetSendObject.PacketContent, peerObject);
 
                             if (packetSendAskBlockData == null)
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
@@ -760,11 +720,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     packetSendBlockData.PacketNumericHash = hashNumeric;
                                     packetSendBlockData.PacketNumericSignature = signatureNumeric;
 
-                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                     {
                                         PacketOrder = ClassPeerEnumPacketResponse.SEND_BLOCK_DATA,
                                         PacketContent = ClassUtility.SerializeData(packetSendBlockData)
-                                    }, true))
+                                    }, peerObject, true))
                                     {
                                         ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
 
@@ -773,26 +733,26 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                 }
                                 else
                                 {
-                                    await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                    await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                     {
                                         PacketOrder = ClassPeerEnumPacketResponse.NOT_YET_SYNCED,
                                         PacketContent = string.Empty,
-                                    }, false);
+                                    }, peerObject, false);
                                 }
                             }
                             else
                             {
-                                await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                 {
                                     PacketOrder = ClassPeerEnumPacketResponse.NOT_YET_SYNCED,
                                     PacketContent = string.Empty,
-                                }, false);
+                                }, peerObject, false);
                             }
                         }
                         break;
                     case ClassPeerEnumPacketSend.ASK_BLOCK_HEIGHT_INFORMATION:
                         {
-                            ClassPeerPacketSendAskBlockHeightInformation packetSendAskBlockHeightInformation = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskBlockHeightInformation>(packetSendObject.PacketContent);
+                            ClassPeerPacketSendAskBlockHeightInformation packetSendAskBlockHeightInformation = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskBlockHeightInformation>(packetSendObject.PacketContent, peerObject);
 
                             if (packetSendAskBlockHeightInformation == null)
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
@@ -823,11 +783,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     packetSendBlockHeightInformation.PacketNumericHash = hashNumeric;
                                     packetSendBlockHeightInformation.PacketNumericSignature = signatureNumeric;
 
-                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                     {
                                         PacketOrder = ClassPeerEnumPacketResponse.SEND_BLOCK_HEIGHT_INFORMATION,
                                         PacketContent = ClassUtility.SerializeData(packetSendBlockHeightInformation)
-                                    }, true))
+                                    }, peerObject, true))
                                     {
                                         ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
 
@@ -836,27 +796,27 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                 }
                                 else
                                 {
-                                    await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                    await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                     {
                                         PacketOrder = ClassPeerEnumPacketResponse.NOT_YET_SYNCED,
                                         PacketContent = string.Empty,
-                                    }, false);
+                                    }, peerObject, false);
                                 }
                             }
                             else
                             {
-                                await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                 {
                                     PacketOrder = ClassPeerEnumPacketResponse.NOT_YET_SYNCED,
                                     PacketContent = string.Empty,
-                                }, false);
+                                }, peerObject, false);
                             }
 
                         }
                         break;
                     case ClassPeerEnumPacketSend.ASK_BLOCK_TRANSACTION_DATA:
                         {
-                            ClassPeerPacketSendAskBlockTransactionData packetSendAskBlockTransactionData = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskBlockTransactionData>(packetSendObject.PacketContent);
+                            ClassPeerPacketSendAskBlockTransactionData packetSendAskBlockTransactionData = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskBlockTransactionData>(packetSendObject.PacketContent, peerObject);
 
                             if (packetSendAskBlockTransactionData == null)
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
@@ -888,11 +848,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                             packetSendBlockTransactionData.PacketNumericHash = hashNumeric;
                                             packetSendBlockTransactionData.PacketNumericSignature = signatureNumeric;
 
-                                            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                             {
                                                 PacketOrder = ClassPeerEnumPacketResponse.SEND_BLOCK_TRANSACTION_DATA,
                                                 PacketContent = ClassUtility.SerializeData(packetSendBlockTransactionData)
-                                            }, true))
+                                            }, peerObject, true))
                                             {
                                                 ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
@@ -902,28 +862,28 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                 }
                                 else
                                 {
-                                    await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                    await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                     {
                                         PacketOrder = ClassPeerEnumPacketResponse.INVALID_PEER_PACKET,
                                         PacketContent = string.Empty,
-                                    }, false);
+                                    }, peerObject, false);
                                     return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
                                 }
                             }
                             else
                             {
-                                await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                 {
                                     PacketOrder = ClassPeerEnumPacketResponse.NOT_YET_SYNCED,
                                     PacketContent = string.Empty,
-                                }, false);
+                                }, peerObject, false);
                             }
 
                         }
                         break;
                     case ClassPeerEnumPacketSend.ASK_BLOCK_TRANSACTION_DATA_BY_RANGE:
                         {
-                            ClassPeerPacketSendAskBlockTransactionDataByRange packetSendAskBlockTransactionDataByRange = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskBlockTransactionDataByRange>(packetSendObject.PacketContent);
+                            ClassPeerPacketSendAskBlockTransactionDataByRange packetSendAskBlockTransactionDataByRange = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskBlockTransactionDataByRange>(packetSendObject.PacketContent, peerObject);
 
                             if (packetSendAskBlockTransactionDataByRange == null)
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
@@ -975,11 +935,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                                     bool sendError = false;
 
-                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                     {
                                                         PacketOrder = ClassPeerEnumPacketResponse.SEND_BLOCK_TRANSACTION_DATA_BY_RANGE,
                                                         PacketContent = ClassUtility.SerializeData(packetSendBlockTransactionData)
-                                                    }, true))
+                                                    }, peerObject, true))
                                                     {
                                                         ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                                                         sendError = true;
@@ -1002,31 +962,31 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     }
                                     else
                                     {
-                                        await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                        await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                         {
                                             PacketOrder = ClassPeerEnumPacketResponse.INVALID_PEER_PACKET,
                                             PacketContent = string.Empty,
-                                        }, false);
+                                        }, peerObject, false);
                                         return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
                                     }
                                 }
                                 else
                                 {
-                                    await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                    await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                     {
                                         PacketOrder = ClassPeerEnumPacketResponse.INVALID_PEER_PACKET,
                                         PacketContent = string.Empty,
-                                    }, false);
+                                    }, peerObject, false);
                                     return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
                                 }
                             }
                             else
                             {
-                                await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                 {
                                     PacketOrder = ClassPeerEnumPacketResponse.NOT_YET_SYNCED,
                                     PacketContent = string.Empty,
-                                }, false);
+                                }, peerObject, false);
                             }
 
                         }
@@ -1035,7 +995,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                         {
                             if (ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeight >= BlockchainSetting.GenesisBlockHeight)
                             {
-                                ClassPeerPacketSendAskMiningShareVote packetSendAskMemPoolMiningShareVote = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskMiningShareVote>(packetSendObject.PacketContent);
+                                ClassPeerPacketSendAskMiningShareVote packetSendAskMemPoolMiningShareVote = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskMiningShareVote>(packetSendObject.PacketContent, peerObject);
 
                                 if (packetSendAskMemPoolMiningShareVote == null)
                                     return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
@@ -1063,11 +1023,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     packetSendMiningShareVote.PacketNumericHash = hashNumeric;
                                     packetSendMiningShareVote.PacketNumericSignature = numericSignature;
 
-                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                     {
                                         PacketOrder = ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE,
                                         PacketContent = ClassUtility.SerializeData(packetSendMiningShareVote)
-                                    }, true))
+                                    }, peerObject, true))
                                     {
                                         ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                                         return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
@@ -1079,7 +1039,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                     if (packetSendAskMemPoolMiningShareVote.MiningPowShareObject.BlockHeight > lastBlockHeight)
                                     {
-                                        if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                        if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                         {
                                             PacketOrder = ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE,
                                             PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendMiningShareVote()
@@ -1088,7 +1048,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                 VoteStatus = ClassPeerPacketMiningShareVoteEnum.NOT_SYNCED,
                                                 PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                             })
-                                        }, true))
+                                        }, peerObject, true))
                                         {
                                             ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
 
@@ -1140,11 +1100,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
 
                                                                 bool resultSend = true;
-                                                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                                 {
                                                                     PacketOrder = ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE,
                                                                     PacketContent = ClassUtility.SerializeData(packetSendMiningShareVote)
-                                                                }, true))
+                                                                }, peerObject, true))
                                                                 {
                                                                     ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                                                                     resultSend = false;
@@ -1171,11 +1131,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                                     packetSendMiningShareVote.PacketNumericSignature = numericSignature;
 
 
-                                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                                     {
                                                                         PacketOrder = ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE,
                                                                         PacketContent = ClassUtility.SerializeData(packetSendMiningShareVote)
-                                                                    }, true))
+                                                                    }, peerObject, true))
                                                                     {
                                                                         ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                                                                         return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
@@ -1195,11 +1155,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                                     packetSendMiningShareVote.PacketNumericHash = hashNumeric;
                                                                     packetSendMiningShareVote.PacketNumericSignature = numericSignature;
 
-                                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                                     {
                                                                         PacketOrder = ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE,
                                                                         PacketContent = ClassUtility.SerializeData(packetSendMiningShareVote)
-                                                                    }, true))
+                                                                    }, peerObject, true))
                                                                     {
                                                                         ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                                                                         return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
@@ -1224,11 +1184,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                                     packetSendMiningShareVote.PacketNumericSignature = numericSignature;
 
 
-                                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                                     {
                                                                         PacketOrder = ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE,
                                                                         PacketContent = ClassUtility.SerializeData(packetSendMiningShareVote)
-                                                                    }, true))
+                                                                    }, peerObject, true))
                                                                     {
                                                                         ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                                                                         return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
@@ -1236,7 +1196,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                                 }
                                                                 else
                                                                 {
-                                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                                     {
                                                                         PacketOrder = ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE,
                                                                         PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendMiningShareVote()
@@ -1245,7 +1205,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                                             VoteStatus = ClassPeerPacketMiningShareVoteEnum.REFUSED,
                                                                             PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                                         })
-                                                                    }, true))
+                                                                    }, peerObject, true))
                                                                     {
                                                                         ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                                                                         return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
@@ -1255,7 +1215,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                             break;
                                                         case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_NOT_SYNCED:
                                                             {
-                                                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                                 {
                                                                     PacketOrder = ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE,
                                                                     PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendMiningShareVote()
@@ -1264,7 +1224,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                                         VoteStatus = ClassPeerPacketMiningShareVoteEnum.NOT_SYNCED,
                                                                         PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                                     })
-                                                                }, true))
+                                                                }, peerObject, true))
                                                                 {
                                                                     ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                                                                     return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
@@ -1297,11 +1257,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                                 packetSendMiningShareVote.PacketNumericSignature = numericSignature;
 
 
-                                                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                                 {
                                                                     PacketOrder = ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE,
                                                                     PacketContent = ClassUtility.SerializeData(packetSendMiningShareVote)
-                                                                }, true))
+                                                                }, peerObject, true))
                                                                 {
                                                                     ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                                                                     return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
@@ -1324,11 +1284,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                     packetSendMiningShareVote.PacketNumericHash = hashNumeric;
                                                     packetSendMiningShareVote.PacketNumericSignature = numericSignature;
 
-                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                     {
                                                         PacketOrder = ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE,
                                                         PacketContent = ClassUtility.SerializeData(packetSendMiningShareVote)
-                                                    }, true))
+                                                    }, peerObject, true))
                                                     {
                                                         ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                                                         return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
@@ -1359,11 +1319,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                 packetSendMiningShareVote.PacketNumericSignature = numericSignature;
 
 
-                                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                 {
                                                     PacketOrder = ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE,
                                                     PacketContent = ClassUtility.SerializeData(packetSendMiningShareVote)
-                                                }, true))
+                                                }, peerObject, true))
                                                 {
                                                     ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                                                     return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
@@ -1392,11 +1352,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                     packetSendMiningShareVote.PacketNumericHash = hashNumeric;
                                                     packetSendMiningShareVote.PacketNumericSignature = numericSignature;
 
-                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                     {
                                                         PacketOrder = ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE,
                                                         PacketContent = ClassUtility.SerializeData(packetSendMiningShareVote)
-                                                    }, true))
+                                                    }, peerObject, true))
                                                     {
                                                         ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                                                         return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
@@ -1416,11 +1376,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                     packetSendMiningShareVote.PacketNumericHash = hashNumeric;
                                                     packetSendMiningShareVote.PacketNumericSignature = numericSignature;
 
-                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                     {
                                                         PacketOrder = ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE,
                                                         PacketContent = ClassUtility.SerializeData(packetSendMiningShareVote)
-                                                    }, true))
+                                                    }, peerObject, true))
                                                     {
                                                         ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                                                         return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
@@ -1429,7 +1389,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                             }
                                             else
                                             {
-                                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                 {
                                                     PacketOrder = ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE,
                                                     PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendMiningShareVote()
@@ -1438,7 +1398,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                         VoteStatus = ClassPeerPacketMiningShareVoteEnum.NOT_SYNCED,
                                                         PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                     })
-                                                }, true))
+                                                }, peerObject, true))
                                                 {
                                                     ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                                                     return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
@@ -1451,7 +1411,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                             }
                             else
                             {
-                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                 {
                                     PacketOrder = ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE,
                                     PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendMiningShareVote()
@@ -1460,7 +1420,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                         VoteStatus = ClassPeerPacketMiningShareVoteEnum.NOT_SYNCED,
                                         PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                     })
-                                }, true))
+                                }, peerObject, true))
                                 {
                                     ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                                     return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
@@ -1470,7 +1430,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                         break;
                     case ClassPeerEnumPacketSend.ASK_MEM_POOL_TRANSACTION_VOTE:
                         {
-                            ClassPeerPacketSendAskMemPoolTransactionVote packetSendAskMemPoolTransactionVote = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskMemPoolTransactionVote>(packetSendObject.PacketContent);
+                            ClassPeerPacketSendAskMemPoolTransactionVote packetSendAskMemPoolTransactionVote = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskMemPoolTransactionVote>(packetSendObject.PacketContent, peerObject);
 
                             if (packetSendAskMemPoolTransactionVote == null)
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
@@ -1556,11 +1516,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     packetSendMemPoolTransactionVote.PacketNumericHash = hashNumeric;
                                     packetSendMemPoolTransactionVote.PacketNumericSignature = numericSignature;
 
-                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                     {
                                         PacketOrder = ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_VOTE,
                                         PacketContent = ClassUtility.SerializeData(packetSendMemPoolTransactionVote),
-                                    }, true))
+                                    }, peerObject, true))
                                     {
                                         return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
                                     }
@@ -1576,11 +1536,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                             if (packetSendObject.PacketContent != _peerNetworkSettingObject.ListenIp && packetSendObject.PacketContent != _peerServerOpenNatIp)
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_TYPE_PACKET;
 
-                            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                             {
                                 PacketOrder = ClassPeerEnumPacketResponse.SEND_DISCONNECT_CONFIRMATION,
                                 PacketContent = packetSendObject.PacketContent,
-                            }, false))
+                            }, peerObject, false))
                             {
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
                             }
@@ -1611,11 +1571,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                             };
 
                             // Do not encrypt packet.
-                            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                             {
                                 PacketOrder = ClassPeerEnumPacketResponse.SEND_MEM_POOL_BROADCAST_RESPONSE,
                                 PacketContent = ClassUtility.SerializeData(packetSendBroadcastMemPoolResponse),
-                            }, false))
+                            }, peerObject, false))
                             {
                                 _enableMemPoolBroadcastClientMode = false;
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
@@ -1624,7 +1584,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                         break;
                     case ClassPeerEnumPacketSend.ASK_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE:
                         {
-                            ClassPeerPacketSendAskMemPoolBlockHeightList packetMemPoolAskBlockHeightList = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskMemPoolBlockHeightList>(packetSendObject.PacketContent);
+                            ClassPeerPacketSendAskMemPoolBlockHeightList packetMemPoolAskBlockHeightList = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskMemPoolBlockHeightList>(packetSendObject.PacketContent, peerObject);
 
                             if (packetMemPoolAskBlockHeightList == null)
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
@@ -1652,11 +1612,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                 PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                             };
 
-                            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                             {
                                 PacketOrder = ClassPeerEnumPacketResponse.SEND_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE,
                                 PacketContent = ClassUtility.SerializeData(packetSendMemPoolBlockHeightList),
-                            }, true))
+                            }, peerObject, true))
                             {
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
                             }
@@ -1680,7 +1640,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                         break;
                     case ClassPeerEnumPacketSend.ASK_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE:
                         {
-                            ClassPeerPacketSendAskMemPoolTransactionList packetMemPoolAskMemPoolTransactionList = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskMemPoolTransactionList>(packetSendObject.PacketContent);
+                            ClassPeerPacketSendAskMemPoolTransactionList packetMemPoolAskMemPoolTransactionList = DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskMemPoolTransactionList>(packetSendObject.PacketContent, peerObject);
 
                             if (packetMemPoolAskMemPoolTransactionList == null)
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
@@ -1742,11 +1702,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                                                     _onWaitingMemPoolTransactionConfirmationReceived = true;
 
-                                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                                     {
                                                                         PacketOrder = ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE,
                                                                         PacketContent = ClassUtility.SerializeData(packetSendMemPoolTransaction),
-                                                                    }, true))
+                                                                    }, peerObject, true))
                                                                     {
                                                                         exceptionOnSending = true;
                                                                         ClientPeerConnectionStatus = false;
@@ -1798,11 +1758,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                                             _onWaitingMemPoolTransactionConfirmationReceived = true;
 
-                                                            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                             {
                                                                 PacketOrder = ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE,
                                                                 PacketContent = ClassUtility.SerializeData(packetSendMemPoolTransaction),
-                                                            }, true))
+                                                            }, peerObject, true))
                                                             {
                                                                 exceptionOnSending = true;
                                                                 ClientPeerConnectionStatus = false;
@@ -1841,11 +1801,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                             else
                                             {
                                                 // End broadcast transaction. Packet not encrypted, no content.
-                                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                 {
                                                     PacketOrder = ClassPeerEnumPacketResponse.SEND_MEM_POOL_END_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE,
                                                     PacketContent = string.Empty,
-                                                }, false))
+                                                }, peerObject, false))
                                                 {
                                                     ClientPeerConnectionStatus = false;
                                                 }
@@ -1873,11 +1833,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                             if (!doBroadcast && !_onSendingMemPoolTransaction)
                             {
                                 // End broadcast transaction. Packet not encrypted, no content.
-                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                 {
                                     PacketOrder = ClassPeerEnumPacketResponse.SEND_MEM_POOL_END_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE,
                                     PacketContent = string.Empty,
-                                }, false))
+                                }, peerObject, false))
                                 {
                                     return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
                                 }
@@ -1902,6 +1862,75 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
         #endregion
 
+        #region Store packet content.
+
+        /// <summary>
+        /// Send auth keys packet.
+        /// </summary>
+        /// <param name="packetSendObject"></param>
+        /// <returns></returns>
+        private async Task<ClassPeerNetworkClientServerHandlePacketEnumStatus> SendAuthKeys(ClassPeerObject peerObject, ClassPeerPacketSendObject packetSendObject, bool resendKeys)
+        {
+            if (!resendKeys)
+            {
+                ClassPeerPacketSendAskPeerAuthKeys packetSendPeerAuthKeysObject = JsonConvert.DeserializeObject<ClassPeerPacketSendAskPeerAuthKeys>(packetSendObject.PacketContent);
+
+                if (!ClassUtility.CheckPacketTimestamp(packetSendPeerAuthKeysObject.PacketTimestamp, _peerNetworkSettingObject.PeerMaxTimestampDelayPacket, _peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
+                    return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET_TIMESTAMP;
+
+                if (!ClassPeerKeysManager.UpdatePeerInternalKeys(_peerClientIp, packetSendPeerAuthKeysObject.PeerPort, _peerUniqueId, _cancellationTokenAccessData, _peerNetworkSettingObject, true))
+                {
+                    await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                    {
+                        PacketOrder = ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_SIGNATURE,
+                        PacketContent = string.Empty,
+                    }, peerObject, false);
+
+                    return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
+                }
+
+                if (!ClassPeerKeysManager.UpdatePeerKeysReceivedNetworkServer(_peerClientIp, _peerUniqueId, packetSendPeerAuthKeysObject, _cancellationTokenAccessData))
+                {
+                    await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                    {
+                        PacketOrder = ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_SIGNATURE,
+                        PacketContent = string.Empty,
+                    }, peerObject, false);
+
+                    return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
+                }
+            }
+
+
+            if (peerObject == null)
+                return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
+
+
+            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
+            {
+                PacketOrder = ClassPeerEnumPacketResponse.SEND_PEER_AUTH_KEYS,
+                PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendPeerAuthKeys()
+                {
+                    AesEncryptionIv = peerObject.PeerInternPacketEncryptionKeyIv,
+                    AesEncryptionKey = peerObject.PeerInternPacketEncryptionKey,
+                    PublicKey = peerObject.PeerInternPublicKey,
+                    NumericPublicKey = _peerNetworkSettingObject.PeerNumericPublicKey,
+                    PeerPort = _peerNetworkSettingObject.ListenPort,
+                    PeerApiPort = _peerNetworkSettingObject.ListenApiPort,
+                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
+                })
+            }, peerObject, false))
+            {
+                ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
+
+                return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
+            }
+
+            return ClassPeerNetworkClientServerHandlePacketEnumStatus.VALID_PACKET;
+        }
+
+        #endregion
+
         #region Send peer packet response.
 
         /// <summary>
@@ -1910,7 +1939,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         /// <param name="packetSendObject">The packet object to send.</param>
         /// <param name="encrypted">Indicate if the packet require encryption.</param>
         /// <returns>Return the status of the sending of the packet.</returns>
-        private async Task<bool> SendPacketToPeer(ClassPeerPacketRecvObject packetSendObject, bool encrypted)
+        private async Task<bool> SendPacketToPeer(ClassPeerPacketRecvObject packetSendObject, ClassPeerObject peerObject,  bool encrypted)
         {
 
             try
@@ -1919,11 +1948,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                 if (encrypted)
                 {
-                    if (ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].GetClientCryptoStreamObject != null)
-                        packetContentEncrypted = ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].GetClientCryptoStreamObject.EncryptDataProcess(ClassUtility.GetByteArrayFromStringUtf8(packetSendObject.PacketContent));
+                    if (peerObject.GetClientCryptoStreamObject != null)
+                        packetContentEncrypted = peerObject.GetClientCryptoStreamObject.EncryptDataProcess(ClassUtility.GetByteArrayFromStringUtf8(packetSendObject.PacketContent));
                     else
                     {
-                        if (!ClassAes.EncryptionProcess(ClassUtility.GetByteArrayFromStringUtf8(packetSendObject.PacketContent), ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientPacketEncryptionKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientPacketEncryptionKeyIv, out packetContentEncrypted))
+                        if (!ClassAes.EncryptionProcess(ClassUtility.GetByteArrayFromStringUtf8(packetSendObject.PacketContent), peerObject.PeerClientPacketEncryptionKey, peerObject.PeerClientPacketEncryptionKeyIv, out packetContentEncrypted))
                         {
                             _onSendingPacketResponse = false;
                             return false;
@@ -1944,8 +1973,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                 if (ClassPeerCheckManager.CheckPeerClientWhitelistStatus(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject))
                 {
-                    if (ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].GetClientCryptoStreamObject != null)
-                        packetSendObject.PacketSignature = ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].GetClientCryptoStreamObject.DoSignatureProcess(packetSendObject.PacketHash, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerInternPrivateKey);
+                    if (peerObject.GetClientCryptoStreamObject != null)
+                        packetSendObject.PacketSignature = peerObject.GetClientCryptoStreamObject.DoSignatureProcess(packetSendObject.PacketHash, peerObject.PeerInternPrivateKey);
                 }
 
                 using (NetworkStream networkStream = new NetworkStream(_clientSocket))
@@ -1994,9 +2023,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         /// <typeparam name="T">Type of the content to return.</typeparam>
         /// <param name="packetContentCrypted">The packet content to decrypt.</param>
         /// <returns></returns>
-        private T DecryptDeserializePacketContentPeer<T>(string packetContentCrypted)
+        private T DecryptDeserializePacketContentPeer<T>(string packetContentCrypted, ClassPeerObject peerObject)
         {
-            if (ClassUtility.TryDeserialize(DecryptContentPacketPeer(packetContentCrypted)?.GetStringFromByteArrayUtf8(), out T result))
+            if (ClassUtility.TryDeserialize(DecryptContentPacketPeer(packetContentCrypted, peerObject)?.GetStringFromByteArrayUtf8(), out T result))
                 return result;
 
             return default;
@@ -2007,7 +2036,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         /// </summary>
         /// <param name="packetSendObject">The packet object received to check.</param>
         /// <returns>Return if the signature provided is valid.</returns>
-        private bool CheckContentPacketSignaturePeer(ClassPeerPacketSendObject packetSendObject)
+        private bool CheckContentPacketSignaturePeer(ClassPeerPacketSendObject packetSendObject, ClassPeerObject peerObject)
         {
             if (!ClassPeerDatabase.ContainsPeer(_peerClientIp, _peerUniqueId))
                 return ClassUtility.GenerateSha256FromString(packetSendObject.PacketContent + packetSendObject.PacketOrder) == packetSendObject.PacketHash;
@@ -2015,7 +2044,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             if (ClassPeerCheckManager.CheckPeerClientWhitelistStatus(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject))
                 return true;
 
-            if (ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientPublicKey.IsNullOrEmpty(false, out _) || 
+            if (peerObject.PeerClientPublicKey.IsNullOrEmpty(false, out _) || 
                 packetSendObject.PacketContent.IsNullOrEmpty(false, out _) || 
                 packetSendObject.PacketHash.IsNullOrEmpty(false, out _))
             {
@@ -2026,14 +2055,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             if (ClassUtility.GenerateSha256FromString(packetSendObject.PacketContent + packetSendObject.PacketOrder) != packetSendObject.PacketHash)
                 return false;
 
-            if (ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].GetClientCryptoStreamObject.CheckSignatureProcess(packetSendObject.PacketHash, packetSendObject.PacketSignature, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientPublicKey))
+            if (peerObject.GetClientCryptoStreamObject.CheckSignatureProcess(packetSendObject.PacketHash, packetSendObject.PacketSignature, peerObject.PeerClientPublicKey))
             {
                 ClassLog.WriteLine("Signature of the packet received from peer " + _peerClientIp + " is valid. Hash: " + packetSendObject.PacketHash + " Signature: " + packetSendObject.PacketSignature, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
 
                 return true;
             }
 
-            ClassLog.WriteLine("Signature of packet received from peer " + _peerClientIp + " is invalid. Public Key of the peer: " + ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientPublicKey, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
+            ClassLog.WriteLine("Signature of packet received from peer " + _peerClientIp + " is invalid. Public Key of the peer: " + peerObject.PeerClientPublicKey, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
 
             return false;
         }
@@ -2043,14 +2072,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         /// </summary>
         /// <param name="content">The content encrypted.</param>
         /// <returns>Indicate if the decryption has been done successfully.</returns>
-        private byte[] DecryptContentPacketPeer(string content)
+        private byte[] DecryptContentPacketPeer(string content, ClassPeerObject peerObject)
         {
             if (!ClassPeerDatabase.ContainsPeer(_peerClientIp, _peerUniqueId))
                 return null;
 
-            if (ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].GetClientCryptoStreamObject != null)
+            if (peerObject.GetClientCryptoStreamObject != null)
             {
-                var contentDecryptedTuple = ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].GetClientCryptoStreamObject.DecryptDataProcess(Convert.FromBase64String(content));
+                var contentDecryptedTuple = peerObject.GetClientCryptoStreamObject.DecryptDataProcess(Convert.FromBase64String(content));
 
                 if (contentDecryptedTuple != null)
                 {
@@ -2060,7 +2089,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             }
             else
             {
-                if (ClassAes.DecryptionProcess(Convert.FromBase64String(content), ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientPacketEncryptionKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerClientIp][_peerUniqueId].PeerClientPacketEncryptionKeyIv, out byte[] contentDecrypted))
+                if (ClassAes.DecryptionProcess(Convert.FromBase64String(content), peerObject.PeerClientPacketEncryptionKey, peerObject.PeerClientPacketEncryptionKeyIv, out byte[] contentDecrypted))
                     return contentDecrypted;
             }
 

@@ -106,15 +106,16 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
 
             try
             {
-                await _semaphoreTransactionHistoryAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
-
-                if (!_dictionaryTransactionHistory.ContainsKey(walletFileOpened))
-                    RemoveTransactionHistoryFromWalletFileOpenedTarget(walletFileOpened);
-                else
+                try
                 {
-                    try
+                    await _semaphoreTransactionHistoryAccess.WaitAsync(cancellation.Token);
+                    semaphoreUsed = true;
+
+                    if (!_dictionaryTransactionHistory.ContainsKey(walletFileOpened))
+                        RemoveTransactionHistoryFromWalletFileOpenedTarget(walletFileOpened);
+                    else
                     {
+
                         if (_dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory == null || _dictionaryTransactionHistory[walletFileOpened].BitmapTransactionHistory == null)
                         {
                             _dictionaryTransactionHistory[walletFileOpened].InitializeOrClearPanelTransactionHistoryGraphicsContent();
@@ -368,7 +369,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                                         {
                                                             int left = ClassWalletDefaultSetting.DefaultWalletMaxTransactionInHistoryPerPage - totalToTake;
 
-                                                            for(int i = 0; i < left; i++)
+                                                            for (int i = 0; i < left; i++)
                                                             {
                                                                 if (PaintTransactionObjectToTransactionHistory(walletFileOpened, null, _dictionaryTransactionHistory[walletFileOpened].TotalTransactionShowed, null, false))
                                                                 {
@@ -423,21 +424,22 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                 }
                             }
                         }
+
                     }
-                    catch (Exception error)
-                    {
+                }
+                catch (Exception error)
+                {
 #if DEBUG
-                        Debug.WriteLine("2. Error on drawing transaction history. Exception: " + error.Message);
+                    Debug.WriteLine("2. Error on drawing transaction history. Exception: " + error.Message);
 #endif
-                        try
-                        {
-                            if (_dictionaryTransactionHistory.ContainsKey(walletFileOpened))
-                                _dictionaryTransactionHistory[walletFileOpened].EnableEventDrawPage = true;
-                        }
-                        catch
-                        {
-                            // Ignored.
-                        }
+                    try
+                    {
+                        if (_dictionaryTransactionHistory.ContainsKey(walletFileOpened))
+                            _dictionaryTransactionHistory[walletFileOpened].EnableEventDrawPage = true;
+                    }
+                    catch
+                    {
+                        changed = true;
                     }
                 }
             }
