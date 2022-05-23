@@ -689,7 +689,7 @@ namespace SeguraChain_Lib.Utility
 
         #endregion
 
-        #region Static functions about LZ4 Compress/Decompress.
+        #region Static functions about Compress/Decompress.
 
         public static byte[] CompressDataLz4(byte[] data)
         {
@@ -699,8 +699,126 @@ namespace SeguraChain_Lib.Utility
         public static byte[] DecompressDataLz4(byte[] compressed)
         {
             return LZ4Codec.Unwrap(compressed);
-
         }
+
+        private static Dictionary<string, string> ListHexCombinaison = new Dictionary<string, string>()
+        {
+            { "00", "g" },
+            { "01", "h" },
+            { "02", "j" },
+            { "03", "k" },
+            { "04", "l" },
+            { "05", "m" },
+            { "06", "w" },
+            { "07", "z" },
+            { "08", "t" },
+            { "09", "u" },
+            { "10", "i" },
+            { "11", "p" },
+            { "12", "x" },
+            { "13", "n" },
+            { "14", "!" },
+            { "15", "~" },
+            { "16", "&" },
+            { "17", "'" },
+            { "18", "(" },
+            { "19", "[" },
+            { "20", "-" },
+            { "21", "|" },
+            { "22", "è" },
+            { "23", "`" },
+            { "24", "_" },
+            { "25", "ç" },
+            { "26", "^" },
+            { "27", "à" },
+            { "28", "@" },
+            { "29", ")" },
+            { "30", "]" },
+            { "31", "°" },
+            { "32", "+" },
+            { "33", "=" },
+            { "34", "}" },
+        };
+
+        private static Dictionary<char, string> ListHexCombinaisonReverted = new Dictionary<char, string>()
+        {
+            { 'g',  "00" },
+            { 'h',  "01" },
+            { 'j',  "02" },
+            { 'k',  "03" },
+            { 'l',  "04" },
+            { 'm',  "05" },
+            { 'w',  "06" },
+            { 'z',  "07" },
+            { 't',  "08" },
+            { 'u',  "09" },
+            { 'i',  "10" },
+            { 'p',  "11" },
+            { 'x',  "12" },
+            { 'n',  "13" },
+            { '!',  "14" },
+            { '~',  "15" },
+            { '&',  "16" },
+            { '\'',  "17" },
+            { '(',  "18" },
+            { '[',  "19" },
+            { '-',  "20" },
+            { '|',  "21" },
+            { 'è',  "22" },
+            { '`',  "23" },
+            { '_',  "24" },
+            { 'ç',  "25" },
+            { '^',  "26" },
+            { 'à',  "27" },
+            { '@',  "28" },
+            { ')',  "29" },
+            { ']',  "30" },
+            { '°',  "31" },
+            { '+',  "32" },
+            { '=',  "33" },
+            { '}',  "34" }
+        };
+
+        /// <summary>
+        /// Compress hex string into a short hex string replaced by invalid hex characters.
+        /// </summary>
+        /// <param name="hexString"></param>
+        /// <returns></returns>
+        public static string CompressHexString(string hexString)
+        {
+            string compressedHexString = string.Empty;
+
+            for (int i = 0; i < hexString.Length / 2; i++)
+            {
+                string hexCombinaison = hexString.Substring(i * 2, 2);
+
+                if (ListHexCombinaison.ContainsKey(hexCombinaison))
+                    compressedHexString += ListHexCombinaison[hexCombinaison];
+                else compressedHexString += hexCombinaison;
+            }
+
+            return compressedHexString;
+        }
+
+        /// <summary>
+        /// Decompress hex string, replace invalid characters used by the compression into good hex combinaisons.
+        /// </summary>
+        /// <param name="compressedHexString"></param>
+        /// <returns></returns>
+        public static string DecompressHexString(string compressedHexString)
+        {
+            string decompressedHexString = string.Empty;
+
+            foreach(char character in compressedHexString)
+            {
+                if (ListHexCombinaisonReverted.ContainsKey(character))
+                    decompressedHexString += ListHexCombinaisonReverted[character];
+                else decompressedHexString += character;
+            }
+           
+            return decompressedHexString;
+        }
+
         #endregion
 
         #region Static functions about GC Collector

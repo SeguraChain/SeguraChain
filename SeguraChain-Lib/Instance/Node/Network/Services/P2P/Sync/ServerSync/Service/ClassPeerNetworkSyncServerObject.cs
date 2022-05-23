@@ -104,15 +104,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 {
                     try
                     {
-                        while (!_tcpListenerPeer.Pending())
-                        {
-                            if (!_cancellationTokenSourcePeerServer.IsCancellationRequested)
-                                break;
-
-                            await Task.Delay(1);
-                        }
-
-                        var clientPeerTcp = await _tcpListenerPeer.AcceptSocketAsync();
+                        Socket clientPeerTcp = await _tcpListenerPeer.AcceptSocketAsync();
 
                         string clientIp = string.Empty;
                         bool exception = false;

@@ -9,7 +9,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
     {
         public ClassPeerEnumPacketSend PacketOrder;
         public string PacketContent; // The serialized packet encrypted.
-        public string PacketHash;
+        public string PacketHash; // Packet hash.
         public string PacketSignature; // The signature of the packet hash.
         public string PacketPeerUniqueId;
         public string PublicKey;
@@ -30,6 +30,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
             PeerLastTimestampSignatureWhitelist = lastTimestampSignatureWhitelist;
         }
 
+        /// <summary>
+        /// Recompile the packet data.
+        /// </summary>
+        /// <param name="packetData"></param>
+        /// <param name="status"></param>
         public ClassPeerPacketSendObject(byte[] packetData, out bool status)
         {
             status = false;
@@ -45,7 +50,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
                     {
                         PacketOrder = (ClassPeerEnumPacketSend)packetOrder;
                         PacketContent = splitPacketData[1];
-                        PacketHash = splitPacketData[2];
+                        PacketHash = ClassUtility.DecompressHexString(splitPacketData[2]);
                         PacketSignature = splitPacketData[3];
                         PacketPeerUniqueId = splitPacketData[4];
                         PublicKey = splitPacketData[5];
@@ -59,7 +64,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
                         {
                             PacketOrder = (ClassPeerEnumPacketSend)packetOrder;
                             PacketContent = splitPacketData[2];
-                            PacketHash = splitPacketData[3];
+                            PacketHash = ClassUtility.DecompressHexString(splitPacketData[3]);
                             PacketSignature = splitPacketData[4];
                             PacketPeerUniqueId = splitPacketData[5];
                             PublicKey = splitPacketData[6];
@@ -84,13 +89,19 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
 #endif
         }
 
+        /// <summary>
+        /// Generate the packet data to send.
+        /// FASTER than JSON. If you accumulate many requests and make a sum of timespend to handle them. A benchmark.
+        /// That's not constitute a fail of security at all.
+        /// </summary>
+        /// <returns></returns>
         public byte[] GetPacketData()
         {
             try
             {
                 return ClassUtility.GetByteArrayFromStringUtf8((int)PacketOrder + "#" +
                     (PacketContent.IsNullOrEmpty(false, out _) ? "empty" : PacketContent) + "#" +
-                    (PacketHash.IsNullOrEmpty(false, out _) ? "empty" : PacketHash) + "#" +
+                    (PacketHash.IsNullOrEmpty(false, out _) ? "empty" : ClassUtility.CompressHexString(PacketHash)) + "#" +
                     (PacketSignature.IsNullOrEmpty(false, out _) ? "empty" : PacketSignature) + "#" +
                     (PacketPeerUniqueId.IsNullOrEmpty(false, out _) ? "empty" : PacketPeerUniqueId) + "#" +
                     (PublicKey.IsNullOrEmpty(false, out _) ? "empty" : PublicKey) + "#" +
@@ -131,6 +142,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
             PeerLastTimestampSignatureWhitelist = lastTimestampSignatureWhitelist;
          }
 
+        /// <summary>
+        /// Recompile the packet data.
+        /// </summary>
+        /// <param name="packetData"></param>
+        /// <param name="status"></param>
         public ClassPeerPacketRecvObject(byte[] packetData, out bool status)
         {
             status = false;
@@ -147,7 +163,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
                     {
                         PacketOrder = (ClassPeerEnumPacketResponse)packetOrder;
                         PacketContent = splitPacketData[1];
-                        PacketHash = splitPacketData[2];
+                        PacketHash =   splitPacketData[2] != "empty" ?  ClassUtility.DecompressHexString(splitPacketData[2]) : string.Empty;
                         PacketSignature = splitPacketData[3];
                         PacketPeerUniqueId = splitPacketData[4];
                         PublicKey = splitPacketData[5];
@@ -160,7 +176,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
                         {
                             PacketOrder = (ClassPeerEnumPacketResponse)packetOrder;
                             PacketContent = splitPacketData[2];
-                            PacketHash = splitPacketData[3];
+                            PacketHash = splitPacketData[3] != "empty" ? ClassUtility.DecompressHexString(splitPacketData[3]) : string.Empty;
                             PacketSignature = splitPacketData[4];
                             PacketPeerUniqueId = splitPacketData[5];
                             PublicKey = splitPacketData[6];
@@ -184,17 +200,23 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
 
         }
 
+        /// <summary>
+        /// Generate the packet data to send.
+        /// FASTER than JSON. If you accumulate many requests and make a sum of timespend to handle them. A benchmark.
+        /// That's not constitute a fail of security at all.
+        /// </summary>
+        /// <returns></returns>
         public byte[] GetPacketData()
         {
             try
             {
                 return ClassUtility.GetByteArrayFromStringUtf8((int)PacketOrder + "#" +
                     (PacketContent.IsNullOrEmpty(false, out _) ? "empty" : PacketContent) + "#" +
-                    (PacketHash.IsNullOrEmpty(false, out _) ? "empty" : PacketHash) + "#" +
+                    (PacketHash.IsNullOrEmpty(false, out _) ? "empty" : ClassUtility.CompressHexString(PacketHash)) + "#" +
                     (PacketSignature.IsNullOrEmpty(false, out _) ? "empty" : PacketSignature) + "#" +
                     (PacketPeerUniqueId.IsNullOrEmpty(false, out _) ? "empty" : PacketPeerUniqueId) + "#" +
                     (PublicKey.IsNullOrEmpty(false, out _) ? "empty" : PublicKey) + "#" +
-                    PeerLastTimestampSignatureWhitelist);
+                    PeerLastTimestampSignatureWhitelist); 
             }
             catch(Exception error)
             {
