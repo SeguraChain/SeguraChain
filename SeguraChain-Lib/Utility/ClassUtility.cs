@@ -877,7 +877,10 @@ namespace SeguraChain_Lib.Utility
                 if (socket == null)
                     return false;
 
-                return ((socket.Poll(10, SelectMode.SelectRead) && socket.Connected));
+                if (!socket.Connected)
+                    return false;
+
+                return !((socket.Poll(10, SelectMode.SelectRead) && (socket.Available == 0)));
             }
             catch
             {
@@ -1403,8 +1406,6 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         public static async Task<bool> TrySendSplittedPacket(this NetworkStream networkStream, byte[] packetBytesToSend, CancellationTokenSource cancellation, int packetMaxSize, bool singleWrite = false)
         {
-            if (packetBytesToSend == null || packetBytesToSend.Length == 0)
-                return false;
 
             try
             {
