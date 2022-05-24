@@ -303,15 +303,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             bool semaphoreUsed = false;
             try
             {
-                try
-                {
-                    await _semaphoreSlimMemoryAccess.WaitAsync(cancellation.Token);
-                    semaphoreUsed = true;
-                }
-                catch
-                {
-                    // Ignored, the task has been cancelled.
-                }
+                semaphoreUsed = await _semaphoreSlimMemoryAccess.TryWaitAsync(cancellation);
 
                 if (semaphoreUsed)
                 {
@@ -339,7 +331,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                         ObjectCacheType = CacheBlockMemoryEnumState.IN_ACTIVE_MEMORY
                                     }))
                                     {
-                                        cancellation?.Token.ThrowIfCancellationRequested();
 
                                         if (blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight)
                                         {
@@ -371,8 +362,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                             ObjectCacheType = CacheBlockMemoryEnumState.IN_PERSISTENT_CACHE
                                         }))
                                         {
-                                            cancellation?.Token.ThrowIfCancellationRequested();
-
                                             if (_dictionaryBlockObjectMemory[blockHeight].Content == null)
                                             {
                                                 _dictionaryBlockObjectMemory[blockHeight].ObjectIndexed = true;
@@ -394,8 +383,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                         ObjectCacheType = CacheBlockMemoryEnumState.IN_ACTIVE_MEMORY
                                     }))
                                     {
-                                        cancellation?.Token.ThrowIfCancellationRequested();
-
                                         if (blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight)
                                         {
                                             _dictionaryBlockObjectMemory[blockHeight].Content = value;
@@ -437,15 +424,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
             try
             {
-                try
-                {
-                    await _semaphoreSlimMemoryAccess.WaitAsync(cancellation.Token);
-                    semaphoreUsed = true;
-                }
-                catch
-                {
-                    // Ignored, the task has been cancelled.
-                }
+                semaphoreUsed = await _semaphoreSlimMemoryAccess.TryWaitAsync(cancellation);
+
 
                 if (semaphoreUsed)
                 {
@@ -840,7 +820,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                 while (lastBlockHeight > 0)
                 {
-                    cancellation?.Token.ThrowIfCancellationRequested();
+                    if (cancellation.IsCancellationRequested)
+                        break;
 
                     bool found = false;
 
@@ -888,7 +869,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                 while (lastBlockHeight > 0)
                 {
-                    cancellation?.Token.ThrowIfCancellationRequested();
+                    if (cancellation.IsCancellationRequested)
+                        break;
 
                     long blockHeight = lastBlockHeight;
 
@@ -934,7 +916,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                     for (long i = 0; i < lastBlockHeight; i++)
                     {
-                        cancellation?.Token.ThrowIfCancellationRequested();
+                        if (cancellation.IsCancellationRequested)
+                            break;
 
                         long blockHeight = i + 1;
 
@@ -966,7 +949,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         {
                             foreach (var blockObjectPair in listBlockObject.GetList)
                             {
-                                
+                                if (cancellation.IsCancellationRequested)
+                                    break;
 
                                 if (blockObjectPair.Value != null)
                                 {
@@ -1006,9 +990,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                     for (long blockHeight = lastBlockHeight; blockHeight > 0; blockHeight--)
                     {
-                        cancellation?.Token.ThrowIfCancellationRequested();
-
-                        if (blockHeight < BlockchainSetting.GenesisBlockHeight)
+                        if (blockHeight < BlockchainSetting.GenesisBlockHeight || cancellation.IsCancellationRequested)
                             break;
 
                         bool found = false;
@@ -1057,7 +1039,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         {
                             foreach (var blockObjectPair in listBlockInformation.GetList)
                             {
-                                
+                                if (cancellation.IsCancellationRequested)
+                                    break;
 
                                 if (blockObjectPair.Value != null)
                                 {
@@ -1100,11 +1083,14 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
             for (long i = 0; i < blockHeightTarget; i++)
             {
-                cancellation?.Token.ThrowIfCancellationRequested();
+                if (cancellation.IsCancellationRequested)
+                    break;
 
                 if (enableMaxRange)
+                {
                     if (countBlockListed >= maxRange)
                         break;
+                }
 
                 blockHeightExpected++;
 
@@ -3054,7 +3040,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         {
                             long blockHeight = i;
 
-                            cancellation?.Token.ThrowIfCancellationRequested();
+                            if (cancellation.IsCancellationRequested)
+                                break;
 
                             if (blockHeight > lastBlockHeightWalletCheckpoint && blockHeight <= maxBlockHeightTarget)
                             {
@@ -3067,7 +3054,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                                 foreach (ClassBlockTransaction blockTransaction in listTxFromCacheOrMemory.GetList.OrderBy(x => x.TransactionObject.TimestampSend))
                                 {
-                                    cancellation?.Token.ThrowIfCancellationRequested();
+                                    if (cancellation.IsCancellationRequested)
+                                        break;
 
                                     if (blockTransaction != null)
                                     {
@@ -3165,7 +3153,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             {
                                 foreach (var memPoolTransactionIndexed in listMemPoolTransactionObject.GetList)
                                 {
-                                    cancellation?.Token.ThrowIfCancellationRequested();
+                                    if (cancellation.IsCancellationRequested)
+                                        break;
 
                                     if (memPoolTransactionIndexed != null)
                                     {
@@ -3224,11 +3213,9 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             {
                                 if (Count > 0)
                                 {
-                                    await _semaphoreSlimUpdateTransactionConfirmations.WaitAsync(_cancellationTokenMemoryManagement.Token);
-                                    useSemaphoreUpdateTransactionConfirmation = true;
+                                    useSemaphoreUpdateTransactionConfirmation = await _semaphoreSlimUpdateTransactionConfirmations.TryWaitAsync(_cancellationTokenMemoryManagement);
 
-                                    await _semaphoreSlimMemoryAccess.WaitAsync(_cancellationTokenMemoryManagement.Token);
-                                    useSemaphoreMemory = true;
+                                    useSemaphoreMemory = await _semaphoreSlimMemoryAccess.TryWaitAsync(_cancellationTokenMemoryManagement);
 
 
                                     long timestamp = TaskManager.TaskManager.CurrentTimestampSecond;
@@ -3236,47 +3223,49 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                     long limitIndexToCache = lastBlockHeight - _blockchainDatabaseSetting.BlockchainCacheSetting.GlobalMaxBlockCountToKeepInMemory;
                                     bool changeDone = false;
 
-                                        // Update the memory depending of the cache system selected.
-                                        switch (_blockchainDatabaseSetting.BlockchainCacheSetting.CacheName)
+                                    // Update the memory depending of the cache system selected.
+                                    switch (_blockchainDatabaseSetting.BlockchainCacheSetting.CacheName)
                                     {
                                         case CacheEnumName.IO_CACHE:
                                             {
                                                 using (DisposableDictionary<long, Tuple<bool, ClassBlockObject>> dictionaryCache = new DisposableDictionary<long, Tuple<bool, ClassBlockObject>>())
                                                 {
-                                                        #region List blocks to update on the cache and list blocks to push out of the memory.
+                                                    #region List blocks to update on the cache and list blocks to push out of the memory.
 
-                                                        for (long i = 0; i < lastBlockHeight; i++)
+                                                    for (long i = 0; i < lastBlockHeight; i++)
                                                     {
-                                                        _cancellationTokenMemoryManagement.Token.ThrowIfCancellationRequested();
+                                                        if (_cancellationTokenMemoryManagement.IsCancellationRequested)
+                                                            break;
+
 
                                                         if (i < lastBlockHeight)
                                                         {
                                                             long blockHeight = i + 1;
 
-                                                                // Do not cache the genesis block.
-                                                                if (blockHeight > BlockchainSetting.GenesisBlockHeight)
+                                                            // Do not cache the genesis block.
+                                                            if (blockHeight > BlockchainSetting.GenesisBlockHeight)
                                                             {
                                                                 if (_pauseMemoryManagement)
                                                                     break;
 
                                                                 if (_dictionaryBlockObjectMemory[blockHeight].Content != null)
                                                                 {
-                                                                        #region Insert/Update data cache from an element of memory recently updated. 
+                                                                    #region Insert/Update data cache from an element of memory recently updated. 
 
-                                                                        // Ignore locked block.
-                                                                        if (_dictionaryBlockObjectMemory[blockHeight].Content.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
+                                                                    // Ignore locked block.
+                                                                    if (_dictionaryBlockObjectMemory[blockHeight].Content.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
                                                                     {
-                                                                            // Used and updated frequently, update disk data to keep changes if a crash happen.
-                                                                            if ((_dictionaryBlockObjectMemory[blockHeight].Content.BlockLastChangeTimestamp + _blockchainDatabaseSetting.BlockchainCacheSetting.GlobalObjectCacheUpdateLimitTime >= timestamp ||
-                                                                            !_dictionaryBlockObjectMemory[blockHeight].ObjectIndexed ||
-                                                                            !_dictionaryBlockObjectMemory[blockHeight].CacheUpdated) &&
-                                                                            (_dictionaryBlockObjectMemory[blockHeight].Content.IsConfirmedByNetwork
-                                                                            && blockHeight >= limitIndexToCache))
+                                                                        // Used and updated frequently, update disk data to keep changes if a crash happen.
+                                                                        if ((_dictionaryBlockObjectMemory[blockHeight].Content.BlockLastChangeTimestamp + _blockchainDatabaseSetting.BlockchainCacheSetting.GlobalObjectCacheUpdateLimitTime >= timestamp ||
+                                                                        !_dictionaryBlockObjectMemory[blockHeight].ObjectIndexed ||
+                                                                        !_dictionaryBlockObjectMemory[blockHeight].CacheUpdated) &&
+                                                                        (_dictionaryBlockObjectMemory[blockHeight].Content.IsConfirmedByNetwork
+                                                                        && blockHeight >= limitIndexToCache))
                                                                         {
                                                                             dictionaryCache.Add(blockHeight, new Tuple<bool, ClassBlockObject>(false, _dictionaryBlockObjectMemory[blockHeight].Content));
                                                                         }
-                                                                            // Unused elements.
-                                                                            else
+                                                                        // Unused elements.
+                                                                        else
                                                                         {
 
                                                                             if (blockHeight < limitIndexToCache &&
@@ -3288,27 +3277,29 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                         }
                                                                     }
 
-                                                                        #endregion
-                                                                    }
+                                                                    #endregion
+                                                                }
                                                             }
                                                         }
                                                     }
 
-                                                        #endregion
+                                                    #endregion
 
-                                                        #region Push data updated to the cache, released old data from the active memory.
+                                                    #region Push data updated to the cache, released old data from the active memory.
 
-                                                        if (dictionaryCache.Count > 0)
+                                                    if (dictionaryCache.Count > 0)
                                                     {
 
-                                                            #region Push blocks to put out of memory to the cache system.
+                                                        #region Push blocks to put out of memory to the cache system.
 
-                                                            using (DisposableList<ClassBlockObject> blockObjectToCacheOut = new DisposableList<ClassBlockObject>())
+                                                        using (DisposableList<ClassBlockObject> blockObjectToCacheOut = new DisposableList<ClassBlockObject>())
                                                         {
 
                                                             foreach (var blockPair in dictionaryCache.GetList.Where(x => x.Value.Item1))
                                                             {
-                                                                _cancellationTokenMemoryManagement.Token.ThrowIfCancellationRequested();
+                                                                if (_cancellationTokenMemoryManagement.IsCancellationRequested)
+                                                                    break;
+
                                                                 blockObjectToCacheOut.Add(blockPair.Value.Item2);
                                                             }
 
@@ -3318,7 +3309,9 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                 {
                                                                     foreach (var block in blockObjectToCacheOut.GetList)
                                                                     {
-                                                                        _cancellationTokenMemoryManagement.Token.ThrowIfCancellationRequested();
+                                                                        if (_cancellationTokenMemoryManagement.IsCancellationRequested)
+                                                                            break;
+
                                                                         _dictionaryBlockObjectMemory[block.BlockHeight].CacheUpdated = true;
                                                                         _dictionaryBlockObjectMemory[block.BlockHeight].ObjectIndexed = true;
                                                                         _dictionaryBlockObjectMemory[block.BlockHeight].ObjectCacheType = CacheBlockMemoryEnumState.IN_PERSISTENT_CACHE;
@@ -3326,23 +3319,25 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                     }
                                                                     changeDone = true;
 #if DEBUG
-                                                                        Debug.WriteLine("Total block object(s) cached out of memory: " + blockObjectToCacheOut.Count);
+                                                                    Debug.WriteLine("Total block object(s) cached out of memory: " + blockObjectToCacheOut.Count);
 #endif
-                                                                        ClassLog.WriteLine("Memory management - Total block object(s) cached out of memory: " + blockObjectToCacheOut.Count, ClassEnumLogLevelType.LOG_LEVEL_MEMORY_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                                                                    ClassLog.WriteLine("Memory management - Total block object(s) cached out of memory: " + blockObjectToCacheOut.Count, ClassEnumLogLevelType.LOG_LEVEL_MEMORY_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
                                                                 }
                                                             }
                                                         }
 
-                                                            #endregion
+                                                        #endregion
 
-                                                            #region Push updated blocks to the cache system.
+                                                        #region Push updated blocks to the cache system.
 
-                                                            using (DisposableList<ClassBlockObject> blockObjectToCacheUpdate = new DisposableList<ClassBlockObject>())
+                                                        using (DisposableList<ClassBlockObject> blockObjectToCacheUpdate = new DisposableList<ClassBlockObject>())
                                                         {
                                                             foreach (var blockPair in dictionaryCache.GetList.Where(x => !x.Value.Item1))
                                                             {
-                                                                _cancellationTokenMemoryManagement.Token.ThrowIfCancellationRequested();
+                                                                if (_cancellationTokenMemoryManagement.IsCancellationRequested)
+                                                                    break;
+
                                                                 blockObjectToCacheUpdate.Add(blockPair.Value.Item2);
                                                             }
 
@@ -3353,27 +3348,29 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                     changeDone = true;
                                                                     foreach (var block in blockObjectToCacheUpdate.GetList)
                                                                     {
-                                                                        _cancellationTokenMemoryManagement.Token.ThrowIfCancellationRequested();
+                                                                        if (_cancellationTokenMemoryManagement.IsCancellationRequested)
+                                                                            break;
+
                                                                         _dictionaryBlockObjectMemory[block.BlockHeight].CacheUpdated = true;
                                                                         _dictionaryBlockObjectMemory[block.BlockHeight].ObjectIndexed = true;
                                                                         _dictionaryBlockObjectMemory[block.BlockHeight].ObjectCacheType = CacheBlockMemoryEnumState.IN_CACHE;
                                                                     }
 #if DEBUG
-                                                                        Debug.WriteLine("Total block object(s) cached updated and keep in memory: " + blockObjectToCacheUpdate.Count);
+                                                                    Debug.WriteLine("Total block object(s) cached updated and keep in memory: " + blockObjectToCacheUpdate.Count);
 #endif
-                                                                        ClassLog.WriteLine("Memory management - Total block object(s) cached updated and keep in memory: " + blockObjectToCacheUpdate.Count, ClassEnumLogLevelType.LOG_LEVEL_MEMORY_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                                                                    ClassLog.WriteLine("Memory management - Total block object(s) cached updated and keep in memory: " + blockObjectToCacheUpdate.Count, ClassEnumLogLevelType.LOG_LEVEL_MEMORY_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
                                                                 }
                                                             }
                                                         }
 
-                                                            #endregion
-                                                        }
-
                                                         #endregion
+                                                    }
 
-                                                        // Purge the IO Cache system.
-                                                        if (changeDone)
+                                                    #endregion
+
+                                                    // Purge the IO Cache system.
+                                                    if (changeDone)
                                                         await _cacheIoSystem.PurgeCacheIoSystem(_cancellationTokenMemoryManagement);
                                                 }
                                             }
@@ -4326,15 +4323,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                             try
                             {
-                                try
-                                {
-                                    await _semaphoreSlimMemoryAccess.WaitAsync(cancellation.Token);
-                                    semaphoreUsed = true;
-                                }
-                                catch
-                                {
-                                    // The task has been cancelled.
-                                }
+                                semaphoreUsed = await _semaphoreSlimMemoryAccess.TryWaitAsync(cancellation);
 
                                 if (semaphoreUsed)
                                 {
@@ -4507,8 +4496,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             {
                 try
                 {
-                    await _semaphoreSlimCacheBlockTransactionAccess.WaitAsync(cancellation.Token);
-                    semaphoreUsed = true;
+                    semaphoreUsed = await _semaphoreSlimCacheBlockTransactionAccess.TryWaitAsync(cancellation);
 
                     if (Count > 0)
                     {
@@ -4519,7 +4507,9 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                         foreach (long blockHeight in _dictionaryBlockObjectMemory.Keys.ToArray())
                         {
-                            
+
+                            if (cancellation.IsCancellationRequested)
+                                break;
 
                             if (_dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache.Count > 0)
                             {
@@ -4527,7 +4517,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                                 foreach (string transactionHash in _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache.Keys.ToArray())
                                 {
-                                    
+                                    if (cancellation.IsCancellationRequested)
+                                        break;
 
                                     totalTransaction++;
 
@@ -4601,8 +4592,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             {
                 try
                 {
-                    await _semaphoreSlimCacheBlockTransactionAccess.WaitAsync(cancellation.Token);
-                    semaphoreUsed = true;
+                    semaphoreUsed = await _semaphoreSlimCacheBlockTransactionAccess.TryWaitAsync(cancellation);
 
                     if (_blockchainDatabaseSetting.BlockchainCacheSetting.EnableCacheDatabase)
                     {
@@ -4716,6 +4706,9 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                                                 for (long i = 0; i < lastBlockHeight; i++)
                                                 {
+                                                    if (cancellation.IsCancellationRequested)
+                                                        break;
+
                                                     long blockHeightIndex = i + 1;
                                                     if (blockHeightIndex <= lastBlockHeight)
                                                     {
@@ -4727,7 +4720,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                 {
                                                                     foreach (var txHash in listBlockTransactionHash.GetList)
                                                                     {
-                                                                        
+                                                                        if (cancellation.IsCancellationRequested)
+                                                                            break;
 
                                                                         if (_dictionaryBlockObjectMemory[blockHeightIndex].BlockTransactionCache.TryGetValue(txHash, out var cacheIoBlockTransactionObject))
                                                                         {
@@ -4835,14 +4829,14 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             {
                 try
                 {
-                    await _semaphoreSlimCacheBlockTransactionAccess.WaitAsync(cancellation.Token);
-                    semaphoreUsed = true;
+                    semaphoreUsed = await _semaphoreSlimCacheBlockTransactionAccess.TryWaitAsync(cancellation);
 
                     if (_blockchainDatabaseSetting.BlockchainCacheSetting.EnableCacheDatabase)
                     {
                         foreach (var blockTransaction in blockTransactionList)
                         {
-                            cancellation?.Token.ThrowIfCancellationRequested();
+                            if (cancellation.IsCancellationRequested)
+                                break;
 
                             if (blockTransaction?.TransactionObject != null)
                             {
@@ -4999,10 +4993,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                         if (listTxHashToRemove.Count > 0)
                                                                         {
                                                                             foreach (string txHash in listTxHashToRemove.GetList)
-                                                                            {
-                                                                                
                                                                                 _dictionaryBlockObjectMemory[blockHeightIndex].BlockTransactionCache.TryRemove(txHash, out _);
-                                                                            }
+
                                                                         }
                                                                     }
                                                                 }
@@ -5082,11 +5074,11 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             bool semaphoreUsed = false;
             try
             {
+
+                semaphoreUsed = await _semaphoreSlimCacheBlockTransactionAccess.TryWaitAsync(cancellation);
+
                 try
                 {
-                    await _semaphoreSlimCacheBlockTransactionAccess.WaitAsync(cancellation.Token);
-                    semaphoreUsed = true;
-
                     if (blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight)
                         result = _dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache.ContainsKey(transactionHash);
                 }
@@ -5118,11 +5110,11 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             bool semaphoreUsed = false;
             try
             {
+                semaphoreUsed = await _semaphoreSlimCacheBlockTransactionAccess.TryWaitAsync(cancellation);
+
                 try
                 {
-                    await _semaphoreSlimCacheBlockTransactionAccess.WaitAsync(cancellation.Token);
-                    semaphoreUsed = true;
-
+                    
                     if (blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight)
                     {
 
@@ -5180,8 +5172,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             {
                 try
                 {
-                    await _semaphoreSlimCacheBlockTransactionAccess.WaitAsync(cancellation.Token);
-                    semaphoreUsed = true;
+                    semaphoreUsed = await _semaphoreSlimCacheBlockTransactionAccess.TryWaitAsync(cancellation);
+
+                    if (!semaphoreUsed)
+                        return listBlockTransactions;
 
                     if (blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight)
                     {
@@ -5244,15 +5238,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             bool semaphoreUsed = false;
             try
             {
-                try
-                {
-                    await _semaphoreSlimCacheBlockTransactionAccess.WaitAsync(cancellation.Token);
-                    semaphoreUsed = true;
-                }
-                catch
-                {
-                    // The task has been cancelled.
-                }
+                semaphoreUsed = await _semaphoreSlimCacheBlockTransactionAccess.TryWaitAsync(cancellation);
 
                 if (semaphoreUsed)
                 {

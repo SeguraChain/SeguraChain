@@ -236,8 +236,6 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                     await Task.Delay(ClassWalletDefaultSetting.DefaultWalletUpdateSyncCacheInterval);
 
                                 }
-
-                                cancellationUpdateWalletSync.Cancel();
                             }
 
                         }
