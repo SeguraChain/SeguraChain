@@ -1403,8 +1403,12 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         public static async Task<bool> TrySendSplittedPacket(this NetworkStream networkStream, byte[] packetBytesToSend, CancellationTokenSource cancellation, int packetMaxSize, bool singleWrite = false)
         {
+            if (packetBytesToSend == null || packetBytesToSend.Length == 0)
+                return false;
+
             try
             {
+
                 if (packetBytesToSend.Length >= packetMaxSize && !singleWrite)
                 {
                     int packetLength = packetBytesToSend.Length;
@@ -1434,7 +1438,7 @@ namespace SeguraChain_Lib.Utility
 
                     await networkStream.FlushAsync(cancellation.Token);
                 }
-                else if (packetBytesToSend.Length > 0)
+                else
                 {
                     await networkStream.WriteAsync(packetBytesToSend, 0, packetBytesToSend.Length, cancellation.Token);
                     await networkStream.FlushAsync(cancellation.Token);
