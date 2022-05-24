@@ -297,8 +297,6 @@ namespace SeguraChain_Lib.TaskManager
                 try
                 {
 
-
-
                     while (!cancellationTask.IsCancellationRequested && TaskManagerEnabled && !_cancelTaskManager.IsCancellationRequested)
                     {
                         if (!TaskManagerEnabled || (timestampEnd > 0 && timestampEnd < CurrentTimestampMillisecond))
@@ -311,7 +309,6 @@ namespace SeguraChain_Lib.TaskManager
                             if (isLocked)
                             {
                                 _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
-                                Monitor.PulseAll(_taskCollection);
                                 break;
                             }
                         }
@@ -332,7 +329,10 @@ namespace SeguraChain_Lib.TaskManager
                 finally
                 {
                     if (isLocked)
+                    {
+                        Monitor.PulseAll(_taskCollection);
                         Monitor.Exit(_taskCollection);
+                    }
                 }
             }
         }

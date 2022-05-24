@@ -1,5 +1,7 @@
 ﻿using SeguraChain_Lib.Blockchain.Block.Object.Structure;
 using SeguraChain_Lib.Other.Object.List;
+using SeguraChain_Lib.Utility;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -86,8 +88,10 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
             bool semaphoreUsed = false;
             try
             {
-                await _semaphoreDictionaryAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
+                semaphoreUsed = await _semaphoreDictionaryAccess.TryWaitAsync(cancellation);
+
+                if (!semaphoreUsed)
+                    return result;
 
                 result = _syncCacheDatabase.ContainsKey(blockHeight);
 
@@ -115,8 +119,10 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
             bool semaphoreUsed = false;
             try
             {
-                await _semaphoreDictionaryAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
+                semaphoreUsed = await _semaphoreDictionaryAccess.TryWaitAsync(cancellation);
+
+                if (!semaphoreUsed)
+                    return count;
 
                 if (_syncCacheDatabase.ContainsKey(blockHeight))
                     count = _syncCacheDatabase[blockHeight].Count;
@@ -144,8 +150,10 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
             bool semaphoreUsed = false;
             try
             {
-                await _semaphoreDictionaryAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
+                semaphoreUsed = await _semaphoreDictionaryAccess.TryWaitAsync(cancellation);
+
+                if (!semaphoreUsed)
+                    return result;
 
                 if (_syncCacheDatabase.ContainsKey(blockHeight))
                     result = _syncCacheDatabase[blockHeight].ContainsKey(transactionHash);
@@ -171,8 +179,10 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
             bool semaphoreUsed = false;
             try
             {
-                await _semaphoreDictionaryAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
+                semaphoreUsed = await _semaphoreDictionaryAccess.TryWaitAsync(cancellation);
+
+                if (!semaphoreUsed)
+                    return result;
 
                 bool insertBlockHeight = true;
 
@@ -222,27 +232,19 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
         /// <param name="cancellation"></param>
         public async Task Clear(CancellationTokenSource cancellation)
         {
-            bool semaphoreUsed = false;
-            try
+
+            await _semaphoreDictionaryAccess.TryWaitExecuteAction(
+            new Action(() =>
             {
-                await _semaphoreDictionaryAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
-
-
-                foreach(long blockHeight in BlockHeightKeys.GetAll)
+                foreach (long blockHeight in BlockHeightKeys.GetAll)
                     _syncCacheDatabase[blockHeight].Clear();
 
                 _syncCacheDatabase.Clear();
 
                 AvailableBalance = 0;
                 PendingBalance = 0;
-                
-            }
-            finally
-            {
-                if (semaphoreUsed)
-                    _semaphoreDictionaryAccess.Release();
-            }
+            }), cancellation);
+
         }
 
         /// <summary>
@@ -259,8 +261,10 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
 
             try
             {
-                await _semaphoreDictionaryAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
+                semaphoreUsed = await _semaphoreDictionaryAccess.TryWaitAsync(cancellation);
+
+                if (!semaphoreUsed)
+                    return listBlockTransaction;
 
                 if (_syncCacheDatabase.ContainsKey(blockHeight))
                     listBlockTransaction.GetList = new Dictionary<string, ClassSyncCacheBlockTransactionObject>(_syncCacheDatabase[blockHeight]);
@@ -287,8 +291,10 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
 
             try
             {
-                await _semaphoreDictionaryAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
+                semaphoreUsed = await _semaphoreDictionaryAccess.TryWaitAsync(cancellation);
+
+                if (!semaphoreUsed)
+                    return listBlockTransactionHash;
 
                 if (_syncCacheDatabase.ContainsKey(blockHeight))
                 {
@@ -332,8 +338,10 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
 
             try
             {
-                await _semaphoreDictionaryAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
+                semaphoreUsed = await _semaphoreDictionaryAccess.TryWaitAsync(cancellation);
+
+                if (!semaphoreUsed)
+                    return false;
 
                 if (_syncCacheDatabase.ContainsKey(blockHeight))
                 {
@@ -382,8 +390,10 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
 
             try
             {
-                await _semaphoreDictionaryAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
+                semaphoreUsed = await _semaphoreDictionaryAccess.TryWaitAsync(cancellation);
+
+                if (!semaphoreUsed)
+                    return isConfirmed;
 
                 if (_syncCacheDatabase.ContainsKey(blockHeight))
                 {
@@ -426,8 +436,11 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
 
                 try
                 {
-                    await _semaphoreDictionaryAccess.WaitAsync(cancellation.Token);
-                    semaphoreUsed = true;
+                    
+                    semaphoreUsed = await _semaphoreDictionaryAccess.TryWaitAsync(cancellation);
+
+                    if (!semaphoreUsed)
+                        return listBlockTransactionHash;
 
                     using (DisposableList<long> listBlockHeights = BlockHeightKeys)
                     {
@@ -489,13 +502,10 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
         /// <returns></returns>
         public async Task RemoveSyncedBlockTransactionCached(long blockHeight, string transactionHash, CancellationTokenSource cancellation)
         {
-            bool semaphoreUsed = false;
 
-            try
+            await _semaphoreDictionaryAccess.TryWaitExecuteAction(
+            new Action(() =>
             {
-                await _semaphoreDictionaryAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
-
                 if (_syncCacheDatabase.ContainsKey(blockHeight))
                 {
                     if (_syncCacheDatabase[blockHeight].ContainsKey(transactionHash))
@@ -504,12 +514,9 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
                     if (_syncCacheDatabase[blockHeight].Count == 0)
                         _syncCacheDatabase.TryRemove(blockHeight, out _);
                 }
-            }
-            finally
-            {
-                if (semaphoreUsed)
-                    _semaphoreDictionaryAccess.Release();
-            }
+
+            }), cancellation);
+
         }
 
         /// <summary>
@@ -520,23 +527,17 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
         /// <returns></returns>
         public async Task ClearBlockTransactionOnBlockHeight(long blockHeight, CancellationTokenSource cancellation)
         {
-            bool semaphoreUsed = false;
 
-            try
+            await _semaphoreDictionaryAccess.TryWaitExecuteAction(
+            new Action(() =>
             {
-                await _semaphoreDictionaryAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
-
 
                 if (_syncCacheDatabase.ContainsKey(blockHeight))
                     _syncCacheDatabase.Clear();
 
-            }
-            finally
-            {
-                if (semaphoreUsed)
-                    _semaphoreDictionaryAccess.Release();
-            }
+            }), cancellation); 
+            
+
         }
 
         /// <summary>
@@ -551,8 +552,10 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
 
             try
             {
-                await _semaphoreDictionaryAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
+                semaphoreUsed = await _semaphoreDictionaryAccess.TryWaitAsync(cancellation);
+
+                if (!semaphoreUsed)
+                    return listBlockTransactionSynced;
 
                 using (var listBlockHeight = BlockHeightKeys)
                 {
@@ -583,13 +586,10 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
         /// <returns></returns>
         public async Task UpdateWalletBalance(CancellationTokenSource cancellation)
         {
-            bool semaphoreUsed = false;
-            try
+
+            await _semaphoreDictionaryAccess.TryWaitExecuteAction(
+                new Action(() =>
             {
-
-                await _semaphoreDictionaryAccess.WaitAsync(cancellation.Token);
-                semaphoreUsed = true;
-
                 BigInteger availableBalance = 0;
                 BigInteger pendingBalance = 0;
 
@@ -648,12 +648,8 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
 
                 AvailableBalance = availableBalance;
                 PendingBalance = pendingBalance;
-            }
-            finally
-            {
-                if (semaphoreUsed)
-                    _semaphoreDictionaryAccess.Release();
-            }
+            }), cancellation);
+
         }
     }
 }

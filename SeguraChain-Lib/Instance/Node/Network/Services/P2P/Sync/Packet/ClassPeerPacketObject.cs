@@ -44,32 +44,34 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
                 {
                     string[] splitPacketData = packetData.GetStringFromByteArrayUtf8().Split(new[] { "#" }, StringSplitOptions.None);
 
-
-                    if (int.TryParse(splitPacketData[0], out int packetOrder) &&
+                    if (splitPacketData.Length == 7 || splitPacketData.Length == 8)
+                    {
+                        if (int.TryParse(splitPacketData[0], out int packetOrder) &&
                         long.TryParse(splitPacketData[6], out long peerLastTimestampSignatureWhitelist))
-                    {
-                        PacketOrder = (ClassPeerEnumPacketSend)packetOrder;
-                        PacketContent = splitPacketData[1];
-                        PacketHash = ClassUtility.DecompressHexString(splitPacketData[2]);
-                        PacketSignature = splitPacketData[3];
-                        PacketPeerUniqueId = splitPacketData[4];
-                        PublicKey = splitPacketData[5];
-                        PeerLastTimestampSignatureWhitelist = peerLastTimestampSignatureWhitelist;
-                        status = true;
-                    }
-                    else
-                    {
-                        if (int.TryParse(splitPacketData[0], out packetOrder) &&
-                                                 long.TryParse(splitPacketData[7], out peerLastTimestampSignatureWhitelist))
                         {
                             PacketOrder = (ClassPeerEnumPacketSend)packetOrder;
-                            PacketContent = splitPacketData[2];
-                            PacketHash = ClassUtility.DecompressHexString(splitPacketData[3]);
-                            PacketSignature = splitPacketData[4];
-                            PacketPeerUniqueId = splitPacketData[5];
-                            PublicKey = splitPacketData[6];
+                            PacketContent = splitPacketData[1];
+                            PacketHash = ClassUtility.DecompressHexString(splitPacketData[2]);
+                            PacketSignature = splitPacketData[3];
+                            PacketPeerUniqueId = splitPacketData[4];
+                            PublicKey = splitPacketData[5];
                             PeerLastTimestampSignatureWhitelist = peerLastTimestampSignatureWhitelist;
                             status = true;
+                        }
+                        else
+                        {
+                            if (int.TryParse(splitPacketData[0], out packetOrder) &&
+                                                     long.TryParse(splitPacketData[7], out peerLastTimestampSignatureWhitelist))
+                            {
+                                PacketOrder = (ClassPeerEnumPacketSend)packetOrder;
+                                PacketContent = splitPacketData[2];
+                                PacketHash = ClassUtility.DecompressHexString(splitPacketData[3]);
+                                PacketSignature = splitPacketData[4];
+                                PacketPeerUniqueId = splitPacketData[5];
+                                PublicKey = splitPacketData[6];
+                                PeerLastTimestampSignatureWhitelist = peerLastTimestampSignatureWhitelist;
+                                status = true;
+                            }
                         }
                     }
                 }
@@ -157,31 +159,34 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
                 {
                     string[] splitPacketData = packetData.GetStringFromByteArrayUtf8().Split(new[] { "#" }, StringSplitOptions.None);
 
+                    if (splitPacketData.Length == 7 || splitPacketData.Length == 8)
+                    {
 
-                    if (int.TryParse(splitPacketData[0], out int packetOrder) &&
-                        long.TryParse(splitPacketData[6], out long peerLastTimestampSignatureWhitelist))
-                    {
-                        PacketOrder = (ClassPeerEnumPacketResponse)packetOrder;
-                        PacketContent = splitPacketData[1];
-                        PacketHash =   splitPacketData[2] != "empty" ?  ClassUtility.DecompressHexString(splitPacketData[2]) : string.Empty;
-                        PacketSignature = splitPacketData[3];
-                        PacketPeerUniqueId = splitPacketData[4];
-                        PublicKey = splitPacketData[5];
-                        PeerLastTimestampSignatureWhitelist = peerLastTimestampSignatureWhitelist;
-                        status = true;
-                    }
-                    else
-                    {
-                        if (int.TryParse(splitPacketData[1], out packetOrder) && long.TryParse(splitPacketData[7], out peerLastTimestampSignatureWhitelist))
+                        if (int.TryParse(splitPacketData[0], out int packetOrder) &&
+                            long.TryParse(splitPacketData[6], out long peerLastTimestampSignatureWhitelist))
                         {
                             PacketOrder = (ClassPeerEnumPacketResponse)packetOrder;
-                            PacketContent = splitPacketData[2];
-                            PacketHash = splitPacketData[3] != "empty" ? ClassUtility.DecompressHexString(splitPacketData[3]) : string.Empty;
-                            PacketSignature = splitPacketData[4];
-                            PacketPeerUniqueId = splitPacketData[5];
-                            PublicKey = splitPacketData[6];
+                            PacketContent = splitPacketData[1];
+                            PacketHash = splitPacketData[2] != "empty" ? ClassUtility.DecompressHexString(splitPacketData[2]) : string.Empty;
+                            PacketSignature = splitPacketData[3];
+                            PacketPeerUniqueId = splitPacketData[4];
+                            PublicKey = splitPacketData[5];
                             PeerLastTimestampSignatureWhitelist = peerLastTimestampSignatureWhitelist;
                             status = true;
+                        }
+                        else
+                        {
+                            if (int.TryParse(splitPacketData[1], out packetOrder) && long.TryParse(splitPacketData[7], out peerLastTimestampSignatureWhitelist))
+                            {
+                                PacketOrder = (ClassPeerEnumPacketResponse)packetOrder;
+                                PacketContent = splitPacketData[2];
+                                PacketHash = splitPacketData[3] != "empty" ? ClassUtility.DecompressHexString(splitPacketData[3]) : string.Empty;
+                                PacketSignature = splitPacketData[4];
+                                PacketPeerUniqueId = splitPacketData[5];
+                                PublicKey = splitPacketData[6];
+                                PeerLastTimestampSignatureWhitelist = peerLastTimestampSignatureWhitelist;
+                                status = true;
+                            }
                         }
                     }
                 }

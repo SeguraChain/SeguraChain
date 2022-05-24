@@ -578,8 +578,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                 byte[] packetReceivedBuffer = new byte[_peerNetworkSettingObject.PeerMaxPacketBufferSize];
                                 int packetLength = 0;
 
-                                while (!broadcastResponsePacketStatus && (packetLength = await networkStream.ReadAsync(packetReceivedBuffer, 0, packetReceivedBuffer.Length, cancellationReceiveBroadcastResponsePacket.Token)) > 0)
+                                while (!broadcastResponsePacketStatus && ((packetLength = await networkStream.ReadAsync(packetReceivedBuffer, 0, packetReceivedBuffer.Length)) > 0))
                                 {
+                                    if (cancellationReceiveBroadcastResponsePacket.IsCancellationRequested)
+                                        break;
 
                                     if (packetLength > 0)
                                         listPacketReceived.GetList = ClassUtility.GetEachPacketSplitted(packetReceivedBuffer, listPacketReceived, cancellationReceiveBroadcastResponsePacket).GetList;
@@ -645,7 +647,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 #endif
                     }
 
-                }), timestampEnd, cancellationReceiveBroadcastResponsePacket, _peerSocketClient);
+                }), timestampEnd, cancellationReceiveBroadcastResponsePacket, null);
 
 
 
@@ -1161,7 +1163,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                     taskComplete = true;
 
-                }), timestampEnd, cancellationReceiveBlockListPacket, _peerSocketClient);
+                }), timestampEnd, cancellationReceiveBlockListPacket, null);
 
 
 
@@ -1550,7 +1552,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     }
 
                     taskDone = true;
-                }), timestampEnd, cancellationReceiveMemPoolTransactionVote, _peerSocketClient);
+                }), timestampEnd, cancellationReceiveMemPoolTransactionVote, null);
 
 
                 while (!taskDone)

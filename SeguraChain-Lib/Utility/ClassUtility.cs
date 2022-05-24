@@ -856,7 +856,7 @@ namespace SeguraChain_Lib.Utility
             try
             {
                 if (tcpClient?.Client != null)
-                    return !((tcpClient.Client.Poll(10, SelectMode.SelectRead) && (tcpClient.Client.Available == 0)) || !tcpClient.Client.Connected);
+                    return (tcpClient.Client.Poll(10, SelectMode.SelectRead) && tcpClient.Client.Connected);
             }
             catch
             {
@@ -877,10 +877,7 @@ namespace SeguraChain_Lib.Utility
                 if (socket == null)
                     return false;
 
-                if (!socket.Connected)
-                    return false;
-
-                    return !((socket.Poll(10, SelectMode.SelectRead) && (socket.Available == 0)));
+                return ((socket.Poll(10, SelectMode.SelectRead) && socket.Connected));
             }
             catch
             {
@@ -1451,6 +1448,50 @@ namespace SeguraChain_Lib.Utility
             return true;
         }
     }
+    
 
+    public static class ClassUtilitySemaphoreExtension 
+    {
+        /// <summary>
+        /// Try await async shortcut function.
+        /// </summary>
+        /// <param name="semaphore"></param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
+        public static async Task<bool> TryWaitAsync(this SemaphoreSlim semaphore, CancellationTokenSource cancellation)
+        {
+            try
+            {
+                await semaphore.WaitAsync(cancellation.Token);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Try to get a semaphore access and execute the action.
+        /// </summary>
+        /// <param name="semaphore"></param>
+        /// <param name="action"></param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
+        public static async Task<bool> TryWaitExecuteAction(this SemaphoreSlim semaphore, Action action, CancellationTokenSource cancellation)
+        {
+            if (await semaphore.TryWaitAsync(cancellation))
+            {
+                action.Invoke();
+
+                semaphore.Release();
+                return true;
+            }
+
+            return false;
+        }
+
+
+    }
     #endregion
 }
