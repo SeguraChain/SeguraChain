@@ -354,7 +354,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                         using (NetworkStream networkStream = new NetworkStream(_peerSocketClient))
                         {
-                            while (PeerTaskStatus && PeerConnectStatus && await networkStream.ReadAsync(packetBufferOnReceive, 0, packetBufferOnReceive.Length, _peerCancellationTokenTaskListenPeerPacketResponse.Token) > 0)
+                            while (PeerTaskStatus && PeerConnectStatus && await networkStream.ReadAsync(packetBufferOnReceive, 0, packetBufferOnReceive.Length) > 0)
                             {
                                 _lastPacketReceivedTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
@@ -380,7 +380,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                     }
 
                                     listPacketReceived[listPacketReceived.Count - 1].Packet.Clear();
-                                    listPacketReceived[listPacketReceived.Count - 1].Complete = false;
 
                                     if (!failed)
                                     {
@@ -440,7 +439,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                         if (!CheckConnection)
                             PeerConnectStatus = false;
                     }
+
                 }
+
+                PeerTaskStatus = false;
+
 
             }), 0, _peerCancellationTokenTaskListenPeerPacketResponse, null);
 

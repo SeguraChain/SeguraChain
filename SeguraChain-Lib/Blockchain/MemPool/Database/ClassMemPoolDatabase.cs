@@ -392,13 +392,15 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
                     {
                         foreach (var blockHeight in _dictionaryMemPoolTransactionObjects.Keys)
                         {
-                            cancellation.Token.ThrowIfCancellationRequested();
+                            if (cancellation.IsCancellationRequested)
+                                break;
 
                             if (_dictionaryMemPoolTransactionObjects[blockHeight].Count > 0)
                             {
                                 foreach (var memPoolTxObject in _dictionaryMemPoolTransactionObjects[blockHeight])
                                 {
-                                    cancellation.Token.ThrowIfCancellationRequested();
+                                    if (cancellation.IsCancellationRequested)
+                                        break;
 
                                     listMemPoolTxObjects.Add(memPoolTxObject.Value.TransactionObject);
                                 }
@@ -443,13 +445,16 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
                     {
                         foreach (var blockHeight in _dictionaryMemPoolTransactionObjects.Keys.Where(x => x <= maxBlockHeightTarget))
                         {
-                            cancellation.Token.ThrowIfCancellationRequested();
+                            if (cancellation.IsCancellationRequested)
+                                break;
 
                             if (_dictionaryMemPoolTransactionObjects[blockHeight].Count > 0)
                             {
                                 foreach (var memPoolTxObject in _dictionaryMemPoolTransactionObjects[blockHeight].Where(x => x.Value.TransactionObject.WalletAddressReceiver == walletAddress || x.Value.TransactionObject.WalletAddressSender == walletAddress))
                                 {
-                                    cancellation.Token.ThrowIfCancellationRequested();
+                                    if (cancellation.IsCancellationRequested)
+                                        break;
+                                    
                                     listMemPoolTransaction.Add(memPoolTxObject.Value.TransactionObject);
                                 }
                             }
@@ -493,13 +498,15 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
                     {
                         foreach (var blockHeight in _dictionaryMemPoolTransactionObjects.Keys)
                         {
-                            cancellation.Token.ThrowIfCancellationRequested();
+                            if (cancellation.IsCancellationRequested)
+                                break;
 
                             if (_dictionaryMemPoolTransactionObjects[blockHeight].Count > 0)
                             {
                                 foreach (var memPoolTxObject in _dictionaryMemPoolTransactionObjects[blockHeight].Where(x => x.Value.TransactionObject.WalletAddressReceiver == walletAddress || x.Value.TransactionObject.WalletAddressSender == walletAddress))
                                 {
-                                    cancellation.Token.ThrowIfCancellationRequested();
+                                    if (cancellation.IsCancellationRequested)
+                                        break;
 
                                     if (memPoolTxObject.Value != null && memPoolTxObject.Value?.TransactionObject != null)
                                         disposableListTransaction.Add(memPoolTxObject.Value.TransactionObject);

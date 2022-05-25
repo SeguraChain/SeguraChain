@@ -857,7 +857,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                                 foreach (long blockHeight in peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount.Keys.OrderBy(x => x))
                                 {
-                                    _peerCancellationToken.Token.ThrowIfCancellationRequested();
+                                    if (_peerCancellationToken.IsCancellationRequested)
+                                        break;
 
                                     if (ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeight < blockHeight)
                                     {
@@ -959,7 +960,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                 {
                                     foreach (long blockHeight in listMemPoolBlockHeight.GetList)
                                     {
-                                        _peerCancellationToken.Token.ThrowIfCancellationRequested();
+                                        if (_peerCancellationToken.IsCancellationRequested)
+                                            break;
 
                                         int countMemPoolTransaction = await ClassMemPoolDatabase.GetCountMemPoolTxFromBlockHeight(blockHeight, true, _peerCancellationToken);
 
@@ -1630,7 +1632,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                             _peerUniqueIdTarget,
                                                             _peerNetworkSettingObject,
                                                             peerPacketRecvObject.PacketContent,
-                                                            packetResponseExpected,
                                                             peerPacketRecvObject.PacketHash,
                                                             peerPacketRecvObject.PacketSignature,
                                                             _peerCancellationToken);

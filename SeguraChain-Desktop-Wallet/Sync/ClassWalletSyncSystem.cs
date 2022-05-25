@@ -180,6 +180,9 @@ namespace SeguraChain_Desktop_Wallet.Sync
 
                                 foreach (string walletAddress in walletAddresses)
                                 {
+                                    if (cancellationUpdateWalletSync.IsCancellationRequested)
+                                        break;
+
                                     walletAddressUpdateSyncCacheState.Add(walletAddress, false);
 
                                     string walletFileName = ClassDesktopWalletCommonData.WalletDatabase.GetWalletFileNameFromWalletAddress(walletAddress);
@@ -194,10 +197,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                                 {
                                                     try
                                                     {
-                                                        if (cancellationUpdateWalletSync.IsCancellationRequested)
-                                                            return;
-
-                                                        await UpdateWalletSyncTransactionCache(walletAddress, walletFileName, lastBlockHeightTransactionConfirmation, cancellationUpdateWalletSync);
+                                                        await UpdateWalletSyncTransactionCache(walletAddress, walletFileName, lastBlockHeightTransactionConfirmation, _cancellationSyncCache);
 
                                                     }
 #if DEBUG
@@ -223,9 +223,11 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                         }
                                     }
                                     else walletAddressUpdateSyncCacheState[walletAddress] = true;
+
+                                    await Task.Delay(1);
                                 }
 
-                                while (walletAddressUpdateSyncCacheState.GetList.Count(x => x.Value == true) < totalTask)
+                                while (walletAddressUpdateSyncCacheState.GetList.Count(x => x.Value == true) < totalTask && totalTaskDone < totalTask)
                                 {
                                     if (_cancellationSyncCache.IsCancellationRequested)
                                         break;
@@ -236,24 +238,13 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                     await Task.Delay(ClassWalletDefaultSetting.DefaultWalletUpdateSyncCacheInterval);
 
                                 }
+
+                                cancellationUpdateWalletSync.Cancel();
                             }
 
                         }
 
                         await Task.Delay(ClassWalletDefaultSetting.DefaultWalletUpdateSyncCacheInterval);
-
-
-                        try
-                        {
-
-                            if (_cancellationSyncCache.IsCancellationRequested)
-                                break;
-                        }
-                        catch
-                        {
-                            break;
-                        }
-
                     }
                 }, _cancellationSyncCache.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
             }

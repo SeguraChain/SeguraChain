@@ -3415,7 +3415,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     {
                         while (startRange < blockObject.BlockTransactionCountInSync)
                         {
-                            cancellation?.Token.ThrowIfCancellationRequested();
+                            if (cancellation.IsCancellationRequested)
+                                break;
 
                             // Increase end range.
                             int incremented = 0;
@@ -3452,7 +3453,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                             int indexTravel = startRange;
                             foreach (string transactionHash in transactionObjectByRange.Keys)
                             {
-                                cancellation?.Token.ThrowIfCancellationRequested();
+                                if (cancellation.IsCancellationRequested)
+                                    break;
 
                                 if (!blockObject.BlockTransactions.ContainsKey(transactionHash))
                                 {
@@ -3512,7 +3514,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         int indexTravel = startRange;
                         foreach (string transactionHash in transactionObjectByRange.Keys)
                         {
-                            cancellation?.Token.ThrowIfCancellationRequested();
+                            if (cancellation.IsCancellationRequested)
+                                break;
 
                             if (!blockObject.BlockTransactions.ContainsKey(transactionHash))
                             {
@@ -3545,7 +3548,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 {
                     for (int txIndex = 0; txIndex < blockObject.BlockTransactionCountInSync; txIndex++)
                     {
-                        cancellation?.Token.ThrowIfCancellationRequested();
+                        if (cancellation.IsCancellationRequested)
+                            break;
 
                         ClassTransactionObject transactionObject = await StartAskBlockTransactionObjectFromListPeerTarget(peerTargetList, blockObject.BlockHeight, txIndex);
 
@@ -3626,7 +3630,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 // Insert new tx's in wallet index.
                                 foreach (var tx in blockObject.BlockTransactions)
                                 {
-                                    cancellation?.Token.ThrowIfCancellationRequested();
+                                    if (cancellation.IsCancellationRequested)
+                                        break;
 
                                     ClassBlockchainDatabase.InsertWalletBlockTransactionHash(tx.Value.TransactionObject, cancellation);
                                 }

@@ -285,7 +285,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main.Wallet
 
                     while ((line = reader.ReadLine()) != null)
                     {
-                        cancellation.Token.ThrowIfCancellationRequested();
+                        if (cancellation.IsCancellationRequested)
+                            break;
 
                         string walletAddress = null;
 
@@ -302,7 +303,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main.Wallet
                             {
                                 foreach (string checkpointCombinedLineData in listCheckpointCombinedSplitted.GetAll)
                                 {
-                                    cancellation.Token.ThrowIfCancellationRequested();
+                                    if (cancellation.IsCancellationRequested)
+                                        break;
 
                                     using (DisposableList<string> checkpointDataSplitted = checkpointCombinedLineData.DisposableSplit(WalletCheckpointDataSeperator))
                                     {

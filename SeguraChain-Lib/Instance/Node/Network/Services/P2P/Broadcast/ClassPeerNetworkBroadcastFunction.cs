@@ -51,7 +51,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             {
                 foreach (int peerIndex in previousListPeerSelected.Keys.ToArray())
                 {
-                    cancellation?.Token.ThrowIfCancellationRequested();
+                    if (cancellation.IsCancellationRequested)
+                        break;
                     bool removePeerConnection = false;
                     string peerIp = previousListPeerSelected[peerIndex].PeerIpTarget;
                     if (peerIp != peerToExcept && peerIp != peerServerIp && peerIp != peerOpenNatServerIp)
@@ -118,14 +119,18 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                 foreach (string peerIp in ClassPeerDatabase.DictionaryPeerDataObject.Keys.ToArray())
                 {
-                    cancellation?.Token.ThrowIfCancellationRequested();
+                    if (cancellation.IsCancellationRequested)
+                        break;
+                    
                     if (peerIp != peerToExcept && peerIp != peerServerIp && peerIp != peerOpenNatServerIp)
                     {
                         if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].Count > 0 && peerIp != peerToExcept)
                         {
                             foreach (string peerUniqueId in ClassPeerDatabase.DictionaryPeerDataObject[peerIp].Keys.ToArray())
                             {
-                                cancellation?.Token.ThrowIfCancellationRequested();
+                                if (cancellation.IsCancellationRequested)
+                                    break;
+
                                 if (!peerUniqueId.IsNullOrEmpty(false, out _))
                                 {
                                     if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerIsPublic && !ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].OnUpdateAuthKeys)
@@ -162,9 +167,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 {
                     foreach (var peerIndex in previousListPeerSelected.Keys)
                     {
-                        cancellation?.Token.ThrowIfCancellationRequested();
+                        if (cancellation.IsCancellationRequested)
+                            break;
+
                         while (newListSelected.ContainsKey(indexPeer))
+                        {
+                            if (cancellation.IsCancellationRequested)
+                                break;
+
                             indexPeer++;
+                        }
 
                         newListSelected.Add(indexPeer, previousListPeerSelected[peerIndex]);
                         indexPeer++;
@@ -176,7 +188,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                     foreach (var peer in listPublicPeer)
                     {
-                        cancellation?.Token.ThrowIfCancellationRequested();
+                        if (cancellation.IsCancellationRequested)
+                            break;
 
                         while (newListSelected.ContainsKey(indexPeer))
                             indexPeer++;

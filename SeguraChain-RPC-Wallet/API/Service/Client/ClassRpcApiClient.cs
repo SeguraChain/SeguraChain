@@ -47,7 +47,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
         /// <summary>
         /// Check the API Client connection.
         /// </summary>
-        private async System.Threading.Tasks.Task CheckApiClientAsync()
+        private async Task CheckApiClientAsync()
         {
             try
             {
@@ -65,7 +65,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
                     if (_apiClientLastPacketTimestamp + 30 < ClassUtility.GetCurrentTimestampInSecond())
                         break;
 
-                    await System.Threading.Tasks.Task.Delay(1000);
+                    await Task.Delay(1000);
                 }
             }
             catch
@@ -92,7 +92,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
 
             try
             {
-                new TaskFactory().StartNew(async () =>
+                Task.Factory.StartNew(async () =>
                 {
                     try
                     {
@@ -104,8 +104,6 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
                             {
                                 try
                                 {
-                                    _apiCancellationToken.Token.ThrowIfCancellationRequested();
-
                                     bool continueReading = true;
                                     bool isPostRequest = false;
 
@@ -115,6 +113,9 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
                                     {
                                         while (continueReading && _apiClientStatus)
                                         {
+                                            if (_apiCancellationToken.IsCancellationRequested)
+                                                break;
+
                                             byte[] packetBuffer = new byte[BlockchainSetting.PeerMaxPacketBufferSize];
 
                                             int packetLength = await networkStream.ReadAsync(packetBuffer, 0, packetBuffer.Length, _apiCancellationToken.Token);
@@ -129,12 +130,12 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
 
                                             if (listPacket.Count > 0)
                                             {
-                                                // If above the max data to receive.
-                                                if (packetSizeCount / 1024 >= BlockchainSetting.PeerMaxPacketBufferSize)
-                                                    listPacket.Clear();
 
                                                 foreach (byte dataByte in listPacket.GetList.SelectMany(x => x).ToArray())
                                                 {
+                                                    if (_apiCancellationToken.IsCancellationRequested)
+                                                        break;
+
                                                     char character = (char)dataByte;
 
                                                     if (character != '\0')

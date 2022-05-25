@@ -43,7 +43,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         /// <param name="packetSignature"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        public bool CheckPacketSignature(string peerIp, string peerUniqueId, ClassPeerNetworkSettingObject peerNetworkSetting, string packetContent, ClassPeerEnumPacketResponse packetOrder, string packetHash, string packetSignature, CancellationTokenSource cancellation)
+        public bool CheckPacketSignature(string peerIp, string peerUniqueId, ClassPeerNetworkSettingObject peerNetworkSetting, string packetContent, string packetHash, string packetSignature, CancellationTokenSource cancellation)
         {
             if (ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
             {
@@ -182,7 +182,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         {
             packetPeerList = null; // Default.
 
-            bool checkPacketSignature = CheckPacketSignature(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkSettingObject, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder, peerNetworkClientSyncObject.PeerPacketReceived.PacketHash, peerNetworkClientSyncObject.PeerPacketReceived.PacketSignature, cancellation);
+            bool checkPacketSignature = CheckPacketSignature(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkSettingObject, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, peerNetworkClientSyncObject.PeerPacketReceived.PacketHash, peerNetworkClientSyncObject.PeerPacketReceived.PacketSignature, cancellation);
 
             if (!checkPacketSignature ||
                 !TryDecryptPacketPeerContent(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, out byte[] packetDecrypted) ||
@@ -256,7 +256,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         {
             peerPacketNetworkInformation = null; // Default.
 
-            bool checkPacketSignature = CheckPacketSignature(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkSettingObject, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder, peerNetworkClientSyncObject.PeerPacketReceived.PacketHash, peerNetworkClientSyncObject.PeerPacketReceived.PacketSignature, cancellation);
+            bool checkPacketSignature = CheckPacketSignature(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkSettingObject, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, peerNetworkClientSyncObject.PeerPacketReceived.PacketHash, peerNetworkClientSyncObject.PeerPacketReceived.PacketSignature, cancellation);
 
             if (!checkPacketSignature)
                 return false;
@@ -332,7 +332,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         {
             packetPeerSovereignUpdateList = null; // Default.
 
-            bool checkPacketSignature = CheckPacketSignature(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkSettingObject, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder, peerNetworkClientSyncObject.PeerPacketReceived.PacketHash, peerNetworkClientSyncObject.PeerPacketReceived.PacketSignature, cancellation);
+            if (peerNetworkClientSyncObject == null || peerNetworkClientSyncObject.PeerPacketReceived == null)
+                return false;
+
+            bool checkPacketSignature = CheckPacketSignature(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkSettingObject, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, peerNetworkClientSyncObject.PeerPacketReceived.PacketHash, peerNetworkClientSyncObject.PeerPacketReceived.PacketSignature, cancellation);
 
             if (!checkPacketSignature)
                 return false;
@@ -403,7 +406,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         {
             packetSovereignUpdateData = null; // Default.
 
-            bool checkPacketSignature = CheckPacketSignature(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkSettingObject, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder, peerNetworkClientSyncObject.PeerPacketReceived.PacketHash, peerNetworkClientSyncObject.PeerPacketReceived.PacketSignature, cancellation);
+            bool checkPacketSignature = CheckPacketSignature(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkSettingObject, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, peerNetworkClientSyncObject.PeerPacketReceived.PacketHash, peerNetworkClientSyncObject.PeerPacketReceived.PacketSignature, cancellation);
 
             if (!checkPacketSignature)
                 return false;
@@ -485,7 +488,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         {
             packetSendBlockHeightInformation = null; // Default.
 
-            bool checkPacketSignature = CheckPacketSignature(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkSettingObject, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder, peerNetworkClientSyncObject.PeerPacketReceived.PacketHash, peerNetworkClientSyncObject.PeerPacketReceived.PacketSignature, cancellation);
+            bool checkPacketSignature = CheckPacketSignature(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkSettingObject, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, peerNetworkClientSyncObject.PeerPacketReceived.PacketHash, peerNetworkClientSyncObject.PeerPacketReceived.PacketSignature, cancellation);
 
             if (!checkPacketSignature)
                 return false;
@@ -551,7 +554,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         {
             packetSendBlockData = null; // Default.
 
-            bool checkPacketSignature = CheckPacketSignature(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkSettingObject, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder, peerNetworkClientSyncObject.PeerPacketReceived.PacketHash, peerNetworkClientSyncObject.PeerPacketReceived.PacketSignature, cancellation);
+            bool checkPacketSignature = CheckPacketSignature(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkSettingObject, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, peerNetworkClientSyncObject.PeerPacketReceived.PacketHash, peerNetworkClientSyncObject.PeerPacketReceived.PacketSignature, cancellation);
 
             if (!checkPacketSignature)
                 return false;
@@ -653,7 +656,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         {
             packetSendBlockTransactionData = null; // Default.
 
-            bool checkPacketSignature = CheckPacketSignature(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkSettingObject, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder, peerNetworkClientSyncObject.PeerPacketReceived.PacketHash, peerNetworkClientSyncObject.PeerPacketReceived.PacketSignature, cancellation);
+            bool checkPacketSignature = CheckPacketSignature(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkSettingObject, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, peerNetworkClientSyncObject.PeerPacketReceived.PacketHash, peerNetworkClientSyncObject.PeerPacketReceived.PacketSignature, cancellation);
 
             if (!checkPacketSignature)
                 return false;
@@ -715,7 +718,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         {
             packetSendBlockTransactionDataByRange = null; // Default.
 
-            bool checkPacketSignature = CheckPacketSignature(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkSettingObject, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder, peerNetworkClientSyncObject.PeerPacketReceived.PacketHash, peerNetworkClientSyncObject.PeerPacketReceived.PacketSignature, cancellation);
+            bool checkPacketSignature = CheckPacketSignature(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkSettingObject, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, peerNetworkClientSyncObject.PeerPacketReceived.PacketHash, peerNetworkClientSyncObject.PeerPacketReceived.PacketSignature, cancellation);
 
             if (!checkPacketSignature)
                 return false;

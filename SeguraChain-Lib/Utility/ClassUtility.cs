@@ -855,14 +855,15 @@ namespace SeguraChain_Lib.Utility
         {
             try
             {
-                if (tcpClient?.Client != null)
-                    return (tcpClient.Client.Poll(10, SelectMode.SelectRead) && tcpClient.Client.Connected);
+                if (tcpClient == null || tcpClient.Client == null || !tcpClient.Connected)
+                    return false;
+
+                return !((tcpClient.Client.Poll(10, SelectMode.SelectRead) && (tcpClient.Client.Available == 0)));
             }
             catch
             {
                 return false;
             }
-            return false;
         }
 
         /// <summary>
@@ -1274,13 +1275,13 @@ namespace SeguraChain_Lib.Utility
         {
             DisposableList<string> listSplitted = new DisposableList<string>();
 
-            if (src.Length > 0)
+            if (src.IsNullOrEmpty(true, out string srcTrimmed) || srcTrimmed.Length == 0)
+                return listSplitted;
+
+            foreach (var word in srcTrimmed.Split(new[] { seperatorStr }, StringSplitOptions.None))
             {
-                foreach (var word in src.Split(new[] { seperatorStr }, StringSplitOptions.None))
-                {
-                    if (!word.IsNullOrEmpty(true, out string wordTrimmed))
-                        listSplitted.Add(wordTrimmed);
-                }
+                if (!word.IsNullOrEmpty(true, out string wordTrimmed))
+                    listSplitted.Add(wordTrimmed);
             }
 
             return listSplitted;

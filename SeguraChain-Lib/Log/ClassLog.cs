@@ -233,7 +233,8 @@ namespace SeguraChain_Lib.Log
                                             // Get all log content retrieved to the concurrent bag of logs.
                                             foreach (ClassLogObject logObject in _logListOnCollect[logLevelType].ToArray())
                                             {
-                                                _cancellationTokenSourceLogWriter.Token.ThrowIfCancellationRequested();
+                                                if (_cancellationTokenSourceLogWriter.IsCancellationRequested)
+                                                    break;
 
                                                 logListToWrite.Add(logObject);
 

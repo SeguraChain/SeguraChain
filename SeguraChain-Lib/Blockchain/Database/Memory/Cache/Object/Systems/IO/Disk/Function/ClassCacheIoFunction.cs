@@ -40,7 +40,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                 {
                     foreach (var ioDataLine in dataList.GetList)
                     {
-                        cancellation?.Token.ThrowIfCancellationRequested();
+                        if (cancellation.IsCancellationRequested)
+                            break;
 
                         if (!ioDataLine.StartsWith(IoDataBeginBlockString) && !ioDataLine.StartsWith(IoDataEndBlockString))
                         {
@@ -73,7 +74,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                                     {
                                         foreach (var transaction in transactionList.GetList)
                                         {
-                                            cancellation?.Token.ThrowIfCancellationRequested();
+                                            if (cancellation.IsCancellationRequested)
+                                                break;
 
                                             if (!ClassTransactionUtility.StringToBlockTransaction(transaction, out ClassBlockTransaction blockTransaction))
                                                 return false;
@@ -91,7 +93,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                                     {
                                         foreach (var transaction in transactionList.GetList)
                                         {
-                                            cancellation?.Token.ThrowIfCancellationRequested();
+                                            if (cancellation.IsCancellationRequested)
+                                                break;
 
                                             if (!ClassTransactionUtility.StringToBlockTransaction(transaction, out ClassBlockTransaction blockTransaction))
                                                 return false;
@@ -139,7 +142,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                 {
                     foreach (var ioDataLine in dataList.GetList)
                     {
-                        cancellation?.Token.ThrowIfCancellationRequested();
+                        if (cancellation.IsCancellationRequested)
+                            break;
 
                         if (!ioDataLine.StartsWith(IoDataBeginBlockString) && !ioDataLine.StartsWith(IoDataEndBlockString))
                         {
@@ -166,7 +170,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                                     {
                                         foreach (var transaction in transactionList.GetList)
                                         {
-                                            cancellation?.Token.ThrowIfCancellationRequested();
+                                            if (cancellation.IsCancellationRequested)
+                                                break;
 
                                             if (!ClassTransactionUtility.StringToBlockTransaction(transaction, out blockTransaction))
                                                 return false;
@@ -185,7 +190,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                                     {
                                         foreach (var transaction in transactionList.GetList)
                                         {
-                                            cancellation?.Token.ThrowIfCancellationRequested();
+                                            if (cancellation.IsCancellationRequested)
+                                                break;
 
                                             if (!ClassTransactionUtility.StringToBlockTransaction(transaction, out blockTransaction))
                                                 return false;
@@ -235,7 +241,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
                 foreach (KeyValuePair<string, ClassBlockTransaction> blockObjectBlockTransaction in blockObject.BlockTransactions)
                 {
-                    cancellation?.Token.ThrowIfCancellationRequested();
+                    if (cancellation.IsCancellationRequested)
+                        break;
 
                     ioDataLineTransaction += ClassTransactionUtility.SplitBlockTransactionObject(blockObjectBlockTransaction.Value) + IoDataCharacterSeperator;
 

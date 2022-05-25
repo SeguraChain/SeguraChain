@@ -658,7 +658,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                     {
                         for (int i = 0; i < listBlockObject.Count; i++)
                         {
-                            cancellationIoCache?.Token.ThrowIfCancellationRequested();
+                            if (cancellationIoCache.IsCancellationRequested)
+                                break;
 
                             if (i < listBlockObject.Count)
                             {
@@ -739,7 +740,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                     {
                         for (int i = 0; i < listBlockTransaction.Count; i++)
                         {
-                            cancellationIoCache?.Token.ThrowIfCancellationRequested();
+                            if (cancellationIoCache.IsCancellationRequested)
+                                break;
 
                             if (i < listBlockTransaction.Count)
                             {

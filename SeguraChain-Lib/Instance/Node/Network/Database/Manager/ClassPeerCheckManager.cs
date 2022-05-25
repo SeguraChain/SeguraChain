@@ -33,13 +33,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                 long currentTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
                 foreach (string peerIp in ClassPeerDatabase.DictionaryPeerDataObject.Keys.ToArray())
                 {
-                    cancellation?.Token.ThrowIfCancellationRequested();
+                    if (cancellation.IsCancellationRequested)
+                        break;
 
                     if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].Count > 0)
                     {
                         foreach (string peerUniqueId in ClassPeerDatabase.DictionaryPeerDataObject[peerIp].Keys.ToArray())
                         {
-                            cancellation?.Token.ThrowIfCancellationRequested();
+                            if (cancellation.IsCancellationRequested)
+                                break;
 
                             if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerIsPublic)
                             {
