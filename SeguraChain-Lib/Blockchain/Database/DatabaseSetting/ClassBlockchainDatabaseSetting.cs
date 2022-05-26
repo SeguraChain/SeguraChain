@@ -13,7 +13,10 @@ namespace SeguraChain_Lib.Blockchain.Database.DatabaseSetting
         /// Default paths and settings of the blockchain database.
         /// </summary>
         public static readonly string DefaultBlockchainDirectoryPath = ClassUtility.ConvertPath(AppContext.BaseDirectory + "\\Blockchain\\").Replace("\\\\", "\\");
-        public const string BlockDatabaseFileName = "blockchain.dat";
+        public static readonly string DefaultBlockchainDirectoryBlockPath = ClassUtility.ConvertPath(AppContext.BaseDirectory + "\\Blockchain\\Block\\").Replace("\\\\", "\\");
+        public const string BlockDatabaseDirectory = "Block\\";
+        public const string BlockDatabaseFileName = "block-";
+        public const string BlockDatabaseFileExtension = ".dat";
         public const string CheckpointDatabaseFileName = "checkpoint.dat";
         public static readonly string BlockchainCacheDirectoryPath = ClassUtility.ConvertPath(DefaultBlockchainDirectoryPath + "\\Cache\\").Replace("\\\\", "\\");
         public static readonly string WalletIndexCacheDirectoryPath = ClassUtility.ConvertPath(DefaultBlockchainDirectoryPath + "\\WalletIndexCache\\").Replace("\\\\", "\\");
@@ -106,6 +109,7 @@ namespace SeguraChain_Lib.Blockchain.Database.DatabaseSetting
             BlockchainSetting = new Blockchain
             {
                 BlockchainDirectoryPath = ClassBlockchainDatabaseDefaultSetting.DefaultBlockchainDirectoryPath,
+                BlockchainDirectoryBlockPath = ClassBlockchainDatabaseDefaultSetting.DefaultBlockchainDirectoryBlockPath,
                 BlockchainBlockDatabaseFilename = ClassBlockchainDatabaseDefaultSetting.BlockDatabaseFileName,
                 BlockchainCheckpointDatabaseFilename = ClassBlockchainDatabaseDefaultSetting.CheckpointDatabaseFileName
             };
@@ -290,6 +294,7 @@ namespace SeguraChain_Lib.Blockchain.Database.DatabaseSetting
         public class Blockchain
         {
             public string BlockchainDirectoryPath;
+            public string BlockchainDirectoryBlockPath;
             public string BlockchainBlockDatabaseFilename;
             public string BlockchainCheckpointDatabaseFilename;
         }

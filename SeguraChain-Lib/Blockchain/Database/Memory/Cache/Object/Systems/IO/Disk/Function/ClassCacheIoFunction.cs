@@ -32,13 +32,17 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         {
             blockObject = null; // Default.
 
+            if (ioData.IsNullOrEmpty(false, out _))
+                return false;
+
             bool blockMetadataFound = false;
 
-            try
+
+            using (DisposableList<string> dataList = ioData.DisposableSplit(Environment.NewLine))
             {
-                using (DisposableList<string> dataList = ioData.DisposableSplit(Environment.NewLine))
+                foreach (var ioDataLine in dataList.GetList)
                 {
-                    foreach (var ioDataLine in dataList.GetList)
+                    try
                     {
                         if (cancellation.IsCancellationRequested)
                             break;
@@ -108,14 +112,14 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                                 }
                             }
                         }
+
+                    }
+                    catch
+                    {
+                        blockObject = null;
                     }
                 }
             }
-            catch
-            {
-                blockObject = null;
-            }
-
 
             return blockObject != null ? true : false;
         }

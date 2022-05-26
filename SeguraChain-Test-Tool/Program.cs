@@ -805,8 +805,12 @@ namespace SeguraChain_Test_Tool
                         {
                             foreach (string blockchainLine in blockchainData)
                             {
+
                                 if (blockchainLine.Contains("GenesisBlockFinalTransactionHash"))
+                                {
                                     writer.WriteLine("\t\tpublic const string GenesisBlockFinalTransactionHash =\"" + finalTransactionHash + "\";");
+                                    Console.WriteLine("Genesis transaction hash: " + finalTransactionHash);
+                                }
                                 else if (blockchainLine.Contains("DefaultWalletAddressDevPublicKey"))
                                     writer.WriteLine("\t\tpublic const string DefaultWalletAddressDevPublicKey =\"" + publicKey + "\";");
                                 else if (blockchainLine.Contains("DefaultWalletAddressDev"))

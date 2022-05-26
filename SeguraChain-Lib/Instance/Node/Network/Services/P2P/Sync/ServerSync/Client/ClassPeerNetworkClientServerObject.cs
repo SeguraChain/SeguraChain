@@ -280,6 +280,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                             continue;
                                         }
 
+                                        listPacketReceived[i].Complete = true;
+
                                         bool failed = false;
                                         byte[] base64Packet = null;
 
@@ -288,8 +290,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                             try
                                             {
                                                 base64Packet = Convert.FromBase64String(listPacketReceived[i].Packet);
-                                                if (base64Packet == null || base64Packet.Length == 0)
-                                                    failed = true;
+                                                failed = base64Packet == null || base64Packet.Length == 0;
                                             }
                                             catch
                                             {
@@ -299,7 +300,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                         else failed = true;
 
                                         listPacketReceived[i].Packet.Clear();
-                                        listPacketReceived[i].Complete = true;
+
 
                                         if (failed || base64Packet == null)
                                             continue;

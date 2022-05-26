@@ -477,10 +477,14 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                 {
 #if NET5_0_OR_GREATER
                     return _dictionaryBlockObjectMemory.TryAdd(blockHeight, blockchainMemoryObject);
+
 #else
-                    _dictionaryBlockObjectMemory.Add(blockHeight, blockchainMemoryObject);
+                    if (!_dictionaryBlockObjectMemory.ContainsKey(blockHeight))
+                        _dictionaryBlockObjectMemory.Add(blockHeight, blockchainMemoryObject);
+                    
                     return true;
 #endif
+
                 }
             }
             catch
@@ -4445,20 +4449,27 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         {
             if (blockObject != null)
             {
-                if (blockObject.IsChecked)
+                try
                 {
-                    if (ContainsKey(blockObject.BlockHeight))
-                        _dictionaryBlockObjectMemory[blockObject.BlockHeight].ContentMirror = blockObject;
-                    else
+                    if (blockObject.IsChecked)
                     {
-                        _dictionaryBlockObjectMemory.Add(blockObject.BlockHeight, new BlockchainMemoryObject()
+                        if (ContainsKey(blockObject.BlockHeight))
+                            _dictionaryBlockObjectMemory[blockObject.BlockHeight].ContentMirror = blockObject;
+                        else
                         {
-                            ContentMirror = blockObject,
-                            ObjectCacheType = CacheBlockMemoryEnumState.IN_PERSISTENT_CACHE,
-                            CacheUpdated = true,
-                            ObjectIndexed = true,
-                        });
+                            _dictionaryBlockObjectMemory.Add(blockObject.BlockHeight, new BlockchainMemoryObject()
+                            {
+                                ContentMirror = blockObject,
+                                ObjectCacheType = CacheBlockMemoryEnumState.IN_PERSISTENT_CACHE,
+                                CacheUpdated = true,
+                                ObjectIndexed = true,
+                            });
+                        }
                     }
+                }
+                catch
+                {
+                    // Ignored.
                 }
             }
         }

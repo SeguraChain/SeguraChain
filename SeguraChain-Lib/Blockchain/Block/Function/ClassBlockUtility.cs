@@ -112,7 +112,6 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
 
                 if (blockHeightFromHash != blockHeight)
                     result = ClassBlockEnumCheckStatus.INVALID_BLOCK_HEIGHT_HASH;
-
                 else
                 {
                     BigInteger blockDifficultyFromHash = (BigInteger)BitConverter.ToDouble(blockDifficultyBytes, 0);
@@ -596,7 +595,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
         #region Manage Block Data Object formating for database.
 
         private const int MaxTransactionPerLineOnStringBlockData = 1000;
-        private const string StringBlockDataCharacterSeperator = "¤";
+        public const string StringBlockDataCharacterSeperator = "¤";
         public const string BlockDataBegin = "[BLOCK-BEGIN]";
         public const string BlockDataEnd = "[BLOCK-END]";
 
@@ -798,7 +797,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
 
                     if (totalLineTransactionOnLine >= MaxTransactionPerLineOnStringBlockData)
                     {
-                        yield return transactionLine;
+                        yield return transactionLine + StringBlockDataCharacterSeperator;
 
                         transactionLine = string.Empty;
                         totalLineTransactionOnLine = 0;
@@ -806,7 +805,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
                 }
 
                 if (!transactionLine.IsNullOrEmpty(false, out _))
-                    yield return transactionLine;
+                    yield return transactionLine + StringBlockDataCharacterSeperator;
             }
 
             yield return BlockDataEnd;
