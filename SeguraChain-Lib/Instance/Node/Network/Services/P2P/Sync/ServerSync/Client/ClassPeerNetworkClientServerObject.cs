@@ -345,7 +345,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                             {
 #endif
                                             }
-                                          
+
 
                                             _onSendingPacketResponse = false;
 
@@ -385,9 +385,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
         }
 
-#endregion
+        #endregion
 
-#region Handle peer packet received.
+        #region Handle peer packet received.
 
         /// <summary>
         /// Handle decrypted packet. (Usually used for send auth keys for register a new peer).
@@ -408,7 +408,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                 _clientPeerPacketReceivedStatus = true;
 
-#region Update peer activity.
+                #region Update peer activity.
 
                 _peerUniqueId = packetSendObject.PacketPeerUniqueId;
 
@@ -436,9 +436,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 }
 
 
-#endregion
+                #endregion
 
-#region Check packet signature if necessary.
+                #region Check packet signature if necessary.
 
                 bool peerIgnorePacketSignature = packetSendObject.PacketOrder == ClassPeerEnumPacketSend.ASK_PEER_AUTH_KEYS ||
                                                  packetSendObject.PacketOrder == ClassPeerEnumPacketSend.ASK_KEEP_ALIVE ||
@@ -463,12 +463,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                         else
                             ClassPeerCheckManager.InputPeerClientValidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject);
                     }
-                    
+
                 }
 
-#endregion
+                #endregion
 
-#region Packet type if the broadcast client mode is enabled.
+                #region Packet type if the broadcast client mode is enabled.
 
                 if (_enableMemPoolBroadcastClientMode)
                 {
@@ -497,7 +497,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                     }
                 }
 
-#endregion
+                #endregion
 
                 switch (packetSendObject.PacketOrder)
                 {
@@ -928,14 +928,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                 if (transactionList.Count > packetSendAskBlockTransactionDataByRange.TransactionIdStartRange &&
                                                     transactionList.Count >= packetSendAskBlockTransactionDataByRange.TransactionIdEndRange)
                                                 {
-#region Generate the list of transaction asked by range.
+                                                    #region Generate the list of transaction asked by range.
 
                                                     SortedDictionary<string, ClassTransactionObject> transactionListRangeToSend = new SortedDictionary<string, ClassTransactionObject>();
 
                                                     foreach (var transactionPair in transactionList.GetList.Skip(packetSendAskBlockTransactionDataByRange.TransactionIdStartRange).Take(packetSendAskBlockTransactionDataByRange.TransactionIdEndRange - packetSendAskBlockTransactionDataByRange.TransactionIdStartRange))
                                                         transactionListRangeToSend.Add(transactionPair.Key, transactionPair.Value.TransactionObject);
 
-#endregion
+                                                    #endregion
 
                                                     ClassPeerPacketSendBlockTransactionDataByRange packetSendBlockTransactionData = new ClassPeerPacketSendBlockTransactionDataByRange()
                                                     {
@@ -1877,9 +1877,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             return ClassPeerNetworkClientServerHandlePacketEnumStatus.VALID_PACKET;
         }
 
-#endregion
+        #endregion
 
-#region Store packet content.
+        #region Store packet content.
 
         /// <summary>
         /// Send auth keys packet.
@@ -1946,9 +1946,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             return ClassPeerNetworkClientServerHandlePacketEnumStatus.VALID_PACKET;
         }
 
-#endregion
+        #endregion
 
-#region Send peer packet response.
+        #region Send peer packet response.
 
         /// <summary>
         /// Send a packet to a peer.
@@ -1956,7 +1956,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         /// <param name="packetSendObject">The packet object to send.</param>
         /// <param name="encrypted">Indicate if the packet require encryption.</param>
         /// <returns>Return the status of the sending of the packet.</returns>
-        private async Task<bool> SendPacketToPeer(ClassPeerPacketRecvObject packetSendObject, ClassPeerObject peerObject,  bool encrypted)
+        private async Task<bool> SendPacketToPeer(ClassPeerPacketRecvObject packetSendObject, ClassPeerObject peerObject, bool encrypted)
         {
 
             try
@@ -2013,9 +2013,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         }
 
 
-#endregion
+        #endregion
 
-#region Sign packet with the private key signature of the peer.
+        #region Sign packet with the private key signature of the peer.
 
         /// <summary>
         /// Sign packet with the numeric private key of the peer.
@@ -2030,9 +2030,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             numericSignature = ClassWalletUtility.WalletGenerateSignature(_peerNetworkSettingObject.PeerNumericPrivateKey, numericHash);
         }
 
-#endregion
+        #endregion
 
-#region Check/Decrypt packet from peer.
+        #region Check/Decrypt packet from peer.
 
         /// <summary>
         /// Decrypt and deserialize packet content received from a peer.
@@ -2061,8 +2061,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             if (ClassPeerCheckManager.CheckPeerClientWhitelistStatus(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject))
                 return true;
 
-            if (peerObject.PeerClientPublicKey.IsNullOrEmpty(false, out _) || 
-                packetSendObject.PacketContent.IsNullOrEmpty(false, out _) || 
+            if (peerObject.PeerClientPublicKey.IsNullOrEmpty(false, out _) ||
+                packetSendObject.PacketContent.IsNullOrEmpty(false, out _) ||
                 packetSendObject.PacketHash.IsNullOrEmpty(false, out _))
             {
                 ClassLog.WriteLine("Packet received to check from peer " + _peerClientIp + " is invalid. The public key of the peer, or the date sent are empty.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
@@ -2113,6 +2113,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             return null;
         }
 
-#endregion
+        #endregion
     }
 }

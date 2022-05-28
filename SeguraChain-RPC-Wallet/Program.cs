@@ -4,6 +4,7 @@ using SeguraChain_Lib.Utility;
 using SeguraChain_RPC_Wallet.API.Service.Server;
 using SeguraChain_RPC_Wallet.Command;
 using SeguraChain_RPC_Wallet.Config;
+using SeguraChain_RPC_Wallet.Config.Enum;
 using SeguraChain_RPC_Wallet.Database;
 using SeguraChain_RPC_Wallet.Node.Client;
 using SeguraChain_RPC_Wallet.RpcTask;
@@ -48,42 +49,40 @@ namespace SeguraChain_RPC_Wallet
         /// <returns></returns>
         private static bool LoadRpcWallet()
         {
-            if (!File.Exists(AppContext.BaseDirectory + "\\" + ClassRpcConfigPath.RpcConfigPath))
+
+            _rpcWalletDatabase = new ClassWalletDatabase();
+
+
+            #region Load the RPC Wallet Setting.
+
+            switch (ClassRpcConfigFunction.CheckRpcWalletConfig(AppContext.BaseDirectory + "\\" + ClassRpcConfigPath.RpcConfigPath, out _rpcConfig))
             {
-                Console.WriteLine("The RPC Wallet config file is not found.");
-
-                _rpcConfig = ClassRpcConfigFunction.BuildRpcWalletConfig();
-
-                using (StreamWriter writer = new StreamWriter(AppContext.BaseDirectory + "\\" + ClassRpcConfigPath.RpcConfigPath))
-                    writer.Write(ClassUtility.SerializeData(_rpcConfig, Formatting.Indented));
-
-                return true;
-            }
-            else
-            {
-                #region Load the RPC Wallet Setting.
-
-                using (StreamReader reader = new StreamReader(AppContext.BaseDirectory + "\\" + ClassRpcConfigPath.RpcConfigPath))
-                {
-                    if (!ClassUtility.TryDeserialize(reader.ReadToEnd(), out _rpcConfig))
+                case ClassRpcEnumConfig.DATABASE_DIRECTORY_NOT_EXIST:
+                case ClassRpcEnumConfig.DATABASE_FILE_NOT_EXIST:
                     {
-                        Console.WriteLine("Cannot deserialize the RPC config file.");
-                        return false;
+                        if (!_rpcWalletDatabase.InitWalletDatabase(_rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabasePath, _rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabaseFilename))
+                        {
+                            Console.WriteLine("Failed to init the wallet database.");
+                            return false;
+                        }
                     }
-
-                    if (!ClassRpcConfigFunction.CheckRpcWalletConfig(_rpcConfig))
+                    break;
+                case ClassRpcEnumConfig.INVALID_CONFIG:
                     {
                         Console.WriteLine("Invalid RPC Wallet Config settings on the file. Please check it.");
                         return false;
                     }
-                }
-
-                #endregion
+                case ClassRpcEnumConfig.VALID_CONFIG:
+                    {
+                        Console.WriteLine("The RPC Wallet Config is valid");
+                    }
+                    break;
             }
 
-            #region Load the RPC Wallet Database.
+            #endregion
+            
 
-            _rpcWalletDatabase = new ClassWalletDatabase();
+            #region Load the RPC Wallet Database.
 
             string rpcWalletDatabasePassword = string.Empty;
 

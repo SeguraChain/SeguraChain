@@ -1,5 +1,7 @@
 ﻿using LZ4;
 using SeguraChain_Lib.Algorithm;
+using SeguraChain_Lib.Blockchain.Block.Object.Structure;
+using SeguraChain_Lib.Blockchain.Wallet.Function;
 using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.Utility;
 using SeguraChain_RPC_Wallet.Database.Wallet;
@@ -28,7 +30,7 @@ namespace SeguraChain_RPC_Wallet.Database
         /// <param name="walletDatabasePath"></param>
         /// <param name="walletFilename"></param>
         /// <returns></returns>
-        private bool InitWalletDatabase(string walletDatabasePath, string walletFilename)
+        public bool InitWalletDatabase(string walletDatabasePath, string walletFilename)
         {
             if (!Directory.Exists(walletDatabasePath))
             {
@@ -48,7 +50,7 @@ namespace SeguraChain_RPC_Wallet.Database
             {
                 try
                 {
-                    File.Create(walletDatabasePath + walletFilename);
+                    File.Create(walletDatabasePath + walletFilename).Close();
 
                     Console.WriteLine("The wallet database file has been created successfully.");
                 }
@@ -115,17 +117,17 @@ namespace SeguraChain_RPC_Wallet.Database
         /// Save wallet database.
         /// </summary>
         /// <param name="walletDatabasePath"></param>
-        /// <param name="walletFilePath"></param>
+        /// <param name="walletFilename"></param>
         /// <param name="walletDatabasePassword"></param>
         /// <returns></returns>
-        public bool SaveWalletDatabase(string walletDatabasePath, string walletFilePath, string walletDatabasePassword)
+        public bool SaveWalletDatabase(string walletDatabasePath, string walletFilename, string walletDatabasePassword)
         {
             if (!ClassAes.GenerateKey(ClassUtility.GetByteArrayFromStringUtf8(walletDatabasePassword), true, out byte[] walletDatabaseEncryptionKey))
                 return false;
 
             byte[] walletDatabaseEncryptionIv = ClassAes.GenerateIv(walletDatabaseEncryptionKey);
 
-            using (FileStream fileStream = new FileStream(walletDatabasePath + walletFilePath, FileMode.OpenOrCreate))
+            using (FileStream fileStream = new FileStream(walletDatabasePath + walletFilename, FileMode.OpenOrCreate))
             {
                 using (StreamWriter writer = new StreamWriter(new LZ4Stream(fileStream, LZ4StreamMode.Decompress, LZ4StreamFlags.HighCompression)))
                 {
@@ -140,6 +142,25 @@ namespace SeguraChain_RPC_Wallet.Database
             }
 
             return true;
+        }
+
+        public ClassWalletData CreateWallet(string baseWords, bool fastGenerator = false)
+        {
+            var walletObject = ClassWalletUtility.GenerateWallet(baseWords, fastGenerator);
+
+            ClassWalletData walletData = new ClassWalletData()
+            {
+                WalletAddress = walletObject.WalletAddress,
+                WalletPrivateKey = walletObject.WalletPrivateKey,
+                WalletPublicKey = walletObject.WalletPublicKey,
+                WalletBlockHeight = 0,
+                WalletBalance = 0,
+                WalletPendingBalance = 0,
+                WalletTransactionList = new ConcurrentDictionary<string, ClassBlockTransaction>()
+            };
+
+
+            return !_dictionaryWallet.ContainsKey(walletData.WalletAddress) ? _dictionaryWallet.TryAdd(walletData.WalletAddress, walletData) ? walletData : null : null;
         }
 
         /// <summary>

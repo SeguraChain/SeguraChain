@@ -1,6 +1,8 @@
-﻿using SeguraChain_Lib.Algorithm;
+﻿using Newtonsoft.Json;
+using SeguraChain_Lib.Algorithm;
 using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Utility;
+using SeguraChain_RPC_Wallet.Config.Enum;
 using System;
 using System.IO;
 using System.Net;
@@ -195,19 +197,6 @@ namespace SeguraChain_RPC_Wallet.Config
                 Console.WriteLine("Input the wallet database path: ");
                 rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabasePath = Console.ReadLine();
 
-                while (rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabaseEnableEncryption)
-                {
-                    try
-                    {
-                        Directory.CreateDirectory(rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabasePath);
-                    }
-                    catch
-                    {
-                        Console.WriteLine("Cannot create the rpc wallet database directory, please put another path: ");
-                        rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabasePath = Console.ReadLine();
-                    }
-                }
-
                 #endregion
             }
 
@@ -219,12 +208,36 @@ namespace SeguraChain_RPC_Wallet.Config
         /// </summary>
         /// <param name="rpcConfig"></param>
         /// <returns></returns>
-        public static bool CheckRpcWalletConfig(ClassRpcConfig rpcConfig)
+        public static ClassRpcEnumConfig CheckRpcWalletConfig(string rpcConfigPath, out ClassRpcConfig rpcConfig)
         {
+
+            rpcConfig = null;
+
+            if (!File.Exists(AppContext.BaseDirectory + "\\" + ClassRpcConfigPath.RpcConfigPath))
+            {
+                Console.WriteLine("The RPC Wallet config file is not found.");
+
+                rpcConfig = BuildRpcWalletConfig();
+
+                using (StreamWriter writer = new StreamWriter(AppContext.BaseDirectory + "\\" + ClassRpcConfigPath.RpcConfigPath))
+                    writer.Write(ClassUtility.SerializeData(rpcConfig, Formatting.Indented));
+
+            }
+
+
+            using (StreamReader reader = new StreamReader(rpcConfigPath))
+            {
+                if (!ClassUtility.TryDeserialize(reader.ReadToEnd(), out rpcConfig))
+                {
+                    Console.WriteLine("Cannot deserialize the RPC config file.");
+                    return ClassRpcEnumConfig.INVALID_CONFIG;
+                }
+            }
+
             if (rpcConfig == null || rpcConfig?.RpcApiSetting == null || rpcConfig?.RpcNodeApiSetting == null || rpcConfig?.RpcWalletDatabaseSetting == null)
             {
                 Console.WriteLine("A configuration of the RPC Wallet is empty.");
-                return false;
+                return ClassRpcEnumConfig.INVALID_CONFIG;
             }
 
             if (rpcConfig.RpcApiSetting.RpcApiEnableSecretKey)
@@ -232,26 +245,26 @@ namespace SeguraChain_RPC_Wallet.Config
                 if (rpcConfig.RpcApiSetting.RpcApiSecretIvArray == null || rpcConfig.RpcApiSetting.RpcApiSecretKeyArray == null || !rpcConfig.RpcApiSetting.RpcApiSecretKey.IsNullOrEmpty(false, out _))
                 {
                     Console.WriteLine("The RPC Wallet database encryption keys are empty.");
-                    return false;
+                    return ClassRpcEnumConfig.INVALID_CONFIG;
                 }
             }
 
             if (!IPAddress.TryParse(rpcConfig.RpcApiSetting.RpcApiIp, out _))
             {
-                Console.WriteLine("The RPC API IP "+rpcConfig.RpcApiSetting.RpcApiIp+ " is invalid.");
-                return false;
+                Console.WriteLine("The RPC API IP " + rpcConfig.RpcApiSetting.RpcApiIp + " is invalid.");
+                return ClassRpcEnumConfig.INVALID_CONFIG;
             }
 
             if (!IPAddress.TryParse(rpcConfig.RpcNodeApiSetting.RpcNodeApiIp, out _))
             {
                 Console.WriteLine("The RPC API Node API IP " + rpcConfig.RpcNodeApiSetting.RpcNodeApiIp + " is invalid.");
-                return false;
+                return ClassRpcEnumConfig.INVALID_CONFIG;
             }
 
             if (rpcConfig.RpcApiSetting.RpcApiPort <= 0 || rpcConfig.RpcApiSetting.RpcApiPort > 65535)
             {
                 Console.WriteLine("The RPC API Port is invalid " + rpcConfig.RpcApiSetting.RpcApiPort);
-                return false;
+                return ClassRpcEnumConfig.INVALID_CONFIG;
             }
 
             if (
@@ -260,28 +273,28 @@ namespace SeguraChain_RPC_Wallet.Config
                 rpcConfig.RpcApiSetting.RpcApiSemaphoreTimeout <= 0)
             {
                 Console.WriteLine("Few settings of the RPC Wallet API is/are invalid.");
-                return false;
+                return ClassRpcEnumConfig.INVALID_CONFIG;
             }
 
             if (rpcConfig.RpcNodeApiSetting.RpcNodeApiPort <= 0 || rpcConfig.RpcNodeApiSetting.RpcNodeApiPort > 65535 || rpcConfig.RpcNodeApiSetting.RpcNodeApiMaxDelay <= 0)
             {
                 Console.WriteLine("One or some configurations of the RPC Wallet Node API configuration is/are invalid.");
-                return false;
+                return ClassRpcEnumConfig.INVALID_CONFIG;
             }
 
             if (!rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabasePath.IsNullOrEmpty(false, out _))
             {
                 Console.WriteLine("The RPC Wallet database directory path " + rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabasePath + " is null or empty.");
-                return false;
+                return ClassRpcEnumConfig.DATABASE_DIRECTORY_NOT_EXIST;
             }
 
             if (!rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabaseFilename.IsNullOrEmpty(false, out _))
             {
                 Console.WriteLine("The RPC Wallet database filename " + rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabaseFilename + " is null or empty.");
-                return false;
+                return ClassRpcEnumConfig.DATABASE_FILE_NOT_EXIST;
             }
 
-            return true;
+            return ClassRpcEnumConfig.VALID_CONFIG;
         }
     }
 }
