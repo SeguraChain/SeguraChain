@@ -144,8 +144,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                 #endregion
 
-
-
                 #region Send packet and wait packet response.
 
 

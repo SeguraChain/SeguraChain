@@ -1,3 +1,4 @@
+
 using System.Collections.Generic;
 using SeguraChain_Lib.Algorithm;
 using SeguraChain_Lib.Blockchain.Mining.Enum;

@@ -63,9 +63,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         /// </summary>
         public bool ClientPeerConnectionStatus;
         public long ClientPeerLastPacketReceived;
-        private bool _clientPeerPacketReceivedStatus;
         private bool _clientAskDisconnection;
         private bool _onSendingPacketResponse;
+        private bool _clientResponseSendSuccessfully;
 
         /// <summary>
         /// About MemPool broadcast mode.
@@ -96,7 +96,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             _peerFirewallSettingObject = peerFirewallSettingObject;
             _peerClientIp = peerClientIp;
             _peerServerOpenNatIp = peerServerOpenNatIp;
-            _clientPeerPacketReceivedStatus = false;
             _listMemPoolBroadcastBlockHeight = new Dictionary<long, int>();
             _cancellationTokenClientCheckConnectionPeer = CancellationTokenSource.CreateLinkedTokenSource(CancellationTokenHandlePeerConnection.Token);
             _cancellationTokenListenPeerPacket = CancellationTokenSource.CreateLinkedTokenSource(CancellationTokenHandlePeerConnection.Token);
@@ -144,21 +143,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 try
                 {
 
-                    if (!ClientPeerConnectionStatus)
+                    if (!ClientPeerConnectionStatus || _clientAskDisconnection)
                         break;
 
-                    if (!_onSendingPacketResponse && !(_enableMemPoolBroadcastClientMode || _onSendingMemPoolTransaction))
-                    {
-                        // If any packet are received after the delay, the function close the peer client connection to listen.
-                        if (ClientPeerLastPacketReceived + _peerNetworkSettingObject.PeerMaxDelayConnection < TaskManager.TaskManager.CurrentTimestampSecond)
-                        {
-                            // On this case, insert invalid attempt of connection.
-                            if (!_clientPeerPacketReceivedStatus)
-                                ClassPeerCheckManager.InputPeerClientNoPacketConnectionOpened(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
-
-                            break;
-                        }
-                    }
 
                     if (!ClassUtility.SocketIsConnected(_clientSocket))
                         break;
@@ -167,6 +154,20 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                     {
                         if (!ClassPeerFirewallManager.CheckClientIpStatus(_peerClientIp))
                             break;
+                    }
+
+                    if (_onSendingPacketResponse || (_enableMemPoolBroadcastClientMode && _onSendingMemPoolTransaction))
+                        continue;
+                    else
+                    {
+                        // If any packet are received after the delay, the function close the peer client connection to listen.
+                        if (ClientPeerLastPacketReceived + _peerNetworkSettingObject.PeerMaxDelayConnection < TaskManager.TaskManager.CurrentTimestampSecond)
+                        {
+                            // On this case, insert invalid attempt of connection.
+                            if (!_clientResponseSendSuccessfully)
+                                ClassPeerCheckManager.InputPeerClientNoPacketConnectionOpened(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                            break;
+                        }
                     }
 
                     await Task.Delay(1000);
@@ -187,6 +188,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         /// </summary>
         public void ClosePeerClient(bool fromCheckConnection)
         {
+
             ClientPeerConnectionStatus = false;
 
             // Clean up.
@@ -329,6 +331,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                         break;
                                                     case ClassPeerNetworkClientServerHandlePacketEnumStatus.VALID_PACKET:
                                                         {
+                                                            _clientResponseSendSuccessfully = true;
+
                                                             ClassPeerCheckManager.InputPeerClientValidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject);
                                                             if (_clientAskDisconnection)
                                                                 ClientPeerConnectionStatus = _clientAskDisconnection;
@@ -366,7 +370,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     break;
                                 }
                             }
-
                         }
                     }
                     catch
@@ -405,8 +408,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                 if (!status)
                     return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_TYPE_PACKET;
-
-                _clientPeerPacketReceivedStatus = true;
 
                 #region Update peer activity.
 

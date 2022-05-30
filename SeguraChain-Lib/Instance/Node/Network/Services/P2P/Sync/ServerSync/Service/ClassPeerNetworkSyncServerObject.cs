@@ -121,14 +121,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                         TaskManager.TaskManager.InsertTask(new Action(async () =>
                         {
 #if DEBUG
-                             ClassLog.WriteLine("Start handle incoming connection from client IP: " + clientIp, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                            ClassLog.WriteLine("Start handle incoming connection from client IP: " + clientIp, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 #endif
                             switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
                             {
 
 
 #if NET5_0_OR_GREATER
-                                    case not ClassPeerNetworkServerHandleConnectionEnum.VALID_HANDLE:
+                                case not ClassPeerNetworkServerHandleConnectionEnum.VALID_HANDLE:
 
 #else
                                     case ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS:
@@ -137,7 +137,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                     case ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
 #endif
 
-                                        {
+                                    {
                                         if (_firewallSettingObject.PeerEnableFirewallLink)
                                             ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
                                         ClassUtility.CloseSocket(clientPeerTcp);
@@ -234,7 +234,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                         return ClassPeerNetworkServerHandleConnectionEnum.INSERT_CLIENT_IP_EXCEPTION;
                 }
 
-#region Ensure to not have too much incoming connection from the same ip.
+                #region Ensure to not have too much incoming connection from the same ip.
 
                 long randomId = await GeneratePeerUniqueIdAsync(clientIp, cancellationToken, timestampEnd);
 
@@ -246,7 +246,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     return ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION;
 
 
-#endregion
+                #endregion
 
 
                 bool failed = false;
@@ -297,9 +297,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
             return ClassPeerNetworkServerHandleConnectionEnum.VALID_HANDLE;
         }
 
-#endregion
+        #endregion
 
-#region Stats connections functions.
+        #region Stats connections functions.
 
         /// <summary>
         /// Generate peer unique id.
@@ -322,14 +322,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 if (cancellation.IsCancellationRequested || TaskManager.TaskManager.CurrentTimestampMillisecond >= timestampEnd)
                     return -1;
 
-                 randomId = ClassUtility.GetRandomBetweenInt(0, int.MaxValue - 1);
-                
+                randomId = ClassUtility.GetRandomBetweenInt(0, int.MaxValue - 1);
+
                 await Task.Delay(1);
             }
 
 #if DEBUG
             stopwatch.Stop();
-            ClassLog.WriteLine("The peer unique id "+randomId+" has been generated for the client: " + clientIp + " into "+stopwatch.ElapsedMilliseconds+" ms.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+            ClassLog.WriteLine("The peer unique id " + randomId + " has been generated for the client: " + clientIp + " into " + stopwatch.ElapsedMilliseconds + " ms.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 #endif
 
             return randomId;
@@ -375,8 +375,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     // Ignored.
                 }
             }
-               
-            
+
+
 
 #if DEBUG
             stopwatch.Stop();
@@ -589,6 +589,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
             return totalConnectionClosed;
         }
 
-#endregion
+        #endregion
     }
 }
