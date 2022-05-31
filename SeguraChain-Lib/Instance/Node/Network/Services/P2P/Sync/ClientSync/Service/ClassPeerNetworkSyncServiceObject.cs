@@ -168,7 +168,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         /// Launch emergency check tasks of peers functions.
         /// </summary>
         /// <returns></returns>
-        private async Task<bool> StartEmergencyPeerTaskCheckFunctions()
+        private async Task<bool> StartCheckHealthPeers()
         {
             ClassLog.WriteLine("Attempt to check dead public peers..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
             int totalDeadPeerRestored = await StartCheckDeadPeers();
@@ -190,7 +190,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         /// <returns></returns>
         private async Task StartContactDefaultPeerList()
         {
-            ClassLog.WriteLine("The peer don't have any public peer listed. Contact default peer list to get a new peer list..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
+            if (ClassPeerDatabase.DictionaryPeerDataObject.Count == 0)
+                ClassLog.WriteLine("The peer don't have any public peer listed. Contact default peer list to get a new peer list..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
 
             foreach (string peerIp in BlockchainSetting.BlockchainStaticPeerList.Keys)
             {
@@ -487,6 +488,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 {
                     try
                     {
+                        await StartContactDefaultPeerList();
+                        await StartCheckHealthPeers();
+
                         if (ClassPeerDatabase.DictionaryPeerDataObject.Count > 0)
                         {
                             peerTargetList = GenerateOrUpdatePeerTargetList(peerTargetList);
@@ -507,8 +511,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         }
                       
 
-                        await StartContactDefaultPeerList();
-                        await StartEmergencyPeerTaskCheckFunctions();
+
                        
                     }
                     catch (Exception error)
