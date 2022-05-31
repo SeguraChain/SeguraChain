@@ -121,50 +121,39 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
             bool result = false;
 
-            try
+            #region Clean up and cancel previous task.
+
+            CleanUpTask();
+
+            #endregion
+
+            _packetResponseExpected = packetResponseExpected;
+            _keepAlive = keepAlive;
+
+            #region Check the current connection status opened to the target.
+
+            if (!PeerConnectStatus || !CheckConnection || !keepAlive)
             {
+                DisconnectFromTarget();
 
-                #region Clean up and cancel previous task.
-
-                CleanUpTask();
-
-                #endregion
-
-                _packetResponseExpected = packetResponseExpected;
-                _keepAlive = keepAlive;
-
-                #region Check the current connection status opened to the target.
-
-                if (!PeerConnectStatus || !CheckConnection || !keepAlive)
-                {
-                    DisconnectFromTarget();
-
-                    if (!await DoConnection())
-                        return false;
-                }
-
-                #endregion
-
-                #region Send packet and wait packet response.
-
-
-                if (!await SendPeerPacket(packet, cancellation))
-                {
-                    ClassPeerCheckManager.InputPeerClientNoPacketConnectionOpened(PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject);
-                    DisconnectFromTarget();
-                }
-                else
-                    result = broadcast ? true : await WaitPacketExpected(cancellation);
-
-                #endregion
-
-            }
-            catch (Exception error)
-            {
-                if (error is OperationCanceledException || error is TaskCanceledException)
-                    Dispose();
+                if (!await DoConnection())
+                    return false;
             }
 
+            #endregion
+
+            #region Send packet and wait packet response.
+
+
+            if (!await SendPeerPacket(packet, cancellation))
+            {
+                ClassPeerCheckManager.InputPeerClientNoPacketConnectionOpened(PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject);
+                DisconnectFromTarget();
+            }
+            else
+                result = broadcast ? true : await WaitPacketExpected(cancellation);
+
+            #endregion
 
             return result;
         }
@@ -382,21 +371,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                     }
 
                                     listPacketReceived[i].Packet.Clear();
-                                    listPacketReceived[i].Complete = false;
 
                                     if (failed)
-                                    {
-                                        ClassPeerCheckManager.InputPeerClientInvalidPacket(PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject);
                                         continue;
-                                    }
+                                    
                                     ClassPeerPacketRecvObject peerPacketReceived = new ClassPeerPacketRecvObject(base64Packet, out bool status);
 
                                     if (!status)
-                                    {
-                                        ClassPeerCheckManager.InputPeerClientInvalidPacket(PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject);
                                         continue;
-                                    }
-
+                                    
 
                                     if (!peerTargetExist)
                                     {
@@ -419,8 +402,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                         {
                                             PeerPacketReceivedIgnored = true;
                                         }
-                                        else
-                                            ClassPeerCheckManager.InputPeerClientInvalidPacket(PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject);
                                     }
                                     else
                                     {
@@ -428,13 +409,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                             ClassPeerDatabase.DictionaryPeerDataObject[PeerIpTarget][PeerUniqueIdTarget].PeerTimestampSignatureWhitelist = peerPacketReceived.PeerLastTimestampSignatureWhitelist;
 
                                         PeerPacketReceived = peerPacketReceived;
-                                    }
 
-                                    PeerPacketReceivedStatus = true;
-                                    PeerTaskStatus = false;
-                                    break;
+
+                                        PeerPacketReceivedStatus = true;
+                                        PeerTaskStatus = false;
+                                        break;
+                                    }
                                 }
 
+
+                                listPacketReceived.GetList.RemoveAll(x => x.Complete);
                             }
                         }
 

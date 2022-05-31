@@ -100,82 +100,77 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
             NetworkPeerApiServerStatus = true;
             _cancellationTokenSourcePeerApiServer = new CancellationTokenSource();
 
-            try
+
+            TaskManager.TaskManager.InsertTask(new Action(async () =>
             {
-                Task.Factory.StartNew(async () =>
+
+                while (NetworkPeerApiServerStatus)
                 {
-
-                    while (NetworkPeerApiServerStatus)
+                    try
                     {
-                        try
+                        while (!_tcpListenerPeerApi.Pending())
                         {
-                            while (!_tcpListenerPeerApi.Pending())
-                            {
-                                if (!_cancellationTokenSourcePeerApiServer.IsCancellationRequested)
-                                    break;
+                            if (!_cancellationTokenSourcePeerApiServer.IsCancellationRequested)
+                                break;
 
-                                await Task.Delay(1);
-                            }
+                            await Task.Delay(1);
+                        }
 
-                            await _tcpListenerPeerApi.AcceptSocketAsync().ContinueWith(async clientTask =>
+                        await _tcpListenerPeerApi.AcceptSocketAsync().ContinueWith(async clientTask =>
+                        {
+                            try
                             {
-                                try
+                                Socket clientApiTcp = await clientTask;
+
+                                if (clientApiTcp != null)
                                 {
-                                    Socket clientApiTcp = await clientTask;
-
-                                    if (clientApiTcp != null)
+                                    TaskManager.TaskManager.InsertTask(new Action(async () =>
                                     {
-                                        TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                        string clientIp = string.Empty;
+                                        bool exception = false;
+
+
+                                        try
                                         {
-                                            string clientIp = string.Empty;
-                                            bool exception = false;
+                                            clientIp = ((IPEndPoint)(clientApiTcp.RemoteEndPoint)).Address.ToString();
+                                        }
+                                        catch
+                                        {
+                                            exception = true;
+                                        }
 
-
-                                            try
+                                        if (!exception)
+                                        {
+                                            switch (await HandleIncomingConnection(clientIp, clientApiTcp))
                                             {
-                                                clientIp = ((IPEndPoint)(clientApiTcp.RemoteEndPoint)).Address.ToString();
-                                            }
-                                            catch
-                                            {
-                                                exception = true;
+
+                                                case ClassPeerApiHandleIncomingConnectionEnum.INSERT_CLIENT_IP_EXCEPTION:
+                                                case ClassPeerApiHandleIncomingConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
+                                                    if (_firewallSettingObject.PeerEnableFirewallLink)
+                                                        ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
+                                                    break;
                                             }
 
-                                            if (!exception)
-                                            {
-                                                switch (await HandleIncomingConnection(clientIp, clientApiTcp))
-                                                {
-
-                                                    case ClassPeerApiHandleIncomingConnectionEnum.INSERT_CLIENT_IP_EXCEPTION:
-                                                    case ClassPeerApiHandleIncomingConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
-                                                        if (_firewallSettingObject.PeerEnableFirewallLink)
-                                                            ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
-                                                        break;
-                                                }
-
-                                                ClassUtility.CloseSocket(clientApiTcp);
-                                            }
-                                        }), 0, _cancellationTokenSourcePeerApiServer, clientApiTcp);
-                                    }
+                                            ClassUtility.CloseSocket(clientApiTcp);
+                                        }
+                                    }), 0, _cancellationTokenSourcePeerApiServer, clientApiTcp);
                                 }
-                                catch
-                                {
+                            }
+                            catch
+                            {
                                     // Ignored catch the exception once the task is cancelled.
                                 }
-                            }, _cancellationTokenSourcePeerApiServer.Token);
-                        }
-                        catch
-                        {
-                            if (!NetworkPeerApiServerStatus)
-                                break;
-                        }
+                        }, _cancellationTokenSourcePeerApiServer.Token);
                     }
+                    catch
+                    {
+                        if (!NetworkPeerApiServerStatus)
+                            break;
+                    }
+                }
 
-                }, _cancellationTokenSourcePeerApiServer.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
-            }
-            catch
-            {
-                // Ignored, catch the exception once the task is cancelled.
-            }
+            }), 0, _cancellationTokenSourcePeerApiServer, null);
+       
             return true;
         }
 
