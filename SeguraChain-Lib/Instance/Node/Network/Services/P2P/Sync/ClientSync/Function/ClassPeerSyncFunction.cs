@@ -332,7 +332,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
         {
             packetPeerSovereignUpdateList = null; // Default.
 
-            if (peerNetworkClientSyncObject == null || peerNetworkClientSyncObject.PeerPacketReceived == null)
+            if (peerNetworkClientSyncObject == null || peerNetworkClientSyncObject.PeerPacketReceived == null || peerNetworkClientSyncObject.PeerPacketReceivedIgnored)
                 return false;
 
             bool checkPacketSignature = CheckPacketSignature(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerNetworkSettingObject, peerNetworkClientSyncObject.PeerPacketReceived.PacketContent, peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder, peerNetworkClientSyncObject.PeerPacketReceived.PacketHash, peerNetworkClientSyncObject.PeerPacketReceived.PacketSignature, cancellation);

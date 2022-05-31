@@ -980,12 +980,7 @@ namespace SeguraChain_Lib.Utility
                     if (cancellation.IsCancellationRequested)
                         break;
 
-                    string dataFormatted = data.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
-
-                    if (dataFormatted.IsNullOrEmpty(false, out _) || dataFormatted.Length == 0 || !CheckBase64String(dataFormatted))
-                        continue;
-
-                    listPacketReceived[listPacketReceived.Count - 1].Packet += dataFormatted;
+                    listPacketReceived[listPacketReceived.Count - 1].Packet += data.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
 
                     if (completed < countSeperator)
                     {
@@ -997,14 +992,7 @@ namespace SeguraChain_Lib.Utility
                 }
             }
             else
-            {
-                string data = packetData.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
-
-                if (data.IsNullOrEmpty(false, out _) || data.Length == 0 || !CheckBase64String(data))
-                    return listPacketReceived;
-
-                listPacketReceived[listPacketReceived.Count - 1].Packet += data;
-            }
+                listPacketReceived[listPacketReceived.Count - 1].Packet += packetData.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
 
             return listPacketReceived;
         }
@@ -1051,46 +1039,6 @@ namespace SeguraChain_Lib.Utility
             return null;
         }
 
-        /// <summary>
-        /// Compile packet buffer received, split each characters and return a list of packet splitted.
-        /// </summary>
-        /// <param name="packetBuffer"></param>
-        /// <returns></returns>
-        public static List<ClassReadPacketSplitted> CompilePacketBuffer(byte[] packetBuffer)
-        {
-#if DEBUG
-            Stopwatch stopwatch = new Stopwatch();
-            stopwatch.Start();
-#endif
-
-            List<ClassReadPacketSplitted> listReadPacketSplitted = new List<ClassReadPacketSplitted>
-            {
-                new ClassReadPacketSplitted()
-            };
-
-
-            foreach (char character in packetBuffer.GetStringFromByteArrayUtf8())
-            {
-                if (character != '\0')
-                {
-                    if (character == ClassPeerPacketSetting.PacketPeerSplitSeperator)
-                    {
-                        listReadPacketSplitted[listReadPacketSplitted.Count - 1].Complete = true;
-                        listReadPacketSplitted.Add(new ClassReadPacketSplitted());
-                    }
-                    else if (CharIsABase64Character(character))
-                        listReadPacketSplitted[listReadPacketSplitted.Count - 1].Packet += character;
-                }
-            }
-
-
-#if DEBUG
-            stopwatch.Stop();
-            Debug.WriteLine(stopwatch.ElapsedMilliseconds + " ms.");
-#endif
-
-            return listReadPacketSplitted;
-        }
 
         #endregion
 
@@ -1476,6 +1424,26 @@ namespace SeguraChain_Lib.Utility
                 return false;
             }
         }
+
+        /// <summary>
+        /// Try await async shortcut function.
+        /// </summary>
+        /// <param name="semaphore"></param>
+        /// <param name="delay"></param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
+        public static async Task<bool> TryWaitWithDelayAsync(this SemaphoreSlim semaphore, int delay, CancellationTokenSource cancellation)
+        {
+            try
+            {
+                return await semaphore.WaitAsync(delay, cancellation.Token);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
 
         /// <summary>
         /// Try to get a semaphore access and execute the action.

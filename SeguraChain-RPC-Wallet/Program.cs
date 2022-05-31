@@ -78,7 +78,6 @@ namespace SeguraChain_RPC_Wallet
 
             #endregion
             
-
             #region Load the RPC Wallet Database.
 
             string rpcWalletDatabasePassword = string.Empty;

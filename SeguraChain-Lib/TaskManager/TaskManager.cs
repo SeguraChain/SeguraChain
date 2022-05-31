@@ -65,7 +65,7 @@ namespace SeguraChain_Lib.TaskManager
                             catch
                             {
                                 // If the amount change..
-                                if (i > _taskCollection.Count)
+                                if (i > _taskCollection.Count || count > _taskCollection.Count)
                                     break;
                             }
                         }
@@ -316,15 +316,16 @@ namespace SeguraChain_Lib.TaskManager
                         {
                             try
                             {
-                                Task.Factory.StartNew(() => action, cancellation.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+                                Task.Factory.StartNew(() => action, cancellationTask.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
                             }
                             catch
                             {
                                 // Ignored, catch the exception once the task is completed.
                             }
+                            break;
                         }
-
                     }
+
                 }
                 finally
                 {

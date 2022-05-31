@@ -287,19 +287,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                         bool failed = false;
                                         byte[] base64Packet = null;
 
-                                        if (ClassUtility.CheckBase64String(listPacketReceived[i].Packet))
+                                        try
                                         {
-                                            try
-                                            {
-                                                base64Packet = Convert.FromBase64String(listPacketReceived[i].Packet);
-                                                failed = base64Packet == null || base64Packet.Length == 0;
-                                            }
-                                            catch
-                                            {
-                                                failed = true;
-                                            }
+                                            base64Packet = Convert.FromBase64String(listPacketReceived[i].Packet);
+                                            failed = base64Packet == null || base64Packet.Length == 0;
                                         }
-                                        else failed = true;
+                                        catch
+                                        {
+                                            failed = true;
+                                        }
 
                                         listPacketReceived[i].Packet.Clear();
 
@@ -1971,18 +1967,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                     else
                     {
                         if (!ClassAes.EncryptionProcess(ClassUtility.GetByteArrayFromStringUtf8(packetSendObject.PacketContent), peerObject.PeerClientPacketEncryptionKey, peerObject.PeerClientPacketEncryptionKeyIv, out packetContentEncrypted))
-                        {
-                            _onSendingPacketResponse = false;
                             return false;
-                        }
                     }
                 }
 
                 if (packetContentEncrypted == null && encrypted)
-                {
-                    _onSendingPacketResponse = false;
                     return false;
-                }
+                
 
                 if (encrypted)
                     packetSendObject.PacketContent = Convert.ToBase64String(packetContentEncrypted);
@@ -1998,18 +1989,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 using (NetworkStream networkStream = new NetworkStream(_clientSocket))
                 {
                     if (await networkStream.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(Convert.ToBase64String(packetSendObject.GetPacketData()) + ClassPeerPacketSetting.PacketPeerSplitSeperator), _cancellationTokenAccessData, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize))
-                    {
-                        _onSendingPacketResponse = false;
                         return true;
-                    }
+
                 }
             }
             catch
             {
                 // Ignored.
             }
-
-            _onSendingPacketResponse = false;
             return false;
         }
 

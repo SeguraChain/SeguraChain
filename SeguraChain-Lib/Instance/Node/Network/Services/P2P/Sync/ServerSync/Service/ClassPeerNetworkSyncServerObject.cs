@@ -121,7 +121,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                         TaskManager.TaskManager.InsertTask(new Action(async () =>
                         {
 #if DEBUG
-                            ClassLog.WriteLine("Start handle incoming connection from client IP: " + clientIp, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                            ClassLog.WriteLine("Start handle incoming connection from client IP: " + clientIp, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
 #endif
                             switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
                             {
@@ -249,41 +249,41 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 #endregion
 
 
-                bool failed = false;
-                bool passed = false;
 
 #if DEBUG
-                ClassLog.WriteLine("Start to handle the peer client IP: " + clientIp + " | " + randomId, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                ClassLog.WriteLine("Start to handle the peer client IP: " + clientIp + " | " + randomId, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
 #endif
 
 
+                bool semaphoreUsed = false;
 
                 try
                 {
 
+                    timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + _peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay;
+
                     while (TaskManager.TaskManager.CurrentTimestampMillisecond < timestampEnd)
                     {
-                        if (await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.WaitAsync(1000, _cancellationTokenSourcePeerServer.Token))
+                        semaphoreUsed = await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.TryWaitWithDelayAsync(100, _cancellationTokenSourcePeerServer);
+                        if (semaphoreUsed)
                         {
-                            _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
 #if DEBUG
-                            ClassLog.WriteLine("Start the handle task of the peer client IP: " + clientIp + " | " + randomId + " in " + stopwatch.ElapsedMilliseconds + " ms.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                            ClassLog.WriteLine("Start the handle task of the peer client IP: " + clientIp + " | " + randomId + " in " + stopwatch.ElapsedMilliseconds + " ms.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false);
 #endif
                             _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
-                            passed = true;
                             break;
                         }
                     }
                 }
-                catch
+                finally
                 {
-                    failed = true;
-                    passed = false;
+                    if (semaphoreUsed)
+                        _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
                 }
 
-                if (failed || !passed)
+                if (!semaphoreUsed)
                 {
                     _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].Dispose();
                     _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryRemove(randomId, out _);

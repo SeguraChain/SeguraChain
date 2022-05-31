@@ -109,10 +109,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
                     (PublicKey.IsNullOrEmpty(false, out _) ? "empty" : PublicKey) + "#" +
                     PeerLastTimestampSignatureWhitelist);
             }
+#if DEBUG
             catch (Exception error)
             {
-#if DEBUG
                 Debug.WriteLine("Error to get the packet data. Exception: " + error.Message);
+#else
+            {
 #endif
             }
             return null;

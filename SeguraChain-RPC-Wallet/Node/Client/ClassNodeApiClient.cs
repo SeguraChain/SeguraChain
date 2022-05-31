@@ -4,6 +4,7 @@ using SeguraChain_Lib.Blockchain.Transaction.Enum;
 using SeguraChain_Lib.Blockchain.Transaction.Object;
 using SeguraChain_Lib.Blockchain.Transaction.Utility;
 using SeguraChain_Lib.Instance.Node.Network.Services.API.Utility;
+using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.Utility;
 using SeguraChain_RPC_Wallet.API.Service.Packet.Object.Request;
@@ -59,7 +60,7 @@ namespace SeguraChain_RPC_Wallet.Node.Client
             try
             {
 
-                new TaskFactory().StartNew(async () =>
+                Task.Factory.StartNew(async () =>
                 {
                     while(_enableAutoUpdateNodeStatsTask)
                     {
@@ -83,10 +84,10 @@ namespace SeguraChain_RPC_Wallet.Node.Client
                         }
                         catch
                         {
-                            break;
+                            
                         }
 
-                        await System.Threading.Tasks.Task.Delay(5000, _cancellationTokenAutoUpdateNodeStats.Token);
+                        await Task.Delay(5000);
                     }
 
                 }, _cancellationTokenAutoUpdateNodeStats.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
