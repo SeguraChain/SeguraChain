@@ -274,7 +274,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                     foreach(var packet in listPacketReceived.GetList)
                                     {
-                                        if (!packet.Complete || packet.Used)
+                                        if (packet == null || !packet.Complete || packet.Used)
                                             continue;
 
                                         byte[] base64Packet = null;
@@ -325,14 +325,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                     }
                                                 }
 #if DEBUG
-                                                    catch (Exception error)
+                                                catch (Exception error)
                                                 {
                                                     ClassLog.WriteLine("Handle packet from " + _peerClientIp + " failed. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
 #else
                                                     catch
                                                     {
 #endif
-                                                    }
+                                                }
 
                                                 _onSendingPacketResponse = false;
 

@@ -269,7 +269,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         public bool ContainsKey(long blockHeight)
         {
             if (blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight)
-                return _dictionaryBlockObjectMemory.ContainsKey(blockHeight);
+                return true;
 
             return false;
         }

@@ -663,7 +663,60 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                     ClassLog.WriteLine("Any block(s) target are synced, retry again later.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                                             }
                                             else
+                                            {
                                                 ClassLog.WriteLine("Can't sync " + blockListToSync.Count + " block(s), retry again later.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+
+                                                #region Resync last block height if necessary.
+
+                                                ClassBlockObject blockObjectInformationsToCheck = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockInformationDataStrategy(lastBlockHeightUnlocked, _cancellationTokenServiceSync);
+
+                                                if (blockObjectInformationsToCheck != null)
+                                                {
+                                                    switch (await StartCheckBlockDataUnlockedFromListPeerTarget(peerTargetList, blockObjectInformationsToCheck.BlockHeight, blockObjectInformationsToCheck))
+                                                    {
+                                                        case ClassPeerNetworkSyncServiceEnumCheckBlockDataUnlockedResult.INVALID_BLOCK:
+                                                        case ClassPeerNetworkSyncServiceEnumCheckBlockDataUnlockedResult.NO_CONSENSUS_FOUND:
+                                                            {
+                                                                using (DisposableList<long> blockListToCorrect = new DisposableList<long>(false, 0, new List<long>() { blockObjectInformationsToCheck.BlockHeight }))
+                                                                {
+                                                                    Tuple<List<ClassBlockObject>, int> result = await StartAskBlockObjectFromListPeerTarget(peerTargetList, blockListToCorrect, true, lastBlockHeightUnlocked);
+
+                                                                    if (result.Item1?.Count > 0)
+                                                                    {
+                                                                        ClassLog.WriteLine("The block height: " + lastBlockHeight + " seems to be retrieve from peers, sync transactions..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
+
+                                                                        if (result.Item1[0]?.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
+                                                                        {
+                                                                            using (DisposableDictionary<string, string> listWalletAndPublicKeys = new DisposableDictionary<string, string>())
+                                                                            {
+                                                                                if (!await SyncBlockDataTransaction(lastBlockHeightUnlocked, result.Item1[0], peerTargetList, listWalletAndPublicKeys, _cancellationTokenServiceSync))
+                                                                                {
+                                                                                    ClassLog.WriteLine("Sync of transaction(s) from the block height: " + result.Item1[0].BlockHeight + " failed, the amount of tx's to sync from a unlocked block cannot be equal of 0. Cancel sync and retry again.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                                                                                    break;
+                                                                                }
+                                                                                else
+                                                                                    await FixMiningBlockLocked(lastBlockHeight, lastBlockHeightUnlocked, lastBlockHeight, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenServiceSync);
+                                                                            }
+
+                                                                            ClassLog.WriteLine("The block height: " + lastBlockHeight + " retrieved from peers, is fixed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            ClassLog.WriteLine("Sync of transaction(s) from the block height: " + result.Item1[0].BlockHeight + " failed. The block is not unlocked. Cancel sync and retry again.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        ClassLog.WriteLine("Can't sync again transactions for the block height: " + lastBlockHeight + " cancel the task of checking blocks.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
+                                                                    }
+                                                                }
+                                                            }
+                                                            break;
+                                                    }
+                                                }
+
+                                                #endregion
+                                            }
                                         }
                                     }
 

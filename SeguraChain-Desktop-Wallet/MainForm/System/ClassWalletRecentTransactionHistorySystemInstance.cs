@@ -72,14 +72,21 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
             try
             {
 
-                if (cancellation == null || cancellation.IsCancellationRequested)
-                    return result;
+                try
+                {
+                    if (cancellation == null || cancellation.IsCancellationRequested)
+                        return result;
 
-                semaphoreUsed = _semaphoreRecentTransactionHistoryAccess.TryWait(cancellation);
+                    _semaphoreRecentTransactionHistoryAccess.Wait(cancellation.Token);
+                    semaphoreUsed = true;
 
-                if (semaphoreUsed)
                     result = _bitmapRecentTransactionHistory;
 
+                }
+                catch
+                {
+                    // The operation was canceled pending to wait the access of the semaphore.
+                }
 
             }
             finally
@@ -223,13 +230,12 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                 InitializeGraphicsRecentTransactionHistory();
 
             bool changed = false;
-            bool useSemaphore = false;
 
-            try
+            return (await _semaphoreRecentTransactionHistoryAccess.TryWaitExecuteActionAsync(new Action(async () =>
             {
-
                 try
                 {
+
                     ClassWalletDataObject walletDataObject = ClassDesktopWalletCommonData.WalletDatabase.GetWalletFileOpenedData(walletFileOpened);
 
                     if (walletDataObject != null)
@@ -327,9 +333,6 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                 // Update recent transaction history and draw it.
                                 if (requireUpdate)
                                 {
-
-                                    await _semaphoreRecentTransactionHistoryAccess.WaitAsync(cancellation.Token);
-                                    useSemaphore = true;
 
                                     DictionaryRecentTransactionHistoryObjects.Clear();
                                     if (!ResetOrClearGraphicsRecentTransactionHistory(false))
@@ -450,7 +453,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                     _lastWalletMemPoolTransactionCount = countMemPoolTransactionIndexed;
                                     _lastWalletTransactionCount = countTransactionIndexed;
                                     _lastWalletSyncBlockHeight = walletLastBlockHeightSynced;
-                                    changed = true;
+
 
                                 }
                             }
@@ -464,13 +467,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
 #endif
                     changed = false;
                 }
-            }
-            finally
-            {
-                if (useSemaphore)
-                    _semaphoreRecentTransactionHistoryAccess.Release();
-            }
-            return changed;
+            }), cancellation)) && changed ? true : false;
         }
 
         /// <summary>

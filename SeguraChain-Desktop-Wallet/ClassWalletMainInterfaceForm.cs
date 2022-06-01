@@ -1177,6 +1177,7 @@ namespace SeguraChain_Desktop_Wallet
                                     MethodInvoker invoke = () =>
                                     {
                                         textBoxMainInterfaceCurrentPageTransactionHistory.Text = @"1";
+                                        textBoxMainInterfaceMaxPageTransactionHistory.Text = @"0";
                                         complete = true;
                                     };
                                     BeginInvoke(invoke);

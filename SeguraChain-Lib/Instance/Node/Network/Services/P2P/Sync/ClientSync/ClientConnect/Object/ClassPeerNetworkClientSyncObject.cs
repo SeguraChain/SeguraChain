@@ -482,18 +482,30 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                 {
                     peerObject = ClassPeerDatabase.GetPeerObject(PeerIpTarget, PeerUniqueIdTarget);
 
+                    if (_peerCancellationTokenTaskSendPeerPacketKeepAlive.IsCancellationRequested)
+                        break;
+
                     await Task.Delay(1000);
 
                 }
 
-                ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSetting.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                ClassPeerPacketSendObject sendObject = null;
+
+                while (PeerConnectStatus && PeerConnectStatus && _peerTaskKeepAliveStatus && sendObject == null)
                 {
-                    PacketOrder = ClassPeerEnumPacketSend.ASK_KEEP_ALIVE,
-                    PacketContent = ClassUtility.SerializeData(new ClassPeerPacketAskKeepAlive()
+                    if (sendObject == null)
                     {
-                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
-                    }),
-                };
+                        sendObject = new ClassPeerPacketSendObject(_peerNetworkSetting.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                        {
+                            PacketOrder = ClassPeerEnumPacketSend.ASK_KEEP_ALIVE,
+                            PacketContent = ClassUtility.SerializeData(new ClassPeerPacketAskKeepAlive()
+                            {
+                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
+                            }),
+                        };
+                    }
+                    await Task.Delay(1000);
+                }
 
                 while (PeerConnectStatus && _peerTaskKeepAliveStatus)
                 {

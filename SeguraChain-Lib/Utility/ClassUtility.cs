@@ -1426,6 +1426,24 @@ namespace SeguraChain_Lib.Utility
         }
 
         /// <summary>
+        /// Try wait shortcut function.
+        /// </summary>
+        /// <param name="semaphore"></param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
+        public static bool TryWaitWithDelay(this SemaphoreSlim semaphore, int delay, CancellationTokenSource cancellation)
+        {
+            try
+            {
+                return semaphore.Wait(delay, cancellation.Token);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Try await async shortcut function.
         /// </summary>
         /// <param name="semaphore"></param>
@@ -1451,7 +1469,7 @@ namespace SeguraChain_Lib.Utility
         /// <param name="delay"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        public static async Task<bool> TryWaitWithDelayAsync(this SemaphoreSlim semaphore, int delay, CancellationTokenSource cancellation)
+        public static async Task<bool> TryWaitAsync(this SemaphoreSlim semaphore, int delay, CancellationTokenSource cancellation)
         {
             try
             {

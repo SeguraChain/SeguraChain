@@ -11,6 +11,7 @@ using System;
 using LZ4;
 using SeguraChain_Lib.Blockchain.Transaction.Utility;
 using System.Linq;
+using SeguraChain_Lib.Other.Object.List;
 
 namespace SeguraChain_Lib.Blockchain.Database.Function
 {
@@ -21,22 +22,34 @@ namespace SeguraChain_Lib.Blockchain.Database.Function
         {
             List<string> listBlockFile = Directory.GetFiles(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath, "*" + ClassBlockchainDatabaseDefaultSetting.BlockDatabaseFileExtension).ToList();
 
-            listBlockFile.Sort();
+            
 
             int countBlockLoaded = 0;
 
-            foreach (string blockFilePath in listBlockFile)
+            using (DisposableSortedList<int, string> dictionaryBlockFiles = new DisposableSortedList<int, string>())
             {
-
-                string blockFilename = blockFilePath.Replace(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath, "");
-
-                ClassLog.WriteLine("Load block file: " + blockFilename + "..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
-
-                string blockIndexName = blockFilename.Replace(ClassBlockchainDatabaseDefaultSetting.BlockDatabaseFileName, "").Replace(ClassBlockchainDatabaseDefaultSetting.BlockDatabaseFileExtension, "");
-
-                if (int.TryParse(blockIndexName, out int blockIndex))
+                // Build the sorted list of block files.
+                foreach (string blockFilePath in listBlockFile)
                 {
-                    using (FileStream fileStreamBlock = new FileStream(blockFilePath, FileMode.Open))
+                    string blockFileIndex = blockFilePath.Replace(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath, "").
+                        Replace(blockchainDatabaseSetting.BlockchainSetting.BlockchainBlockDatabaseFilename, "").Replace(ClassBlockchainDatabaseDefaultSetting.BlockDatabaseFileExtension, "");
+
+                    int blockHeight = 0;
+
+                    if (int.TryParse(blockFileIndex, out blockHeight))
+                        dictionaryBlockFiles.Add(blockHeight, blockFilePath);
+                }
+
+                Debug.WriteLine("block files count: "+dictionaryBlockFiles.Count);
+
+                foreach (var element in dictionaryBlockFiles.GetList)
+                {
+
+                    string blockFilename = element.Value.Replace(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath, "");
+
+                    ClassLog.WriteLine("Load block file: " + blockFilename + "..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
+
+                    using (FileStream fileStreamBlock = new FileStream(element.Value, FileMode.Open))
                     {
                         using (StreamReader readerBlock = blockchainDatabaseSetting.DataSetting.EnableCompressDatabase ? new StreamReader(new LZ4Stream(fileStreamBlock, LZ4StreamMode.Decompress, LZ4StreamFlags.HighCompression)) : new StreamReader(fileStreamBlock))
                         {
@@ -47,7 +60,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Function
                             while ((line = readerBlock.ReadLine()) != null)
                             {
                                 if (!line.StartsWith(ClassBlockUtility.BlockDataBegin))
-                                { 
+                                {
                                     if (!line.StartsWith(ClassBlockUtility.BlockDataEnd))
                                     {
                                         if (blockObject == null)
@@ -71,7 +84,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Function
                                         {
                                             if (blockObject != null)
                                             {
-                                                foreach (string txLine in line.Split(new  [] { ClassBlockUtility.StringBlockDataCharacterSeperator }, StringSplitOptions.RemoveEmptyEntries))
+                                                foreach (string txLine in line.Split(new[] { ClassBlockUtility.StringBlockDataCharacterSeperator }, StringSplitOptions.RemoveEmptyEntries))
                                                 {
                                                     if (ClassTransactionUtility.StringToBlockTransaction(txLine, out ClassBlockTransaction blockTransactionObject))
                                                         blockObject.BlockTransactions.Add(blockTransactionObject.TransactionObject.TransactionHash, blockTransactionObject);
@@ -92,13 +105,14 @@ namespace SeguraChain_Lib.Blockchain.Database.Function
 #if DEBUG
                                         Debug.WriteLine("Load block file: " + blockFilename + " successfully done. Total TX: " + blockObject.BlockTransactions.Count + " | Hash: " + blockObject.BlockHash);
 #endif
-                                        ClassLog.WriteLine("Load block file: " + blockFilename + " successfully done. Total TX: " + blockObject.BlockTransactions.Count + " | Hash: " + blockObject.BlockHash, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green); 
+                                        ClassLog.WriteLine("Load block file: " + blockFilename + " successfully done. Total TX: " + blockObject.BlockTransactions.Count + " | Hash: " + blockObject.BlockHash, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
                                         yield return blockObject;
                                     }
                                 }
                             }
                         }
                     }
+
                 }
             }
 

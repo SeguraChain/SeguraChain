@@ -259,7 +259,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
                         while (TaskManager.TaskManager.CurrentTimestampMillisecond < timestampEnd)
                         {
-                            semaphoreUsed = await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.TryWaitWithDelayAsync(100, _cancellationTokenSourcePeerServer);
+                            semaphoreUsed = await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.TryWaitAsync(100, _cancellationTokenSourcePeerServer);
                             if (semaphoreUsed)
                             {
                                 _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();

@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+#if DEBUG
+using System.Diagnostics;
+#endif
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -180,28 +183,45 @@ namespace SeguraChain_Desktop_Wallet.Components
         /// <returns></returns>
         public static string GetMeasureStringToDraw(string str, float positionXStart, int positionXEnd, Graphics graphics, Font font, float middlePosition, out float widthText)
         {
+            #region Default values.
+
             string strFinal = string.Empty;
+            widthText = 0;
 
-            bool isAbove = false;
-
-            foreach (char character in str)
+            #endregion
+            try
             {
-                strFinal += character;
+                bool isAbove = false;
 
-                if (positionXStart  + (graphics.MeasureString(strFinal, font).Width) > (positionXEnd- (middlePosition/2)))
+                foreach (char character in str)
                 {
-                    isAbove = true;
-                    break;
+                    strFinal += character;
+
+                    if (positionXStart + (graphics.MeasureString(strFinal, font).Width) > (positionXEnd - (middlePosition / 2)))
+                    {
+                        isAbove = true;
+                        break;
+                    }
                 }
-            }
 
-            if (isAbove)
+                if (isAbove)
+                {
+                    strFinal = strFinal.Substring(0, strFinal.Length - 3);
+                    strFinal += "...";
+                }
+
+                widthText = graphics.MeasureString(strFinal, font).Width;
+            }
+#if DEBUG
+            catch(Exception error)
             {
-                strFinal = strFinal.Substring(0, strFinal.Length - 3);
-                strFinal += "...";
-            }
+                Debug.WriteLine("Error to measure the string to draw: " + str +" | Exception: " + error.Message);
+#else
+            catch
+            {
+#endif
 
-            widthText = graphics.MeasureString(strFinal, font).Width;
+            }
             return strFinal;
         }
 
