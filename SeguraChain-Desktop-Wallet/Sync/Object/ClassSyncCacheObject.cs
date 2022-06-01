@@ -233,7 +233,7 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
         public async Task Clear(CancellationTokenSource cancellation)
         {
 
-            await _semaphoreDictionaryAccess.TryWaitExecuteAction(
+            await _semaphoreDictionaryAccess.TryWaitExecuteActionAsync(
             new Action(() =>
             {
                 foreach (long blockHeight in BlockHeightKeys.GetAll)
@@ -503,7 +503,7 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
         public async Task RemoveSyncedBlockTransactionCached(long blockHeight, string transactionHash, CancellationTokenSource cancellation)
         {
 
-            await _semaphoreDictionaryAccess.TryWaitExecuteAction(
+            await _semaphoreDictionaryAccess.TryWaitExecuteActionAsync(
             new Action(() =>
             {
                 if (_syncCacheDatabase.ContainsKey(blockHeight))
@@ -528,7 +528,7 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
         public async Task ClearBlockTransactionOnBlockHeight(long blockHeight, CancellationTokenSource cancellation)
         {
 
-            await _semaphoreDictionaryAccess.TryWaitExecuteAction(
+            await _semaphoreDictionaryAccess.TryWaitExecuteActionAsync(
             new Action(() =>
             {
 
@@ -587,7 +587,7 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
         public async Task UpdateWalletBalance(CancellationTokenSource cancellation)
         {
 
-            await _semaphoreDictionaryAccess.TryWaitExecuteAction(
+            await _semaphoreDictionaryAccess.TryWaitExecuteActionAsync(
                 new Action(() =>
             {
                 BigInteger availableBalance = 0;

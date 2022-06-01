@@ -340,7 +340,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                         using (NetworkStream networkStream = new NetworkStream(_peerSocketClient))
                         {
-                            while (PeerTaskStatus && PeerConnectStatus && await networkStream.ReadAsync(packetBufferOnReceive, 0, packetBufferOnReceive.Length) > 0)
+                            while (PeerTaskStatus && PeerConnectStatus && await networkStream.ReadAsync(packetBufferOnReceive, 0, packetBufferOnReceive.Length, _peerCancellationTokenTaskListenPeerPacketResponse.Token) > 0)
                             {
                                 _lastPacketReceivedTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
@@ -476,7 +476,17 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             {
                 _peerTaskKeepAliveStatus = true;
 
-                ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSetting.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[PeerIpTarget][PeerUniqueIdTarget].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[PeerIpTarget][PeerUniqueIdTarget].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                var peerObject =  ClassPeerDatabase.GetPeerObject(PeerIpTarget, PeerUniqueIdTarget);
+
+                while (peerObject == null && PeerConnectStatus && _peerTaskKeepAliveStatus)
+                {
+                    peerObject = ClassPeerDatabase.GetPeerObject(PeerIpTarget, PeerUniqueIdTarget);
+
+                    await Task.Delay(1000);
+
+                }
+
+                ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSetting.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                 {
                     PacketOrder = ClassPeerEnumPacketSend.ASK_KEEP_ALIVE,
                     PacketContent = ClassUtility.SerializeData(new ClassPeerPacketAskKeepAlive()

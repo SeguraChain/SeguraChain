@@ -1885,17 +1885,20 @@ namespace SeguraChain_Desktop_Wallet
 
                         Point point = panelInternalRecentTransactions.PointToClient(currentCursorPosition);
 
-                        foreach (var showedRecentTransactionHistoryObject in _walletRecentTransactionHistorySystemInstance.DictionaryRecentTransactionHistoryObjects.Values.ToArray())
+                        using (DisposableList<ClassRecentTransactionHistoryObject> disposableRecentTransactionHistoryObjects = new DisposableList<ClassRecentTransactionHistoryObject>(false, 0, _walletRecentTransactionHistorySystemInstance.DictionaryRecentTransactionHistoryObjects.Values.ToList()))
                         {
-                            if (_cancellationTokenTaskUpdateWalletContentInformations.IsCancellationRequested)
+                            foreach (var showedRecentTransactionHistoryObject in disposableRecentTransactionHistoryObjects.GetList)
+                            {
+                                if (_cancellationTokenTaskUpdateWalletContentInformations.IsCancellationRequested)
+                                    break;
+
+                                if (showedRecentTransactionHistoryObject == null || showedRecentTransactionHistoryObject.TransactionDrawRectangle == null || point == null ||
+                                    !showedRecentTransactionHistoryObject.TransactionDrawRectangle.Contains(point))
+                                    continue;
+
+                                e.Graphics.DrawRectangle(new Pen(ClassWalletDefaultSetting.DefaultPictureBoxTransactionBorderColor, 1.0f), showedRecentTransactionHistoryObject.TransactionDrawRectangle.X, showedRecentTransactionHistoryObject.TransactionDrawRectangle.Y, showedRecentTransactionHistoryObject.TransactionDrawRectangle.Width - 2, showedRecentTransactionHistoryObject.TransactionDrawRectangle.Height - 2);
                                 break;
-
-                            if (showedRecentTransactionHistoryObject == null || showedRecentTransactionHistoryObject.TransactionDrawRectangle == null || point == null ||
-                                !showedRecentTransactionHistoryObject.TransactionDrawRectangle.Contains(point))
-                                continue;
-
-                            e.Graphics.DrawRectangle(new Pen(ClassWalletDefaultSetting.DefaultPictureBoxTransactionBorderColor, 1.0f), showedRecentTransactionHistoryObject.TransactionDrawRectangle.X, showedRecentTransactionHistoryObject.TransactionDrawRectangle.Y, showedRecentTransactionHistoryObject.TransactionDrawRectangle.Width - 2, showedRecentTransactionHistoryObject.TransactionDrawRectangle.Height - 2);
-                            break;
+                            }
                         }
                     }
                 }

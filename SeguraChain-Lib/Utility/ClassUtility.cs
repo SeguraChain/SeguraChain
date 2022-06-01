@@ -1407,6 +1407,25 @@ namespace SeguraChain_Lib.Utility
     public static class ClassUtilitySemaphoreExtension 
     {
         /// <summary>
+        /// Try wait shortcut function.
+        /// </summary>
+        /// <param name="semaphore"></param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
+        public static bool TryWait(this SemaphoreSlim semaphore, CancellationTokenSource cancellation)
+        {
+            try
+            {
+                semaphore.Wait(cancellation.Token);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Try await async shortcut function.
         /// </summary>
         /// <param name="semaphore"></param>
@@ -1452,9 +1471,31 @@ namespace SeguraChain_Lib.Utility
         /// <param name="action"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        public static async Task<bool> TryWaitExecuteAction(this SemaphoreSlim semaphore, Action action, CancellationTokenSource cancellation)
+        public static async Task<bool> TryWaitExecuteActionAsync(this SemaphoreSlim semaphore, Action action, CancellationTokenSource cancellation)
         {
             if (await semaphore.TryWaitAsync(cancellation))
+            {
+                action.Invoke();
+
+                semaphore.Release();
+                return true;
+            }
+
+            return false;
+        }
+
+
+
+        /// <summary>
+        /// Try to get a semaphore access and execute the action.
+        /// </summary>
+        /// <param name="semaphore"></param>
+        /// <param name="action"></param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
+        public static bool TryWaitExecuteAction(this SemaphoreSlim semaphore, Action action, CancellationTokenSource cancellation)
+        {
+            if (semaphore.TryWait(cancellation))
             {
                 action.Invoke();
 

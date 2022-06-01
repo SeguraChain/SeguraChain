@@ -9,6 +9,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet.Model
     {
         public string Packet;
         public bool Complete;
+        public bool Used;
 
         public ClassReadPacketSplitted()
         {
