@@ -1233,21 +1233,28 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                     TaskManager.TaskManager.InsertTask(new Action(async () =>
                     {
-                        if (peerListTarget.ContainsKey(i))
+                        try
                         {
-                            var result = await SendAskSovereignUpdateList(peerListTarget[i].PeerNetworkClientSyncObject, cancellationTokenSourceTaskSyncSovereignUpdate);
-
-                            if (result != null && result?.Item2 != null && result.Item1 && result.Item2?.Count > 0)
+                            if (peerListTarget.ContainsKey(i))
                             {
-                                foreach (string sovereignHash in result.Item2)
+                                var result = await SendAskSovereignUpdateList(peerListTarget[i].PeerNetworkClientSyncObject, cancellationTokenSourceTaskSyncSovereignUpdate);
+
+                                if (result != null && result?.Item2 != null && result.Item1 && result.Item2?.Count > 0)
                                 {
-                                    if (!ClassSovereignUpdateDatabase.CheckIfSovereignUpdateHashExist(sovereignHash))
+                                    foreach (string sovereignHash in result.Item2)
                                     {
-                                        if (!hashSetSovereignUpdateHash.Contains(sovereignHash))
-                                            hashSetSovereignUpdateHash.Add(sovereignHash);
+                                        if (!ClassSovereignUpdateDatabase.CheckIfSovereignUpdateHashExist(sovereignHash))
+                                        {
+                                            if (!hashSetSovereignUpdateHash.Contains(sovereignHash))
+                                                hashSetSovereignUpdateHash.Add(sovereignHash);
+                                        }
                                     }
                                 }
                             }
+                        }
+                        catch
+                        {
+                            // Ignored.
                         }
 
                         totalTaskComplete++;
