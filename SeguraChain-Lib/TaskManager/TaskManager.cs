@@ -1,4 +1,5 @@
-﻿using SeguraChain_Lib.Other.Object.List;
+﻿using SeguraChain_Lib.Log;
+using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.TaskManager.Object;
 using SeguraChain_Lib.Utility;
 using System;
@@ -94,77 +95,81 @@ namespace SeguraChain_Lib.TaskManager
                 while (TaskManagerEnabled)
                 {
                     bool isLocked = false;
+                    bool changeDone = false;
                     try
                     {
                         isLocked = Monitor.TryEnter(_taskCollection);
-                        if (!isLocked)
-                            continue;
-
-                        for (int i = 0; i < _taskCollection.Count; i++)
+                        if (isLocked)
                         {
-                            try
+
+                            for (int i = 0; i < _taskCollection.Count; i++)
                             {
+
                                 if (_taskCollection[i] == null || _taskCollection[i].Task == null || _taskCollection[i].Disposed || !_taskCollection[i].Started)
                                     continue;
 
                                 if (!_taskCollection[i].Disposed && _taskCollection[i].Started && _taskCollection[i].Task != null)
                                 {
-                                    bool doDispose = false;
-
-                                    if (_taskCollection[i].Task != null && (_taskCollection[i].Task.IsCanceled ||
-                                    _taskCollection[i].Task.IsFaulted))
-                                        doDispose = true;
-
-                                    if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond)
+                                    try
                                     {
-                                        doDispose = true;
+                                        bool doDispose = false;
+
+                                        if (_taskCollection[i].Task != null && (_taskCollection[i].Task.IsCanceled ||
+                                        _taskCollection[i].Task.IsFaulted))
+                                            doDispose = true;
+
+                                        if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond)
+                                        {
+                                            doDispose = true;
+                                            try
+                                            {
+                                                if (_taskCollection[i].Cancellation != null)
+                                                {
+                                                    if (!_taskCollection[i].Cancellation.IsCancellationRequested)
+                                                        _taskCollection[i].Cancellation.Cancel();
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                // Ignored.
+                                            }
+                                        }
+
+
+                                        if (!doDispose)
+                                            continue;
+
+                                        changeDone = true;
+                                        _taskCollection[i].Disposed = true;
+
+                                        ClassUtility.CloseSocket(_taskCollection[i].Socket);
+
                                         try
                                         {
                                             if (_taskCollection[i].Cancellation != null)
                                             {
-                                                if (!_taskCollection[i].Cancellation.IsCancellationRequested)
-                                                    _taskCollection[i].Cancellation.Cancel();
+                                                if (_taskCollection[i].Cancellation.IsCancellationRequested)
+                                                    _taskCollection[i].Task?.Dispose();
+                                            }
+                                            else
+                                            {
+                                                if ((_taskCollection[i].Task.IsCanceled ||
+                                                    _taskCollection[i].Task.IsFaulted || _taskCollection[i].Task.Status == TaskStatus.RanToCompletion))
+                                                    _taskCollection[i].Task?.Dispose();
                                             }
                                         }
                                         catch
                                         {
-                                            // Ignored.
+                                            // Ignored, the task dispose can failed.
                                         }
+
+                                        listTaskToRemove.Add(i);
                                     }
-
-
-                                    if (!doDispose)
-                                        continue;
-
-                                    _taskCollection[i].Disposed = true;
-
-                                    ClassUtility.CloseSocket(_taskCollection[i].Socket);
-
-                                    try
+                                    catch(Exception error)
                                     {
-                                        if (_taskCollection[i].Cancellation != null)
-                                        {
-                                            if (_taskCollection[i].Cancellation.IsCancellationRequested)
-                                                _taskCollection[i].Task?.Dispose();
-                                        }
-                                        else
-                                        {
-                                            if ((_taskCollection[i].Task.IsCanceled ||
-                                                _taskCollection[i].Task.IsFaulted || _taskCollection[i].Task.Status == TaskStatus.RanToCompletion))
-                                                _taskCollection[i].Task?.Dispose();
-                                        }
+                                        ClassLog.WriteLine("Error on cleaning the task ID: " + i + " | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_TASK_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
                                     }
-                                    catch
-                                    {
-                                        // Ignored, the task dispose can failed.
-                                    }
-
-                                    listTaskToRemove.Add(i);
                                 }
-                            }
-                            catch
-                            {
-                                break;
                             }
                         }
                     }
@@ -172,7 +177,8 @@ namespace SeguraChain_Lib.TaskManager
                     {
                         if (isLocked)
                         {
-                            Monitor.PulseAll(_taskCollection);
+                            if (changeDone)
+                                Monitor.PulseAll(_taskCollection);
                             Monitor.Exit(_taskCollection);
                         }
                     }
@@ -315,9 +321,9 @@ namespace SeguraChain_Lib.TaskManager
                                 break;
                             }
                         }
-                        catch
+                        catch (Exception error)
                         {
-                            //
+                            ClassLog.WriteLine("Error on insert a new task to the TaskManager | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_TASK_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
                         }
                     }
 

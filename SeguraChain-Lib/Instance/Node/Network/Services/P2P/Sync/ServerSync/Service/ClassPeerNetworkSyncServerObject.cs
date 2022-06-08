@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+#if DEBUG
 using System.Diagnostics;
+#endif
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -120,9 +122,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
                         TaskManager.TaskManager.InsertTask(new Action(async () =>
                         {
-#if DEBUG
-                            ClassLog.WriteLine("Start handle incoming connection from client IP: " + clientIp, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
-#endif
                             switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
                             {
 

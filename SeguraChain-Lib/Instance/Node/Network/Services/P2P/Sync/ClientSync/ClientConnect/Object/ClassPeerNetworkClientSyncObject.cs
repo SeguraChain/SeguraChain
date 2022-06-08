@@ -115,10 +115,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// <param name="keepAlive"></param>
         /// <param name="broadcast"></param>
         /// <returns></returns>
-        public async Task<bool> TrySendPacketToPeerTarget(byte[] packet, CancellationTokenSource cancellation, ClassPeerEnumPacketResponse packetResponseExpected, bool keepAlive, bool broadcast)
+        public async Task<bool> TrySendPacketToPeerTarget(byte[] packet, int peerPort, string peerUniqueId, CancellationTokenSource cancellation, ClassPeerEnumPacketResponse packetResponseExpected, bool keepAlive, bool broadcast)
         {
-            _peerCancellationTokenMain = cancellation;
-
             bool result = false;
 
             #region Clean up and cancel previous task.
@@ -127,8 +125,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
             #endregion
 
+            #region Init the client sync object.
+
+            _peerCancellationTokenMain = cancellation;
             _packetResponseExpected = packetResponseExpected;
             _keepAlive = keepAlive;
+            PeerPortTarget = peerPort;
+            PeerUniqueIdTarget = peerUniqueId;
+
+            #endregion
 
             #region Check the current connection status opened to the target.
 
@@ -136,8 +141,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             {
                 DisconnectFromTarget();
 
+
                 if (!await DoConnection())
-                    return false;
+                    return false;               
             }
 
             #endregion
@@ -165,6 +171,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// </summary>
         private void CleanUpTask()
         {
+            PeerPacketReceived = null;
             PeerPacketReceivedStatus = false;
             PeerPacketReceivedIgnored = false;
 

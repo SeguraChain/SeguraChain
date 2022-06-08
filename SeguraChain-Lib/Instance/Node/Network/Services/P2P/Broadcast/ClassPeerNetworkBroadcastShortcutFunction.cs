@@ -5,6 +5,7 @@ using SeguraChain_Lib.Blockchain.Setting;
 using SeguraChain_Lib.Blockchain.Wallet.Function;
 using SeguraChain_Lib.Instance.Node.Network.Database;
 using SeguraChain_Lib.Instance.Node.Network.Database.Manager;
+using SeguraChain_Lib.Instance.Node.Network.Database.Object;
 using SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Packet;
 using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.ClientConnect.Object;
 using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet;
@@ -38,10 +39,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
         /// <returns></returns>
         public static async Task<R> SendBroadcastPacket<T, R>(ClassPeerNetworkClientSyncObject peerNetworkClientSyncObject, ClassPeerEnumPacketSend packetType, T packetToSend, string peerIpTarget, string peerUniqueIdTarget, ClassPeerNetworkSettingObject peerNetworkSetting, ClassPeerEnumPacketResponse packetTypeExpected, CancellationTokenSource cancellation)
         {
-            
+
+            ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(peerIpTarget, peerUniqueIdTarget);
+
+            if (peerObject == null)
+                return default(R);
+
             ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(peerNetworkSetting.PeerUniqueId,
-            ClassPeerDatabase.DictionaryPeerDataObject[peerIpTarget][peerUniqueIdTarget].PeerInternPublicKey,
-            ClassPeerDatabase.DictionaryPeerDataObject[peerIpTarget][peerUniqueIdTarget].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+            peerObject.PeerInternPublicKey,
+            peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
             {
                 PacketOrder = packetType,
                 PacketContent = ClassUtility.SerializeData(packetToSend)
@@ -52,7 +58,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             if (packetSendObject == null)
                 return default(R);
 
-            if (!await peerNetworkClientSyncObject.TrySendPacketToPeerTarget(packetSendObject.GetPacketData(), cancellation, packetTypeExpected, false, false))
+            if (!await peerNetworkClientSyncObject.TrySendPacketToPeerTarget(packetSendObject.GetPacketData(), peerObject.PeerPort, peerUniqueIdTarget, cancellation, packetTypeExpected, false, false))
                 return default(R);
 
             if (peerNetworkClientSyncObject.PeerPacketReceivedIgnored)
