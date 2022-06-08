@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Threading;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -262,6 +263,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         {
             try
             {
+                double byteSize = hash.Length / 2;
+
+                // Slow.
+                if (byteSize.ToString().Contains(",")) // If the size is not an integer, return false immediatly.
+                    return false;
+
                 if (!_initialized || publicKey.IsNullOrEmpty(false, out _) || signature.IsNullOrEmpty(false, out _))
                     return false;
 
@@ -281,9 +288,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
                 if (_ecPublicKeyParameters == null)
                     _ecPublicKeyParameters = new ECPublicKeyParameters(ClassWalletUtility.ECParameters.Curve.DecodePoint(decodedPublicKey), ClassWalletUtility.ECDomain);
 
+
                 _signerCheckSignature.Init(false, _ecPublicKeyParameters);
 
-                _signerCheckSignature.BlockUpdate(ClassUtility.GetByteArrayFromHexString(hash), 0, hash.Length / 2);
+                
+
+                // Do not contain the hash converted into a byte array inside of the memory.
+                _signerCheckSignature.BlockUpdate(ClassUtility.GetByteArrayFromHexString(hash), 0, (int)byteSize);
 
                 bool result = _signerCheckSignature.VerifySignature(Convert.FromBase64String(signature));
 
@@ -295,6 +306,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
             }
             catch
             {
+#if DEBUG
+                Debug.WriteLine("hash size: "+hash.Length);
+#endif
                 return false;
             }
         }

@@ -42,7 +42,7 @@ namespace SeguraChain_Peer
                 }
                 else
                 {
-                    if (_nodeInstance.NodeStart(false))
+                    if (_nodeInstance.NodeStart(false).Result)
                     {
                         _consoleCommandLine = new ClassConsoleCommandLine(_nodeInstance);
                         _consoleCommandLine.EnableConsoleCommandLine();

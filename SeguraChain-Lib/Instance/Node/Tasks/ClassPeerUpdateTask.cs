@@ -1,8 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
-using SeguraChain_Lib.Blockchain.Database;
+﻿using SeguraChain_Lib.Blockchain.Database;
 using SeguraChain_Lib.Blockchain.Database.Memory.Main.Object;
 using SeguraChain_Lib.Blockchain.Setting;
 using SeguraChain_Lib.Blockchain.Stats.Function;
@@ -10,6 +6,10 @@ using SeguraChain_Lib.Instance.Node.Network.Services.Firewall.Manager;
 using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.Utility;
+using System;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SeguraChain_Lib.Instance.Node.Tasks
 {
@@ -38,6 +38,7 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
         private const int UpdateNodeInternalStats = 1 * 1000;
         private const int UpdateBlockchainStatsInterval = 1 * 1000;
         private const int CleanUpGcInterval = 60 * 1000;
+        private const int AutoSaveBlockchainInterval = 60 * 1000;
 
         /// <summary>
         /// Indicate to the task of block transactions confirmations to stop once a task is complete instead to force to stop the process in pending.
@@ -87,6 +88,7 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
             StartTaskUpdateBlockchainNetworkStats();
             StartTaskUpdateNodeInternalStats();
             StartTaskUpdateGarbageCollection();
+            StartTaskAutoSaveBlockchain();
         }
 
         /// <summary>
@@ -471,6 +473,40 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
                 }
             }), 0, _cancellationTokenSourceUpdateTask);
 
+        }
+
+        /// <summary>
+        /// Start a task to auto save the blockchain.
+        /// </summary>
+        private void StartTaskAutoSaveBlockchain()
+        {
+            TaskManager.TaskManager.InsertTask(new Action(async () =>
+            {
+                long lastBlockHeightTransactionConfirmationDone = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeightTransactionConfirmationDone(_cancellationTokenSourceUpdateTask);
+                while (_nodeInstance.PeerToolStatus)
+                {
+                    
+                    try
+                    {
+                        if (_cancellationTokenSourceUpdateTask.IsCancellationRequested)
+                            break;
+
+                        long nextBlockHeightTransactionConfirmationDone = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeightTransactionConfirmationDone(_cancellationTokenSourceUpdateTask);
+
+                        if (lastBlockHeightTransactionConfirmationDone != nextBlockHeightTransactionConfirmationDone)
+                        {
+                            lastBlockHeightTransactionConfirmationDone = nextBlockHeightTransactionConfirmationDone;
+                            await ClassBlockchainDatabase.SaveBlockchainDatabase(_nodeInstance.PeerSettingObject.PeerBlockchainDatabaseSettingObject, true);
+                        }
+                    }
+                    catch
+                    {
+                        // Ignored.
+                    }
+
+                    await Task.Delay(AutoSaveBlockchainInterval);
+                }
+            }), 0, _cancellationTokenSourceUpdateTask);
         }
 
         #endregion

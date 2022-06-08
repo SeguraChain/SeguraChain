@@ -457,6 +457,42 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
             return changed;
         }
 
+        /// <summary>
+        /// Return the amount of the transaction history listed about the wallet file opened.
+        /// </summary>
+        /// <param name="walletFileOpened"></param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
+        public long GetTransactionHistoryCountOfWalletFileOpened(string walletFileOpened, CancellationTokenSource cancellation)
+        {
+            bool useSemaphore = false;
+
+            try
+            {
+                useSemaphore = _semaphoreTransactionHistoryAccess.TryWait(cancellation);
+
+                if (useSemaphore)
+                {
+                    try
+                    {
+                        if (_dictionaryTransactionHistory.ContainsKey(walletFileOpened))
+                            return _dictionaryTransactionHistory[walletFileOpened].LastTransactionCount;
+                        
+                    }
+                    catch
+                    {
+                        // Ignored.
+                    }
+                }
+            }
+            finally
+            {
+                if (useSemaphore)
+                    _semaphoreTransactionHistoryAccess.Release();
+            }
+            return 0;
+        }
+
 
         #region Transaction history management functions.
 
@@ -1716,27 +1752,30 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         /// <param name="graphicsTarget"></param>
         /// <param name="panelTransactionHistory"></param>
         /// <param name="cancellation"></param>
-        public void PaintTransactionLoadingAnimationToTransactionHistory(string walletFileOpened, string loadText, double percentProgress, Graphics graphicsTarget, ClassCustomPanel panelTransactionHistory, CancellationTokenSource cancellation)
+        public void PaintTransactionLoadingAnimationToTransactionHistory(string walletFileOpened, string loadText, double percentProgress, Graphics graphicsTarget, ClassCustomPanel panelTransactionHistory, bool noTransaction)
         {
             graphicsTarget.SmoothingMode = SmoothingMode.HighQuality;
 
-            string text = loadText + percentProgress.ToString("N2") + @"%";
-            float positionY = (float)panelTransactionHistory.Height / 2;
-            SizeF sizeText = graphicsTarget.MeasureString(text, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryOnLoadFont);
-            float positionBaseY = (positionY - (sizeText.Height / 2));
-            float middlePosition = (float)panelTransactionHistory.Width / 2;
-            float positionX = 0;
+            string text = loadText + (!noTransaction ? percentProgress.ToString("N2") + @"%" : string.Empty);
+            if (!noTransaction)
+            {
+                float positionY = (float)panelTransactionHistory.Height / 2;
+                SizeF sizeText = graphicsTarget.MeasureString(text, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryOnLoadFont);
+                float positionBaseY = (positionY - (sizeText.Height / 2));
+                float middlePosition = (float)panelTransactionHistory.Width / 2;
+                float positionX = 0;
 
-            positionX = (positionX + middlePosition) - (sizeText.Width / 2);
+                positionX = (positionX + middlePosition) - (sizeText.Width / 2);
 
-            string textCountTx = _dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListed.Count + @"/" + _dictionaryTransactionHistory[walletFileOpened].LastTransactionCountOnRead;
+                string textCountTx = _dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListed.Count + @"/" + _dictionaryTransactionHistory[walletFileOpened].LastTransactionCountOnRead;
 
-            SizeF sizeTextCountTx = graphicsTarget.MeasureString(textCountTx, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryOnLoadFont);
-            float positionCountTxY = positionBaseY + sizeTextCountTx.Height;
-            float positionCountTxX = middlePosition - (sizeTextCountTx.Width / 2);
+                SizeF sizeTextCountTx = graphicsTarget.MeasureString(textCountTx, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryOnLoadFont);
+                float positionCountTxY = positionBaseY + sizeTextCountTx.Height;
+                float positionCountTxX = middlePosition - (sizeTextCountTx.Width / 2);
 
-            graphicsTarget.DrawString(text, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryOnLoadFont, new SolidBrush(Color.Ivory), new RectangleF(positionX, positionBaseY, panelTransactionHistory.Width, panelTransactionHistory.Height));
-            graphicsTarget.DrawString(textCountTx, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryOnLoadFont, new SolidBrush(Color.Ivory), new RectangleF(positionCountTxX, positionCountTxY, panelTransactionHistory.Width, panelTransactionHistory.Height));
+                graphicsTarget.DrawString(text, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryOnLoadFont, new SolidBrush(Color.Ivory), new RectangleF(positionX, positionBaseY, panelTransactionHistory.Width, panelTransactionHistory.Height));
+                graphicsTarget.DrawString(textCountTx, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryOnLoadFont, new SolidBrush(Color.Ivory), new RectangleF(positionCountTxX, positionCountTxY, panelTransactionHistory.Width, panelTransactionHistory.Height));
+            }
         }
 
         #endregion

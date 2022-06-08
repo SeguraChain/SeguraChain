@@ -589,7 +589,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                             PeerSettingObject = ClassDesktopWalletCommonData.WalletSettingObject.WalletInternalSyncNodeSetting
                         };
 
-                        return _nodeInstance.NodeStart(true);
+                        return await _nodeInstance.NodeStart(true);
                     }
                 case ClassWalletSettingEnumSyncMode.EXTERNAL_PEER_SYNC_MODE:
                     {

@@ -503,6 +503,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                 int countPeer = await StartAskPeerListFromListPeerTarget(peerTargetList);
 
+
                                 ClassLog.WriteLine(countPeer + " peer lists are received.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
 
                             }
@@ -549,6 +550,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                             // If true, run every peer check tasks functions.
                             if (peerTargetList.Count > 0)
                             {
+
                                 int totalSovereignUpdate = await StartAskSovereignUpdateListFromListPeerTarget(peerTargetList);
 
                                 if (await StartAskSovereignUpdateListFromListPeerTarget(peerTargetList) > 0)
@@ -603,11 +605,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 {
                                     var currentPacketNetworkInformation = _packetNetworkInformation;
 
+
                                     #region Sync block objects and transaction(s).
 
                                     long lastBlockHeightUnlocked = await ClassBlockchainStats.GetLastBlockHeightUnlocked(_cancellationTokenServiceSync);
                                     long lastBlockHeightUnlockedChecked = await ClassBlockchainStats.GetLastBlockHeightNetworkConfirmationChecked(_cancellationTokenServiceSync);
                                     long lastBlockHeightNetworkUnlocked = GetHighestBlockHeightUnlockedFromPeerList(_listPeerNetworkInformationStats);
+
 
                                     using (DisposableList<long> blockListToSync = ClassBlockchainStats.GetListBlockMissing(lastBlockHeightNetworkUnlocked, true, false, _cancellationTokenServiceSync, _peerNetworkSettingObject.PeerMaxRangeBlockToSyncPerRequest))
                                     {
@@ -719,6 +723,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                             }
                                         }
                                     }
+
 
                                     #endregion
 
@@ -1233,14 +1238,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 if (timestampEnd <= TaskManager.TaskManager.CurrentTimestampMillisecond || _cancellationTokenServiceSync.IsCancellationRequested)
                     break;
 
-                try
-                {
-                    await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
-                }
-                catch
-                {
-                    break;
-                }
+
+                await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
+
             }
 
 
@@ -1324,14 +1324,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         timestampEnd <= TaskManager.TaskManager.CurrentTimestampMillisecond)
                         break;
 
-                    try
-                    {
-                        await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
-                    }
-                    catch
-                    {
-                        break;
-                    }
+                    await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                 }
 
                 if (hashSetSovereignUpdateHash.Count > 0)

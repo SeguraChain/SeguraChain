@@ -1484,41 +1484,51 @@ namespace SeguraChain_Desktop_Wallet
         /// <param name="e"></param>
         private void panelTransactionHistory_Paint(object sender, PaintEventArgs e)
         {
+            _onDrawingTransactionHistory = true;
+
             if (tabControlWallet.SelectedTab == tabPageTransactionHistory)
             {
-                _onDrawingTransactionHistory = true;
-
                 if (_walletTransactionHistorySystemInstance != null)
                 {
+  
                     try
                     {
                         if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
                         {
+                           long countTransaction = _walletTransactionHistorySystemInstance.GetTransactionHistoryCountOfWalletFileOpened(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations);
 
                             if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out double percentProgress))
                             {
+                                if (countTransaction == 0)
+                                    _walletTransactionHistorySystemInstance.PaintTransactionLoadingAnimationToTransactionHistory(_currentWalletFilename,
+                                         _walletMainFormLanguageObject.PANEL_TRANSACTION_HISTORY_NO_TRANSACTION_TEXT, 0, e.Graphics, panelTransactionHistory, true);
+                                else
+                                {
+                                    Bitmap transactionHistoryBitmap = _walletTransactionHistorySystemInstance[_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations];
 
-                                Bitmap transactionHistoryBitmap = _walletTransactionHistorySystemInstance[_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations];
+                                    if (transactionHistoryBitmap != null)
+                                        e.Graphics.DrawImageUnscaled(transactionHistoryBitmap, 0, 0);
 
-                                if (transactionHistoryBitmap != null)
-                                    e.Graphics.DrawImageUnscaled(transactionHistoryBitmap, 0, 0);
-
-                                _walletTransactionHistorySystemInstance.PaintTransactionHoverToTransactionHistory(_currentWalletFilename, e.Graphics, false);
-                                _walletTransactionHistorySystemInstance.PaintTransactionHoverToTransactionHistory(_currentWalletFilename, e.Graphics, true);
+                                    _walletTransactionHistorySystemInstance.PaintTransactionHoverToTransactionHistory(_currentWalletFilename, e.Graphics, false);
+                                    _walletTransactionHistorySystemInstance.PaintTransactionHoverToTransactionHistory(_currentWalletFilename, e.Graphics, true);
+                                }
 
                             }
                             else
-                                _walletTransactionHistorySystemInstance.PaintTransactionLoadingAnimationToTransactionHistory(_currentWalletFilename, _walletMainFormLanguageObject.PANEL_TRANSACTION_HISTORY_ON_LOAD_TEXT, percentProgress, e.Graphics, panelTransactionHistory, _cancellationTokenTaskUpdateWalletContentInformations);
+                                _walletTransactionHistorySystemInstance.PaintTransactionLoadingAnimationToTransactionHistory(_currentWalletFilename, 
+                                    countTransaction > 0 ? _walletMainFormLanguageObject.PANEL_TRANSACTION_HISTORY_ON_LOAD_TEXT : _walletMainFormLanguageObject.PANEL_TRANSACTION_HISTORY_NO_TRANSACTION_TEXT, percentProgress, e.Graphics, panelTransactionHistory, countTransaction == 0);
                         }
+                        else
+                            _walletTransactionHistorySystemInstance.PaintTransactionLoadingAnimationToTransactionHistory(_currentWalletFilename, _walletMainFormLanguageObject.PANEL_TRANSACTION_HISTORY_NO_TRANSACTION_TEXT, 0, e.Graphics, panelTransactionHistory, true);
                     }
                     catch
                     {
                         e.Graphics.Clear(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryBackgroundColorOnClear);
                     }
                 }
-
-                _onDrawingTransactionHistory = false;
             }
+
+            _onDrawingTransactionHistory = false;
         }
 
         /// <summary>
@@ -1893,7 +1903,7 @@ namespace SeguraChain_Desktop_Wallet
                                 if (_cancellationTokenTaskUpdateWalletContentInformations.IsCancellationRequested)
                                     break;
 
-                                if (showedRecentTransactionHistoryObject == null || showedRecentTransactionHistoryObject.TransactionDrawRectangle == null || point == null ||
+                                if (showedRecentTransactionHistoryObject == null ||
                                     !showedRecentTransactionHistoryObject.TransactionDrawRectangle.Contains(point))
                                     continue;
 

@@ -457,7 +457,7 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         public static bool CheckBase64String(string base64String)
         {
-            return (base64String.Length % 4 == 0) && Regex.IsMatch(base64String.Trim(), Base64Regex, RegexOptions.None);
+            return (base64String.Length % 4 == 0) && Regex.IsMatch(base64String.Trim(), Base64Regex, RegexOptions.Compiled);
         }
 
         public static bool CharIsABase64Character(char base64Character)

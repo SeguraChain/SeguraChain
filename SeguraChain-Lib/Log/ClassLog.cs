@@ -209,7 +209,7 @@ namespace SeguraChain_Lib.Log
         private static void WriteLogTask(ClassEnumLogLevelType logLevelType)
         {
 
-            TaskManager.TaskManager.InsertTask(new Action(async () =>
+            Task.Factory.StartNew(new Action(async () =>
             {
                 int writtenLog = 0;
                 while (!_cancellationTokenSourceLogWriter.IsCancellationRequested)
@@ -222,15 +222,15 @@ namespace SeguraChain_Lib.Log
                         {
                             try
                             {
-                                if (_logListOnCollect[logLevelType].Count >= MinLogToWrite)
+                                // Clean safely the log list.
+                                enterList = Monitor.TryEnter(_logListOnCollect[logLevelType]);
+                                if (enterList)
                                 {
-                                        // Clean safely the log list.
-                                        if (Monitor.TryEnter(_logListOnCollect[logLevelType]))
+                                    if (_logListOnCollect[logLevelType].Count >= MinLogToWrite)
                                     {
-                                        enterList = true;
 
-                                            // Get all log content retrieved to the concurrent bag of logs.
-                                            foreach (ClassLogObject logObject in _logListOnCollect[logLevelType].ToArray())
+                                        // Get all log content retrieved to the concurrent bag of logs.
+                                        foreach (ClassLogObject logObject in _logListOnCollect[logLevelType].ToArray())
                                         {
                                             if (_cancellationTokenSourceLogWriter.IsCancellationRequested)
                                                 break;
@@ -253,16 +253,16 @@ namespace SeguraChain_Lib.Log
                             }
                             catch (Exception error)
                             {
-                                    // The task is cancelled.
-                                    if (error is OperationCanceledException)
+                                // The task is cancelled.
+                                if (error is OperationCanceledException)
                                 {
                                     logListToWrite.Clear();
                                     break;
                                 }
 #if DEBUG
-                                    Debug.WriteLine("Error on saving log(s) of type: " + logLevelType + " into the log file target. Exception: " + error.Message);
+                                Debug.WriteLine("Error on saving log(s) of type: " + logLevelType + " into the log file target. Exception: " + error.Message);
 #endif
-                                    WriteLine("Error on saving log(s) of type: " + logLevelType + " into the log file target. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
+                                WriteLine("Error on saving log(s) of type: " + logLevelType + " into the log file target. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
                             }
                         }
                         finally
@@ -275,8 +275,8 @@ namespace SeguraChain_Lib.Log
                         {
                             if (logListToWrite.Count > 0)
                             {
-                                    // Join all log strings content has array of lines and write them directly by a single call.
-                                    foreach (ClassLogObject logLine in logListToWrite.GetList.OrderBy(x => x.Timestamp))
+                                // Join all log strings content has array of lines and write them directly by a single call.
+                                foreach (ClassLogObject logLine in logListToWrite.GetList.OrderBy(x => x.Timestamp))
                                 {
                                     switch (logLevelType)
                                     {
@@ -316,8 +316,8 @@ namespace SeguraChain_Lib.Log
                         }
                         catch (Exception error)
                         {
-                                // The task is cancelled.
-                                if (error is OperationCanceledException)
+                            // The task is cancelled.
+                            if (error is OperationCanceledException)
                                 break;
 
                             WriteLine("Error on saving log(s) of type: " + logLevelType + " into the log file target. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
@@ -333,7 +333,7 @@ namespace SeguraChain_Lib.Log
                         break;
                     }
                 }
-            }), 0, _cancellationTokenSourceLogWriter);
+            }), _cancellationTokenSourceLogWriter.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
 
         }
 
@@ -437,10 +437,12 @@ namespace SeguraChain_Lib.Log
                         {
                             try
                             {
-                                if (_logListOnCollect.ContainsKey(logLevelType))
+                                locked = Monitor.TryEnter(_logListOnCollect[logLevelType]);
+                                if (locked)
                                 {
-                                    if (Monitor.TryEnter(_logListOnCollect[logLevelType]))
+                                    if (_logListOnCollect.ContainsKey(logLevelType))
                                     {
+
                                         _logListOnCollect[logLevelType].Add(new ClassLogObject()
                                         {
                                             LogContent = logLine,
@@ -449,6 +451,7 @@ namespace SeguraChain_Lib.Log
                                         });
 
                                         Monitor.PulseAll(_logListOnCollect[logLevelType]);
+
                                     }
                                 }
                             }

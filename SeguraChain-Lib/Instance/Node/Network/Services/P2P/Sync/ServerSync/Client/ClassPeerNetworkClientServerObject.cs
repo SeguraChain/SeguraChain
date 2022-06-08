@@ -292,52 +292,50 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                         if (!failed)
                                         {
-                                            TaskManager.TaskManager.InsertTask(new Action(async () =>
+
+
+                                            _onSendingPacketResponse = true;
+
+                                            try
                                             {
-
-                                                _onSendingPacketResponse = true;
-
-                                                try
+                                                switch (await HandlePacket(base64Packet))
                                                 {
-                                                    switch (await HandlePacket(base64Packet))
-                                                    {
-                                                        case ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_TYPE_PACKET:
-                                                        case ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET:
-                                                            {
-                                                                ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                                                                ClientPeerConnectionStatus = false;
-                                                            }
-                                                            break;
-                                                        case ClassPeerNetworkClientServerHandlePacketEnumStatus.EXCEPTION_PACKET:
-                                                        case ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET:
-                                                            {
-                                                                ClassPeerCheckManager.InputPeerClientAttemptConnect(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                                                                ClientPeerConnectionStatus = false;
-                                                            }
-                                                            break;
-                                                        case ClassPeerNetworkClientServerHandlePacketEnumStatus.VALID_PACKET:
-                                                            {
-                                                                _clientResponseSendSuccessfully = true;
+                                                    case ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_TYPE_PACKET:
+                                                    case ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET:
+                                                        {
+                                                            ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                                                            ClientPeerConnectionStatus = false;
+                                                        }
+                                                        break;
+                                                    case ClassPeerNetworkClientServerHandlePacketEnumStatus.EXCEPTION_PACKET:
+                                                    case ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET:
+                                                        {
+                                                            ClassPeerCheckManager.InputPeerClientAttemptConnect(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                                                            ClientPeerConnectionStatus = false;
+                                                        }
+                                                        break;
+                                                    case ClassPeerNetworkClientServerHandlePacketEnumStatus.VALID_PACKET:
+                                                        {
+                                                            _clientResponseSendSuccessfully = true;
 
-                                                                ClassPeerCheckManager.InputPeerClientValidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject);
-                                                            }
-                                                            break;
-                                                    }
+                                                            ClassPeerCheckManager.InputPeerClientValidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject);
+                                                        }
+                                                        break;
                                                 }
+                                            }
 #if DEBUG
-                                                catch (Exception error)
-                                                {
-                                                    ClassLog.WriteLine("Handle packet from " + _peerClientIp + " failed. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                                            catch (Exception error)
+                                            {
+                                                ClassLog.WriteLine("Handle packet " + (!_peerClientIp.IsNullOrEmpty(false, out _) ? "from " + _peerClientIp : "") + " failed. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
 #else
-                                                    catch
-                                                    {
+                                             catch
+                                            {
 #endif
-                                                }
+                                            }
 
-                                                _onSendingPacketResponse = false;
+                                            _onSendingPacketResponse = false;
 
 
-                                            }), 0, null, null);
                                         }
 
 

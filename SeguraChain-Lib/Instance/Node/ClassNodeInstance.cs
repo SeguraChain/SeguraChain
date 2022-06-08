@@ -64,7 +64,7 @@ namespace SeguraChain_Lib.Instance.Node
         /// Full initialization of the peer tool.
         /// </summary>
         /// <returns></returns>
-        public bool NodeStart(bool fromWallet)
+        public async Task<bool> NodeStart(bool fromWallet)
         {
             TaskManager.TaskManager.EnableTaskManager();
             PeerToolStatus = true;

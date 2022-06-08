@@ -211,11 +211,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                         successConnect = true;
                         break;
                     }
-                    catch(Exception error)
+                    catch
                     {
-#if DEBUG
-                        Debug.WriteLine(error.Message);
-#endif
                         ClassUtility.CloseSocket(_peerSocketClient);
                         // Ignored, catch the exception once the attempt to connect to a peer failed.
                     }
@@ -227,20 +224,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             }), timestampEnd, _peerCancellationTokenDoConnection, null);
 
 
-            while (!successConnect)
+            while (!successConnect && !taskDone)
             {
                 if (timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond || 
                     _peerCancellationTokenDoConnection.IsCancellationRequested || taskDone)
                     break;
 
-                try
-                {
-                    await Task.Delay(_peerNetworkSetting.PeerTaskSyncDelay);
-                }
-                catch
-                {
-                    break;
-                }
+                await Task.Delay(_peerNetworkSetting.PeerTaskSyncDelay);
+
             }
 
             CancelTaskDoConnection();
@@ -277,11 +268,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             {
 
                 if (cancellation.IsCancellationRequested ||
-                    !PeerConnectStatus ||
-                    _lastPacketReceivedTimestamp + (_peerNetworkSetting.PeerMaxDelayAwaitResponse * 1000) < TaskManager.TaskManager.CurrentTimestampMillisecond ||
+                    !PeerConnectStatus || !PeerTaskStatus || 
+                    /*_lastPacketReceivedTimestamp + (_peerNetworkSetting.PeerMaxDelayAwaitResponse * 1000) < TaskManager.TaskManager.CurrentTimestampMillisecond ||*/
                     PeerPacketReceived != null)
                 {
-                    PeerTaskStatus = false;
                     break;
                 }
 

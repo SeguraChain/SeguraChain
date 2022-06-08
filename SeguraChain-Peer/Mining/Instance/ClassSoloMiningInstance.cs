@@ -521,7 +521,7 @@ namespace SeguraChain_Peer.Mining.Instance
                                                 case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_NOCONSENSUS:
                                                 case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND:
                                                     _totalAlreadyShare[idThread]++;
-                                                    ClassPeerNetworkBroadcastFunction.BroadcastMiningShareAsync(_apiServerIp, _apiServerOpenNatIp, string.Empty, pocShareObject, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                                                    ClassPeerNetworkBroadcastFunction .BroadcastMiningShareAsync(_apiServerIp, _apiServerOpenNatIp, string.Empty, pocShareObject, _peerNetworkSettingObject, _peerFirewallSettingObject);
                                                     break;
                                                 case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_REFUSED:
                                                     _totalRefusedShare[idThread]++;

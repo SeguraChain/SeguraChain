@@ -3,6 +3,9 @@ using SeguraChain_Lib.TaskManager.Object;
 using SeguraChain_Lib.Utility;
 using System;
 using System.Collections.Generic;
+#if DEBUG
+using System.Diagnostics;
+#endif
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -314,15 +317,7 @@ namespace SeguraChain_Lib.TaskManager
                         }
                         catch
                         {
-                            try
-                            {
-                                Task.Factory.StartNew(() => action, cancellationTask.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
-                            }
-                            catch
-                            {
-                                // Ignored, catch the exception once the task is completed.
-                            }
-                            break;
+                            //
                         }
                     }
 
