@@ -22,6 +22,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// Tcp info and tcp client object.
         /// </summary>
         private Socket _peerSocketClient;
+        private NetworkStream _peerNetworkStreamClient;
         public bool PeerConnectStatus;
 
         /// <summary>
@@ -244,6 +245,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             if (successConnect)
             {
                 PeerConnectStatus = true;
+                _peerNetworkStreamClient = new NetworkStream(_peerSocketClient);
                 return true;
             }
             else
@@ -595,9 +597,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// <returns></returns>
         private async Task<bool> SendPeerPacket(byte[] packet, CancellationTokenSource cancellation)
         {
-            using (NetworkStream networkStream = new NetworkStream(_peerSocketClient))
-                return await networkStream.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(Convert.ToBase64String(packet) + ClassPeerPacketSetting.PacketPeerSplitSeperator), cancellation, _peerNetworkSetting.PeerMaxPacketSplitedSendSize);
-
+            return await _peerNetworkStreamClient.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(Convert.ToBase64String(packet) + ClassPeerPacketSetting.PacketPeerSplitSeperator), cancellation, _peerNetworkSetting.PeerMaxPacketSplitedSendSize);
         }
 
         /// <summary>
@@ -611,6 +611,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             CancelTaskPeerPacketKeepAlive();
             CancelTaskListenPeerPacketResponse();
             ClassUtility.CloseSocket(_peerSocketClient);
+            try
+            {
+                _peerNetworkStreamClient?.Close();
+            }
+            catch
+            {
+                // Ignored.
+            }
         }
 
 

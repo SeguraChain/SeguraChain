@@ -680,10 +680,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                                                             if (syncBlockFixResult.Count > 0)
                                                                             {
-                                                                                ClassLog.WriteLine("The block height: " + lastBlockHeight + " seems to be retrieve from peers, sync transactions..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
-
-
-
+                                                                                ClassLog.WriteLine("The block height: " + lastBlockHeight + " seems to be retrieve from peers, sync transactions..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
                                                                                 if (syncBlockFixResult[blockObjectInformationsToCheck.BlockHeight]?.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
                                                                                 {
                                                                                     using (DisposableDictionary<string, string> listWalletAndPublicKeys = new DisposableDictionary<string, string>())

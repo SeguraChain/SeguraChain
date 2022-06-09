@@ -344,8 +344,8 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                     DictionaryRecentTransactionHistoryObjects.Clear();
                                     if (!ResetOrClearGraphicsRecentTransactionHistory(false))
                                     {
-                                        if (!InitializeGraphicsRecentTransactionHistory())
-                                            exception = true;
+                                        exception = true;
+                                        InitializeGraphicsRecentTransactionHistory();
                                     }
 
                                     int totalTxDrawed = 0;
@@ -353,7 +353,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
 
                                     #region Draw MemPool transaction(s).
 
-                                    if (countMemPoolTransactionIndexed > 0)
+                                    if (countMemPoolTransactionIndexed > 0 && !exception)
                                     {
                                         using (DisposableList<ClassTransactionObject> memPoolTransactionList = new DisposableList<ClassTransactionObject>())
                                         {

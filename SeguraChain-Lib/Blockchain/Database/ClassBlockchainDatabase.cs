@@ -861,388 +861,377 @@ namespace SeguraChain_Lib.Blockchain.Database
             if (blockHeight > BlockchainMemoryManagement.GetLastBlockHeight)
                 return ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_NOT_SYNCED;
 
-            bool useSemaphore = false;
 
-            try
+            await SemaphoreUnlockBlock.TryWaitExecuteActionAsync(new Action(async () =>
             {
-                try
-                {
-                    if (!unlockTest && cancellation != null)
-                    {
-                        await SemaphoreUnlockBlock.WaitAsync(cancellation.Token);
-                        useSemaphore = true;
-                    }
+                 try
+                 {
+                     if (!BlockchainMemoryManagement.ContainsKey(blockHeight + 1))
+                     {
+                         try
+                         {
+                             long previousBlockHeight = blockHeight - 1;
 
-                    if (!BlockchainMemoryManagement.ContainsKey(blockHeight + 1))
-                    {
-                        try
-                        {
-                            long previousBlockHeight = blockHeight - 1;
+                             if (BlockchainMemoryManagement.ContainsKey(blockHeight))
+                             {
+                                 if (await CheckBlockHeightContainsBlockReward(previousBlockHeight, cancellation))
+                                 {
 
-                            if (BlockchainMemoryManagement.ContainsKey(blockHeight))
-                            {
-                                if (await CheckBlockHeightContainsBlockReward(previousBlockHeight, cancellation))
-                                {
+                                     if (BlockchainMemoryManagement[blockHeight, cancellation] != null)
+                                     {
+                                         if (miningPowShareObject.PoWaCShareDifficulty >= BlockchainMemoryManagement[blockHeight, cancellation].BlockDifficulty)
+                                         {
+                                             if (BlockchainMemoryManagement[blockHeight, cancellation].BlockHeight == blockHeight)
+                                             {
+                                                 if (BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject == null
+                                                     && BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner.IsNullOrEmpty(false, out _)
+                                                     && BlockchainMemoryManagement[blockHeight, cancellation].TimestampFound == 0
+                                                     && BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus == ClassBlockEnumStatus.LOCKED)
+                                                 {
+                                                        // Directly from request.
+                                                        long timestampDiff = TaskManager.TaskManager.CurrentTimestampSecond - miningPowShareObject.Timestamp;
+                                                     bool timestampDiffCheck = miningPowShareObject.Timestamp >= BlockchainMemoryManagement[blockHeight, cancellation].TimestampCreate && timestampDiff <= BlockchainSetting.BlockMiningUnlockShareTimestampMaxDelay;
 
-                                    if (BlockchainMemoryManagement[blockHeight, cancellation] != null)
-                                    {
-                                        if (miningPowShareObject.PoWaCShareDifficulty >= BlockchainMemoryManagement[blockHeight, cancellation].BlockDifficulty)
-                                        {
-                                            if (BlockchainMemoryManagement[blockHeight, cancellation].BlockHeight == blockHeight)
-                                            {
-                                                if (BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject == null
-                                                    && BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner.IsNullOrEmpty(false, out _)
-                                                    && BlockchainMemoryManagement[blockHeight, cancellation].TimestampFound == 0
-                                                    && BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus == ClassBlockEnumStatus.LOCKED)
-                                                {
-                                                    // Directly from request.
-                                                    long timestampDiff = TaskManager.TaskManager.CurrentTimestampSecond - miningPowShareObject.Timestamp;
-                                                    bool timestampDiffCheck = miningPowShareObject.Timestamp >= BlockchainMemoryManagement[blockHeight, cancellation].TimestampCreate && timestampDiff <= BlockchainSetting.BlockMiningUnlockShareTimestampMaxDelay;
+                                                     if ((!fromSync && timestampDiffCheck)
+                                                         || fromSync)
+                                                     {
+                                                         string blockHash = BlockchainMemoryManagement[blockHeight, cancellation].BlockHash;
+                                                         BigInteger blockDifficulty = BlockchainMemoryManagement[blockHeight, cancellation].BlockDifficulty;
 
-                                                    if ((!fromSync && timestampDiffCheck)
-                                                        || fromSync)
-                                                    {
-                                                        string blockHash = BlockchainMemoryManagement[blockHeight, cancellation].BlockHash;
-                                                        BigInteger blockDifficulty = BlockchainMemoryManagement[blockHeight, cancellation].BlockDifficulty;
+                                                         ClassBlockObject previousBlockObject = await BlockchainMemoryManagement.GetBlockInformationDataStrategy(previousBlockHeight, cancellation);
 
-                                                        ClassBlockObject previousBlockObject = await BlockchainMemoryManagement.GetBlockInformationDataStrategy(previousBlockHeight, cancellation);
+                                                         if (previousBlockObject != null)
+                                                         {
+                                                             if (previousBlockObject.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
+                                                             {
+                                                                 int previousTransactionCount = previousBlockObject.TotalTransaction;
+                                                                 string previousFinalTransactionHash = previousBlockObject.BlockFinalHashTransaction;
 
-                                                        if (previousBlockObject != null)
-                                                        {
-                                                            if (previousBlockObject.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
-                                                            {
-                                                                int previousTransactionCount = previousBlockObject.TotalTransaction;
-                                                                string previousFinalTransactionHash = previousBlockObject.BlockFinalHashTransaction;
-
-                                                                ClassMiningPoWaCEnumStatus checkShareStatus = ClassMiningPoWaCUtility.CheckPoWaCShare(BlockchainSetting.CurrentMiningPoWaCSettingObject(blockHeight), miningPowShareObject, blockHeight, blockHash, blockDifficulty, previousTransactionCount, previousFinalTransactionHash, out var jobDifficulty, out int jobCompatibilityValue);
+                                                                 ClassMiningPoWaCEnumStatus checkShareStatus = ClassMiningPoWaCUtility.CheckPoWaCShare(BlockchainSetting.CurrentMiningPoWaCSettingObject(blockHeight), miningPowShareObject, blockHeight, blockHash, blockDifficulty, previousTransactionCount, previousFinalTransactionHash, out var jobDifficulty, out int jobCompatibilityValue);
 
 
-                                                                if (checkShareStatus == ClassMiningPoWaCEnumStatus.VALID_UNLOCK_BLOCK_SHARE)
-                                                                {
-                                                                    if (jobDifficulty == miningPowShareObject.PoWaCShareDifficulty)
-                                                                    {
-                                                                        if (jobCompatibilityValue == previousTransactionCount)
-                                                                        {
-                                                                            try
-                                                                            {
-                                                                                // Check if the block is still locked.
-                                                                                if (BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus == ClassBlockEnumStatus.LOCKED)
-                                                                                {
-                                                                                    #region Broadcast the share to other peers, wait final vote from peers, if the result is ok the peer unlock the block.
+                                                                 if (checkShareStatus == ClassMiningPoWaCEnumStatus.VALID_UNLOCK_BLOCK_SHARE)
+                                                                 {
+                                                                     if (jobDifficulty == miningPowShareObject.PoWaCShareDifficulty)
+                                                                     {
+                                                                         if (jobCompatibilityValue == previousTransactionCount)
+                                                                         {
+                                                                             try
+                                                                             {
+                                                                                    // Check if the block is still locked.
+                                                                                    if (BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus == ClassBlockEnumStatus.LOCKED)
+                                                                                 {
+                                                                                        #region Broadcast the share to other peers, wait final vote from peers, if the result is ok the peer unlock the block.
 
-                                                                                    if (enableBroadcast)
-                                                                                    {
-                                                                                        Tuple<ClassBlockEnumMiningShareVoteStatus, bool> blockMiningShareVoteStatus = await ClassPeerNetworkBroadcastFunction.AskBlockMiningShareVoteToPeerListsAsync(apiServerIp, apiServerOpenNatIp, string.Empty, blockHeight, miningPowShareObject, peerNetworkSetting, peerFirewallSettingObject, cancellation, true);
+                                                                                        if (enableBroadcast)
+                                                                                     {
+                                                                                         Tuple<ClassBlockEnumMiningShareVoteStatus, bool> blockMiningShareVoteStatus = await ClassPeerNetworkBroadcastFunction.AskBlockMiningShareVoteToPeerListsAsync(apiServerIp, apiServerOpenNatIp, string.Empty, blockHeight, miningPowShareObject, peerNetworkSetting, peerFirewallSettingObject, cancellation, true);
 
 
-                                                                                        if (blockMiningShareVoteStatus.Item2)
-                                                                                        {
+                                                                                         if (blockMiningShareVoteStatus.Item2)
+                                                                                         {
 
-                                                                                            if (ClassMiningPoWaCUtility.ComparePoWaCShare(BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject, miningPowShareObject)
-                                                                                                && BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner == miningPowShareObject.WalletAddress)
-                                                                                            {
-                                                                                                ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + ", transactions are already pushed and the next block already generated.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Magenta);
-                                                                                                resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
-                                                                                            }
-                                                                                            else
-                                                                                                resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_REFUSED;
-                                                                                        }
+                                                                                             if (ClassMiningPoWaCUtility.ComparePoWaCShare(BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject, miningPowShareObject)
+                                                                                                 && BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner == miningPowShareObject.WalletAddress)
+                                                                                             {
+                                                                                                 ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + ", transactions are already pushed and the next block already generated.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Magenta);
+                                                                                                 resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
+                                                                                             }
+                                                                                             else
+                                                                                                 resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_REFUSED;
+                                                                                         }
+                                                                                         else
+                                                                                         {
+
+                                                                                             if (BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus == ClassBlockEnumStatus.LOCKED)
+                                                                                             {
+                                                                                                 switch (blockMiningShareVoteStatus.Item1)
+                                                                                                 {
+                                                                                                        // In this case the share is completly accepted by the peer.
+                                                                                                        case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED:
+                                                                                                         {
+                                                                                                             if (await PushBlockRewardTransactionToMemPool(blockHeight, miningPowShareObject.WalletAddress, miningPowShareObject.Timestamp, false, cancellation))
+                                                                                                             {
+                                                                                                                 await InsertWholeMemPoolTransactionFromBlockHeight(blockHeight, cancellation);
+                                                                                                                 long newBlockHeight = blockHeight + 1;
+
+                                                                                                                 if (await GenerateNewMiningBlockObject(blockHeight, newBlockHeight, miningPowShareObject.Timestamp, miningPowShareObject.WalletAddress, false, false, cancellation))
+                                                                                                                 {
+                                                                                                                     BlockchainMemoryManagement[blockHeight, cancellation].TimestampFound = miningPowShareObject.Timestamp;
+                                                                                                                     BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject = miningPowShareObject;
+                                                                                                                     BlockchainMemoryManagement[blockHeight, cancellation].BlockUnlockValid = false;
+                                                                                                                     BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus = ClassBlockEnumStatus.UNLOCKED;
+                                                                                                                     BlockchainMemoryManagement[blockHeight, cancellation].BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
+
+                                                                                                                     if (ClassBlockchainStats.BlockchainNetworkStatsObject != null)
+                                                                                                                         ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " push transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, blockHeight < ClassBlockchainStats.BlockchainNetworkStatsObject.LastNetworkBlockHeight, ConsoleColor.Cyan);
+                                                                                                                     else
+                                                                                                                         ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " push transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Cyan);
+
+                                                                                                                     resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
+                                                                                                                 }
+                                                                                                                 else
+                                                                                                                 {
+                                                                                                                     if (ClassMiningPoWaCUtility.ComparePoWaCShare(BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject, miningPowShareObject) && BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner == miningPowShareObject.WalletAddress)
+                                                                                                                     {
+                                                                                                                         ClassLog.WriteLine("The block height: " + blockHeight + " is already unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " and accepted by peers already.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Cyan);
+                                                                                                                         resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
+                                                                                                                     }
+                                                                                                                     else
+                                                                                                                     {
+                                                                                                                         ClassLog.WriteLine("The block height: " + blockHeight + " is already found and can't generate the next block height.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkCyan);
+                                                                                                                         resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_REFUSED;
+                                                                                                                     }
+                                                                                                                 }
+                                                                                                             }
+                                                                                                             else
+                                                                                                             {
+                                                                                                                 if (ClassMiningPoWaCUtility.ComparePoWaCShare(BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject, miningPowShareObject) && BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner == miningPowShareObject.WalletAddress)
+                                                                                                                 {
+                                                                                                                     if (ClassBlockchainStats.BlockchainNetworkStatsObject != null)
+                                                                                                                         ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " push transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, blockHeight < ClassBlockchainStats.BlockchainNetworkStatsObject.LastNetworkBlockHeight, ConsoleColor.Cyan);
+                                                                                                                     else
+                                                                                                                         ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " push transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Cyan);
+                                                                                                                     resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
+                                                                                                                 }
+                                                                                                                 else
+                                                                                                                 {
+                                                                                                                     ClassLog.WriteLine("The block height: " + blockHeight + " is already found and can't generate the new block height because the block reward already exist.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkCyan);
+                                                                                                                     resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND;
+                                                                                                                 }
+                                                                                                             }
+                                                                                                         }
+                                                                                                         break;
+                                                                                                     case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_REFUSED:
+                                                                                                         {
+                                                                                                             ClassLog.WriteLine("The block height: " + blockHeight + " mining share from wallet address: " + miningPowShareObject.WalletAddress + " refused by peers.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+
+                                                                                                             resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_REFUSED;
+                                                                                                         }
+                                                                                                         break;
+                                                                                                        // In this case the share is saved on mem pool to do another vote later.
+                                                                                                        case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_NOCONSENSUS:
+                                                                                                         {
+                                                                                                             ClassLog.WriteLine("The block height: " + blockHeight + " has been found by the wallet address: " + miningPowShareObject.WalletAddress + " but no consensus with peers has been found.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
+
+                                                                                                             resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_NOCONSENSUS;
+                                                                                                         }
+                                                                                                         break;
+                                                                                                 }
+                                                                                             }
+                                                                                             else
+                                                                                             {
+                                                                                                 if (ClassMiningPoWaCUtility.ComparePoWaCShare(BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject, miningPowShareObject)
+                                                                                                 && BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner == miningPowShareObject.WalletAddress)
+                                                                                                 {
+                                                                                                     if (ClassBlockchainStats.BlockchainNetworkStatsObject != null)
+                                                                                                         ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " push transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, blockHeight < ClassBlockchainStats.BlockchainNetworkStatsObject.LastNetworkBlockHeight, ConsoleColor.Cyan);
+                                                                                                     else
+                                                                                                         ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " push transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Cyan);
+                                                                                                     resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
+                                                                                                 }
+                                                                                                 else
+                                                                                                 {
+                                                                                                     ClassLog.WriteLine("The block height: " + blockHeight + " is already found by " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
+                                                                                                     resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND;
+                                                                                                 }
+                                                                                             }
+                                                                                         }
+                                                                                     }
+
+                                                                                        #endregion
+
                                                                                         else
-                                                                                        {
+                                                                                     {
+                                                                                         if (!unlockTest)
+                                                                                         {
+                                                                                             if (await PushBlockRewardTransactionToMemPool(blockHeight, miningPowShareObject.WalletAddress, miningPowShareObject.Timestamp, fromSync, cancellation))
+                                                                                             {
+                                                                                                 await InsertWholeMemPoolTransactionFromBlockHeight(blockHeight, cancellation);
+                                                                                                 long newBlockHeight = blockHeight + 1;
 
-                                                                                            if (BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus == ClassBlockEnumStatus.LOCKED)
-                                                                                            {
-                                                                                                switch (blockMiningShareVoteStatus.Item1)
-                                                                                                {
-                                                                                                    // In this case the share is completly accepted by the peer.
-                                                                                                    case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED:
-                                                                                                        {
-                                                                                                            if (await PushBlockRewardTransactionToMemPool(blockHeight, miningPowShareObject.WalletAddress, miningPowShareObject.Timestamp, false, cancellation))
-                                                                                                            {
-                                                                                                                await InsertWholeMemPoolTransactionFromBlockHeight(blockHeight, cancellation);
-                                                                                                                long newBlockHeight = blockHeight + 1;
+                                                                                                 if (await GenerateNewMiningBlockObject(blockHeight, newBlockHeight, miningPowShareObject.Timestamp, miningPowShareObject.WalletAddress, false, false, cancellation))
+                                                                                                 {
 
-                                                                                                                if (await GenerateNewMiningBlockObject(blockHeight, newBlockHeight, miningPowShareObject.Timestamp, miningPowShareObject.WalletAddress, false, false, cancellation))
-                                                                                                                {
-                                                                                                                    BlockchainMemoryManagement[blockHeight, cancellation].TimestampFound = miningPowShareObject.Timestamp;
-                                                                                                                    BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject = miningPowShareObject;
-                                                                                                                    BlockchainMemoryManagement[blockHeight, cancellation].BlockUnlockValid = false;
-                                                                                                                    BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus = ClassBlockEnumStatus.UNLOCKED;
-                                                                                                                    BlockchainMemoryManagement[blockHeight, cancellation].BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
+                                                                                                     BlockchainMemoryManagement[blockHeight, cancellation].TimestampFound = miningPowShareObject.Timestamp;
+                                                                                                     BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject = miningPowShareObject;
+                                                                                                     BlockchainMemoryManagement[blockHeight, cancellation].BlockUnlockValid = false;
+                                                                                                     BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus = ClassBlockEnumStatus.UNLOCKED;
+                                                                                                     BlockchainMemoryManagement[blockHeight, cancellation].BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
-                                                                                                                    if (ClassBlockchainStats.BlockchainNetworkStatsObject != null)
-                                                                                                                        ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " push transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, blockHeight < ClassBlockchainStats.BlockchainNetworkStatsObject.LastNetworkBlockHeight, ConsoleColor.Cyan);
-                                                                                                                    else
-                                                                                                                        ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " push transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Cyan);
+                                                                                                     if (ClassBlockchainStats.BlockchainNetworkStatsObject != null)
+                                                                                                         ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " push transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, blockHeight < ClassBlockchainStats.BlockchainNetworkStatsObject.LastNetworkBlockHeight, ConsoleColor.Cyan);
+                                                                                                     else
+                                                                                                         ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " push transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Cyan);
 
-                                                                                                                    resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
-                                                                                                                }
-                                                                                                                else
-                                                                                                                {
-                                                                                                                    if (ClassMiningPoWaCUtility.ComparePoWaCShare(BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject, miningPowShareObject) && BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner == miningPowShareObject.WalletAddress)
-                                                                                                                    {
-                                                                                                                        ClassLog.WriteLine("The block height: " + blockHeight + " is already unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " and accepted by peers already.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Cyan);
-                                                                                                                        resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
-                                                                                                                    }
-                                                                                                                    else
-                                                                                                                    {
-                                                                                                                        ClassLog.WriteLine("The block height: " + blockHeight + " is already found and can't generate the next block height.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkCyan);
-                                                                                                                        resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_REFUSED;
-                                                                                                                    }
-                                                                                                                }
-                                                                                                            }
-                                                                                                            else
-                                                                                                            {
-                                                                                                                if (ClassMiningPoWaCUtility.ComparePoWaCShare(BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject, miningPowShareObject) && BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner == miningPowShareObject.WalletAddress)
-                                                                                                                {
-                                                                                                                    if (ClassBlockchainStats.BlockchainNetworkStatsObject != null)
-                                                                                                                        ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " push transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, blockHeight < ClassBlockchainStats.BlockchainNetworkStatsObject.LastNetworkBlockHeight, ConsoleColor.Cyan);
-                                                                                                                    else
-                                                                                                                        ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " push transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Cyan);
-                                                                                                                    resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
-                                                                                                                }
-                                                                                                                else
-                                                                                                                {
-                                                                                                                    ClassLog.WriteLine("The block height: " + blockHeight + " is already found and can't generate the new block height because the block reward already exist.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkCyan);
-                                                                                                                    resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND;
-                                                                                                                }
-                                                                                                            }
-                                                                                                        }
-                                                                                                        break;
-                                                                                                    case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_REFUSED:
-                                                                                                        {
-                                                                                                            ClassLog.WriteLine("The block height: " + blockHeight + " mining share from wallet address: " + miningPowShareObject.WalletAddress + " refused by peers.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-
-                                                                                                            resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_REFUSED;
-                                                                                                        }
-                                                                                                        break;
-                                                                                                    // In this case the share is saved on mem pool to do another vote later.
-                                                                                                    case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_NOCONSENSUS:
-                                                                                                        {
-                                                                                                            ClassLog.WriteLine("The block height: " + blockHeight + " has been found by the wallet address: " + miningPowShareObject.WalletAddress + " but no consensus with peers has been found.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
-
-                                                                                                            resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_NOCONSENSUS;
-                                                                                                        }
-                                                                                                        break;
-                                                                                                }
-                                                                                            }
-                                                                                            else
-                                                                                            {
-                                                                                                if (ClassMiningPoWaCUtility.ComparePoWaCShare(BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject, miningPowShareObject)
-                                                                                                && BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner == miningPowShareObject.WalletAddress)
-                                                                                                {
-                                                                                                    if (ClassBlockchainStats.BlockchainNetworkStatsObject != null)
-                                                                                                        ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " push transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, blockHeight < ClassBlockchainStats.BlockchainNetworkStatsObject.LastNetworkBlockHeight, ConsoleColor.Cyan);
-                                                                                                    else
-                                                                                                        ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " push transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Cyan);
-                                                                                                    resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
-                                                                                                }
-                                                                                                else
-                                                                                                {
-                                                                                                    ClassLog.WriteLine("The block height: " + blockHeight + " is already found by " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
-                                                                                                    resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND;
-                                                                                                }
-                                                                                            }
-                                                                                        }
-                                                                                    }
-
-                                                                                    #endregion
-
-                                                                                    else
-                                                                                    {
-                                                                                        if (!unlockTest)
-                                                                                        {
-                                                                                            if (await PushBlockRewardTransactionToMemPool(blockHeight, miningPowShareObject.WalletAddress, miningPowShareObject.Timestamp, fromSync, cancellation))
-                                                                                            {
-                                                                                                await InsertWholeMemPoolTransactionFromBlockHeight(blockHeight, cancellation);
-                                                                                                long newBlockHeight = blockHeight + 1;
-
-                                                                                                if (await GenerateNewMiningBlockObject(blockHeight, newBlockHeight, miningPowShareObject.Timestamp, miningPowShareObject.WalletAddress, false, false, cancellation))
-                                                                                                {
-
-                                                                                                    BlockchainMemoryManagement[blockHeight, cancellation].TimestampFound = miningPowShareObject.Timestamp;
-                                                                                                    BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject = miningPowShareObject;
-                                                                                                    BlockchainMemoryManagement[blockHeight, cancellation].BlockUnlockValid = false;
-                                                                                                    BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus = ClassBlockEnumStatus.UNLOCKED;
-                                                                                                    BlockchainMemoryManagement[blockHeight, cancellation].BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
-
-                                                                                                    if (ClassBlockchainStats.BlockchainNetworkStatsObject != null)
-                                                                                                        ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " push transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, blockHeight < ClassBlockchainStats.BlockchainNetworkStatsObject.LastNetworkBlockHeight, ConsoleColor.Cyan);
-                                                                                                    else
-                                                                                                        ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " push transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Cyan);
-
-                                                                                                    resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
-                                                                                                }
-                                                                                                else
-                                                                                                {
+                                                                                                     resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
+                                                                                                 }
+                                                                                                 else
+                                                                                                 {
 
 
-                                                                                                    if (BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus == ClassBlockEnumStatus.UNLOCKED
-                                                                                                        && ClassMiningPoWaCUtility.ComparePoWaCShare(BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject, miningPowShareObject)
-                                                                                                        && BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner == miningPowShareObject.WalletAddress)
-                                                                                                    {
-                                                                                                        ClassLog.WriteLine("The block height: " + blockHeight + " is already unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " and accepted by peers already.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Cyan);
-                                                                                                        resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
-                                                                                                    }
-                                                                                                    else
-                                                                                                    {
-                                                                                                        ClassLog.WriteLine("The block height: " + blockHeight + " is already found by: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkCyan);
-                                                                                                        resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND;
-                                                                                                    }
-                                                                                                }
-                                                                                            }
-                                                                                            else
-                                                                                            {
-                                                                                                ClassLog.WriteLine("The block height: " + blockHeight + " has been found by the wallet address: " + miningPowShareObject.WalletAddress + " accepted but can't push the transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                                                                                                resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND;
-                                                                                            }
-                                                                                        }
-                                                                                        else
-                                                                                            resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
-                                                                                    }
-                                                                                }
-                                                                                else
-                                                                                {
-                                                                                    if (BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus == ClassBlockEnumStatus.UNLOCKED
-                                                                                        && ClassMiningPoWaCUtility.ComparePoWaCShare(BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject, miningPowShareObject)
-                                                                                        && BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner == miningPowShareObject.WalletAddress)
-                                                                                    {
-                                                                                        resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
-                                                                                    }
-                                                                                    else
-                                                                                        resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND;
-                                                                                }
-                                                                            }
-                                                                            catch (Exception error)
-                                                                            {
-                                                                                ClassLog.WriteLine("Can't valid block share to unlock the block height: " + blockHeight + ". Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                                                                            }
+                                                                                                     if (BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus == ClassBlockEnumStatus.UNLOCKED
+                                                                                                         && ClassMiningPoWaCUtility.ComparePoWaCShare(BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject, miningPowShareObject)
+                                                                                                         && BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner == miningPowShareObject.WalletAddress)
+                                                                                                     {
+                                                                                                         ClassLog.WriteLine("The block height: " + blockHeight + " is already unlocked by the wallet address: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner + " and accepted by peers already.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Cyan);
+                                                                                                         resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
+                                                                                                     }
+                                                                                                     else
+                                                                                                     {
+                                                                                                         ClassLog.WriteLine("The block height: " + blockHeight + " is already found by: " + BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkCyan);
+                                                                                                         resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND;
+                                                                                                     }
+                                                                                                 }
+                                                                                             }
+                                                                                             else
+                                                                                             {
+                                                                                                 ClassLog.WriteLine("The block height: " + blockHeight + " has been found by the wallet address: " + miningPowShareObject.WalletAddress + " accepted but can't push the transaction reward to Mem Pool.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                                                                                                 resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND;
+                                                                                             }
+                                                                                         }
+                                                                                         else
+                                                                                             resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
+                                                                                     }
+                                                                                 }
+                                                                                 else
+                                                                                 {
+                                                                                     if (BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus == ClassBlockEnumStatus.UNLOCKED
+                                                                                         && ClassMiningPoWaCUtility.ComparePoWaCShare(BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject, miningPowShareObject)
+                                                                                         && BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner == miningPowShareObject.WalletAddress)
+                                                                                     {
+                                                                                         resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
+                                                                                     }
+                                                                                     else
+                                                                                         resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND;
+                                                                                 }
+                                                                             }
+                                                                             catch (Exception error)
+                                                                             {
+                                                                                 ClassLog.WriteLine("Can't valid block share to unlock the block height: " + blockHeight + ". Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                                                                             }
 
-                                                                        }
-                                                                        else
-                                                                            ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " is not valid because the share compatibility is not the same translated: " + jobCompatibilityValue + "/" + previousTransactionCount, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
-                                                                    }
-                                                                    else
-                                                                        ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " is not valid because the share difficulty is not the same translated: " + jobDifficulty + "/" + miningPowShareObject.PoWaCShareDifficulty, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
-                                                                }
-                                                                else
-                                                                {
-                                                                    ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " is not valid for unlock the Block Height: " + blockHeight + ". Check result: " + checkShareStatus, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
-                                                                    resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_REFUSED;
-                                                                }
-                                                            }
-                                                            else
-                                                            {
-                                                                ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " failed, the previous block height is locked.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Magenta);
+                                                                         }
+                                                                         else
+                                                                             ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " is not valid because the share compatibility is not the same translated: " + jobCompatibilityValue + "/" + previousTransactionCount, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
+                                                                     }
+                                                                     else
+                                                                         ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " is not valid because the share difficulty is not the same translated: " + jobDifficulty + "/" + miningPowShareObject.PoWaCShareDifficulty, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
+                                                                 }
+                                                                 else
+                                                                 {
+                                                                     ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " is not valid for unlock the Block Height: " + blockHeight + ". Check result: " + checkShareStatus, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
+                                                                     resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_REFUSED;
+                                                                 }
+                                                             }
+                                                             else
+                                                             {
+                                                                 ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " failed, the previous block height is locked.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Magenta);
 
-                                                                resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_REFUSED;
-                                                            }
-                                                        }
-                                                        else
-                                                        {
-                                                            ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " failed, the previous block height is empty.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Magenta);
+                                                                 resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_REFUSED;
+                                                             }
+                                                         }
+                                                         else
+                                                         {
+                                                             ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " failed, the previous block height is empty.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Magenta);
 
-                                                            resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_NOT_SYNCED;
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " have an invalid timestamp of packet.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Magenta);
-                                                        resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_INVALID_TIMESTAMP;
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    if (BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus == ClassBlockEnumStatus.UNLOCKED
-                                                        && ClassMiningPoWaCUtility.ComparePoWaCShare(BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject, miningPowShareObject)
-                                                            && BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner == miningPowShareObject.WalletAddress)
-                                                    {
-                                                        if (await GenerateNewMiningBlockObject(blockHeight, blockHeight + 1, miningPowShareObject.Timestamp, miningPowShareObject.WalletAddress, false, false, cancellation))
-                                                            resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
-                                                        else
-                                                            resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND;
-                                                    }
-                                                    else
-                                                    {
-                                                        ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " is already unlocked.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
-                                                        resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND;
-                                                    }
-                                                }
-                                            }
-                                            else
-                                                ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " is not right on the blockchain data.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
-                                        }
-                                        else
-                                            ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " have an invalid share difficulty. " + miningPowShareObject.PoWaCShareDifficulty + "/" + BlockchainMemoryManagement[blockHeight, cancellation].BlockDifficulty, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
-                                    }
-                                    else
-                                    {
-                                        ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " failed, the block height is empty.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Magenta);
+                                                             resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_NOT_SYNCED;
+                                                         }
+                                                     }
+                                                     else
+                                                     {
+                                                         ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " have an invalid timestamp of packet.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Magenta);
+                                                         resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_INVALID_TIMESTAMP;
+                                                     }
+                                                 }
+                                                 else
+                                                 {
+                                                     if (BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus == ClassBlockEnumStatus.UNLOCKED
+                                                         && ClassMiningPoWaCUtility.ComparePoWaCShare(BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject, miningPowShareObject)
+                                                             && BlockchainMemoryManagement[blockHeight, cancellation].BlockWalletAddressWinner == miningPowShareObject.WalletAddress)
+                                                     {
+                                                         if (await GenerateNewMiningBlockObject(blockHeight, blockHeight + 1, miningPowShareObject.Timestamp, miningPowShareObject.WalletAddress, false, false, cancellation))
+                                                             resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
+                                                         else
+                                                             resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND;
+                                                     }
+                                                     else
+                                                     {
+                                                         ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " is already unlocked.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
+                                                         resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND;
+                                                     }
+                                                 }
+                                             }
+                                             else
+                                                 ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " is not right on the blockchain data.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
+                                         }
+                                         else
+                                             ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " have an invalid share difficulty. " + miningPowShareObject.PoWaCShareDifficulty + "/" + BlockchainMemoryManagement[blockHeight, cancellation].BlockDifficulty, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
+                                     }
+                                     else
+                                     {
+                                         ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " failed, the block height is empty.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Magenta);
 
-                                        resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_NOT_SYNCED;
-                                    }
-                                }
-                                else
-                                    ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " cannot be used to unlock the current block, the previous block have not indexed his block reward tx yet.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
+                                         resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_NOT_SYNCED;
+                                     }
+                                 }
+                                 else
+                                     ClassLog.WriteLine("The mining share from: " + miningPowShareObject.WalletAddress + " who target block height: " + blockHeight + " cannot be used to unlock the current block, the previous block have not indexed his block reward tx yet.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
+                             }
+                             else
+                                 resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_NOT_SYNCED;
+                         }
+                         catch (Exception error)
+                         {
+                             ClassLog.WriteLine("Error from a received attempt to unlock the Block Height: " + blockHeight + ". | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+#if DEBUG
+                                Debug.WriteLine("Error from a received attempt to unlock the Block Height: " + blockHeight + ". | Exception: " + error.Message);
+#endif
                             }
-                            else
-                                resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_NOT_SYNCED;
-                        }
-                        catch (Exception error)
-                        {
-                            ClassLog.WriteLine("Error from a received attempt to unlock the Block Height: " + blockHeight + ". | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                     }
+                     else
+                     {
+                         try
+                         {
+                             ClassBlockObject blockInformationObject = await BlockchainMemoryManagement.GetBlockInformationDataStrategy(blockHeight, cancellation);
+
+                             if (blockInformationObject != null)
+                             {
+                                 if (blockInformationObject.BlockStatus == ClassBlockEnumStatus.UNLOCKED
+                                     && ClassMiningPoWaCUtility.ComparePoWaCShare(blockInformationObject.BlockMiningPowShareUnlockObject, miningPowShareObject)
+                                     && blockInformationObject.BlockWalletAddressWinner == miningPowShareObject.WalletAddress)
+                                 {
+                                     ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + blockInformationObject.BlockWalletAddressWinner + ", transactions are already pushed and the next block already generated.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
+                                     resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
+                                 }
+                                 else
+                                 {
+                                     ClassLog.WriteLine("The block height: " + blockHeight + " is already found by: " + blockInformationObject.BlockWalletAddressWinner, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
+
+                                     resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND;
+                                 }
+                             }
+                         }
+                         catch (Exception error)
+                         {
+                             ClassLog.WriteLine("Error from a received attempt to unlock the Block Height: " + blockHeight + ". | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
 #if DEBUG
-                            Debug.WriteLine("Error from a received attempt to unlock the Block Height: " + blockHeight + ". | Exception: " + error.Message);
+                                Debug.WriteLine("Error from a received attempt to unlock the Block Height: " + blockHeight + ". | Exception: " + error.Message);
+
 #endif
-                        }
-                    }
-                    else
-                    {
-                        try
-                        {
-                            ClassBlockObject blockInformationObject = await BlockchainMemoryManagement.GetBlockInformationDataStrategy(blockHeight, cancellation);
-
-                            if (blockInformationObject != null)
-                            {
-                                if (blockInformationObject.BlockStatus == ClassBlockEnumStatus.UNLOCKED
-                                    && ClassMiningPoWaCUtility.ComparePoWaCShare(blockInformationObject.BlockMiningPowShareUnlockObject, miningPowShareObject)
-                                    && blockInformationObject.BlockWalletAddressWinner == miningPowShareObject.WalletAddress)
-                                {
-                                    ClassLog.WriteLine("The block height: " + blockHeight + " has been unlocked by the wallet address: " + blockInformationObject.BlockWalletAddressWinner + ", transactions are already pushed and the next block already generated.", ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
-                                    resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED;
-                                }
-                                else
-                                {
-                                    ClassLog.WriteLine("The block height: " + blockHeight + " is already found by: " + blockInformationObject.BlockWalletAddressWinner, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
-
-                                    resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND;
-                                }
                             }
-                        }
-                        catch (Exception error)
-                        {
-                            ClassLog.WriteLine("Error from a received attempt to unlock the Block Height: " + blockHeight + ". | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                     }
+                 }
+                    // Cancellation dead.
+                    catch (Exception error)
+                 {
+                     ClassLog.WriteLine("Error from a received attempt to unlock the Block Height: " + blockHeight + ". | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
 #if DEBUG
-                            Debug.WriteLine("Error from a received attempt to unlock the Block Height: " + blockHeight + ". | Exception: " + error.Message);
-
+                        Debug.WriteLine("Error from a received attempt to unlock the Block Height: " + blockHeight + ". | Exception: " + error.Message);
 #endif
-                        }
                     }
-                }
-                // Cancellation dead.
-                catch (Exception error)
-                {
-                    ClassLog.WriteLine("Error from a received attempt to unlock the Block Height: " + blockHeight + ". | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_MINING, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
-#if DEBUG
-                    Debug.WriteLine("Error from a received attempt to unlock the Block Height: " + blockHeight + ". | Exception: " + error.Message);
-#endif
-                }
-            }
-            finally
-            {
-                if (useSemaphore)
-                    SemaphoreUnlockBlock.Release();
-            }
+             }), cancellation);
+
             return resultUnlock;
         }
 
