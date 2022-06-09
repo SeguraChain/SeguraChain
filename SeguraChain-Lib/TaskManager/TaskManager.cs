@@ -291,7 +291,7 @@ namespace SeguraChain_Lib.TaskManager
         /// <param name="timestampEnd"></param>
         /// <param name="cancellation"></param>
         /// <param name="socket"></param>
-        public static void InsertTask(Action action, long timestampEnd, CancellationTokenSource cancellation, Socket socket = null)
+        public static void InsertTask(Action action, long timestampEnd, CancellationTokenSource cancellation, Socket socket = null, bool useFactory = false)
         {
             if (TaskManagerEnabled)
             {
@@ -303,37 +303,51 @@ namespace SeguraChain_Lib.TaskManager
                 cancellation.Token : new CancellationToken(),
                 timestampEnd > 0 ? new CancellationTokenSource((int)(timestampEnd - CurrentTimestampMillisecond)).Token : new CancellationToken());
 
-                try
+                if (useFactory)
                 {
-
-                    while (!cancellationTask.IsCancellationRequested && TaskManagerEnabled && !_cancelTaskManager.IsCancellationRequested)
+                    try
                     {
-                        if (!TaskManagerEnabled || (timestampEnd > 0 && timestampEnd < CurrentTimestampMillisecond))
-                            break;
+                        Task.Factory.StartNew(action, cancellationTask.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+                    }
+                    catch
+                    {
+                        // Ignored, catch the exception once the task is cancelled.
+                    }
+                }
+                else
+                {
+                    try
+                    {
 
-                        try
+                        while (!cancellationTask.IsCancellationRequested && TaskManagerEnabled && !_cancelTaskManager.IsCancellationRequested)
                         {
-                            isLocked = Monitor.TryEnter(_taskCollection);
-
-                            if (isLocked)
-                            {
-                                _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
+                            if (!TaskManagerEnabled || (timestampEnd > 0 && timestampEnd < CurrentTimestampMillisecond))
                                 break;
+
+                            try
+                            {
+                                isLocked = Monitor.TryEnter(_taskCollection);
+
+                                if (isLocked)
+                                {
+                                    _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
+                                    break;
+                                }
+                            }
+                            catch (Exception error)
+                            {
+                                ClassLog.WriteLine("Error on insert a new task to the TaskManager | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_TASK_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
                             }
                         }
-                        catch (Exception error)
-                        {
-                            ClassLog.WriteLine("Error on insert a new task to the TaskManager | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_TASK_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
-                        }
-                    }
 
-                }
-                finally
-                {
-                    if (isLocked)
+                    }
+                    finally
                     {
-                        Monitor.PulseAll(_taskCollection);
-                        Monitor.Exit(_taskCollection);
+                        if (isLocked)
+                        {
+                            Monitor.PulseAll(_taskCollection);
+                            Monitor.Exit(_taskCollection);
+                        }
                     }
                 }
             }

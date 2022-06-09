@@ -104,7 +104,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
         #region Dispose functions
 
-        private bool _disposed;
+        public bool _disposed;
 
         ~ClassPeerNetworkClientServerObject()
         {
@@ -140,44 +140,35 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         {
             while (ClientPeerConnectionStatus)
             {
-                try
-                {
-
-                    if (!ClientPeerConnectionStatus || _clientAskDisconnection)
-                        break;
 
 
-                    if (!ClassUtility.SocketIsConnected(_clientSocket))
-                        break;
-
-                    if (_peerFirewallSettingObject.PeerEnableFirewallLink)
-                    {
-                        if (!ClassPeerFirewallManager.CheckClientIpStatus(_peerClientIp))
-                            break;
-                    }
-
-                    if (_onSendingPacketResponse || (_enableMemPoolBroadcastClientMode && _onSendingMemPoolTransaction))
-                        continue;
-                    else
-                    {
-                        // If any packet are received after the delay, the function close the peer client connection to listen.
-                        if (ClientPeerLastPacketReceived + _peerNetworkSettingObject.PeerMaxDelayConnection < TaskManager.TaskManager.CurrentTimestampSecond)
-                        {
-                            // On this case, insert invalid attempt of connection.
-                            if (!_clientResponseSendSuccessfully)
-                                ClassPeerCheckManager.InputPeerClientNoPacketConnectionOpened(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                            break;
-                        }
-                    }
-
-                    await Task.Delay(1000);
-
-
-                }
-                catch
-                {
+                if (!ClientPeerConnectionStatus || _clientAskDisconnection)
                     break;
+
+                if (!ClassUtility.SocketIsConnected(_clientSocket))
+                    break;
+
+                if (_peerFirewallSettingObject.PeerEnableFirewallLink)
+                {
+                    if (!ClassPeerFirewallManager.CheckClientIpStatus(_peerClientIp))
+                        break;
                 }
+
+                if (_onSendingPacketResponse || (_enableMemPoolBroadcastClientMode && _onSendingMemPoolTransaction))
+                    continue;
+                else
+                {
+                    // If any packet are received after the delay, the function close the peer client connection to listen.
+                    if (ClientPeerLastPacketReceived + _peerNetworkSettingObject.PeerMaxDelayConnection < TaskManager.TaskManager.CurrentTimestampSecond)
+                    {
+                        // On this case, insert invalid attempt of connection.
+                        if (!_clientResponseSendSuccessfully)
+                            ClassPeerCheckManager.InputPeerClientNoPacketConnectionOpened(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                        break;
+                    }
+                }
+
+                await Task.Delay(1000);
             }
 
             ClosePeerClient(true);

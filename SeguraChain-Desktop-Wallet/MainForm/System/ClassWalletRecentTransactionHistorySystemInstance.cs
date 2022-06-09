@@ -140,6 +140,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
             }
             catch
             {
+                _graphicsInitialized = false;
                 return false;
             }
             return true;
@@ -372,11 +373,15 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                                             break;
                                                     }
 
-                                                    DrawTransactionToRecentHistory(new ClassBlockTransaction(0, transactionObject)
+                                                    if(!DrawTransactionToRecentHistory(new ClassBlockTransaction(0, transactionObject)
                                                     {
                                                         TransactionStatus = true,
                                                         TransactionObject = transactionObject
-                                                    }, walletDataObject.WalletAddress, true, totalTxDrawed);
+                                                    }, walletDataObject.WalletAddress, true, totalTxDrawed))
+                                                    {
+                                                        changed = true;
+                                                        break;
+                                                    }
 
                                                     totalTxDrawed++;
 
@@ -417,7 +422,11 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
 
                                                             if (blockTransactionSynced.Value.BlockTransaction != null)
                                                             {
-                                                                DrawTransactionToRecentHistory(blockTransactionSynced.Value.BlockTransaction, walletDataObject.WalletAddress, blockTransactionSynced.Value.IsMemPool, totalTxDrawed);
+                                                                if(!DrawTransactionToRecentHistory(blockTransactionSynced.Value.BlockTransaction, walletDataObject.WalletAddress, blockTransactionSynced.Value.IsMemPool, totalTxDrawed))
+                                                                {
+                                                                    changed = true;
+                                                                    break;
+                                                                }
                                                                 totalTxDrawed++;
                                                             }
 
@@ -468,120 +477,68 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         /// <param name="walletAddress"></param>
         /// <param name="isMemPool"></param>
         /// <param name="totalTxDrawed"></param>
-        private void DrawTransactionToRecentHistory(ClassBlockTransaction blockTransaction, string walletAddress, bool isMemPool, int totalTxDrawed)
+        private bool DrawTransactionToRecentHistory(ClassBlockTransaction blockTransaction, string walletAddress, bool isMemPool, int totalTxDrawed)
         {
-
-            ClassRecentTransactionHistoryObject recentTransactionHistoryObject = new ClassRecentTransactionHistoryObject
+            try
             {
-                IsMemPool = isMemPool
-            };
+                ClassRecentTransactionHistoryObject recentTransactionHistoryObject = new ClassRecentTransactionHistoryObject
+                {
+                    IsMemPool = isMemPool
+                };
 
-            long totalConfirmationsToReach = blockTransaction.TransactionObject.BlockHeightTransactionConfirmationTarget - blockTransaction.TransactionObject.BlockHeightTransaction;
+                long totalConfirmationsToReach = blockTransaction.TransactionObject.BlockHeightTransactionConfirmationTarget - blockTransaction.TransactionObject.BlockHeightTransaction;
 
-            recentTransactionHistoryObject.IsConfirmed = blockTransaction.TransactionTotalConfirmation >= totalConfirmationsToReach;
-
-
-            recentTransactionHistoryObject.IsSender = blockTransaction.TransactionObject.WalletAddressSender == walletAddress;
-
-
-            recentTransactionHistoryObject.TransactionType = blockTransaction.TransactionObject.TransactionType;
+                recentTransactionHistoryObject.IsConfirmed = blockTransaction.TransactionTotalConfirmation >= totalConfirmationsToReach;
 
 
-            float positionX = ((_widthRecentTransactionHistory * 20f) / 100f) - ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize;
-            float positionY = ((ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize + (ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize / 2f)) * totalTxDrawed) + (ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize / 4f);
+                recentTransactionHistoryObject.IsSender = blockTransaction.TransactionObject.WalletAddressSender == walletAddress;
 
 
-            RectangleF rectangleBackgroundRecentTransaction = new RectangleF(0, positionY - (ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize / 3.75f) + 0.5f, _widthRecentTransactionHistory - 1, (ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize + (ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize / 2f)) - 1);
+                recentTransactionHistoryObject.TransactionType = blockTransaction.TransactionObject.TransactionType;
 
-            float rectangleDesignSize = (rectangleBackgroundRecentTransaction.Height * 10) / 100f;
 
-            RectangleF[] rectangleDesignCorner = new RectangleF[]
-            {
+                float positionX = ((_widthRecentTransactionHistory * 20f) / 100f) - ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize;
+                float positionY = ((ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize + (ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize / 2f)) * totalTxDrawed) + (ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize / 4f);
+
+
+                RectangleF rectangleBackgroundRecentTransaction = new RectangleF(0, positionY - (ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize / 3.75f) + 0.5f, _widthRecentTransactionHistory - 1, (ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize + (ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize / 2f)) - 1);
+
+                float rectangleDesignSize = (rectangleBackgroundRecentTransaction.Height * 10) / 100f;
+
+                RectangleF[] rectangleDesignCorner = new RectangleF[]
+                {
                 new RectangleF(rectangleBackgroundRecentTransaction.Location.X, rectangleBackgroundRecentTransaction.Location.Y, rectangleBackgroundRecentTransaction.Width, rectangleDesignSize)
-            };
+                };
 
 
-            _graphicsRecentTransactionHistory.FillRectangle(new SolidBrush(Color.FromArgb(245, 249, 252)), rectangleBackgroundRecentTransaction);
+                _graphicsRecentTransactionHistory.FillRectangle(new SolidBrush(Color.FromArgb(245, 249, 252)), rectangleBackgroundRecentTransaction);
 
-            _graphicsRecentTransactionHistory.FillRectangles(new SolidBrush(Color.FromArgb(228, 231, 235)), rectangleDesignCorner);
+                _graphicsRecentTransactionHistory.FillRectangles(new SolidBrush(Color.FromArgb(228, 231, 235)), rectangleDesignCorner);
 
-            _graphicsRecentTransactionHistory.DrawLine(new Pen(Color.FromArgb(91, 106, 128), 1.5f), new PointF(0, rectangleBackgroundRecentTransaction.Location.Y + rectangleBackgroundRecentTransaction.Height + 1), new PointF(rectangleBackgroundRecentTransaction.Width, rectangleBackgroundRecentTransaction.Location.Y + rectangleBackgroundRecentTransaction.Height + 1));
+                _graphicsRecentTransactionHistory.DrawLine(new Pen(Color.FromArgb(91, 106, 128), 1.5f), new PointF(0, rectangleBackgroundRecentTransaction.Location.Y + rectangleBackgroundRecentTransaction.Height + 1), new PointF(rectangleBackgroundRecentTransaction.Width, rectangleBackgroundRecentTransaction.Location.Y + rectangleBackgroundRecentTransaction.Height + 1));
 
-            RectangleF rectanglePictureTransactionType = new RectangleF(positionX, positionY + rectangleDesignSize, ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize, ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize);
+                RectangleF rectanglePictureTransactionType = new RectangleF(positionX, positionY + rectangleDesignSize, ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize, ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize);
 
-            DateTime dateTransactionSent = ClassUtility.GetDatetimeFromTimestamp(blockTransaction.TransactionObject.TimestampSend);
+                DateTime dateTransactionSent = ClassUtility.GetDatetimeFromTimestamp(blockTransaction.TransactionObject.TimestampSend);
 
-            string transactionDateText = dateTransactionSent.ToString("dd/MM/yyyy") + " " + dateTransactionSent.ToString("HH:mm:ss");
-            float positionDateY = positionY + (ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize / 4.5f);
-            float positionDateX = ((_widthRecentTransactionHistory * 70f) / 100f) - _graphicsRecentTransactionHistory.MeasureString(transactionDateText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont).Width;
+                string transactionDateText = dateTransactionSent.ToString("dd/MM/yyyy") + " " + dateTransactionSent.ToString("HH:mm:ss");
+                float positionDateY = positionY + (ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize / 4.5f);
+                float positionDateX = ((_widthRecentTransactionHistory * 70f) / 100f) - _graphicsRecentTransactionHistory.MeasureString(transactionDateText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont).Width;
 
-            if (!blockTransaction.TransactionStatus)
-                _graphicsRecentTransactionHistory.DrawString(transactionDateText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, ClassWalletDefaultSetting.DefaultRecentTransactionInvalidSolidBrushColor, positionDateX, positionDateY);
-            else
-                _graphicsRecentTransactionHistory.DrawString(transactionDateText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, ClassWalletDefaultSetting.DefaultRecentTransactionSolidBrushColor, positionDateX, positionDateY);
+                if (!blockTransaction.TransactionStatus)
+                    _graphicsRecentTransactionHistory.DrawString(transactionDateText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, ClassWalletDefaultSetting.DefaultRecentTransactionInvalidSolidBrushColor, positionDateX, positionDateY);
+                else
+                    _graphicsRecentTransactionHistory.DrawString(transactionDateText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, ClassWalletDefaultSetting.DefaultRecentTransactionSolidBrushColor, positionDateX, positionDateY);
 
 
-            float positionAmountY = positionY + (ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize / 1.5f);
+                float positionAmountY = positionY + (ClassWalletDefaultSetting.DefaultWalletRecentTransactionLogoSize / 1.5f);
 
-            switch (recentTransactionHistoryObject.TransactionType)
-            {
-                case ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION:
-                    {
-                        _graphicsRecentTransactionHistory.DrawImage(Resources.Wallet_Logo_mining_transaction, rectanglePictureTransactionType);
-                        string transactionAmountText = @"+" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount) + " " + BlockchainSetting.CoinMinName;
-                        float positionAmountX = ((_widthRecentTransactionHistory * 70f) / 100f) - _graphicsRecentTransactionHistory.MeasureString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont).Width;
-
-                        if (recentTransactionHistoryObject.IsMemPool)
-                            _graphicsRecentTransactionHistory.DrawString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, new SolidBrush(ClassWalletDefaultSetting.DefaultLabelTransactionInMemPoolForeColor), positionAmountX, positionAmountY);
-                        else
+                switch (recentTransactionHistoryObject.TransactionType)
+                {
+                    case ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION:
                         {
-                            if (recentTransactionHistoryObject.IsConfirmed)
-                                _graphicsRecentTransactionHistory.DrawString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, new SolidBrush(ClassWalletDefaultSetting.DefaultLabelTransactionConfirmedForeColor), positionAmountX, positionAmountY);
-                            else
-                                _graphicsRecentTransactionHistory.DrawString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, new SolidBrush(ClassWalletDefaultSetting.DefaultLabelTransactionInPendingForeColor), positionAmountX, positionAmountY);
-                        }
-                    }
-                    break;
-                case ClassTransactionEnumType.TRANSFER_TRANSACTION:
-                    {
-                        _graphicsRecentTransactionHistory.DrawImage(Resources.Wallet_Logo_transfer_transaction, rectanglePictureTransactionType);
-                        string transactionAmountText;
-
-                        if (recentTransactionHistoryObject.IsSender)
-                            transactionAmountText = @"-" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount) + " " + BlockchainSetting.CoinMinName;
-                        else
-                            transactionAmountText = @"+" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount) + " " + BlockchainSetting.CoinMinName;
-
-                        float positionAmountX = ((_widthRecentTransactionHistory * 70f) / 100f) - _graphicsRecentTransactionHistory.MeasureString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont).Width;
-
-                        if (recentTransactionHistoryObject.IsMemPool)
-                            _graphicsRecentTransactionHistory.DrawString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, new SolidBrush(ClassWalletDefaultSetting.DefaultLabelTransactionInMemPoolForeColor), positionAmountX, positionAmountY);
-                        else
-                        {
-                            if (recentTransactionHistoryObject.IsConfirmed)
-                                _graphicsRecentTransactionHistory.DrawString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, new SolidBrush(ClassWalletDefaultSetting.DefaultLabelTransferTransactionConfirmedForeColor), positionAmountX, positionAmountY);
-                            else
-                                _graphicsRecentTransactionHistory.DrawString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, new SolidBrush(ClassWalletDefaultSetting.DefaultLabelTransactionInPendingForeColor), positionAmountX, positionAmountY);
-                        }
-                    }
-                    break;
-                case ClassTransactionEnumType.DEV_FEE_TRANSACTION:
-                case ClassTransactionEnumType.NORMAL_TRANSACTION:
-                    {
-                        string transactionAmountText;
-
-                        if (recentTransactionHistoryObject.IsSender)
-                        {
-                            _graphicsRecentTransactionHistory.DrawImage(Resources.Wallet_Logo_outgoing_normal_transaction, rectanglePictureTransactionType);
-                            transactionAmountText = @"-" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount + blockTransaction.TransactionObject.Fee) + " " + BlockchainSetting.CoinMinName;
-                            float positionAmountX = ((_widthRecentTransactionHistory * 70f) / 100f) - _graphicsRecentTransactionHistory.MeasureString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont).Width;
-                            _graphicsRecentTransactionHistory.DrawString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, new SolidBrush(ClassWalletDefaultSetting.DefaultLabelTransactionOutgoingForeColor), positionAmountX, positionAmountY);
-                        }
-                        else
-                        {
-                            _graphicsRecentTransactionHistory.DrawImage(Resources.Wallet_Logo_incoming_normal_transaction, rectanglePictureTransactionType);
-                            transactionAmountText = @"+" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount) + " " + BlockchainSetting.CoinMinName;
-
+                            _graphicsRecentTransactionHistory.DrawImage(Resources.Wallet_Logo_mining_transaction, rectanglePictureTransactionType);
+                            string transactionAmountText = @"+" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount) + " " + BlockchainSetting.CoinMinName;
                             float positionAmountX = ((_widthRecentTransactionHistory * 70f) / 100f) - _graphicsRecentTransactionHistory.MeasureString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont).Width;
 
                             if (recentTransactionHistoryObject.IsMemPool)
@@ -594,18 +551,77 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                     _graphicsRecentTransactionHistory.DrawString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, new SolidBrush(ClassWalletDefaultSetting.DefaultLabelTransactionInPendingForeColor), positionAmountX, positionAmountY);
                             }
                         }
-                    }
-                    break;
+                        break;
+                    case ClassTransactionEnumType.TRANSFER_TRANSACTION:
+                        {
+                            _graphicsRecentTransactionHistory.DrawImage(Resources.Wallet_Logo_transfer_transaction, rectanglePictureTransactionType);
+                            string transactionAmountText;
+
+                            if (recentTransactionHistoryObject.IsSender)
+                                transactionAmountText = @"-" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount) + " " + BlockchainSetting.CoinMinName;
+                            else
+                                transactionAmountText = @"+" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount) + " " + BlockchainSetting.CoinMinName;
+
+                            float positionAmountX = ((_widthRecentTransactionHistory * 70f) / 100f) - _graphicsRecentTransactionHistory.MeasureString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont).Width;
+
+                            if (recentTransactionHistoryObject.IsMemPool)
+                                _graphicsRecentTransactionHistory.DrawString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, new SolidBrush(ClassWalletDefaultSetting.DefaultLabelTransactionInMemPoolForeColor), positionAmountX, positionAmountY);
+                            else
+                            {
+                                if (recentTransactionHistoryObject.IsConfirmed)
+                                    _graphicsRecentTransactionHistory.DrawString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, new SolidBrush(ClassWalletDefaultSetting.DefaultLabelTransferTransactionConfirmedForeColor), positionAmountX, positionAmountY);
+                                else
+                                    _graphicsRecentTransactionHistory.DrawString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, new SolidBrush(ClassWalletDefaultSetting.DefaultLabelTransactionInPendingForeColor), positionAmountX, positionAmountY);
+                            }
+                        }
+                        break;
+                    case ClassTransactionEnumType.DEV_FEE_TRANSACTION:
+                    case ClassTransactionEnumType.NORMAL_TRANSACTION:
+                        {
+                            string transactionAmountText;
+
+                            if (recentTransactionHistoryObject.IsSender)
+                            {
+                                _graphicsRecentTransactionHistory.DrawImage(Resources.Wallet_Logo_outgoing_normal_transaction, rectanglePictureTransactionType);
+                                transactionAmountText = @"-" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount + blockTransaction.TransactionObject.Fee) + " " + BlockchainSetting.CoinMinName;
+                                float positionAmountX = ((_widthRecentTransactionHistory * 70f) / 100f) - _graphicsRecentTransactionHistory.MeasureString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont).Width;
+                                _graphicsRecentTransactionHistory.DrawString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, new SolidBrush(ClassWalletDefaultSetting.DefaultLabelTransactionOutgoingForeColor), positionAmountX, positionAmountY);
+                            }
+                            else
+                            {
+                                _graphicsRecentTransactionHistory.DrawImage(Resources.Wallet_Logo_incoming_normal_transaction, rectanglePictureTransactionType);
+                                transactionAmountText = @"+" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount) + " " + BlockchainSetting.CoinMinName;
+
+                                float positionAmountX = ((_widthRecentTransactionHistory * 70f) / 100f) - _graphicsRecentTransactionHistory.MeasureString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont).Width;
+
+                                if (recentTransactionHistoryObject.IsMemPool)
+                                    _graphicsRecentTransactionHistory.DrawString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, new SolidBrush(ClassWalletDefaultSetting.DefaultLabelTransactionInMemPoolForeColor), positionAmountX, positionAmountY);
+                                else
+                                {
+                                    if (recentTransactionHistoryObject.IsConfirmed)
+                                        _graphicsRecentTransactionHistory.DrawString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, new SolidBrush(ClassWalletDefaultSetting.DefaultLabelTransactionConfirmedForeColor), positionAmountX, positionAmountY);
+                                    else
+                                        _graphicsRecentTransactionHistory.DrawString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, new SolidBrush(ClassWalletDefaultSetting.DefaultLabelTransactionInPendingForeColor), positionAmountX, positionAmountY);
+                                }
+                            }
+                        }
+                        break;
+                }
+
+                recentTransactionHistoryObject.TransactionDrawRectangle = rectanglePictureTransactionType;
+                recentTransactionHistoryObject.TransactionStatus = blockTransaction.TransactionStatus;
+
+                if (DictionaryRecentTransactionHistoryObjects.ContainsKey(blockTransaction.TransactionObject.TransactionHash))
+                    DictionaryRecentTransactionHistoryObjects[blockTransaction.TransactionObject.TransactionHash] = recentTransactionHistoryObject;
+                else
+                    DictionaryRecentTransactionHistoryObjects.Add(blockTransaction.TransactionObject.TransactionHash, recentTransactionHistoryObject);
+            }
+            catch
+            {
+                return false;
             }
 
-            recentTransactionHistoryObject.TransactionDrawRectangle = rectanglePictureTransactionType;
-            recentTransactionHistoryObject.TransactionStatus = blockTransaction.TransactionStatus;
-
-            if (DictionaryRecentTransactionHistoryObjects.ContainsKey(blockTransaction.TransactionObject.TransactionHash))
-                DictionaryRecentTransactionHistoryObjects[blockTransaction.TransactionObject.TransactionHash] = recentTransactionHistoryObject;
-            else
-                DictionaryRecentTransactionHistoryObjects.Add(blockTransaction.TransactionObject.TransactionHash, recentTransactionHistoryObject);
-
+            return true;
         }
     }
 }

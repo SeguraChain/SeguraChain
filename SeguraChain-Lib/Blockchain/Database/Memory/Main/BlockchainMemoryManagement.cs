@@ -4766,10 +4766,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                 if (listTxHashToRemove.Count > 0)
                                                                 {
                                                                     foreach (string txHash in listTxHashToRemove.GetList)
-                                                                    {
-                                                                        
                                                                         _dictionaryBlockObjectMemory[blockHeightIndex].BlockTransactionCache.TryRemove(txHash, out _);
-                                                                    }
+                                                                    
                                                                 }
                                                             }
                                                         }

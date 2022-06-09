@@ -905,14 +905,15 @@ namespace SeguraChain_Lib.Blockchain.Transaction.Utility
         {
             long totalMemoryUsage = 0;
 
-            // Block height transaction.
+
+            // Block height transaction. (Long)
             totalMemoryUsage += sizeof(long);
 
-            // Block height transaction confirmation target.
+            // Block height transaction confirmation target. (Long)
             totalMemoryUsage += sizeof(long);
 
-            // transaction hash.
-            totalMemoryUsage += BlockchainSetting.TransactionHashSize * sizeof(char);
+            // transaction hash. Length * size of char.
+            totalMemoryUsage += BlockchainSetting.TransactionHashSize * sizeof(char); 
 
             // Transaction amount.
             if (transactionObject.Amount > 0)
@@ -925,7 +926,7 @@ namespace SeguraChain_Lib.Blockchain.Transaction.Utility
                     totalMemoryUsage += transactionObject.Fee.ToByteArray().Length;
             }
 
-            // Wallet address receiver.
+            // Wallet address receiver. (Length * size of char)
             totalMemoryUsage += BlockchainSetting.WalletAddressWifLengthMax * sizeof(char);
 
             // Payment id.
