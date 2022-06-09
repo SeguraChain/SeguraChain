@@ -116,7 +116,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                         Debug.WriteLine("Cache IO System - Failed to index the new io cache file: " + ioFileName);
 #endif
                         ClassLog.WriteLine("Cache IO System - Failed to index the new io cache file: " + ioFileName, ClassEnumLogLevelType.LOG_LEVEL_MEMORY_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
-                        
+
                         return result;
                     }
                 }
@@ -149,26 +149,18 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                 {
                     if (_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask)
                     {
-                        try
+                        TaskManager.TaskManager.InsertTask(new Action(async () =>
                         {
-                            await Task.Factory.StartNew(async () =>
+                            try
                             {
-                                try
-                                {
-                                    await _dictionaryCacheIoIndexObject[ioFileName].PurgeIoBlockDataMemory(true, cancellation, 0, false);
-                                }
-                                catch
-                                {
-                                    // The task has been cancelled.
-                                }
-                                totalTaskDone++;
-
-                            }, cancellation.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
-                        }
-                        catch
-                        {
+                                await _dictionaryCacheIoIndexObject[ioFileName].PurgeIoBlockDataMemory(true, cancellation, 0, false);
+                            }
+                            catch
+                            {
+                                // The task has been cancelled.
+                            }
                             totalTaskDone++;
-                        }
+                        }), 0, cancellation);
                     }
                     else
                         await _dictionaryCacheIoIndexObject[ioFileName].PurgeIoBlockDataMemory(false, cancellation, 0, false);
@@ -176,17 +168,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
 
                 if (_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask)
                 {
-                    while (totalTaskToDo > totalTaskDone)
-                    {
-                        try
-                        {
-                            await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskParallelTaskWaitDelay, cancellation.Token);
-                        }
-                        catch
-                        {
-                            break;
-                        }
-                    }
+                    while (totalTaskToDo > totalTaskDone && !cancellation.IsCancellationRequested)
+                        await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskParallelTaskWaitDelay);
                 }
 
                 long totalIoCacheMemoryUsage = GetIoCacheSystemMemoryConsumption(cancellation, out int totalBlockKeepAlive);
@@ -222,29 +205,21 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                     {
                         if (_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask && ioFileNameArray.Length > 1)
                         {
-                            try
+                            TaskManager.TaskManager.InsertTask(new Action(() =>
                             {
-                                await Task.Factory.StartNew(() =>
+                                try
                                 {
-                                    try
-                                    {
-                                        string ioFilePath = _blockchainDatabaseSetting.GetBlockchainCacheDirectoryPath + ioFileName;
-                                        _dictionaryCacheIoIndexObject[ioFileName].CloseLockStream();
-                                        _dictionaryCacheIoIndexObject.Remove(ioFilePath);
-                                        File.Delete(ioFilePath);
-                                    }
-                                    catch
-                                    {
-                                        // The task has been cancelled or the file stream is locked, closed.
-                                    }
-                                    totalTaskDone++;
-
-                                }, cancellation.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
-                            }
-                            catch
-                            {
+                                    string ioFilePath = _blockchainDatabaseSetting.GetBlockchainCacheDirectoryPath + ioFileName;
+                                    _dictionaryCacheIoIndexObject[ioFileName].CloseLockStream();
+                                    _dictionaryCacheIoIndexObject.Remove(ioFilePath);
+                                    File.Delete(ioFilePath);
+                                }
+                                catch
+                                {
+                                    // The task has been cancelled or the file stream is locked, closed.
+                                }
                                 totalTaskDone++;
-                            }
+                            }), 0, cancellation);
                         }
                         else
                         {
@@ -258,16 +233,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                     if (_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask && ioFileNameArray.Length > 1)
                     {
                         while (totalTaskToDo > totalTaskDone)
-                        {
-                            try
-                            {
-                                await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskParallelTaskWaitDelay, cancellation.Token);
-                            }
-                            catch
-                            {
-                                break;
-                            }
-                        }
+                            await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskParallelTaskWaitDelay);
                     }
 
                     cancellation.Cancel();
@@ -367,10 +333,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                         {
                             foreach (string ioFileName in dictionaryRangeBlockHeightIoCacheFile.GetList.Keys)
                             {
-
                                 foreach (ClassBlockObject blockObject in await _dictionaryCacheIoIndexObject[ioFileName].GetIoListBlockDataInformationFromListBlockHeight(dictionaryRangeBlockHeightIoCacheFile[ioFileName], cancellationIoCache))
                                 {
-
                                     if (blockObject != null)
                                         listBlockInformation.Add(blockObject.BlockHeight, blockObject);
                                 }
@@ -495,32 +459,22 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                         {
                             if (_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask && ioFileNameArray.Length > 1)
                             {
-                                try
+                                TaskManager.TaskManager.InsertTask(new Action(async () =>
                                 {
-                                    await Task.Factory.StartNew(async () =>
+                                    try
                                     {
+                                        if (!cancel)
+                                            result = await _dictionaryCacheIoIndexObject[ioFileName].PushOrUpdateListIoBlockData(listBlockObject[ioFileName], keepAlive, cancellation);
 
-                                        try
-                                        {
-                                            if (!cancel)
-                                            {
-                                                if (!await _dictionaryCacheIoIndexObject[ioFileName].PushOrUpdateListIoBlockData(listBlockObject[ioFileName], keepAlive, cancellation))
-                                                    result = false;
-                                            }
-                                        }
-                                        catch
-                                        {
-                                            // The task has been cancelled.
-                                        }
+                                    }
+                                    catch
+                                    {
+                                        // The task has been cancelled.
+                                    }
 
-                                        totalTaskDone++;
-                                    }, cancellation.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
-                                }
-                                catch
-                                {
                                     totalTaskDone++;
-                                }
-                            } 
+                                }), 0, cancellation);
+                            }
                             else
                             {
                                 if (!cancel && result)
@@ -539,22 +493,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                         {
                             while (totalTaskDone < totalTaskToDo)
                             {
-                                if (cancel || !result)
+                                if (cancel || !result || !cancellationIoCache.IsCancellationRequested)
                                     break;
 
-                                if (cancellationIoCache != null)
-                                {
-                                    try
-                                    {
-                                        await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskParallelTaskWaitDelay, cancellationIoCache.Token);
-                                    }
-                                    catch
-                                    {
-                                        break;
-                                    }
-                                }
-                                else
-                                    await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskParallelTaskWaitDelay);
+                                await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskParallelTaskWaitDelay);
                             }
                         }
                     }
@@ -689,29 +631,29 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                         {
                             if (_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask && ioFileNameArray.Length > 1)
                             {
-                                try
+                                TaskManager.TaskManager.InsertTask(new Action(async () =>
                                 {
-                                    await Task.Factory.StartNew(async () =>
+                                    if (!cancel)
                                     {
-                                        if (!cancel)
+                                        try
                                         {
-                                            try
-                                            {
-                                                if (!await _dictionaryCacheIoIndexObject[ioFileName].PushOrUpdateListIoBlockTransactionData(listBlockTransactionToInsertOrUpdate[ioFileName], keepAlive, cancellation))
-                                                    result = false;
-                                            }
-                                            catch
-                                            {
-                                                // The task is cancelled.
-                                            }
+                                            result = await _dictionaryCacheIoIndexObject[ioFileName].PushOrUpdateListIoBlockTransactionData(listBlockTransactionToInsertOrUpdate[ioFileName], keepAlive, cancellation);
                                         }
-                                        totalTaskDone++;
-                                    }, cancellation.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
-                                }
-                                catch
-                                {
+
+#if !DEBUG
+                                        catch
+                                        {
+
+#else
+                                        catch (Exception error)
+                                        {
+                                            Debug.WriteLine("Failed to push the list of io block transaction data to the cache: " + error.Message);
+#endif
+                                        }
+                                    }
                                     totalTaskDone++;
-                                }
+
+                                }), 0, cancellation);
                             }
                             else
                             {
@@ -725,17 +667,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
 
                         if (_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask && ioFileNameArray.Length > 1)
                         {
-                            while (totalTaskDone < totalTaskToDo && !cancel && result)
-                            {
-                                try
-                                {
-                                    await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskParallelTaskWaitDelay, cancellationIoCache.Token);
-                                }
-                                catch
-                                {
-                                    break;
-                                }
-                            }
+                            while (totalTaskDone < totalTaskToDo && !cancel && result || !cancellationIoCache.IsCancellationRequested)
+                                await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskParallelTaskWaitDelay);
                         }
                     }
                 }
@@ -821,7 +754,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
 
                     if (blockObject != null)
                     {
-                        foreach(string transactionHash in listTransactionHash)
+                        foreach (string transactionHash in listTransactionHash)
                         {
                             if (blockObject.BlockTransactions.ContainsKey(transactionHash))
                                 listBlockTransaction.Add(blockObject.BlockTransactions[transactionHash].Clone());
@@ -907,64 +840,49 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
 
                                 foreach (string ioFileName in ioFileNameArray)
                                 {
-                                    try
-                                    {
-                                        await Task.Factory.StartNew(async () =>
-                                        {
-                                            try
-                                            {
-                                                if (listBlockHeightIndexedByIoFile[ioFileName].Count > 0 && !cancel)
-                                                {
-                                                    using (DisposableList<ClassBlockObject> listBlockObject = await _dictionaryCacheIoIndexObject[ioFileName].GetIoListBlockDataFromListBlockHeight(new HashSet<long>(listBlockHeightIndexedByIoFile[ioFileName]), keepAlive, clone, cancellationIoCache))
-                                                    {
-                                                        if (listBlockObject.Count > 0)
-                                                        {
-                                                            foreach (ClassBlockObject blockObject in listBlockObject.GetAll)
-                                                            {
-
-                                                                if (blockObject != null)
-                                                                {
-                                                                    if (!listBlockAlreadyCached.ContainsKey(blockObject.BlockHeight) && !listBlockHeightAlreadyCached.Contains(blockObject.BlockHeight))
-                                                                        listBlockAlreadyCached.Add(blockObject.BlockHeight, blockObject);
-                                                                }
-                                                            }
-
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            catch
-                                            {
-                                                // The task has been cancelled.
-                                            }
-
-                                            totalTaskDone++;
-
-
-                                        }, cancellation.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
-                                    }
-                                    catch
-                                    {
-                                        totalTaskDone++;
-                                    }
-                                }
-
-                                while (totalTaskDone < totalTaskToDo && !cancel)
-                                {
-                                    if (cancellationIoCache != null)
+                                    TaskManager.TaskManager.InsertTask(new Action(async () =>
                                     {
                                         try
                                         {
-                                            await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskParallelTaskWaitDelay, cancellationIoCache.Token);
+                                            if (listBlockHeightIndexedByIoFile[ioFileName].Count > 0 && !cancel)
+                                            {
+                                                using (DisposableList<ClassBlockObject> listBlockObject = await _dictionaryCacheIoIndexObject[ioFileName].GetIoListBlockDataFromListBlockHeight(new HashSet<long>(listBlockHeightIndexedByIoFile[ioFileName]), keepAlive, clone, cancellationIoCache))
+                                                {
+                                                    if (listBlockObject.Count > 0)
+                                                    {
+                                                        foreach (ClassBlockObject blockObject in listBlockObject.GetAll)
+                                                        {
+
+                                                            if (blockObject != null)
+                                                            {
+                                                                if (!listBlockAlreadyCached.ContainsKey(blockObject.BlockHeight) && !listBlockHeightAlreadyCached.Contains(blockObject.BlockHeight))
+                                                                    listBlockAlreadyCached.Add(blockObject.BlockHeight, blockObject);
+                                                            }
+                                                        }
+
+                                                    }
+                                                }
+                                            }
                                         }
+#if !DEBUG
                                         catch
                                         {
-                                            break;
+#else
+                                        catch (Exception exception)
+                                        {
+                                            Debug.WriteLine("Error to get the list of block data target by the block height range: " + blockHeightStart + "/" + blockHeightEnd + " | Exception: " + exception.Message);
+#endif
+
+                                            // The task has been cancelled.
                                         }
-                                    }
-                                    else
-                                        await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskParallelTaskWaitDelay);
+
+                                        totalTaskDone++;
+                                    }), 0, cancellation);
                                 }
+
+                                while (totalTaskDone < totalTaskToDo && !cancel && !cancellationIoCache.IsCancellationRequested)
+                                    await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskParallelTaskWaitDelay);
+
                             }
                         }
                         else
@@ -1016,7 +934,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
             using (DisposableList<string> listIndexes = new DisposableList<string>(true, 0, _dictionaryCacheIoIndexObject.Keys.ToList()))
             {
                 var indexListFirst = await _dictionaryCacheIoIndexObject[listIndexes.GetList[0]].GetIoBlockHeightListIndexed(cancellation);
-                var indexListLast = await _dictionaryCacheIoIndexObject[listIndexes.GetList[listIndexes.Count -1]].GetIoBlockHeightListIndexed(cancellation);
+                var indexListLast = await _dictionaryCacheIoIndexObject[listIndexes.GetList[listIndexes.Count - 1]].GetIoBlockHeightListIndexed(cancellation);
 
                 return new Tuple<long, long>(indexListFirst.First(), indexListLast.Last());
             }
@@ -1048,10 +966,13 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
             {
                 long totalMemoryUsagePendingCalculation = 0;
 
-                foreach (string ioFileName in _dictionaryCacheIoIndexObject.Keys.ToArray())
+                using (DisposableList<string> listIoBlockFile = new DisposableList<string>(false, 0,_dictionaryCacheIoIndexObject.Keys.ToList()))
                 {
-                    totalMemoryUsagePendingCalculation += _dictionaryCacheIoIndexObject[ioFileName].GetIoMemoryUsage(cancellation, out int indexTotalBlockKeepAlive);
-                    totalBlockKeepAlive += indexTotalBlockKeepAlive;
+                    foreach (string ioFileName in listIoBlockFile.GetList)
+                    {
+                        totalMemoryUsagePendingCalculation += _dictionaryCacheIoIndexObject[ioFileName].GetIoMemoryUsage(cancellation, out int indexTotalBlockKeepAlive);
+                        totalBlockKeepAlive += indexTotalBlockKeepAlive;
+                    }
                 }
 
                 _totalIoCacheSystemMemoryUsage = totalMemoryUsagePendingCalculation;

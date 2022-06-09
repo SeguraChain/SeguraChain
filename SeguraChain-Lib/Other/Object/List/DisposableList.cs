@@ -6,6 +6,10 @@ using SeguraChain_Lib.Blockchain.Block.Object.Structure;
 
 namespace SeguraChain_Lib.Other.Object.List
 {
+    /// <summary>
+    /// Extension of the generic List object, auto clean up data, sort, and others options.
+    /// </summary>
+    /// <typeparam name="V"></typeparam>
     public class DisposableList<V> : IDisposable
     {
         public DisposableList(bool enableSort = false, int capacity = 0, IList<V> listCopy = null)

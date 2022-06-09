@@ -12,6 +12,7 @@ using LZ4;
 using SeguraChain_Lib.Blockchain.Transaction.Utility;
 using System.Linq;
 using SeguraChain_Lib.Other.Object.List;
+using SeguraChain_Lib.Blockchain.Setting;
 
 namespace SeguraChain_Lib.Blockchain.Database.Function
 {
@@ -25,6 +26,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Function
             
 
             int countBlockLoaded = 0;
+            long nextBlockHeight = BlockchainSetting.GenesisBlockHeight;
+            bool error = false;
 
             using (DisposableSortedList<int, string> dictionaryBlockFiles = new DisposableSortedList<int, string>())
             {
@@ -102,17 +105,27 @@ namespace SeguraChain_Lib.Blockchain.Database.Function
                                             ClassLog.WriteLine("Load block file: " + blockFilename + " failed.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
                                             yield return null;
                                         }
+
+                                        if (blockObject.BlockHeight != nextBlockHeight)
+                                        {
+                                            error = true;
+                                            ClassLog.WriteLine("Stop to load the blockchain database, the next block height target is missing: " + nextBlockHeight, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                                            break;
+                                        }
 #if DEBUG
                                         Debug.WriteLine("Load block file: " + blockFilename + " successfully done. Total TX: " + blockObject.BlockTransactions.Count + " | Hash: " + blockObject.BlockHash);
 #endif
                                         ClassLog.WriteLine("Load block file: " + blockFilename + " successfully done. Total TX: " + blockObject.BlockTransactions.Count + " | Hash: " + blockObject.BlockHash, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
                                         yield return blockObject;
+                                        nextBlockHeight++;
                                     }
                                 }
                             }
                         }
                     }
 
+                    if (error)
+                        break;
                 }
             }
 

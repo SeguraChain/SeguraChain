@@ -105,15 +105,25 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         /// <summary>
         /// Initialize graphics content of the recent transaction history.
         /// </summary>
-        private void InitializeGraphicsRecentTransactionHistory()
+        private bool InitializeGraphicsRecentTransactionHistory()
         {
-            if (_graphicsInitialized)
-                _graphicsRecentTransactionHistory.Clear(ClassWalletDefaultSetting.DefaultRecentTransactionBackColor);
-            else
+            try
             {
-                _bitmapRecentTransactionHistory = new Bitmap(_widthRecentTransactionHistory, _heightRecentTransactionHistory);
-                _graphicsRecentTransactionHistory = Graphics.FromImage(_bitmapRecentTransactionHistory);
-                _graphicsInitialized = true;
+                if (_graphicsInitialized)
+                    _graphicsRecentTransactionHistory.Clear(ClassWalletDefaultSetting.DefaultRecentTransactionBackColor);
+                else
+                {
+                    _bitmapRecentTransactionHistory = new Bitmap(_widthRecentTransactionHistory, _heightRecentTransactionHistory);
+                    _graphicsRecentTransactionHistory = Graphics.FromImage(_bitmapRecentTransactionHistory);
+                    _graphicsInitialized = true;
+                }
+
+                return true;
+            }
+            catch
+            {
+                _graphicsInitialized = false;
+                return false;
             }
         }
 
@@ -219,7 +229,11 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         public async Task<bool> UpdateRecentTransactionHistory(string walletFileOpened, CancellationTokenSource cancellation)
         {
             if (!_graphicsInitialized)
-                InitializeGraphicsRecentTransactionHistory();
+            {
+                if (!InitializeGraphicsRecentTransactionHistory())
+                    return true;
+
+            }
 
             bool changed = false;
 
@@ -325,13 +339,19 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                 // Update recent transaction history and draw it.
                                 if (requireUpdate)
                                 {
+                                    bool exception = false;
 
                                     DictionaryRecentTransactionHistoryObjects.Clear();
                                     if (!ResetOrClearGraphicsRecentTransactionHistory(false))
-                                        InitializeGraphicsRecentTransactionHistory();
+                                    {
+                                        if (!InitializeGraphicsRecentTransactionHistory())
+                                            exception = true;
+                                    }
 
                                     int totalTxDrawed = 0;
                                     bool completeDraw = false;
+
+                                    #region Draw MemPool transaction(s).
 
                                     if (countMemPoolTransactionIndexed > 0)
                                     {
@@ -379,7 +399,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                                         TransactionObject = transactionObject
                                                     }, walletDataObject.WalletAddress, true, totalTxDrawed))
                                                     {
-                                                        changed = true;
+                                                        exception = true;
                                                         break;
                                                     }
 
@@ -395,7 +415,11 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                         }
                                     }
 
-                                    if (!completeDraw)
+                                    #endregion
+
+                                    #region Draw indexed transaction(s).
+
+                                    if (!completeDraw && !exception)
                                     {
                                         if (countTransactionIndexed > 0)
                                         {
@@ -424,7 +448,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                                             {
                                                                 if(!DrawTransactionToRecentHistory(blockTransactionSynced.Value.BlockTransaction, walletDataObject.WalletAddress, blockTransactionSynced.Value.IsMemPool, totalTxDrawed))
                                                                 {
-                                                                    changed = true;
+                                                                    exception = true;
                                                                     break;
                                                                 }
                                                                 totalTxDrawed++;
@@ -448,6 +472,15 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                                     break;
                                             }
                                         }
+                                    }
+
+                                    #endregion
+
+                                    if (exception)
+                                    {
+                                        DictionaryRecentTransactionHistoryObjects.Clear();
+                                        ResetOrClearGraphicsRecentTransactionHistory(false);
+                                        changed = true;
                                     }
 
                                     _lastWalletMemPoolTransactionCount = countMemPoolTransactionIndexed;
