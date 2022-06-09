@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -6,6 +7,7 @@ using SeguraChain_Lib.Blockchain.Sovereign.Database;
 using SeguraChain_Lib.Blockchain.Wallet.Function;
 using SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Status;
 using SeguraChain_Lib.Instance.Node.Network.Services.Firewall.Manager;
+using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.ClientConnect.Object;
 using SeguraChain_Lib.Instance.Node.Setting.Object;
 using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Utility;
@@ -115,7 +117,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                             else if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalAttemptConnection >= peerNetworkSettingObject.PeerMaxAttemptConnection ||
                                      ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalNoPacketConnectionAttempt >= peerNetworkSettingObject.PeerMaxNoPacketPerConnectionOpened)
                             {
-                                SetPeerDeadState(peerIp, peerUniqueId, peerFirewallSettingObject);
+                                SetPeerDeadState(peerIp, peerUniqueId, peerNetworkSettingObject, peerFirewallSettingObject);
                                 return false;
                             }
                             else if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalInvalidPacket >= peerNetworkSettingObject.PeerMaxInvalidPacket)
@@ -219,6 +221,26 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
             return ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPublicKey == peerPublicKeyReceived;
         }
 
+        /// <summary>
+        /// Return the amount of peers alive from a list.
+        /// </summary>
+        /// <param name="peerListTarget"></param>
+        /// <param name="peerNetworkSettingObject"></param>
+        /// <param name="peerFirewallSettingObject"></param>
+        /// <returns></returns>
+        public static int GetCountPeerAliveFromList(Dictionary<int, ClassPeerTargetObject> peerListTarget, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject)
+        {
+            int count = 0;
+
+            foreach(var peer in peerListTarget)
+            {
+                if (CheckPeerClientStatus(peer.Value.PeerIpTarget, peer.Value.PeerUniqueIdTarget, false, peerNetworkSettingObject, peerFirewallSettingObject))
+                    count++;
+            }
+
+            return count;
+        }
+
         #endregion
 
         #region Update peer stats.
@@ -278,7 +300,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                 ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalNoPacketConnectionAttempt++;
 
                 if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalNoPacketConnectionAttempt >= peerNetworkSettingObject.PeerMaxNoPacketPerConnectionOpened)
-                    SetPeerDeadState(peerIp, peerUniqueId, peerFirewallSettingObject);
+                    SetPeerDeadState(peerIp, peerUniqueId, peerNetworkSettingObject,  peerFirewallSettingObject);
             }
         }
 
@@ -305,7 +327,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
 
                 ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalAttemptConnection++;
                 if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalAttemptConnection >= peerNetworkSettingObject.PeerMaxAttemptConnection)
-                    SetPeerDeadState(peerIp, peerUniqueId, peerFirewallSettingObject);
+                    SetPeerDeadState(peerIp, peerUniqueId, peerNetworkSettingObject, peerFirewallSettingObject);
             }
         }
 
@@ -416,7 +438,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="peerUniqueId"></param>
         /// <param name="peerNetworkSettingObject"></param>
         /// <param name="peerFirewallSettingObject"></param>
-        public static void SetPeerDeadState(string peerIp, string peerUniqueId, ClassPeerFirewallSettingObject peerFirewallSettingObject)
+        public static void SetPeerDeadState(string peerIp, string peerUniqueId, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject)
         {
             if (!ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
             {
@@ -430,7 +452,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                     ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus = ClassPeerEnumStatus.PEER_DEAD;
                     ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalAttemptConnection = 0;
                     ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalNoPacketConnectionAttempt = 0;
-                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastDeadTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastDeadTimestamp = TaskManager.TaskManager.CurrentTimestampSecond + peerNetworkSettingObject.PeerDeadDelay;
                     ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist = 0;
 
                     ClassLog.WriteLine("Peer: " + peerIp + " | Unique ID: " + peerUniqueId + " state has been set to dead temporaly.", ClassEnumLogLevelType.LOG_LEVEL_PEER_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);

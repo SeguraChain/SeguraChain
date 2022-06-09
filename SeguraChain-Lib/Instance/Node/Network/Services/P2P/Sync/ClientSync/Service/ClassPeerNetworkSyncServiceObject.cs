@@ -1176,7 +1176,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         /// <param name="peerListTarget"></param>
         private async Task<int> StartAskPeerListFromListPeerTarget(Dictionary<int, ClassPeerTargetObject> peerListTarget)
         {
-            int totalTaskCount = peerListTarget.Count;
+            int totalTaskCount = ClassPeerCheckManager.GetCountPeerAliveFromList(peerListTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
             int totalTaskComplete = 0;
             int totalResponseOk = 0;
             long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
@@ -1260,7 +1260,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
             {
                 long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
 
-                int totalTaskCount = peerListTarget.Count;
+                int totalTaskCount = ClassPeerCheckManager.GetCountPeerAliveFromList(peerListTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
                 int totalTaskComplete = 0;
                 int totalSovereignUpdatedReceived = 0;
 
@@ -1402,7 +1402,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         /// <returns></returns>
         private async Task<Tuple<ClassPeerPacketSendNetworkInformation, float>> StartAskNetworkInformationFromListPeerTarget(Dictionary<int, ClassPeerTargetObject> peerListTarget)
         {
-            int totalTaskToDo = peerListTarget.Count;
+            int totalTaskToDo = ClassPeerCheckManager.GetCountPeerAliveFromList(peerListTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
             int totalTaskDone = 0;
             int totalResponseOk = 0;
             using (DisposableConcurrentDictionary<string, ClassPeerPacketSendNetworkInformation> listNetworkInformationsSynced = new DisposableConcurrentDictionary<string, ClassPeerPacketSendNetworkInformation>())
@@ -1669,7 +1669,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
             foreach (var blockHeight in listBlockHeightTarget.GetAll)
             {
-                int totalTaskToDo = peerListTarget.Count;
+                int totalTaskToDo = ClassPeerCheckManager.GetCountPeerAliveFromList(peerListTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
                 int totalTaskDone = 0;
                 int totalResponseOk = 0;
 
@@ -1950,7 +1950,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         using (DisposableConcurrentDictionary<string, int> listOfRankedPeerPublicKeySaved = new DisposableConcurrentDictionary<string, int>())
                         {
                             long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
-                            int totalTaskToDo = peerListTarget.Count;
+                            int totalTaskToDo = ClassPeerCheckManager.GetCountPeerAliveFromList(peerListTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
                             int totalTaskDone = 0;
                             int totalResponseOk = 0;
 
@@ -2176,7 +2176,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         {
 
                             long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
-                            int totalTaskToDo = peerListTarget.Count;
+                            int totalTaskToDo = ClassPeerCheckManager.GetCountPeerAliveFromList(peerListTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
                             int totalTaskDone = 0;
                             int totalResponseOk = 0;
 
@@ -2405,7 +2405,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 {
                     using (DisposableDictionary<bool, float> listCheckBlockDataNormVote = new DisposableDictionary<bool, float>(0, new Dictionary<bool, float>() { { false, 0 }, { true, 0 } }))
                     {
-                        int totalTaskToDo = peerListTarget.Count;
+                        int totalTaskToDo = ClassPeerCheckManager.GetCountPeerAliveFromList(peerListTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
                         int totalTaskDone = 0;
                         int totalResponseOk = 0;
 

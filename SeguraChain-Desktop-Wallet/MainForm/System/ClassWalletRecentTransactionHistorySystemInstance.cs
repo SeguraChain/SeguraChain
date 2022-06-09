@@ -71,22 +71,13 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
             bool semaphoreUsed = false;
             try
             {
+                if (cancellation == null || cancellation.IsCancellationRequested)
+                    return result;
 
-                try
-                {
-                    if (cancellation == null || cancellation.IsCancellationRequested)
-                        return result;
+                semaphoreUsed = _semaphoreRecentTransactionHistoryAccess.TryWait(cancellation);
 
-                    _semaphoreRecentTransactionHistoryAccess.Wait(cancellation.Token);
-                    semaphoreUsed = true;
-
+                if (semaphoreUsed)
                     result = _bitmapRecentTransactionHistory;
-
-                }
-                catch
-                {
-                    // The operation was canceled pending to wait the access of the semaphore.
-                }
 
             }
             finally

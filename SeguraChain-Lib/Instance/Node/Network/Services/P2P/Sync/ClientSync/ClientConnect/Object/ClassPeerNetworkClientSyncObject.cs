@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
@@ -39,7 +38,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         public ClassPeerEnumPacketResponse PeerPacketTypeReceived;
         public bool PeerPacketReceivedStatus;
         public bool PeerPacketReceivedIgnored;
-        private long _lastPacketReceivedTimestamp;
 
         /// <summary>
         /// Peer task status.
@@ -267,8 +265,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// <returns></returns>
         private async Task<bool> WaitPacketExpected(CancellationTokenSource cancellation)
         {
-            _lastPacketReceivedTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
-
             TaskWaitPeerPacketResponse(cancellation);
 
             while (!PeerPacketReceivedStatus && !PeerPacketReceivedIgnored)
@@ -339,7 +335,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                         {
                             while (PeerTaskStatus && PeerConnectStatus && await networkStream.ReadAsync(packetBufferOnReceive, 0, packetBufferOnReceive.Length, _peerCancellationTokenTaskListenPeerPacketResponse.Token) > 0)
                             {
-                                _lastPacketReceivedTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
                                 #region Compile the packet.
 
