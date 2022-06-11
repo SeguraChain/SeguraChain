@@ -119,10 +119,22 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
             }
             return null;
         }
+
+        /// <summary>
+        /// Clean up packet data.
+        /// </summary>
+        public void ClearPacketData()
+        {
+            PacketContent?.Clear();
+            PacketHash?.Clear();
+            PacketSignature?.Clear();
+            PacketPeerUniqueId?.Clear();
+            PublicKey?.Clear();
+        }
     }
 
 
-    public class ClassPeerPacketRecvObject 
+    public class ClassPeerPacketRecvObject
     {
         public ClassPeerEnumPacketResponse PacketOrder;
         public string PacketContent; // The serialized packet encrypted.
@@ -144,7 +156,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
             PacketPeerUniqueId = packetPeerUniqueId;
             PublicKey = publicKey;
             PeerLastTimestampSignatureWhitelist = lastTimestampSignatureWhitelist;
-         }
+        }
 
         /// <summary>
         /// Recompile the packet data.
@@ -192,16 +204,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
                         }
                     }
                 }
-                catch(Exception error)
+                catch (Exception error)
                 {
 #if DEBUG
-                    Debug.WriteLine("Error to build the packet data. Exception: "+error.Message);
+                    Debug.WriteLine("Error to build the packet data. Exception: " + error.Message);
 #endif
                 }
             }
 
 #if DEBUG
-            if(!status)
+            if (!status)
                 Debug.WriteLine("Invalid recv packet format: " + packetData.GetStringFromByteArrayUtf8());
 #endif
 
@@ -223,15 +235,27 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
                     (PacketSignature.IsNullOrEmpty(false, out _) ? "empty" : PacketSignature) + "#" +
                     (PacketPeerUniqueId.IsNullOrEmpty(false, out _) ? "empty" : PacketPeerUniqueId) + "#" +
                     (PublicKey.IsNullOrEmpty(false, out _) ? "empty" : PublicKey) + "#" +
-                    PeerLastTimestampSignatureWhitelist); 
+                    PeerLastTimestampSignatureWhitelist);
             }
-            catch(Exception error)
+            catch (Exception error)
             {
 #if DEBUG
                 Debug.WriteLine("Error to get the packet data. Exception: " + error.Message);
 #endif
             }
             return null;
+        }
+
+        /// <summary>
+        /// Clean up packet data.
+        /// </summary>
+        public void ClearPacketData()
+        {
+            PacketContent?.Clear();
+            PacketHash?.Clear();
+            PacketSignature?.Clear();
+            PacketPeerUniqueId?.Clear();
+            PublicKey?.Clear();
         }
     }
 }

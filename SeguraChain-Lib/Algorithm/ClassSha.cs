@@ -27,7 +27,11 @@ namespace SeguraChain_Lib.Algorithm
 
                     while (lengthProceed < data.Length)
                     {
-                        cancellation?.Token.ThrowIfCancellationRequested();
+                        if (cancellation != null)
+                        {
+                            if (cancellation.IsCancellationRequested)
+                                break;
+                        }
 
                         long lengthToProceed = ShaSplitDataSizeLimit;
 

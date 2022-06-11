@@ -269,7 +269,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         public bool ContainsKey(long blockHeight)
         {
             if (blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight)
-                return true;
+                return _dictionaryBlockObjectMemory.ContainsKey(blockHeight);
 
             return false;
         }
@@ -2397,9 +2397,9 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             }
             else
             {
-                if (blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight)
+                if (ContainsKey(blockHeight))
                 {
-                    if (_dictionaryBlockObjectMemory[blockHeight].Content != null)
+                    if (_dictionaryBlockObjectMemory[blockHeight].Content?.BlockTransactions?.Count > 0)
                     {
                         foreach (var blockTransaction in _dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions)
                         {

@@ -115,7 +115,7 @@ namespace SeguraChain_Lib.Algorithm
             try
             {
 
-                if (content != null)
+                if (content != null && key != null && iv != null)
                 {
                     using (RijndaelManaged aesObject = new RijndaelManaged())
                     {

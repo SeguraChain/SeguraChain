@@ -43,22 +43,22 @@ namespace SeguraChain_Lib.Blockchain.Database.Function
                         dictionaryBlockFiles.Add(blockHeight, blockFilePath);
                 }
 
-                Debug.WriteLine("block files count: "+dictionaryBlockFiles.Count);
-
-                foreach (var element in dictionaryBlockFiles.GetList)
+                foreach (var blockFile in dictionaryBlockFiles.GetList.Values)
                 {
 
-                    string blockFilename = element.Value.Replace(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath, "");
+                    string blockFilename = blockFile.Replace(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath, "");
 
                     ClassLog.WriteLine("Load block file: " + blockFilename + "..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
 
-                    using (FileStream fileStreamBlock = new FileStream(element.Value, FileMode.Open))
+                    using (FileStream fileStreamBlock = new FileStream(blockFile, FileMode.Open))
                     {
                         using (StreamReader readerBlock = blockchainDatabaseSetting.DataSetting.EnableCompressDatabase ? new StreamReader(new LZ4Stream(fileStreamBlock, LZ4StreamMode.Decompress, LZ4StreamFlags.HighCompression)) : new StreamReader(fileStreamBlock))
                         {
                             string line;
 
                             ClassBlockObject blockObject = null;
+
+                            int countLine = 0;
 
                             while ((line = readerBlock.ReadLine()) != null)
                             {
@@ -103,6 +103,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Function
                                             Debug.WriteLine("Load block file: " + blockFilename + " failed.");
 #endif
                                             ClassLog.WriteLine("Load block file: " + blockFilename + " failed.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                                            error = true;
                                             yield return null;
                                         }
 
@@ -120,12 +121,18 @@ namespace SeguraChain_Lib.Blockchain.Database.Function
                                         nextBlockHeight++;
                                     }
                                 }
+
+                                countLine++;
                             }
+                            error = countLine == 0;
                         }
                     }
 
                     if (error)
+                    {
+                        ClassLog.WriteLine("Load failed at block height: " + nextBlockHeight, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
                         break;
+                    }
                 }
             }
 

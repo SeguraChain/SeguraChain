@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Threading;
 using SeguraChain_Lib.Blockchain.Block.Function;
@@ -35,6 +36,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
             if (ioData.IsNullOrEmpty(false, out _))
                 return false;
 
+
+
             bool blockMetadataFound = false;
 
 
@@ -42,84 +45,83 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
             {
                 foreach (var ioDataLine in dataList.GetList)
                 {
-                    try
+                    if (cancellation != null)
                     {
                         if (cancellation.IsCancellationRequested)
                             break;
+                    }
 
-                        if (!ioDataLine.StartsWith(IoDataBeginBlockString) && !ioDataLine.StartsWith(IoDataEndBlockString))
+                    if (!ioDataLine.StartsWith(IoDataBeginBlockString) && !ioDataLine.StartsWith(IoDataEndBlockString))
+                    {
+                        if (!blockMetadataFound)
                         {
-                            if (!blockMetadataFound)
+                            if (blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableCompressBlockData)
                             {
-                                if (blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableCompressBlockData)
-                                {
-                                    if (!ClassBlockUtility.StringToBlockObject(Utf8Encoding.GetString(ClassUtility.DecompressDataLz4(Convert.FromBase64String(ioDataLine))), out blockObject))
-                                        return false;
-                                }
-                                else
-                                {
-                                    if (!ClassBlockUtility.StringToBlockObject(ioDataLine, out blockObject))
-                                        return false;
-                                }
-
-                                if (blockObject == null)
+                                if (!ClassBlockUtility.StringToBlockObject(Utf8Encoding.GetString(ClassUtility.DecompressDataLz4(Convert.FromBase64String(ioDataLine))), out blockObject))
                                     return false;
-
-                                blockMetadataFound = true;
-
-                                if (blockInformationsOnly)
-                                    break;
                             }
                             else
                             {
-                                if (blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableCompressBlockData)
+                                if (!ClassBlockUtility.StringToBlockObject(ioDataLine, out blockObject))
+                                    return false;
+                            }
+
+                            if (blockObject == null)
+                                return false;
+
+                            if (blockObject.BlockTransactions == null)
+                                blockObject.BlockTransactions = new SortedList<string, ClassBlockTransaction>();
+
+                            blockMetadataFound = true;
+
+                            if (blockInformationsOnly)
+                                break;
+                        }
+                        else
+                        {
+                            if (blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableCompressBlockData)
+                            {
+                                using (DisposableList<string> transactionList = Utf8Encoding.GetString(ClassUtility.DecompressDataLz4(Convert.FromBase64String(ioDataLine))).DisposableSplit(IoDataCharacterSeperator))
                                 {
-                                    using (DisposableList<string> transactionList = Utf8Encoding.GetString(ClassUtility.DecompressDataLz4(Convert.FromBase64String(ioDataLine))).DisposableSplit(IoDataCharacterSeperator))
+                                    foreach (var transaction in transactionList.GetList)
                                     {
-                                        foreach (var transaction in transactionList.GetList)
-                                        {
-                                            if (cancellation.IsCancellationRequested)
-                                                break;
+                                        if (cancellation.IsCancellationRequested)
+                                            break;
 
-                                            if (!ClassTransactionUtility.StringToBlockTransaction(transaction, out ClassBlockTransaction blockTransaction))
-                                                return false;
+                                        if (!ClassTransactionUtility.StringToBlockTransaction(transaction, out ClassBlockTransaction blockTransaction))
+                                            return false;
 
-                                            if (blockTransaction?.TransactionObject == null)
-                                                return false;
+                                        if (blockTransaction?.TransactionObject == null)
+                                            return false;
 
-                                            blockObject.BlockTransactions.Add(blockTransaction.TransactionObject.TransactionHash, blockTransaction);
-                                        }
+                                        blockObject.BlockTransactions.Add(blockTransaction.TransactionObject.TransactionHash, blockTransaction);
                                     }
                                 }
-                                else
+                            }
+                            else
+                            {
+                                using (DisposableList<string> transactionList = ioDataLine.DisposableSplit(IoDataCharacterSeperator))
                                 {
-                                    using (DisposableList<string> transactionList = ioDataLine.DisposableSplit(IoDataCharacterSeperator))
+                                    foreach (var transaction in transactionList.GetList)
                                     {
-                                        foreach (var transaction in transactionList.GetList)
-                                        {
-                                            if (cancellation.IsCancellationRequested)
-                                                break;
+                                        if (!ClassTransactionUtility.StringToBlockTransaction(transaction, out ClassBlockTransaction blockTransaction))
+                                            return false;
 
-                                            if (!ClassTransactionUtility.StringToBlockTransaction(transaction, out ClassBlockTransaction blockTransaction))
-                                                return false;
+                                        if (blockTransaction?.TransactionObject == null)
+                                            return false;
 
-                                            if (blockTransaction?.TransactionObject == null)
-                                                return false;
 
-                                            blockObject.BlockTransactions.Add(blockTransaction.TransactionObject.TransactionHash, blockTransaction);
-                                        }
+                                        blockObject.BlockTransactions.Add(blockTransaction.TransactionObject.TransactionHash, blockTransaction);
                                     }
                                 }
                             }
                         }
+                    }
 
-                    }
-                    catch
-                    {
-                        blockObject = null;
-                    }
+
                 }
             }
+
 
             return blockObject != null ? true : false;
         }

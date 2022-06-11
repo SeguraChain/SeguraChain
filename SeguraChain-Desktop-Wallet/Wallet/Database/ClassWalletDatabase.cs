@@ -510,24 +510,30 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Database
                                     int countWalletTaskDone = 0;
 
 
-                                    using (CancellationTokenSource cancellationLinked = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenTaskWallet.Token))
-                                    {
+                                    CancellationTokenSource cancellationLinked = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenTaskWallet.Token);
+                                    
                                         foreach (var walletFileName in walletFileOpened)
                                         {
-                                            DictionaryWalletData[walletFileName].WalletOnSync = false;
+                                            DictionaryWalletData[walletFileName].WalletOnSync = true;
 
                                             try
                                             {
                                                 await Task.Factory.StartNew(async () =>
                                                 {
-
-                                                    bool requireSave = await UpdateWalletSyncTarget(walletFileName, cancellationLinked);
-
-                                                    // If changes are done.
-                                                    if (requireSave)
+                                                    try
                                                     {
-                                                        if (await SaveWalletFileAsync(walletFileName))
-                                                            ClassLog.WriteLine(walletFileName + " wallet file updated from sync.", ClassEnumLogLevelType.LOG_LEVEL_WALLET, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
+                                                        bool requireSave = await UpdateWalletSyncTarget(walletFileName, cancellationLinked);
+
+                                                        // If changes are done.
+                                                        if (requireSave)
+                                                        {
+                                                            if (await SaveWalletFileAsync(walletFileName))
+                                                                ClassLog.WriteLine(walletFileName + " wallet file updated from sync.", ClassEnumLogLevelType.LOG_LEVEL_WALLET, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
+                                                        }
+                                                    }
+                                                    catch(Exception error)
+                                                    {
+                                                        Debug.WriteLine("Failed to update the sync of the wallet file: " + walletFileName +" | Exception: "+error.Message);
                                                     }
 
                                                     countWalletTaskDone++;
@@ -547,25 +553,14 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Database
                                             if (_cancellationTokenTaskWallet.IsCancellationRequested)
                                                 break;
 
-                                            try
-                                            {
-                                                await Task.Delay(100, _cancellationTokenTaskWallet.Token);
-                                            }
-                                            catch
-                                            {
-                                                break;
-                                            }
+                                            await Task.Delay(100);
                                         }
 
                                         foreach (var walletFileName in walletFileOpened)
                                             DictionaryWalletData[walletFileName].WalletOnSync = false;
 
                                         cancellationLinked.Cancel();
-                                    }
-
-                                    // Clean up.
-                                    Array.Clear(walletFileOpened, 0, walletFileOpened.Length);
-
+                                    
                                 }
                             }
                             catch
@@ -576,10 +571,7 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Database
                         finally
                         {
                             if (useSemaphore)
-                            {
                                 _semaphoreGetWalletFileData.Release();
-                                useSemaphore = false;
-                            }
                         }
 
 

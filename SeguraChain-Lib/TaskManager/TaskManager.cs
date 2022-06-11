@@ -1,5 +1,6 @@
 ﻿using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Other.Object.List;
+using SeguraChain_Lib.Other.Object.Network;
 using SeguraChain_Lib.TaskManager.Object;
 using SeguraChain_Lib.Utility;
 using System;
@@ -60,8 +61,8 @@ namespace SeguraChain_Lib.TaskManager
                                     }
                                     catch
                                     {
-                                        // Catch the exception if the task cannot start.
-                                    }
+                                                // Catch the exception if the task cannot start.
+                                            }
                                 }, _cancelTaskManager.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
 
 
@@ -73,7 +74,6 @@ namespace SeguraChain_Lib.TaskManager
                                     break;
                             }
                         }
-
 
                         await Task.Delay(1);
                     }
@@ -146,17 +146,12 @@ namespace SeguraChain_Lib.TaskManager
 
                                         try
                                         {
-                                            if (_taskCollection[i].Cancellation != null)
-                                            {
-                                                if (_taskCollection[i].Cancellation.IsCancellationRequested)
-                                                    _taskCollection[i].Task?.Dispose();
-                                            }
-                                            else
-                                            {
-                                                if ((_taskCollection[i].Task.IsCanceled ||
-                                                    _taskCollection[i].Task.IsFaulted || _taskCollection[i].Task.Status == TaskStatus.RanToCompletion))
-                                                    _taskCollection[i].Task?.Dispose();
-                                            }
+
+
+                                            if ((_taskCollection[i].Task.IsCanceled ||
+                                                _taskCollection[i].Task.IsFaulted || _taskCollection[i].Task.Status == TaskStatus.RanToCompletion))
+                                                _taskCollection[i].Task?.Dispose();
+
                                         }
                                         catch
                                         {
@@ -291,7 +286,7 @@ namespace SeguraChain_Lib.TaskManager
         /// <param name="timestampEnd"></param>
         /// <param name="cancellation"></param>
         /// <param name="socket"></param>
-        public static void InsertTask(Action action, long timestampEnd, CancellationTokenSource cancellation, Socket socket = null, bool useFactory = false)
+        public static void InsertTask(Action action, long timestampEnd, CancellationTokenSource cancellation, ClassCustomSocket socket = null, bool useFactory = false)
         {
             if (TaskManagerEnabled)
             {

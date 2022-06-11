@@ -276,30 +276,34 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                             {
 
                                 var i1 = i;
+
+                                var copyPeer = new Tuple<string, string>(peerListToInitialize[i].Item1, peerListToInitialize[i].Item2);
+
                                 TaskManager.TaskManager.InsertTask(new Action(async () =>
                                 {
                                     try
                                     {
-                                        int peerPort = ClassPeerDatabase.GetPeerPort(peerListToInitialize[i1].Item1, peerListToInitialize[i1].Item2);
 
-                                        if (await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(peerListToInitialize[i1].Item1, peerPort, peerListToInitialize[i1].Item2, _cancellationTokenServiceSync, _peerNetworkSettingObject, _peerFirewallSettingObject), cancellationTokenSourceTaskSync, true))
+                                        int peerPort = ClassPeerDatabase.GetPeerPort(copyPeer.Item1, copyPeer.Item2);
+
+                                        if (await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(copyPeer.Item1, peerPort, copyPeer.Item2, _cancellationTokenServiceSync, _peerNetworkSettingObject, _peerFirewallSettingObject), cancellationTokenSourceTaskSync, true))
                                         {
                                             totalInitializedSuccessfully++;
-                                            ClassPeerCheckManager.CleanPeerState(peerListToInitialize[i1].Item1, peerListToInitialize[i1].Item2, true);
-                                            ClassPeerCheckManager.InputPeerClientValidPacket(peerListToInitialize[i1].Item1, peerListToInitialize[i1].Item2, _peerNetworkSettingObject);
+                                            ClassPeerCheckManager.CleanPeerState(copyPeer.Item1, copyPeer.Item2, true);
+                                            ClassPeerCheckManager.InputPeerClientValidPacket(copyPeer.Item1, copyPeer.Item2, _peerNetworkSettingObject);
                                         }
                                         else
                                         {
-                                            ClassLog.WriteLine("Peer to initialize " + peerListToInitialize[i1].Item1 + " is completly dead after asking auth keys, remove it from peer list registered.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
-                                            if (ClassPeerDatabase.DictionaryPeerDataObject.ContainsKey(peerListToInitialize[i1].Item1))
+                                            ClassLog.WriteLine("Peer to initialize " + copyPeer.Item1 + " is completly dead after asking auth keys, remove it from peer list registered.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
+                                            if (ClassPeerDatabase.DictionaryPeerDataObject.ContainsKey(copyPeer.Item1))
                                             {
-                                                if (ClassPeerDatabase.DictionaryPeerDataObject[peerListToInitialize[i1].Item1].ContainsKey(peerListToInitialize[i1].Item2))
+                                                if (ClassPeerDatabase.DictionaryPeerDataObject[copyPeer.Item1].ContainsKey(copyPeer.Item2))
                                                 {
-                                                    if (ClassPeerDatabase.DictionaryPeerDataObject[peerListToInitialize[i1].Item1].TryRemove(peerListToInitialize[i1].Item2, out _))
+                                                    if (ClassPeerDatabase.DictionaryPeerDataObject[copyPeer.Item1].TryRemove(copyPeer.Item2, out _))
                                                     {
                                                         totalPeerRemoved++;
-                                                        if (ClassPeerDatabase.DictionaryPeerDataObject[peerListToInitialize[i1].Item1].Count == 0)
-                                                            ClassPeerDatabase.DictionaryPeerDataObject.Remove(peerListToInitialize[i1].Item1);
+                                                        if (ClassPeerDatabase.DictionaryPeerDataObject[copyPeer.Item1].Count == 0)
+                                                            ClassPeerDatabase.DictionaryPeerDataObject.Remove(copyPeer.Item1);
                                                     }
                                                 }
                                             }
@@ -1241,6 +1245,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
             }
 
+            cancellationTokenSourceTaskSync.Cancel();
 
             ClassLog.WriteLine("Total Peers Task(s) done: " + totalTaskComplete + "/" + totalTaskCount, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
 
@@ -1387,6 +1392,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                         await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                     }
+
+                    cancellationTokenSourceTaskSyncSovereignUpdate.Cancel();
                 }
 
                 return totalSovereignUpdatedReceived;
@@ -1558,6 +1565,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                             }
 
+                            cancellationTokenSourceTaskSync.Cancel();
 
                             try
                             {
@@ -2078,6 +2086,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                             }
 
+                            cancellationTokenSourceTaskSync.Cancel();
+
 
                             try
                             {
@@ -2309,7 +2319,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                             }
 
-
+                            cancellationTokenSourceTaskSync.Cancel();
 
                             try
                             {

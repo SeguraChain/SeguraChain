@@ -173,8 +173,6 @@ namespace SeguraChain_Desktop_Wallet.Sync
                             string[] walletAddresses = DatabaseSyncCache.Keys.ToArray();
                             CancellationTokenSource cancellationUpdateWalletSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationSyncCache.Token);
 
-                            int totalTask = walletAddresses.Length;
-                            int totalTaskDone = 0;
                             using (DisposableDictionary<string, bool> walletAddressUpdateSyncCacheState = new DisposableDictionary<string, bool>())
                             {
 
@@ -193,50 +191,39 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                         {
                                             await Task.Factory.StartNew(async () =>
                                             {
-                                                if (walletAddressUpdateSyncCacheState.ContainsKey(walletAddress))
+                                                try
                                                 {
-                                                    try
-                                                    {
-                                                        await UpdateWalletSyncTransactionCache(walletAddress, walletFileName, lastBlockHeightTransactionConfirmation, _cancellationSyncCache);
+                                                    await UpdateWalletSyncTransactionCache(walletAddress, walletFileName, lastBlockHeightTransactionConfirmation, _cancellationSyncCache);
 
-                                                    }
+                                                }
 #if DEBUG
-                                                    catch (Exception error)
-                                                    {
-                                                        Debug.WriteLine("Error update sync transaction cache: " + error.Message);
+                                                catch (Exception error)
+                                                {
+                                                    Debug.WriteLine("Error update sync transaction cache: " + error.Message);
 #else
                                                     catch
                                                     {
 #endif
-                                                    }
                                                 }
 
-                                                walletAddressUpdateSyncCacheState[walletAddress] = true;
-                                                totalTaskDone++;
 
+                                                walletAddressUpdateSyncCacheState[walletAddress] = true;
                                             }, cancellationUpdateWalletSync.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
                                         }
                                         catch
                                         {
                                             // Ignored, catch the exception once canceled.
-                                            totalTaskDone++;
                                         }
                                     }
                                     else walletAddressUpdateSyncCacheState[walletAddress] = true;
-
-                                    await Task.Delay(1);
                                 }
 
-                                while (walletAddressUpdateSyncCacheState.GetList.Count(x => x.Value == true) < totalTask && totalTaskDone < totalTask)
+                                while (walletAddressUpdateSyncCacheState.GetList.Count(x => x.Value == true) < walletAddresses.Length)
                                 {
                                     if (_cancellationSyncCache.IsCancellationRequested)
                                         break;
 
-                                    if (totalTaskDone >= totalTask)
-                                        break;
-
                                     await Task.Delay(ClassWalletDefaultSetting.DefaultWalletUpdateSyncCacheInterval);
-
                                 }
 
                                 cancellationUpdateWalletSync.Cancel();
@@ -262,131 +249,123 @@ namespace SeguraChain_Desktop_Wallet.Sync
         /// <returns></returns>
         private async Task UpdateWalletSyncTransactionCache(string walletAddress, string walletFileName, long lastBlockHeightTransactionConfirmation, CancellationTokenSource cancellationUpdateWalletSync)
         {
+            bool cancelled = false;
 
-            try
+            long totalTxUpdated = 0;
+
+            if (DatabaseSyncCache[walletAddress].CountBlockHeight > 0)
             {
-                bool cancelled = false;
+                #region Update every cached transactions.
 
-                long totalTxUpdated = 0;
-
-                if (DatabaseSyncCache[walletAddress].CountBlockHeight > 0)
+                using (var blockHeightList = DatabaseSyncCache[walletAddress].BlockHeightKeys)
                 {
-                    #region Update every cached transactions.
-
-                    using (var blockHeightList = DatabaseSyncCache[walletAddress].BlockHeightKeys)
+                    foreach (long blockHeight in blockHeightList.GetList)
                     {
-                        foreach (long blockHeight in blockHeightList.GetList)
+                        if (cancellationUpdateWalletSync != null)
                         {
-                            if (cancellationUpdateWalletSync != null)
-                            {
-                                if (cancellationUpdateWalletSync.IsCancellationRequested)
-                                    break;
-                            }
-
-                            if (!walletFileName.IsNullOrEmpty(false, out _))
-                            {
-                                if (ClassDesktopWalletCommonData.WalletDatabase.WalletOnResync(walletFileName))
-                                {
-                                    cancelled = true;
-                                    break;
-                                }
-                            }
-
-                            if (blockHeight < await GetLastBlockHeightSynced(cancellationUpdateWalletSync, true))
-                            {
-                                if (!await DatabaseSyncCache[walletAddress].CheckIfBlockTransactionFromHeightAreFullyConfirmed(blockHeight, cancellationUpdateWalletSync))
-                                {
-                                    if (!await DatabaseSyncCache[walletAddress].CheckIfBlockTransactionFromHeightAreConfirmed(blockHeight, lastBlockHeightTransactionConfirmation, cancellationUpdateWalletSync))
-                                    {
-                                        using (DisposableList<string> listTransactionHash = await DatabaseSyncCache[walletAddress].GetListBlockTransactionHashFromBlockHeight(blockHeight, false, cancellationUpdateWalletSync))
-                                        {
-                                            using (DisposableList<ClassBlockTransaction> listBlockTransaction = await GetWalletListBlockTransactionFromListTransactionHashAndBlockHeightFromSync(listTransactionHash.GetList, blockHeight, cancellationUpdateWalletSync))
-                                            {
-                                                foreach (ClassBlockTransaction blockTransaction in listBlockTransaction.GetList)
-                                                {
-                                                    if (cancellationUpdateWalletSync.IsCancellationRequested)
-                                                        break;
-
-                                                    if (ClassDesktopWalletCommonData.WalletDatabase.WalletOnResync(walletFileName))
-                                                    {
-                                                        cancelled = true;
-                                                        break;
-                                                    }
-
-                                                    if (blockTransaction != null)
-                                                    {
-                                                        DatabaseSyncCache[walletAddress].UpdateBlockTransaction(blockTransaction, false);
-                                                        totalTxUpdated++;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    #region Update the amount of confirmations on block transactions on the block height if they are fully confirmed without to call the blockchain database or the API.
-
-                                    using (DisposableList<string> listTransactionHash = await DatabaseSyncCache[walletAddress].GetListBlockTransactionHashFromBlockHeight(blockHeight, false, cancellationUpdateWalletSync))
-                                    {
-                                        foreach (string transactionHash in listTransactionHash.GetList)
-                                        {
-                                            if (cancellationUpdateWalletSync.IsCancellationRequested)
-                                                break;
-
-                                            if (ClassDesktopWalletCommonData.WalletDatabase.WalletOnResync(walletFileName))
-                                            {
-                                                cancelled = true;
-                                                break;
-                                            }
-
-                                            ClassSyncCacheBlockTransactionObject currentBlockTransaction = DatabaseSyncCache[walletAddress].GetSyncBlockTransactionCached(blockHeight, transactionHash);
-
-                                            if (currentBlockTransaction != null)
-                                            {
-                                                if (currentBlockTransaction.BlockTransaction.TransactionStatus && !currentBlockTransaction.IsMemPool)
-                                                {
-                                                    if (blockHeight + currentBlockTransaction.BlockTransaction.TransactionTotalConfirmation >= lastBlockHeightTransactionConfirmation)
-                                                        break;
-                                                    else
-                                                    {
-                                                        currentBlockTransaction.BlockTransaction.TransactionTotalConfirmation = (lastBlockHeightTransactionConfirmation - blockHeight) + 1;
-                                                        DatabaseSyncCache[walletAddress].UpdateBlockTransaction(currentBlockTransaction.BlockTransaction, false);
-                                                        totalTxUpdated++;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-
-                                    #endregion
-                                }
-                            }
-
-                            if (cancelled)
+                            if (cancellationUpdateWalletSync.IsCancellationRequested)
                                 break;
                         }
+
+                        if (!walletFileName.IsNullOrEmpty(false, out _))
+                        {
+                            if (ClassDesktopWalletCommonData.WalletDatabase.WalletOnResync(walletFileName))
+                            {
+                                cancelled = true;
+                                break;
+                            }
+                        }
+
+                        if (blockHeight < await GetLastBlockHeightSynced(cancellationUpdateWalletSync, true))
+                        {
+                            if (!await DatabaseSyncCache[walletAddress].CheckIfBlockTransactionFromHeightAreFullyConfirmed(blockHeight, cancellationUpdateWalletSync))
+                            {
+                                if (!await DatabaseSyncCache[walletAddress].CheckIfBlockTransactionFromHeightAreConfirmed(blockHeight, lastBlockHeightTransactionConfirmation, cancellationUpdateWalletSync))
+                                {
+                                    using (DisposableList<string> listTransactionHash = await DatabaseSyncCache[walletAddress].GetListBlockTransactionHashFromBlockHeight(blockHeight, false, cancellationUpdateWalletSync))
+                                    {
+                                        using (DisposableList<ClassBlockTransaction> listBlockTransaction = await GetWalletListBlockTransactionFromListTransactionHashAndBlockHeightFromSync(listTransactionHash.GetList, blockHeight, cancellationUpdateWalletSync))
+                                        {
+                                            foreach (ClassBlockTransaction blockTransaction in listBlockTransaction.GetList)
+                                            {
+                                                if (cancellationUpdateWalletSync.IsCancellationRequested)
+                                                    break;
+
+                                                if (ClassDesktopWalletCommonData.WalletDatabase.WalletOnResync(walletFileName))
+                                                {
+                                                    cancelled = true;
+                                                    break;
+                                                }
+
+                                                if (blockTransaction != null)
+                                                {
+                                                    DatabaseSyncCache[walletAddress].UpdateBlockTransaction(blockTransaction, false);
+                                                    totalTxUpdated++;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                #region Update the amount of confirmations on block transactions on the block height if they are fully confirmed without to call the blockchain database or the API.
+
+                                using (DisposableList<string> listTransactionHash = await DatabaseSyncCache[walletAddress].GetListBlockTransactionHashFromBlockHeight(blockHeight, false, cancellationUpdateWalletSync))
+                                {
+                                    foreach (string transactionHash in listTransactionHash.GetList)
+                                    {
+                                        if (cancellationUpdateWalletSync.IsCancellationRequested)
+                                            break;
+
+                                        if (ClassDesktopWalletCommonData.WalletDatabase.WalletOnResync(walletFileName))
+                                        {
+                                            cancelled = true;
+                                            break;
+                                        }
+
+                                        ClassSyncCacheBlockTransactionObject currentBlockTransaction = DatabaseSyncCache[walletAddress].GetSyncBlockTransactionCached(blockHeight, transactionHash);
+
+                                        if (currentBlockTransaction != null)
+                                        {
+                                            if (currentBlockTransaction.BlockTransaction.TransactionStatus && !currentBlockTransaction.IsMemPool)
+                                            {
+                                                if (blockHeight + currentBlockTransaction.BlockTransaction.TransactionTotalConfirmation >= lastBlockHeightTransactionConfirmation)
+                                                    break;
+                                                else
+                                                {
+                                                    currentBlockTransaction.BlockTransaction.TransactionTotalConfirmation = (lastBlockHeightTransactionConfirmation - blockHeight) + 1;
+                                                    DatabaseSyncCache[walletAddress].UpdateBlockTransaction(currentBlockTransaction.BlockTransaction, false);
+                                                    totalTxUpdated++;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                #endregion
+                            }
+                        }
+
+                        if (cancelled)
+                            break;
                     }
-
-                    #endregion
-
-
-                    #region Calculate balances.
-
-                    if (!cancelled)
-                        await DatabaseSyncCache[walletAddress].UpdateWalletBalance(cancellationUpdateWalletSync);
-
-                    #endregion
                 }
+
+                #endregion
+
+
+                #region Calculate balances.
+
+                if (!cancelled)
+                    await DatabaseSyncCache[walletAddress].UpdateWalletBalance(cancellationUpdateWalletSync);
+
+                #endregion
+            }
 #if DEBUG
-                Debug.WriteLine("Wallet Address " + walletAddress + " sync cache updated. Total transaction updated: " + totalTxUpdated);
+            Debug.WriteLine("Wallet Address " + walletAddress + " sync cache updated. Total transaction updated: " + totalTxUpdated);
 #endif
-                await Task.Delay(1);
-            }
-            catch
-            {
-                // Ignored, catch the exception if the wallet file has been closed pending the scan.
-            }
+
         }
 
         /// <summary>
@@ -589,7 +568,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                             PeerSettingObject = ClassDesktopWalletCommonData.WalletSettingObject.WalletInternalSyncNodeSetting
                         };
 
-                        return await _nodeInstance.NodeStart(true);
+                        return _nodeInstance.NodeStart(true);
                     }
                 case ClassWalletSettingEnumSyncMode.EXTERNAL_PEER_SYNC_MODE:
                     {

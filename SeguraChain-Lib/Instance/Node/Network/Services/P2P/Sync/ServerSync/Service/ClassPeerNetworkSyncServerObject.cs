@@ -15,6 +15,7 @@ using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Service
 using SeguraChain_Lib.Instance.Node.Setting.Object;
 using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Other.Object.List;
+using SeguraChain_Lib.Other.Object.Network;
 using SeguraChain_Lib.Utility;
 
 namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Service
@@ -106,13 +107,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 {
                     try
                     {
-                        Socket clientPeerTcp = await _tcpListenerPeer.AcceptSocketAsync();
+                        ClassCustomSocket clientPeerTcp = new ClassCustomSocket(await _tcpListenerPeer.AcceptSocketAsync());
 
                         string clientIp = string.Empty;
 
                         try
                         {
-                            clientIp = ((IPEndPoint)(clientPeerTcp.RemoteEndPoint)).Address.ToString();
+                            clientIp = ((IPEndPoint)(clientPeerTcp.Socket.RemoteEndPoint)).Address.ToString();
                         }
                         catch
                         {
@@ -200,7 +201,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
         /// <param name="clientPeerTcp">The tcp client object of the incoming connection.</param>
         /// <param name="peerIpOpenNatServer">The public ip of the server.</param>
         /// <returns>Return the handling status of the incoming connection.</returns>
-        private async Task<ClassPeerNetworkServerHandleConnectionEnum> HandleIncomingConnection(string clientIp, Socket clientPeerTcp, string peerIpOpenNatServer)
+        private async Task<ClassPeerNetworkServerHandleConnectionEnum> HandleIncomingConnection(string clientIp, ClassCustomSocket clientPeerTcp, string peerIpOpenNatServer)
         {
             try
             {
@@ -215,9 +216,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + _peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay;
 
 
-                CancellationTokenSource cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSourcePeerServer.Token, new CancellationTokenSource(_peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay).Token);
-
-                if (GetTotalActiveConnection(clientIp, cancellationToken, true, timestampEnd) > _peerNetworkSettingObject.PeerMaxNodeConnectionPerIp)
+                if (GetTotalActiveConnection(clientIp, _cancellationTokenSourcePeerServer, true, timestampEnd) > _peerNetworkSettingObject.PeerMaxNodeConnectionPerIp)
                     return ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT;
 
                 if (_listPeerIncomingConnectionObject.Count >= int.MaxValue - 1)
@@ -235,54 +234,29 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
                 #region Ensure to not have too much incoming connection from the same ip.
 
-                long randomId = await GeneratePeerUniqueIdAsync(clientIp, cancellationToken, timestampEnd);
+                long randomId = await GeneratePeerUniqueIdAsync(clientIp, _cancellationTokenSourcePeerServer, timestampEnd);
 
                 if (randomId == -1)
                     return ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION;
 
                 if (!_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryAdd(randomId,
-                    new ClassPeerNetworkClientServerObject(clientPeerTcp, cancellationToken, clientIp, peerIpOpenNatServer, _peerNetworkSettingObject, _firewallSettingObject)))
+                    new ClassPeerNetworkClientServerObject(clientPeerTcp, _cancellationTokenSourcePeerServer, clientIp, peerIpOpenNatServer, _peerNetworkSettingObject, _firewallSettingObject)))
                     return ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION;
 
 
                 #endregion
 
-                bool semaphoreUsed = false;
+                //bool semaphoreUsed = false;
 
-                try
-                {
+                _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
 
-                    try
-                    {
-                        timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + _peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay;
-
-                        while (TaskManager.TaskManager.CurrentTimestampMillisecond < timestampEnd)
-                        {
-                            semaphoreUsed = await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.TryWaitAsync(100, _cancellationTokenSourcePeerServer);
-                            if (semaphoreUsed)
-                            {
-                                _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
-                                break;
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        // Ignored.
-                    }
-                }
-                finally
-                {
-                    if (semaphoreUsed)
-                        _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
-                }
-
+                /*
                 if (!semaphoreUsed)
                 {
                     _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].Dispose();
                     _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryRemove(randomId, out _);
                     return ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT;
-                }
+                }*/
             }
             catch
             {
@@ -305,15 +279,23 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
         {
 
             long randomId = ClassUtility.GetRandomBetweenInt(0, int.MaxValue - 1);
-
-            while (_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.ContainsKey(randomId))
+            try
             {
-                if (cancellation.IsCancellationRequested || TaskManager.TaskManager.CurrentTimestampMillisecond >= timestampEnd)
-                    return -1;
+                while (_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.ContainsKey(randomId))
+                {
 
-                randomId = ClassUtility.GetRandomBetweenInt(0, int.MaxValue - 1);
+                    if (cancellation.IsCancellationRequested || TaskManager.TaskManager.CurrentTimestampMillisecond >= timestampEnd)
+                        return -1;
 
-                await Task.Delay(1);
+                    randomId = ClassUtility.GetRandomBetweenInt(0, int.MaxValue - 1);
+
+                    await Task.Delay(1);
+                }
+
+            }
+            catch
+            {
+                return -1;
             }
 
             return randomId;

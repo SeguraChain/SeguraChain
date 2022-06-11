@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SeguraChain_Lib.Other.Object.Network;
+using System;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,12 +14,12 @@ namespace SeguraChain_Lib.TaskManager.Object
         public Task Task;
         public CancellationTokenSource Cancellation;
         public long TimestampEnd;
-        public Socket Socket;
+        public ClassCustomSocket Socket;
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        public ClassTaskObject(Action action, CancellationTokenSource cancellation, long timestampEnd, Socket socket)
+        public ClassTaskObject(Action action, CancellationTokenSource cancellation, long timestampEnd, ClassCustomSocket socket)
         {
             Cancellation = cancellation;
             TimestampEnd = timestampEnd;

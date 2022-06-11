@@ -25,6 +25,7 @@ using SeguraChain_Lib.Other.Object.List;
 using System.Diagnostics;
 using SeguraChain_Lib.Instance.Node.Network.Database.Object;
 using System.Collections.Concurrent;
+using SeguraChain_Lib.Other.Object.Network;
 
 namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 {
@@ -387,7 +388,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
         internal class ClassPeerNetworkClientBroadcastMemPool : ClassPeerSyncFunction, IDisposable
         {
             public bool IsAlive;
-            private Socket _peerSocketClient;
+            private ClassCustomSocket _peerSocketClient;
             private string _peerIpTarget;
             private string _peerUniqueIdTarget;
             private int _peerPortTarget;
@@ -488,10 +489,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     {
                         try
                         {
-                            _peerSocketClient = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                            await _peerSocketClient.ConnectAsync(_peerIpTarget, _peerPortTarget);
+                            _peerSocketClient = new ClassCustomSocket(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp));
+                            await _peerSocketClient.Socket.ConnectAsync(_peerIpTarget, _peerPortTarget);
 
-                            if (_peerSocketClient.Connected)
+                            if (_peerSocketClient.Socket.Connected)
                             {
                                 successConnect = true;
                                 break;
@@ -573,7 +574,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                         using (DisposableList<ClassReadPacketSplitted> listPacketReceived = new DisposableList<ClassReadPacketSplitted>(false, 0, new List<ClassReadPacketSplitted>() { new ClassReadPacketSplitted() }))
                         {
-                            using (NetworkStream networkStream = new NetworkStream(_peerSocketClient))
+                            using (NetworkStream networkStream = new NetworkStream(_peerSocketClient.Socket))
                             {
                                 byte[] packetReceivedBuffer = new byte[_peerNetworkSettingObject.PeerMaxPacketBufferSize];
                                 int packetLength = 0;
@@ -1050,7 +1051,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     {
                         try
                         {
-                            if (!ClassUtility.SocketIsConnected(_peerSocketClient))
+                            if (!ClassUtility.SocketIsConnected(_peerSocketClient.Socket))
                             {
                                 StopTaskAndDisconnect();
                                 IsAlive = false;
@@ -1101,7 +1102,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         using (DisposableList<ClassReadPacketSplitted> listPacketReceived = new DisposableList<ClassReadPacketSplitted>())
                         {
                             listPacketReceived.Add(new ClassReadPacketSplitted());
-                            using (NetworkStream networkStream = new NetworkStream(_peerSocketClient))
+                            using (NetworkStream networkStream = new NetworkStream(_peerSocketClient.Socket))
                             {
                                 while (!packetReceived && IsAlive && !taskComplete)
                                 {
@@ -1221,7 +1222,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                     {
                                         listPacketReceived.Add(new ClassReadPacketSplitted());
 
-                                        using (NetworkStream networkStream = new NetworkStream(_peerSocketClient))
+                                        using (NetworkStream networkStream = new NetworkStream(_peerSocketClient.Socket))
                                         {
                                             while (!endBroadcast && receiveStatus && IsAlive)
                                             {
@@ -1457,7 +1458,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         {
                             listPacketReceived.Add(new ClassReadPacketSplitted());
 
-                            using (NetworkStream networkStream = new NetworkStream(_peerSocketClient))
+                            using (NetworkStream networkStream = new NetworkStream(_peerSocketClient.Socket))
                             {
                                 while (IsAlive && !taskDone && !voteStatus)
                                 {
@@ -1588,7 +1589,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             /// <returns></returns>
             private async Task<bool> TrySendPacketToPeer(byte[] packetData)
             {
-                using (NetworkStream networkStream = new NetworkStream(_peerSocketClient))
+                using (NetworkStream networkStream = new NetworkStream(_peerSocketClient.Socket))
                     return await networkStream.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(Convert.ToBase64String(packetData) + ClassPeerPacketSetting.PacketPeerSplitSeperator), _peerCancellationToken, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
             }
 

@@ -5,6 +5,7 @@ using SeguraChain_Lib.Instance.Node.Network.Services.Firewall.Manager;
 using SeguraChain_Lib.Instance.Node.Setting.Object;
 using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Other.Object.List;
+using SeguraChain_Lib.Other.Object.Network;
 using SeguraChain_Lib.Utility;
 using System;
 using System.Collections.Concurrent;
@@ -120,7 +121,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                         {
                             try
                             {
-                                Socket clientApiTcp = await clientTask;
+                                ClassCustomSocket clientApiTcp = new ClassCustomSocket(await clientTask);
 
                                 if (clientApiTcp != null)
                                 {
@@ -132,7 +133,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
 
                                         try
                                         {
-                                            clientIp = ((IPEndPoint)(clientApiTcp.RemoteEndPoint)).Address.ToString();
+                                            clientIp = ((IPEndPoint)(clientApiTcp.Socket.RemoteEndPoint)).Address.ToString();
                                         }
                                         catch
                                         {
@@ -212,7 +213,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
         /// </summary>
         /// <param name="clientIp"></param>
         /// <param name="clientApiTcp"></param>
-        private async Task<ClassPeerApiHandleIncomingConnectionEnum> HandleIncomingConnection(string clientIp, Socket clientApiTcp)
+        private async Task<ClassPeerApiHandleIncomingConnectionEnum> HandleIncomingConnection(string clientIp, ClassCustomSocket clientApiTcp)
         {
             try
             {

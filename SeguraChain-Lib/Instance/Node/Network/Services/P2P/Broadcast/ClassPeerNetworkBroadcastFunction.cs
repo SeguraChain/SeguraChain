@@ -87,8 +87,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         {
                             if (previousListPeerSelected[peerIndex].PeerNetworkClientSyncObject != null)
                             {
-                                if (!previousListPeerSelected[peerIndex].PeerNetworkClientSyncObject.PeerConnectStatus ||
-                                    !previousListPeerSelected[peerIndex].PeerNetworkClientSyncObject.PeerPacketReceivedStatus)
+                                if (!previousListPeerSelected[peerIndex].PeerNetworkClientSyncObject.PeerConnectStatus)
                                 {
                                     try
                                     {

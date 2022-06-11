@@ -778,7 +778,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
             }
 
 
-            if (blockObject.BlockTransactions.Count > 0)
+            if (blockObject.BlockTransactions?.Count > 0)
             {
                 int totalLineTransactionOnLine = 0;
                 string transactionLine = string.Empty;

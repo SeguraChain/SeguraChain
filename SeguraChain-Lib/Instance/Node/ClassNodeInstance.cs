@@ -64,7 +64,7 @@ namespace SeguraChain_Lib.Instance.Node
         /// Full initialization of the peer tool.
         /// </summary>
         /// <returns></returns>
-        public async Task<bool> NodeStart(bool fromWallet)
+        public bool NodeStart(bool fromWallet)
         {
             TaskManager.TaskManager.EnableTaskManager();
             PeerToolStatus = true;
@@ -97,7 +97,7 @@ namespace SeguraChain_Lib.Instance.Node
                                 {
 #if NET5_0_OR_GREATER
                                     ClassLog.WriteLine("Your setting indicate it's not a dedicated server.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
-                                    ClassLog.WriteLine("Remember to open the P2P port "+PeerSettingObject.PeerNetworkSettingObject.ListenApiPort+" and target the host IP: "+PeerSettingObject.PeerNetworkSettingObject.ListenIp+" to your router.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
+                                    ClassLog.WriteLine("Remember to open the P2P port " + PeerSettingObject.PeerNetworkSettingObject.ListenApiPort + " and target the host IP: " + PeerSettingObject.PeerNetworkSettingObject.ListenIp + " to your router.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
 
                                     PeerOpenNatPublicIp = PeerSettingObject.PeerNetworkSettingObject.ListenIp;
 #else

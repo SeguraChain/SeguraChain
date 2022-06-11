@@ -595,6 +595,9 @@ namespace SeguraChain_Lib.Blockchain.Database
 
                 long totalCheckpointSaved = 0;
 
+                if (DictionaryCheckpointObjects == null)
+                    DictionaryCheckpointObjects = new ConcurrentDictionary<ClassCheckpointEnumType, List<ClassCheckpointObject>>();
+
                 if (DictionaryCheckpointObjects.Count > 0)
                 {
                     // Initialize Stream Checkpoint Writer.

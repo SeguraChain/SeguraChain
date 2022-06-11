@@ -215,9 +215,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
             try
             {
-                await _ioSemaphoreAccess.WaitAsync(cancellationIoCache.Token);
-                useSemaphore = true;
+                useSemaphore = await _ioSemaphoreAccess.TryWaitAsync(cancellationIoCache);
 
+                if (!useSemaphore)
+                    return listBlockInformation;
 
                 foreach (long blockHeight in listBlockHeight)
                 {
@@ -255,16 +256,16 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// <returns></returns>
         public async Task<ClassBlockObject> GetIoBlockDataInformationFromBlockHeight(long blockHeight, CancellationTokenSource cancellationIoCache)
         {
-            ClassBlockObject blockObject;
+            ClassBlockObject blockObject = null;
 
             bool useSemaphore = false;
 
             try
             {
-                await _ioSemaphoreAccess.WaitAsync(cancellationIoCache.Token);
-                useSemaphore = true;
+                useSemaphore = await _ioSemaphoreAccess.TryWaitAsync(cancellationIoCache);
 
-                blockObject = await CallGetRetrieveDataAccess(blockHeight, false, true, false, cancellationIoCache);
+                if (useSemaphore)
+                    blockObject = await CallGetRetrieveDataAccess(blockHeight, false, true, false, cancellationIoCache);
             }
             finally
             {
@@ -289,8 +290,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
             try
             {
-                await _ioSemaphoreAccess.WaitAsync(cancellationIoCache.Token);
-                useSemaphore = true;
+                useSemaphore = await _ioSemaphoreAccess.TryWaitAsync(cancellationIoCache);
+
+                if (!useSemaphore)
+                    return blockTransactionCount;
 
                 if (_ioStructureObjectsDictionary.ContainsKey(blockHeight))
                 {
@@ -325,15 +328,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
             try
             {
-                try
-                {
-                    await _ioSemaphoreAccess.WaitAsync(cancellationIoCache.Token);
-                    useSemaphore = true;
-                }
-                catch
-                {
-                    // Ignored, the task has been cancelled.
-                }
+
+                useSemaphore = await _ioSemaphoreAccess.TryWaitAsync(cancellationIoCache);
 
                 if (useSemaphore)
                     blockObject = await CallGetRetrieveDataAccess(blockHeight, keepAlive, false, clone, cancellationIoCache);
@@ -400,10 +396,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
             try
             {
-                await _ioSemaphoreAccess.WaitAsync(cancellationIoCache.Token);
+                useSemaphore = await _ioSemaphoreAccess.TryWaitAsync(cancellationIoCache);
 
-                useSemaphore = true;
-
+                if (!useSemaphore)
+                    return listBlockObjectDisposable;
 
                 foreach (long blockHeight in listBlockHeight.ToArray())
                 {
@@ -466,32 +462,34 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// <returns></returns>
         public async Task<ClassBlockTransaction> GetBlockTransactionFromIoBlockHeightByTransactionHash(long blockHeight, string transactionHash, bool keepAlive, CancellationTokenSource cancellationIoCache)
         {
-            ClassBlockTransaction blockTransaction = null;
-
             bool useSemaphore = false;
 
             try
             {
-                await _ioSemaphoreAccess.WaitAsync(cancellationIoCache.Token);
-                useSemaphore = true;
+                useSemaphore = await _ioSemaphoreAccess.TryWaitAsync(cancellationIoCache);
+
+                if (!useSemaphore)
+                    return null;
 
                 if (_ioStructureObjectsDictionary.ContainsKey(blockHeight))
+                    return null;
+
+                if (_ioStructureObjectsDictionary[blockHeight].IsNull)
                 {
+                    ClassBlockObject blockObject = await CallGetRetrieveDataAccess(blockHeight, keepAlive, false, false, cancellationIoCache);
 
-                    if (_ioStructureObjectsDictionary[blockHeight].IsNull)
+                    if (blockObject != null)
                     {
-                        ClassBlockObject blockObject = await CallGetRetrieveDataAccess(blockHeight, keepAlive, false, false, cancellationIoCache);
-
-                        if (blockObject != null)
-                            if (blockObject.BlockTransactions.ContainsKey(transactionHash))
-                                blockTransaction = blockObject.BlockTransactions[transactionHash].Clone();
-                    }
-                    else
-                    {
-                        if (_ioStructureObjectsDictionary[blockHeight].BlockObject.BlockTransactions.ContainsKey(transactionHash))
-                            blockTransaction = _ioStructureObjectsDictionary[blockHeight].BlockObject.BlockTransactions[transactionHash].Clone();
+                        if (blockObject.BlockTransactions.ContainsKey(transactionHash))
+                            return blockObject.BlockTransactions[transactionHash].Clone();
                     }
                 }
+                else
+                {
+                    if (_ioStructureObjectsDictionary[blockHeight].BlockObject.BlockTransactions.ContainsKey(transactionHash))
+                        return  _ioStructureObjectsDictionary[blockHeight].BlockObject.BlockTransactions[transactionHash].Clone();
+                }
+
             }
             finally
             {
@@ -499,7 +497,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                     _ioSemaphoreAccess.Release();
             }
 
-            return blockTransaction;
+            return null;
         }
 
         #endregion
@@ -515,26 +513,24 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// <returns></returns>
         public async Task<bool> PushOrUpdateIoBlockData(ClassBlockObject blockObject, bool keepAlive, CancellationTokenSource cancellationIoCache)
         {
-
-            bool result = false;
-
             bool useSemaphore = false;
 
             try
             {
-                await _ioSemaphoreAccess.WaitAsync(cancellationIoCache.Token);
-                useSemaphore = true;
+                useSemaphore = await _ioSemaphoreAccess.TryWaitAsync(cancellationIoCache);
+
+                if (!useSemaphore)
+                    return false;
 
                 if (_ioStructureObjectsDictionary.ContainsKey(blockObject.BlockHeight))
                 {
                     blockObject.BlockIsUpdated = true;
                     await InsertInActiveMemory(blockObject, keepAlive, false, cancellationIoCache);
                     _ioStructureObjectsDictionary[blockObject.BlockHeight].IsDeleted = false;
-                    result = true;
+                    return false;
                 }
                 else
                 {
-                    bool exception = false;
                     try
                     {
                         _ioStructureObjectsDictionary.Add(blockObject.BlockHeight, new ClassCacheIoStructureObject()
@@ -545,14 +541,11 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                     }
                     catch
                     {
-                        exception = true;
+                        return false;
                     }
 
-                    if (!exception)
-                    {
-                        if (await WriteNewIoDataOnIoStreamFile(blockObject, cancellationIoCache))
-                            result = true;
-                    }
+                    if (await WriteNewIoDataOnIoStreamFile(blockObject, cancellationIoCache))
+                        return true;
                 }
             }
             finally
@@ -560,7 +553,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                 if (useSemaphore)
                     _ioSemaphoreAccess.Release();
             }
-            return result;
+            return false;
         }
 
         /// <summary>
@@ -573,14 +566,14 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// <returns></returns>
         public async Task<bool> PushOrUpdateTransactionOnIoBlockData(ClassBlockTransaction blockTransaction, long blockHeight, bool keepAlive, CancellationTokenSource cancellationIoCache)
         {
-            bool result = false;
-
             bool useSemaphore = false;
 
             try
             {
-                await _ioSemaphoreAccess.WaitAsync(cancellationIoCache.Token);
-                useSemaphore = true;
+                useSemaphore = await _ioSemaphoreAccess.TryWaitAsync(cancellationIoCache);
+
+                if (!useSemaphore)
+                    return false;
 
                 if (_ioStructureObjectsDictionary.ContainsKey(blockHeight))
                 {
@@ -597,7 +590,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
                             _ioStructureObjectsDictionary[blockHeight].BlockObject.BlockIsUpdated = true;
                             _ioStructureObjectsDictionary[blockHeight].IsDeleted = false;
-                            result = true;
+                            return false;
                         }
                     }
                     else
@@ -619,7 +612,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                             // Update the io cache file and remove the data updated from the active memory
                             await InsertInActiveMemory(blockObject, true, keepAlive, cancellationIoCache);
 
-                            result = true;
+                            return true;
                         }
                     }
                 }
@@ -629,7 +622,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                 if (useSemaphore)
                     _ioSemaphoreAccess.Release();
             }
-            return result;
+
+            return false;
         }
 
         /// <summary>
@@ -641,77 +635,66 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// <returns></returns>
         public async Task<bool> PushOrUpdateListIoBlockData(List<ClassBlockObject> listBlockObject, bool keepAlive, CancellationTokenSource cancellationIoCache)
         {
-            bool result = false;
-
             bool useSemaphore = false;
 
             try
             {
-                await _ioSemaphoreAccess.WaitAsync(cancellationIoCache.Token);
-                useSemaphore = true;
+                useSemaphore = await _ioSemaphoreAccess.TryWaitAsync(cancellationIoCache);
 
-                int countObject = listBlockObject.Count;
+                if (!useSemaphore)
+                    return false;
 
-                if (countObject > 0)
+                if (listBlockObject.Count == 0)
+                    return false;
+
+                int countPushed = 0;
+
+                for (int i = 0; i < listBlockObject.Count; i++)
                 {
-                    try
+                    if (cancellationIoCache.IsCancellationRequested)
+                        break;
+
+                    if (i < listBlockObject.Count)
                     {
-                        for (int i = 0; i < listBlockObject.Count; i++)
+                        if (_ioStructureObjectsDictionary.ContainsKey(listBlockObject[i].BlockHeight))
                         {
-                            if (cancellationIoCache.IsCancellationRequested)
-                                break;
+                            await InsertInActiveMemory(listBlockObject[i], keepAlive, false, cancellationIoCache);
+                            _ioStructureObjectsDictionary[listBlockObject[i].BlockHeight].IsDeleted = false;
 
-                            if (i < listBlockObject.Count)
-                            {
-                                if (_ioStructureObjectsDictionary.ContainsKey(listBlockObject[i].BlockHeight))
-                                {
-                                    await InsertInActiveMemory(listBlockObject[i], keepAlive, false, cancellationIoCache);
-                                    _ioStructureObjectsDictionary[listBlockObject[i].BlockHeight].IsDeleted = false;
-
-                                    result = true;
-                                }
-                                else
-                                {
-                                    bool exception = false;
-
-                                    try
-                                    {
-                                        _ioStructureObjectsDictionary.Add(listBlockObject[i].BlockHeight, new ClassCacheIoStructureObject()
-                                        {
-                                            BlockObject = null,
-                                            IsWritten = false,
-                                            IoDataPosition = 0
-                                        });
-                                    }
-                                    catch
-                                    {
-                                        exception = true;
-                                    }
-
-                                    if (!exception)
-                                        result = await WriteNewIoDataOnIoStreamFile(listBlockObject[i], cancellationIoCache);
-                                    else
-                                        result = false;
-                                }
-
-                                if (!result)
-                                    break;
-                            }
+                            countPushed++;
                         }
-                    }
-                    catch
-                    {
-                        // Ignored.
+                        else
+                        {
+
+                            try
+                            {
+                                _ioStructureObjectsDictionary.Add(listBlockObject[i].BlockHeight, new ClassCacheIoStructureObject()
+                                {
+                                    BlockObject = null,
+                                    IsWritten = false,
+                                    IoDataPosition = 0
+                                });
+                            }
+                            catch
+                            {
+                                break;
+                            }
+
+                            if (await WriteNewIoDataOnIoStreamFile(listBlockObject[i], cancellationIoCache))
+                                countPushed++;
+                        }
+
+
                     }
                 }
+
+                return countPushed == listBlockObject.Count;
             }
             finally
             {
                 if (useSemaphore)
                     _ioSemaphoreAccess.Release();
             }
-
-            return result;
         }
 
         /// <summary>
@@ -723,88 +706,77 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// <returns></returns>
         public async Task<bool> PushOrUpdateListIoBlockTransactionData(List<ClassBlockTransaction> listBlockTransaction, bool keepAlive, CancellationTokenSource cancellationIoCache)
         {
-            bool result = false;
 
             bool useSemaphore = false;
+            int countPushed = 0;
 
             try
             {
-                await _ioSemaphoreAccess.WaitAsync(cancellationIoCache.Token);
-                useSemaphore = true;
+                useSemaphore = await _ioSemaphoreAccess.TryWaitAsync(cancellationIoCache);
 
-                int countObject = listBlockTransaction.Count;
+                if (!useSemaphore)
+                    return false;
 
-                if (countObject > 0)
+                if (listBlockTransaction.Count == 0)
+                    return false;
+
+                for (int i = 0; i < listBlockTransaction.Count; i++)
                 {
-                    try
+                    if (cancellationIoCache.IsCancellationRequested)
+                        break;
+
+                    if (i < listBlockTransaction.Count)
                     {
-                        for (int i = 0; i < listBlockTransaction.Count; i++)
+                        long blockHeight = listBlockTransaction[i].TransactionObject.BlockHeightTransaction;
+                        string transactionHash = listBlockTransaction[i].TransactionObject.TransactionHash;
+
+                        if (_ioStructureObjectsDictionary.ContainsKey(blockHeight))
                         {
-                            if (cancellationIoCache.IsCancellationRequested)
-                                break;
-
-                            if (i < listBlockTransaction.Count)
+                            if (!_ioStructureObjectsDictionary[blockHeight].IsNull)
                             {
-                                long blockHeight = listBlockTransaction[i].TransactionObject.BlockHeightTransaction;
-                                string transactionHash = listBlockTransaction[i].TransactionObject.TransactionHash;
-
-                                if (_ioStructureObjectsDictionary.ContainsKey(blockHeight))
+                                if (_ioStructureObjectsDictionary[blockHeight].BlockObject.BlockTransactions != null)
                                 {
-                                    if (!_ioStructureObjectsDictionary[blockHeight].IsNull)
-                                    {
-                                        if (_ioStructureObjectsDictionary[blockHeight].BlockObject.BlockTransactions != null)
-                                        {
-                                            if (_ioStructureObjectsDictionary[blockHeight].BlockObject.BlockTransactions.ContainsKey(transactionHash))
-                                                _ioStructureObjectsDictionary[blockHeight].BlockObject.BlockTransactions[transactionHash] = listBlockTransaction[i];
-                                            else
-                                                _ioStructureObjectsDictionary[blockHeight].BlockObject.BlockTransactions.Add(transactionHash, listBlockTransaction[i]);
-
-                                            _ioStructureObjectsDictionary[blockHeight].BlockObject.BlockIsUpdated = true;
-                                            _ioStructureObjectsDictionary[blockHeight].BlockObject.BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
-                                            result = true;
-                                        }
-                                    }
+                                    if (_ioStructureObjectsDictionary[blockHeight].BlockObject.BlockTransactions.ContainsKey(transactionHash))
+                                        _ioStructureObjectsDictionary[blockHeight].BlockObject.BlockTransactions[transactionHash] = listBlockTransaction[i];
                                     else
-                                    {
+                                        _ioStructureObjectsDictionary[blockHeight].BlockObject.BlockTransactions.Add(transactionHash, listBlockTransaction[i]);
 
-                                        ClassBlockObject blockObject = await CallGetRetrieveDataAccess(blockHeight, keepAlive, false, false, cancellationIoCache);
-
-                                        if (blockObject?.BlockTransactions != null)
-                                        {
-                                            if (blockObject.BlockTransactions.ContainsKey(transactionHash))
-                                                blockObject.BlockTransactions[transactionHash] = listBlockTransaction[i];
-                                            else
-                                                blockObject.BlockTransactions.Add(transactionHash, listBlockTransaction[i]);
-
-                                            blockObject.BlockIsUpdated = true;
-                                            blockObject.BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
-
-                                            // Update the io cache file and remove the data updated from the active memory
-                                            await InsertInActiveMemory(blockObject, keepAlive, false, cancellationIoCache);
-
-                                            result = true;
-                                        }
-                                    }
+                                    _ioStructureObjectsDictionary[blockHeight].BlockObject.BlockIsUpdated = true;
+                                    _ioStructureObjectsDictionary[blockHeight].BlockObject.BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
+                                    countPushed++;
                                 }
+                            }
+                            else
+                            {
 
-                                if (!result)
-                                    break;
+                                ClassBlockObject blockObject = await CallGetRetrieveDataAccess(blockHeight, keepAlive, false, false, cancellationIoCache);
+
+                                if (blockObject?.BlockTransactions != null)
+                                {
+                                    if (blockObject.BlockTransactions.ContainsKey(transactionHash))
+                                        blockObject.BlockTransactions[transactionHash] = listBlockTransaction[i];
+                                    else
+                                        blockObject.BlockTransactions.Add(transactionHash, listBlockTransaction[i]);
+
+                                    blockObject.BlockIsUpdated = true;
+                                    blockObject.BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
+
+                                    // Update the io cache file and remove the data updated from the active memory
+                                    await InsertInActiveMemory(blockObject, keepAlive, false, cancellationIoCache);
+                                    countPushed++;
+                                }
                             }
                         }
                     }
-                    catch
-                    {
-                        // Ignored.
-                    }
                 }
+
+                return countPushed == listBlockTransaction.Count;
             }
             finally
             {
                 if (useSemaphore)
                     _ioSemaphoreAccess.Release();
             }
-
-            return result;
         }
 
         #endregion
@@ -823,13 +795,16 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
             try
             {
-                await _ioSemaphoreAccess.WaitAsync(cancellationIoCache.Token);
-                useSemaphore = true;
+                useSemaphore = await _ioSemaphoreAccess.TryWaitAsync(cancellationIoCache);
+
+                if (!useSemaphore)
+                    return false;
 
                 if (_ioStructureObjectsDictionary.ContainsKey(blockHeight))
                 {
                     _ioStructureObjectsDictionary[blockHeight].IsDeleted = true;
                     _ioStructureObjectsDictionary[blockHeight].BlockObject = null;
+                    return true;
                 }
 
             }
@@ -839,7 +814,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                     _ioSemaphoreAccess.Release();
             }
 
-            return true;
+            return false;
         }
 
         /// <summary>
@@ -850,18 +825,16 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// <returns></returns>
         public async Task<bool> ContainsIoBlockHeight(long blockHeight, CancellationTokenSource cancellation)
         {
-            bool result;
-
-
             bool useSemaphore = false;
 
             try
             {
-                await _ioSemaphoreAccess.WaitAsync(cancellation.Token);
+                useSemaphore = await _ioSemaphoreAccess.TryWaitAsync(cancellation);
 
-                useSemaphore = true;
+                if (!useSemaphore)
+                    return false;
 
-                result = _ioStructureObjectsDictionary.ContainsKey(blockHeight);
+                return _ioStructureObjectsDictionary.ContainsKey(blockHeight);
 
             }
             finally
@@ -869,8 +842,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                 if (useSemaphore)
                     _ioSemaphoreAccess.Release();
             }
-
-            return result;
         }
 
         /// <summary>
@@ -882,14 +853,15 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// <returns></returns>
         public async Task<bool> ContainIoBlockTransactionHash(string transactionHash, long blockHeight, CancellationTokenSource cancellationIoCache)
         {
-            bool result = false;
 
             bool useSemaphore = false;
 
             try
             {
-                await _ioSemaphoreAccess.WaitAsync(cancellationIoCache.Token);
-                useSemaphore = true;
+                useSemaphore = await _ioSemaphoreAccess.TryWaitAsync(cancellationIoCache);
+
+                if (!useSemaphore)
+                    return false;
 
                 if (blockHeight >= BlockchainSetting.GenesisBlockHeight)
                 {
@@ -899,7 +871,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                         if (!_ioStructureObjectsDictionary[blockHeight].IsNull)
                         {
                             if (_ioStructureObjectsDictionary[blockHeight].BlockObject.BlockTransactions.ContainsKey(transactionHash))
-                                result = true;
+                                return true;
                         }
                         else
                         {
@@ -908,7 +880,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                             if (blockObject != null)
                             {
                                 if (blockObject.BlockTransactions.ContainsKey(transactionHash))
-                                    result = true;
+                                    return true;
                             }
                         }
 
@@ -921,7 +893,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                     _ioSemaphoreAccess.Release();
             }
 
-            return result;
+            return false;
         }
 
         /// <summary>
@@ -930,17 +902,16 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// <returns></returns>
         public async Task<HashSet<long>> GetIoBlockHeightListIndexed(CancellationTokenSource cancellation)
         {
-            HashSet<long> listBlockHeight;
-
             bool useSemaphore = false;
 
             try
             {
-                await _ioSemaphoreAccess.WaitAsync(cancellation.Token);
+                useSemaphore = await _ioSemaphoreAccess.TryWaitAsync(cancellation);
 
-                useSemaphore = true;
+                if (!useSemaphore)
+                    return new HashSet<long>();
 
-                listBlockHeight = new HashSet<long>(_ioStructureObjectsDictionary.Keys.ToList());
+                return new HashSet<long>(_ioStructureObjectsDictionary.Keys.ToList());
 
             }
             finally
@@ -948,8 +919,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                 if (useSemaphore)
                     _ioSemaphoreAccess.Release();
             }
-
-            return listBlockHeight;
         }
 
         #endregion

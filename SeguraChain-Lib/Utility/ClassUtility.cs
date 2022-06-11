@@ -18,6 +18,7 @@ using SeguraChain_Lib.Blockchain.Setting;
 using SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Packet;
 using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet.Model;
 using SeguraChain_Lib.Other.Object.List;
+using SeguraChain_Lib.Other.Object.Network;
 using SeguraChain_Lib.Other.Object.SHA3;
 
 namespace SeguraChain_Lib.Utility
@@ -908,7 +909,10 @@ namespace SeguraChain_Lib.Utility
                         finally
                         {
                             if (tcpClient != null)
+                            {
                                 tcpClient?.Close();
+                                tcpClient?.Dispose();
+                            }
                         }
                     }
                     else
@@ -928,30 +932,12 @@ namespace SeguraChain_Lib.Utility
         /// Close Socket Client.
         /// </summary>
         /// <param name="socket"></param>
-        public static void CloseSocket(Socket socket)
+        public static void CloseSocket(ClassCustomSocket socket)
         {
             try
             {
-                if (socket != null)
-                {
-                    if (socket.Connected)
-                    {
-                        try
-                        {
-                            socket.Shutdown(SocketShutdown.Both);
-                        }
-                        finally
-                        {
-                            if (socket != null)
-                                socket?.Close();
-                        }
-                    }
-                    else
-                    {
-                        socket?.Close();
-                        socket?.Dispose();
-                    }
-                }
+                if (socket?.Socket != null)
+                    socket.Shutdown(SocketShutdown.Both);
             }
             catch
             {
@@ -962,11 +948,16 @@ namespace SeguraChain_Lib.Utility
         /// <summary>
         /// Return each packet splitted received.
         /// </summary>
-        /// <param name="packetDataToSplit"></param>
         /// <returns></returns>
         public static DisposableList<ClassReadPacketSplitted> GetEachPacketSplitted(byte[] packetBufferOnReceive, DisposableList<ClassReadPacketSplitted> listPacketReceived, CancellationTokenSource cancellation)
         {
             string packetData = packetBufferOnReceive.GetStringFromByteArrayUtf8().Replace("\0", "");
+
+            if (listPacketReceived.Disposed)
+                listPacketReceived = new DisposableList<ClassReadPacketSplitted>();
+
+            if (listPacketReceived.Count == 0)
+                listPacketReceived.Add(new ClassReadPacketSplitted());
 
             if (packetData.Contains(ClassPeerPacketSetting.PacketPeerSplitSeperator))
             {
@@ -980,11 +971,11 @@ namespace SeguraChain_Lib.Utility
                     if (cancellation.IsCancellationRequested)
                         break;
 
-                    listPacketReceived[listPacketReceived.Count - 1].Packet += data.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
+                    listPacketReceived[listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0].Packet += data.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
 
                     if (completed < countSeperator)
                     {
-                        listPacketReceived[listPacketReceived.Count - 1].Complete = true;
+                        listPacketReceived[listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0].Complete = true;
                         break;
                     }
 
@@ -992,8 +983,8 @@ namespace SeguraChain_Lib.Utility
                 }
             }
             else
-                listPacketReceived[listPacketReceived.Count - 1].Packet += packetData.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
-
+                listPacketReceived[listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0].Packet += packetData.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
+            
             return listPacketReceived;
         }
 
@@ -1358,7 +1349,6 @@ namespace SeguraChain_Lib.Utility
 
             try
             {
-
                 if (packetBytesToSend.Length >= packetMaxSize && !singleWrite)
                 {
                     int packetLength = packetBytesToSend.Length;

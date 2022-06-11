@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Threading;
@@ -189,49 +190,60 @@ namespace SeguraChain_Lib.Blockchain.Block.Object.Structure
         /// <param name="blockObjectCopy"></param>
         public void DeepCloneBlockObject(bool retrieveTx, out ClassBlockObject blockObjectCopy)
         {
+            blockObjectCopy = null;
+
             try
             {
 
                 /*if (ClassBlockUtility.StringToBlockObject(ClassBlockUtility.SplitBlockObject(this), out blockObjectCopy) && retrieveTx)
                     blockObjectCopy.BlockTransactions = new SortedList<string, ClassBlockTransaction>(_blockTransactions.ToDictionary(x => x.Key, x => x.Value));*/
 
-                blockObjectCopy = new ClassBlockObject(BlockHeight, BlockDifficulty, BlockHash, TimestampCreate, TimestampFound, BlockStatus, BlockUnlockValid, BlockTransactionConfirmationCheckTaskDone)
+                if (_blockTransactions != null)
                 {
-                    BlockDifficulty = BlockDifficulty,
-                    BlockFromMemory = BlockFromMemory,
-                    BlockFromCache = BlockFromCache,
-                    BlockFinalHashTransaction = BlockFinalHashTransaction,
-                    BlockHash = BlockHash,
-                    BlockHeight = BlockHeight,
-                    BlockIsUpdated = BlockIsUpdated,
-                    BlockLastChangeTimestamp = BlockLastChangeTimestamp,
-                    BlockLastHeightTransactionConfirmationDone = BlockLastHeightTransactionConfirmationDone,
-                    BlockMiningPowShareUnlockObject = BlockMiningPowShareUnlockObject,
-                    BlockNetworkAmountConfirmations = BlockNetworkAmountConfirmations,
-                    BlockSlowNetworkAmountConfirmations = BlockSlowNetworkAmountConfirmations,
-                    BlockStatus = BlockStatus,
-                    BlockTotalTaskTransactionConfirmationDone = BlockTotalTaskTransactionConfirmationDone,
-                    BlockTransactionConfirmationCheckTaskDone = BlockTransactionConfirmationCheckTaskDone,
-                    BlockTransactionCountInSync = BlockTransactionCountInSync,
-                    BlockTransactionFullyConfirmed = BlockTransactionFullyConfirmed,
-                    BlockUnlockValid = BlockUnlockValid,
-                    Disposed = Disposed,
-                    TimestampCreate = TimestampCreate,
-                    TimestampFound = TimestampFound,
-                    TotalCoinConfirmed = TotalCoinConfirmed,
-                    TotalCoinPending = TotalCoinPending,
-                    TotalFee = TotalFee,
-                    TotalTransactionConfirmed = TotalTransactionConfirmed,
-                    BlockCloned = true,
-                    BlockTransactions = retrieveTx ? new SortedList<string, ClassBlockTransaction>(_blockTransactions.ToDictionary(x => x.Key.DeepCopy(), x => x.Value.Clone())) : new SortedList<string, ClassBlockTransaction>()
-                };
+                    blockObjectCopy = new ClassBlockObject(BlockHeight, BlockDifficulty, BlockHash, TimestampCreate, TimestampFound, BlockStatus, BlockUnlockValid, BlockTransactionConfirmationCheckTaskDone)
+                    {
+                        BlockDifficulty = BlockDifficulty,
+                        BlockFromMemory = BlockFromMemory,
+                        BlockFromCache = BlockFromCache,
+                        BlockFinalHashTransaction = BlockFinalHashTransaction,
+                        BlockHash = BlockHash,
+                        BlockHeight = BlockHeight,
+                        BlockIsUpdated = BlockIsUpdated,
+                        BlockLastChangeTimestamp = BlockLastChangeTimestamp,
+                        BlockLastHeightTransactionConfirmationDone = BlockLastHeightTransactionConfirmationDone,
+                        BlockMiningPowShareUnlockObject = BlockMiningPowShareUnlockObject,
+                        BlockNetworkAmountConfirmations = BlockNetworkAmountConfirmations,
+                        BlockSlowNetworkAmountConfirmations = BlockSlowNetworkAmountConfirmations,
+                        BlockStatus = BlockStatus,
+                        BlockTotalTaskTransactionConfirmationDone = BlockTotalTaskTransactionConfirmationDone,
+                        BlockTransactionConfirmationCheckTaskDone = BlockTransactionConfirmationCheckTaskDone,
+                        BlockTransactionCountInSync = BlockTransactionCountInSync,
+                        BlockTransactionFullyConfirmed = BlockTransactionFullyConfirmed,
+                        BlockUnlockValid = BlockUnlockValid,
+                        Disposed = Disposed,
+                        TimestampCreate = TimestampCreate,
+                        TimestampFound = TimestampFound,
+                        TotalCoinConfirmed = TotalCoinConfirmed,
+                        TotalCoinPending = TotalCoinPending,
+                        TotalFee = TotalFee,
+                        TotalTransactionConfirmed = TotalTransactionConfirmed,
+                        BlockCloned = true,
+                    };
 
-
-                blockObjectCopy.TotalTransaction = retrieveTx ? blockObjectCopy.BlockTransactions.Count : (_blockTransactions != null ? _blockTransactions.Count : 0);
+                    blockObjectCopy.BlockTransactions = retrieveTx ? new SortedList<string, ClassBlockTransaction>(_blockTransactions.ToDictionary(x => x.Key.DeepCopy(), x => x.Value.Clone())) : new SortedList<string, ClassBlockTransaction>();
+                    blockObjectCopy.TotalTransaction = retrieveTx ? blockObjectCopy.BlockTransactions.Count : (_blockTransactions != null ? _blockTransactions.Count : 0);
+                }
             }
+#if DEBUG
+            catch(Exception error)
+            {
+                Debug.WriteLine("Error on cloning the Block Height: "+BlockHeight+" | Exception: " + error.Message);
+#else
             catch
             {
-                blockObjectCopy = null;
+#endif
+            
+
             }
         
         }
@@ -260,6 +272,6 @@ namespace SeguraChain_Lib.Blockchain.Block.Object.Structure
             return blockObjectCopy;
         }
 
-        #endregion
+#endregion
     }
 }

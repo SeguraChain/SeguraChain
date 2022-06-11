@@ -28,6 +28,7 @@ using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast;
 using SeguraChain_Lib.Instance.Node.Setting.Object;
 using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Other.Object.List;
+using SeguraChain_Lib.Other.Object.Network;
 using SeguraChain_Lib.Utility;
 
 namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
@@ -37,7 +38,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
         private readonly ClassPeerNetworkSettingObject _peerNetworkSettingObject;
         private readonly ClassPeerFirewallSettingObject _peerFirewallSettingObject;
         private readonly string _apiServerOpenNatIp;
-        private Socket _clientSocket;
+        private ClassCustomSocket _clientSocket;
         private readonly string _clientIp;
         public CancellationTokenSource _cancellationTokenApiClient;
         private CancellationTokenSource _cancellationTokenApiClientCheck;
@@ -87,7 +88,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
         /// <param name="apiServerOpenNatIp"></param>
         /// <param name="cancellationTokenApiServer"></param>
         /// <param name="peerNetworkSettingObject"></param>
-        public ClassPeerApiClientObject(Socket clientSocket, string clientIp, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject, string apiServerOpenNatIp, CancellationTokenSource cancellationTokenApiServer)
+        public ClassPeerApiClientObject(ClassCustomSocket clientSocket, string clientIp, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject, string apiServerOpenNatIp, CancellationTokenSource cancellationTokenApiServer)
         {
             _apiServerOpenNatIp = apiServerOpenNatIp;
             _clientSocket = clientSocket;
@@ -128,7 +129,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
                             string packetReceived = string.Empty;
 
-                            using (NetworkStream networkStream = new NetworkStream(_clientSocket))
+                            using (NetworkStream networkStream = new NetworkStream(_clientSocket.Socket))
                             {
                                 while (continueReading && ClientConnectionStatus)
                                 {
@@ -1017,7 +1018,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                 builder.AppendLine(@"");
                 builder.AppendLine(@"" + packetToSend);
 
-                using (NetworkStream networkStream = new NetworkStream(_clientSocket))
+                using (NetworkStream networkStream = new NetworkStream(_clientSocket.Socket))
                 {
                     if (!await networkStream.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(builder.ToString()), _cancellationTokenApiClient, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize))
                         sendResult = false;
