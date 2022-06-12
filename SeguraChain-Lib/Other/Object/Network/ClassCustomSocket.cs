@@ -52,9 +52,8 @@ namespace SeguraChain_Lib.Other.Object.Network
 
                 if (!Disposed && !Closed && isLocked)
                 {
-                    _socket?.Shutdown(shutdownType);
                     Close();
-                    Dispose();
+                    //Dispose();
                 }
             }
             finally

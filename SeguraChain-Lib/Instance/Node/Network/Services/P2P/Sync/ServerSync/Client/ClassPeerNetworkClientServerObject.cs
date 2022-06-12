@@ -143,13 +143,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 if (!ClientPeerConnectionStatus || _clientAskDisconnection)
                     break;
 
-                if (!ClassUtility.SocketIsConnected(_clientSocket.Socket))
-                {
-#if DEBUG
-                    Debug.WriteLine(_peerClientIp + " socket dead.");
-#endif
+                if (!_clientSocket.IsConnected)
                     break;
-                }
 
                 if (_peerFirewallSettingObject.PeerEnableFirewallLink)
                 {
@@ -164,9 +159,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                     // If any packet are received after the delay, the function close the peer client connection to listen.
                     if (ClientPeerLastPacketReceived + _peerNetworkSettingObject.PeerMaxDelayConnection < TaskManager.TaskManager.CurrentTimestampSecond)
                     {
-#if DEBUG
-                        Debug.WriteLine(_peerClientIp + " timeout. "+ (ClientPeerLastPacketReceived + _peerNetworkSettingObject.PeerMaxDelayConnection) + "/"+TaskManager.TaskManager.CurrentTimestampSecond);
-#endif
                         // On this case, insert invalid attempt of connection.
                         if (!_clientResponseSendSuccessfully)
                             ClassPeerCheckManager.InputPeerClientNoPacketConnectionOpened(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
@@ -174,14 +166,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                     }
                 }
 
-                try
-                {
-                    await Task.Delay(1000, _cancellationTokenClientCheckConnectionPeer.Token);
-                }
-                catch
-                {
-                    break;
-                }
+                await Task.Delay(1000);
             }
 
             ClosePeerClient(true);
@@ -289,8 +274,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                         try
                                         {
-                                            base64Packet = Convert.FromBase64String(listPacketReceived[index].Packet);
-                                            failed = base64Packet == null || base64Packet.Length == 0;
+                                            if (ClassUtility.CheckBase64String(listPacketReceived[index].Packet))
+                                            {
+                                                base64Packet = Convert.FromBase64String(listPacketReceived[index].Packet);
+                                                failed = base64Packet == null || base64Packet.Length == 0;
+                                            }
+                                            else failed = true;
                                         }
                                         catch
                                         {

@@ -397,7 +397,7 @@ namespace SeguraChain_Lib.Utility
         {
             try
             {
-                byte[] ret = new byte[hex.Length / 2];
+                byte[] ret = new byte[hex.Length / 2]; // Hex to byte array size.
 
                 for (int i = 0; i < ret.Length; i++)
                 {
@@ -934,15 +934,7 @@ namespace SeguraChain_Lib.Utility
         /// <param name="socket"></param>
         public static void CloseSocket(ClassCustomSocket socket)
         {
-            try
-            {
-                if (socket?.Socket != null)
-                    socket.Shutdown(SocketShutdown.Both);
-            }
-            catch
-            {
-                // Ignored, the socket can be already closed, or disposed.
-            }
+            socket?.Shutdown(SocketShutdown.Both);
         }
 
         /// <summary>

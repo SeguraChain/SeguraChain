@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Security.Cryptography;
@@ -86,7 +87,6 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         private static string Encode(byte[] dataToEncode)
         {
-
             BigInteger intData = dataToEncode.Aggregate<byte, BigInteger>(0, (current, t) => current * 256 + t);
 
             // Encode BigInteger to Base58 string

@@ -14,15 +14,24 @@ using System.Threading.Tasks;
 
 namespace SeguraChain_Lib.TaskManager
 {
+
     public class TaskManager
     {
         private static bool TaskManagerEnabled;
         private static CancellationTokenSource _cancelTaskManager = new CancellationTokenSource();
+
+        /// <summary>
+        /// Store tasks, task id's to delete.
+        /// </summary>
         private static List<ClassTaskObject> _taskCollection = new List<ClassTaskObject>();
+        private static DisposableList<int> listTaskToRemove = new DisposableList<int>();
         private const int MaxTaskClean = 10000;
+
+        /// <summary>
+        /// Current timestamp 
+        /// </summary>
         public static long CurrentTimestampMillisecond { get; private set; }
         public static long CurrentTimestampSecond { get; private set; }
-        private static DisposableList<int> listTaskToRemove = new DisposableList<int>();
 
         /// <summary>
         /// Enable the task manager. Check tasks, dispose them if they are faulted, completed, cancelled, or if a timestamp of end has been set and has been reached.
@@ -40,41 +49,7 @@ namespace SeguraChain_Lib.TaskManager
 
                     while (TaskManagerEnabled)
                     {
-
-
-                        int count = _taskCollection.Count;
-                        for (int i = 0; i < count; i++)
-                        {
-
-                            try
-                            {
-                                if (_taskCollection[i] == null || _taskCollection[i].Started || _taskCollection[i].Disposed)
-                                    continue;
-
-
-                                await Task.Factory.StartNew(() =>
-                                {
-                                    try
-                                    {
-                                        _taskCollection[i].Started = true;
-                                        _taskCollection[i].Task = Task.Run(_taskCollection[i].Action, _taskCollection[i].Cancellation.Token);
-                                    }
-                                    catch
-                                    {
-                                                // Catch the exception if the task cannot start.
-                                            }
-                                }, _cancelTaskManager.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
-
-
-                            }
-                            catch
-                            {
-                                // If the amount change..
-                                if (i > _taskCollection.Count || count > _taskCollection.Count)
-                                    break;
-                            }
-                        }
-
+                        await RunTask();
                         await Task.Delay(1);
                     }
 
@@ -94,89 +69,7 @@ namespace SeguraChain_Lib.TaskManager
 
                 while (TaskManagerEnabled)
                 {
-                    bool isLocked = false;
-                    bool changeDone = false;
-                    try
-                    {
-                        isLocked = Monitor.TryEnter(_taskCollection);
-                        if (isLocked)
-                        {
-
-                            for (int i = 0; i < _taskCollection.Count; i++)
-                            {
-
-                                if (_taskCollection[i] == null || _taskCollection[i].Task == null || _taskCollection[i].Disposed || !_taskCollection[i].Started)
-                                    continue;
-
-                                if (!_taskCollection[i].Disposed && _taskCollection[i].Started && _taskCollection[i].Task != null)
-                                {
-                                    try
-                                    {
-                                        bool doDispose = false;
-
-                                        if (_taskCollection[i].Task != null && (_taskCollection[i].Task.IsCanceled ||
-                                        _taskCollection[i].Task.IsFaulted))
-                                            doDispose = true;
-
-                                        if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond)
-                                        {
-                                            doDispose = true;
-                                            try
-                                            {
-                                                if (_taskCollection[i].Cancellation != null)
-                                                {
-                                                    if (!_taskCollection[i].Cancellation.IsCancellationRequested)
-                                                        _taskCollection[i].Cancellation.Cancel();
-                                                }
-                                            }
-                                            catch
-                                            {
-                                                // Ignored.
-                                            }
-                                        }
-
-
-                                        if (!doDispose)
-                                            continue;
-
-                                        changeDone = true;
-                                        _taskCollection[i].Disposed = true;
-
-                                        ClassUtility.CloseSocket(_taskCollection[i].Socket);
-
-                                        try
-                                        {
-
-
-                                            if ((_taskCollection[i].Task.IsCanceled ||
-                                                _taskCollection[i].Task.IsFaulted || _taskCollection[i].Task.Status == TaskStatus.RanToCompletion))
-                                                _taskCollection[i].Task?.Dispose();
-
-                                        }
-                                        catch
-                                        {
-                                            // Ignored, the task dispose can failed.
-                                        }
-
-                                        listTaskToRemove.Add(i);
-                                    }
-                                    catch(Exception error)
-                                    {
-                                        ClassLog.WriteLine("Error on cleaning the task ID: " + i + " | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_TASK_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        if (isLocked)
-                        {
-                            if (changeDone)
-                                Monitor.PulseAll(_taskCollection);
-                            Monitor.Exit(_taskCollection);
-                        }
-                    }
+                    ManageTask(false);
                     await Task.Delay(1);
                 }
 
@@ -219,45 +112,45 @@ namespace SeguraChain_Lib.TaskManager
                             if (!isLocked)
                                 continue;
 
-                                try
+                            try
+                            {
+                                foreach (int taskId in listTaskToRemove.GetList.ToArray())
                                 {
-                                    foreach (int taskId in listTaskToRemove.GetList.ToArray())
+                                    if (taskId >= _taskCollection.Count)
+                                        continue;
+
+                                    try
                                     {
-                                        if (taskId >= _taskCollection.Count)
-                                            continue;
+                                        _taskCollection.RemoveAt(taskId);
+                                        cleaned = true;
 
-                                        try
-                                        {
-                                            _taskCollection.RemoveAt(taskId);
-                                            cleaned = true;
-
-                                            listTaskToRemove.Remove(taskId);
-                                        }
-                                        catch
-                                        {
-                                            continue;
-                                        }
+                                        listTaskToRemove.Remove(taskId);
+                                    }
+                                    catch
+                                    {
+                                        continue;
                                     }
                                 }
-                                catch
-                                {
-                                    // Collection generic list changed exception.
-                                }
+                            }
+                            catch
+                            {
+                                // Collection generic list changed exception.
+                            }
 
-                                try
-                                {
+                            try
+                            {
 
-                                    if (cleaned)
-                                    {
-                                        _taskCollection.RemoveAll(x => x == null || x.Disposed);
-                                        _taskCollection.TrimExcess();
-                                    }
-                                }
-                                catch
+                                if (cleaned)
                                 {
-                                    // Ignored.
+                                    _taskCollection.RemoveAll(x => x == null || x.Disposed);
+                                    _taskCollection.TrimExcess();
                                 }
-                            
+                            }
+                            catch
+                            {
+                                // Ignored.
+                            }
+
                         }
                         finally
                         {
@@ -277,6 +170,142 @@ namespace SeguraChain_Lib.TaskManager
             }), 0, _cancelTaskManager);
 
             #endregion
+        }
+
+        /// <summary>
+        /// Run every task registered into the task manager.
+        /// </summary>
+        /// <returns></returns>
+        private static async Task RunTask()
+        {
+
+            int count = _taskCollection.Count;
+            for (int i = 0; i < count; i++)
+            {
+
+                try
+                {
+                    if (_taskCollection[i] == null || _taskCollection[i].Started || _taskCollection[i].Disposed)
+                        continue;
+
+
+                    await Task.Factory.StartNew(() =>
+                    {
+                        try
+                        {
+                            _taskCollection[i].Started = true;
+                            _taskCollection[i].Task = Task.Run(_taskCollection[i].Action, _taskCollection[i].Cancellation.Token);
+                        }
+                        catch
+                        {
+                                    // Catch the exception if the task cannot start.
+                                }
+                    }, _cancelTaskManager.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+
+
+                }
+                catch
+                {
+                    // If the amount change..
+                    if (i > _taskCollection.Count || count > _taskCollection.Count)
+                        break;
+                }
+            }
+
+        }
+
+        /// <summary>
+        /// Manage every tasks stored into the TaskManager.
+        /// </summary>
+        /// <returns></returns>
+        private static void ManageTask(bool force)
+        {
+            bool isLocked = false;
+            bool changeDone = false;
+            try
+            {
+                isLocked = Monitor.TryEnter(_taskCollection);
+                if (isLocked)
+                {
+
+                    for (int i = 0; i < _taskCollection.Count; i++)
+                    {
+
+                        if (_taskCollection[i] == null || _taskCollection[i].Task == null || _taskCollection[i].Disposed || !_taskCollection[i].Started)
+                            continue;
+
+                        if (!_taskCollection[i].Disposed && _taskCollection[i].Started && _taskCollection[i].Task != null)
+                        {
+                            try
+                            {
+                                bool doDispose = false;
+
+                                if (!force)
+                                {
+                                    if (_taskCollection[i].Task != null && (_taskCollection[i].Task.IsCanceled ||
+                                    _taskCollection[i].Task.IsFaulted))
+                                        doDispose = true;
+
+                                    if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond)
+                                    {
+                                        doDispose = true;
+                                        try
+                                        {
+                                            if (_taskCollection[i].Cancellation != null)
+                                            {
+                                                if (!_taskCollection[i].Cancellation.IsCancellationRequested)
+                                                    _taskCollection[i].Cancellation.Cancel();
+                                            }
+                                        }
+                                        catch
+                                        {
+                                            // Ignored.
+                                        }
+                                    }
+
+
+                                    if (!doDispose)
+                                        continue;
+                                }
+
+                                changeDone = true;
+                                _taskCollection[i].Disposed = true;
+
+                                ClassUtility.CloseSocket(_taskCollection[i].Socket);
+
+                                try
+                                {
+
+
+                                    if ((_taskCollection[i].Task.IsCanceled ||
+                                        _taskCollection[i].Task.IsFaulted || _taskCollection[i].Task.Status == TaskStatus.RanToCompletion))
+                                        _taskCollection[i].Task?.Dispose();
+
+                                }
+                                catch
+                                {
+                                    // Ignored, the task dispose can failed.
+                                }
+
+                                listTaskToRemove.Add(i);
+                            }
+                            catch (Exception error)
+                            {
+                                ClassLog.WriteLine("Error on cleaning the task ID: " + i + " | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_TASK_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                if (isLocked)
+                {
+                    if (changeDone)
+                        Monitor.PulseAll(_taskCollection);
+                    Monitor.Exit(_taskCollection);
+                }
+            }
         }
 
         /// <summary>
@@ -356,6 +385,8 @@ namespace SeguraChain_Lib.TaskManager
             TaskManagerEnabled = false;
             if (!_cancelTaskManager.IsCancellationRequested)
                 _cancelTaskManager.Cancel();
+
+            ManageTask(true);
         }
     }
 }

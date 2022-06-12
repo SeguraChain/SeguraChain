@@ -1722,99 +1722,93 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                     continue;
                                 }
 
-
+                                int i1 = i;
                                 TaskManager.TaskManager.InsertTask(new Action(async () =>
                                 {
-                                    if (peerListTarget.ContainsKey(i))
+                                    if (peerListTarget.ContainsKey(i1))
                                     {
-                                        try
+
+                                        Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>> result = await SendAskBlockData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeight, refuseLockedBlock, cancellationTokenSourceTaskSync);
+
+                                        if (result != null)
                                         {
-                                            Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>> result = await SendAskBlockData(peerListTarget[i].PeerNetworkClientSyncObject, blockHeight, refuseLockedBlock, cancellationTokenSourceTaskSync);
-
-
-                                            if (result != null)
+                                            if (result.Item1 && result.Item2 != null)
                                             {
-                                                if (result.Item1 && result.Item2 != null)
+                                                if (result.Item2.ObjectReturned.BlockData.BlockHeight != blockHeight)
+                                                    ClassPeerCheckManager.InputPeerClientInvalidPacket(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                                                else
                                                 {
-                                                    if (result.Item2.ObjectReturned.BlockData.BlockHeight != blockHeight)
-                                                        ClassPeerCheckManager.InputPeerClientInvalidPacket(peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                                                    else
+                                                    bool peerRanked = false;
+
+                                                    if (_peerNetworkSettingObject.PeerEnableSovereignPeerVote)
                                                     {
-                                                        bool peerRanked = false;
-
-                                                        if (_peerNetworkSettingObject.PeerEnableSovereignPeerVote)
-                                                        {
-                                                            if (CheckIfPeerIsRanked(peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget, result.Item2.ObjectReturned, result.Item2.PacketNumericHash, result.Item2.PacketNumericSignature, cancellationTokenSourceTaskSync, out string numericPublicKeyOut))
-                                                                peerRanked = !listOfRankedPeerPublicKeySaved.ContainsKey(numericPublicKeyOut) ? listOfRankedPeerPublicKeySaved.TryAdd(numericPublicKeyOut, 0) : false;
-                                                        }
-
-                                                        ClassBlockObject blockObject = result.Item2.ObjectReturned.BlockData;
-
-                                                        #region Ensure to clean the block object received.
-
-                                                        blockObject.BlockTransactionFullyConfirmed = false;
-                                                        blockObject.BlockUnlockValid = false;
-                                                        blockObject.BlockNetworkAmountConfirmations = 0;
-                                                        blockObject.BlockSlowNetworkAmountConfirmations = 0;
-                                                        blockObject.BlockLastHeightTransactionConfirmationDone = 0;
-                                                        blockObject.BlockTotalTaskTransactionConfirmationDone = 0;
-                                                        blockObject.BlockTransactionConfirmationCheckTaskDone = false;
-                                                        blockObject?.BlockTransactions.Clear();
-
-                                                        #endregion
-
-                                                        string blockObjectHash = ClassUtility.GenerateSha256FromString(string.Concat("", ClassBlockUtility.BlockObjectToStringBlockData(blockObject, false).ToList()));
-
-                                                        bool insertStatus = false;
-
-                                                        if (!listBlockObjectsReceived.ContainsKey(blockObjectHash))
-                                                            insertStatus = listBlockObjectsReceived.TryAdd(blockObjectHash, blockObject);
-                                                        else
-                                                            insertStatus = true;
-
-                                                        if (insertStatus)
-                                                        {
-                                                            bool insertVoteStatus = false;
-                                                            if (!listBlockObjectsReceivedVotes.ContainsKey(blockObjectHash))
-                                                            {
-                                                                if (listBlockObjectsReceivedVotes.TryAdd(blockObjectHash, new ConcurrentDictionary<bool, float>()))
-                                                                {
-                                                                    // Ranked.
-                                                                    if (listBlockObjectsReceivedVotes[blockObjectHash].TryAdd(true, 0))
-                                                                    {
-                                                                        if (listBlockObjectsReceivedVotes[blockObjectHash].TryAdd(false, 0))
-                                                                            insertVoteStatus = true;
-                                                                    }
-                                                                }
-                                                            }
-                                                            else
-                                                                insertVoteStatus = true;
-
-                                                            if (insertVoteStatus)
-                                                            {
-                                                                if (peerRanked)
-                                                                {
-                                                                    if (listBlockObjectsReceivedVotes[blockObjectHash].ContainsKey(true))
-                                                                        listBlockObjectsReceivedVotes[blockObjectHash][true]++;
-                                                                }
-                                                                else
-                                                                {
-                                                                    if (listBlockObjectsReceivedVotes[blockObjectHash].ContainsKey(false))
-                                                                        listBlockObjectsReceivedVotes[blockObjectHash][false]++;
-                                                                }
-
-                                                                totalResponseOk++;
-                                                            }
-                                                        }
+                                                        if (CheckIfPeerIsRanked(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, result.Item2.ObjectReturned, result.Item2.PacketNumericHash, result.Item2.PacketNumericSignature, cancellationTokenSourceTaskSync, out string numericPublicKeyOut))
+                                                            peerRanked = !listOfRankedPeerPublicKeySaved.ContainsKey(numericPublicKeyOut) ? listOfRankedPeerPublicKeySaved.TryAdd(numericPublicKeyOut, 0) : false;
                                                     }
 
+                                                    ClassBlockObject blockObject = result.Item2.ObjectReturned.BlockData;
+
+                                                    #region Ensure to clean the block object received.
+
+                                                    blockObject.BlockTransactionFullyConfirmed = false;
+                                                    blockObject.BlockUnlockValid = false;
+                                                    blockObject.BlockNetworkAmountConfirmations = 0;
+                                                    blockObject.BlockSlowNetworkAmountConfirmations = 0;
+                                                    blockObject.BlockLastHeightTransactionConfirmationDone = 0;
+                                                    blockObject.BlockTotalTaskTransactionConfirmationDone = 0;
+                                                    blockObject.BlockTransactionConfirmationCheckTaskDone = false;
+                                                    blockObject?.BlockTransactions.Clear();
+
+                                                    #endregion
+
+                                                    string blockObjectHash = ClassUtility.GenerateSha256FromString(string.Concat("", ClassBlockUtility.BlockObjectToStringBlockData(blockObject, false).ToList()));
+
+                                                    bool insertStatus = false;
+
+                                                    if (!listBlockObjectsReceived.ContainsKey(blockObjectHash))
+                                                        insertStatus = listBlockObjectsReceived.TryAdd(blockObjectHash, blockObject);
+                                                    else
+                                                        insertStatus = true;
+
+                                                    if (insertStatus)
+                                                    {
+                                                        bool insertVoteStatus = false;
+                                                        if (!listBlockObjectsReceivedVotes.ContainsKey(blockObjectHash))
+                                                        {
+                                                            if (listBlockObjectsReceivedVotes.TryAdd(blockObjectHash, new ConcurrentDictionary<bool, float>()))
+                                                            {
+                                                                // Ranked.
+                                                                if (listBlockObjectsReceivedVotes[blockObjectHash].TryAdd(true, 0))
+                                                                {
+                                                                    if (listBlockObjectsReceivedVotes[blockObjectHash].TryAdd(false, 0))
+                                                                        insertVoteStatus = true;
+                                                                }
+                                                            }
+                                                        }
+                                                        else
+                                                            insertVoteStatus = true;
+
+                                                        if (insertVoteStatus)
+                                                        {
+                                                            if (peerRanked)
+                                                            {
+                                                                if (listBlockObjectsReceivedVotes[blockObjectHash].ContainsKey(true))
+                                                                    listBlockObjectsReceivedVotes[blockObjectHash][true]++;
+                                                            }
+                                                            else
+                                                            {
+                                                                if (listBlockObjectsReceivedVotes[blockObjectHash].ContainsKey(false))
+                                                                    listBlockObjectsReceivedVotes[blockObjectHash][false]++;
+                                                            }
+
+                                                            totalResponseOk++;
+                                                        }
+                                                    }
                                                 }
+
                                             }
                                         }
-                                        catch
-                                        {
-                                            // Ignored, collection can are disposed before the task has been completed.
-                                        }
+
                                     }
 
                                     totalTaskDone++;

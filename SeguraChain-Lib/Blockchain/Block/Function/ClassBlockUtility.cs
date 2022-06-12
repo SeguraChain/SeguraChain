@@ -171,6 +171,8 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
         /// <returns></returns>
         public static bool GetBlockTemplateFromBlockHash(string blockHash, out ClassBlockTemplateObject blockTemplateObject)
         {
+            blockTemplateObject = null;
+
             try
             {
                 byte[] blockHashBytes = ClassUtility.GetByteArrayFromHexString(blockHash);
@@ -200,21 +202,11 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
                         BlockPreviousWalletAddressWinner = ClassBase58.EncodeWithCheckSum(previousWalletAddressWinnerBytes)
                     };
 
-                    // Clean up.
-                    Array.Clear(blockHeightBytes, 0, blockHeightBytes.Length);
-                    Array.Clear(blockDifficultyBytes, 0, blockDifficultyBytes.Length);
-                    Array.Clear(blockCountTransactionBytes, 0, blockCountTransactionBytes.Length);
-                    Array.Clear(blockFinalTransactionHashBytes, 0, blockFinalTransactionHashBytes.Length);
-                    Array.Clear(previousWalletAddressWinnerBytes, 0, previousWalletAddressWinnerBytes.Length);
-
                     return true;
                 }
-
-                blockTemplateObject = null;
             }
             catch
             {
-                blockTemplateObject = null;
             }
 
             return false;

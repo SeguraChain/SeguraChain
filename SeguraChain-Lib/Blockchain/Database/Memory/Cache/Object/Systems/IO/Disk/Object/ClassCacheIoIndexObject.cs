@@ -87,7 +87,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
             }
 
             _ioDataStructureFileLockStream = new FileStream(_ioDataStructureFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.Read, _blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskReadStreamBufferSize, FileOptions.Asynchronous | FileOptions.RandomAccess);
-           
+
             return ioCacheFileExist ? await RunIoDataIndexingAsync() : new Tuple<bool, HashSet<long>>(true, new HashSet<long>());
         }
 
@@ -487,7 +487,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                 else
                 {
                     if (_ioStructureObjectsDictionary[blockHeight].BlockObject.BlockTransactions.ContainsKey(transactionHash))
-                        return  _ioStructureObjectsDictionary[blockHeight].BlockObject.BlockTransactions[transactionHash].Clone();
+                        return _ioStructureObjectsDictionary[blockHeight].BlockObject.BlockTransactions[transactionHash].Clone();
                 }
 
             }
@@ -954,7 +954,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
                     foreach (long ioBlockHeight in _ioStructureObjectsDictionary.Keys)
                     {
-                        
+
 
                         if (!_ioStructureObjectsDictionary[ioBlockHeight].IsDeleted)
                         {
@@ -1198,7 +1198,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                 // Read by seek and position registered directly.
                 _ioDataStructureFileLockStream.Position = ioDataPosition;
 
-                Tuple<bool, byte[]> readResult = ReadByBlock(ioDataSize, cancellation, _ioDataStructureFileLockStream);
+                Tuple<bool, byte[]> readResult = await ReadByBlock(ioDataSize, cancellation, _ioDataStructureFileLockStream);
 
                 if (readResult.Item1)
                 {
@@ -1229,7 +1229,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
             // Direct research.
             foreach (long blockHeight in listBlockHeight)
             {
-                
+
 
                 if (!_ioStructureObjectsDictionary[blockHeight].IsDeleted)
                 {
@@ -1246,7 +1246,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                             // Read by seek and position registered directly.
                             _ioDataStructureFileLockStream.Position = ioDataPosition;
 
-                            var readResult = ReadByBlock(ioDataSize, cancellation, _ioDataStructureFileLockStream);
+                            var readResult = await ReadByBlock(ioDataSize, cancellation, _ioDataStructureFileLockStream);
 
                             if (readResult.Item1)
                             {
@@ -1295,7 +1295,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// <param name="cancellation"></param>
         /// <param name="ioFileStream"></param>
         /// <returns></returns>
-        private Tuple<bool, byte[]> ReadByBlock(long ioFileSize, CancellationTokenSource cancellation, FileStream ioFileStream)
+        private async Task<Tuple<bool, byte[]>> ReadByBlock(long ioFileSize, CancellationTokenSource cancellation, FileStream ioFileStream)
         {
             bool readStatus = true;
             byte[] data = new byte[ioFileSize];
@@ -1329,7 +1329,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                             {
                                 byte[] blockData = new byte[sizeByBlockToRead];
 
-                                ioFileStream.Read(blockData, 0, blockData.Length);
+                                if (cancellation == null)
+                                    await ioFileStream.ReadAsync(blockData, 0, blockData.Length);
+                                else
+                                    await ioFileStream.ReadAsync(blockData, 0, blockData.Length, cancellation.Token);
 
                                 listData.Add(blockData);
 
@@ -1343,7 +1346,11 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                                 {
                                     byte[] blockData = new byte[rest];
 
-                                    ioFileStream.Read(blockData, 0, blockData.Length);
+                                    if (cancellation == null)
+                                        await ioFileStream.ReadAsync(blockData, 0, blockData.Length);
+                                    else
+                                        await ioFileStream.ReadAsync(blockData, 0, blockData.Length, cancellation.Token);
+
                                     listData.Add(blockData);
 
                                     size += rest;
@@ -1512,7 +1519,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                                         // Read by seek and position registered directly.
                                         _ioDataStructureFileLockStream.Position = ioDataPosition;
 
-                                        var readResult = ReadByBlock(ioDataSize, cancellation, _ioDataStructureFileLockStream);
+                                        var readResult = await ReadByBlock(ioDataSize, cancellation, _ioDataStructureFileLockStream);
 
                                         if (readResult.Item1)
                                         {
@@ -1648,7 +1655,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
                         foreach (long blockHeight in blockListObject.Keys.ToArray())
                         {
-                            
+
 
                             long position = _ioDataStructureFileLockStream.Position;
                             long dataLength = 0;

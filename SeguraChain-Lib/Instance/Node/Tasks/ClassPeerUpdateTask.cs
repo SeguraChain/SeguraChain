@@ -110,6 +110,7 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
             }
 #if !DEBUG
             catch
+            { 
 #else
             catch (Exception error)
             {
