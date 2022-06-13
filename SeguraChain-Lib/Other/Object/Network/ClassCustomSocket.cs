@@ -1,6 +1,7 @@
 ﻿using SeguraChain_Lib.Utility;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace SeguraChain_Lib.Other.Object.Network
 {
@@ -34,54 +35,77 @@ namespace SeguraChain_Lib.Other.Object.Network
         public bool Closed { private set; get; }
         public bool Disposed { private set; get; }
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="socket"></param>
         public ClassCustomSocket(Socket socket)
         {
             _socket = socket;
         }
 
-        public bool IsConnected => ClassUtility.SocketIsConnected(Socket);
-
-
-        public void Shutdown(SocketShutdown shutdownType)
+        public async Task<bool> ConnectAsync(string ip, int port)
         {
-            bool isLocked = false;
+            try
+            {
+                await _socket.ConnectAsync(ip, port);
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
+        }
+
+
+        /// <summary>
+        /// Socket is connected.
+        /// </summary>
+        /// <returns></returns>
+        public bool IsConnected()
+        {
+            if (Disposed || Closed || _socket == null || !_socket.Connected)
+                return false;
 
             try
             {
-                isLocked = Monitor.TryEnter(_socket);
-
-                if (!Disposed && !Closed && isLocked)
-                {
-                    Close();
-                    //Dispose();
-                }
+                return !((_socket.Poll(10, SelectMode.SelectRead) && (_socket.Available == 0)));
             }
-            finally
+            catch
             {
-                if (isLocked)
-                    Monitor.Exit(_socket);
+                return false;
             }
+
         }
 
-        private void Close()
+
+        public void Kill(SocketShutdown shutdownType)
         {
-            if (!Disposed && !Closed)
+            Close(shutdownType);
+            Dispose();
+        }
+
+        private void Close(SocketShutdown shutdownType)
+        {
+            if (Closed)
+                return;
+
+            Closed = true;
+
+            if (IsConnected())
             {
-                Closed = true;
+                _socket?.Shutdown(shutdownType);
                 _socket?.Close();
             }
         }
 
         private void Dispose()
         {
-            if (!Disposed)
-            {
-                if (!Closed)
-                    Close();
+            if (Disposed)
+                return;
 
-                Disposed = true;
-                _socket?.Dispose();
-            }
+            Disposed = true;
+            _socket?.Dispose();
         }
     }
 }

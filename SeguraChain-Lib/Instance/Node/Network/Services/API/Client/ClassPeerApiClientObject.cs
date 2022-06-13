@@ -344,7 +344,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                 }
             }
 
-            ClassUtility.CloseSocket(_clientSocket);
+            _clientSocket?.Kill(SocketShutdown.Both);
         }
 
         #endregion

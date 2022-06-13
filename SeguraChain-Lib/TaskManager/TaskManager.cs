@@ -270,8 +270,7 @@ namespace SeguraChain_Lib.TaskManager
 
                                 changeDone = true;
                                 _taskCollection[i].Disposed = true;
-
-                                ClassUtility.CloseSocket(_taskCollection[i].Socket);
+                                _taskCollection[i].Socket?.Kill(SocketShutdown.Both);
 
                                 try
                                 {

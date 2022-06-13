@@ -707,7 +707,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     }
                 }
 
-                ClassUtility.CloseSocket(_peerSocketClient);
+                _peerSocketClient?.Kill(SocketShutdown.Both);
 
                 // Clean up past heights received/sent.
                 _memPoolListBlockHeightTransactionReceived?.Clear();

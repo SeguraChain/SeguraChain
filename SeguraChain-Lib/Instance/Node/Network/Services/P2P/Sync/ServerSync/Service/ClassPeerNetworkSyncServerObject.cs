@@ -117,7 +117,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                         }
                         catch
                         {
-                            ClassUtility.CloseSocket(clientPeerTcp);
+                            clientPeerTcp.Kill(SocketShutdown.Both);
                             continue;
                         }
 
@@ -140,13 +140,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                     {
                                         if (_firewallSettingObject.PeerEnableFirewallLink)
                                             ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
-                                        ClassUtility.CloseSocket(clientPeerTcp);
+                                        clientPeerTcp.Kill(SocketShutdown.Both);
                                     }
                                     break;
                             }
 
 
-                        }), 0, null, null, true);
+                        }), 0, null, null, false);
 
 
                     }

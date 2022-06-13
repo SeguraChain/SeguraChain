@@ -74,6 +74,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Function
                                                 if (ClassUtility.TryDeserialize(line, out blockObject, ObjectCreationHandling.Reuse))
                                                     Debug.WriteLine("Load block file: " + blockFilename + " information(s) successfully done. Block Hash: " + blockObject.BlockHash);
 #else
+
                                                 ClassUtility.TryDeserialize(line, out blockObject, ObjectCreationHandling.Reuse);
 #endif
                                             }
@@ -83,7 +84,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Function
                                                 if (ClassBlockUtility.StringToBlockObject(line, out blockObject))
                                                     Debug.WriteLine("Load block file: " + blockFilename + " information(s) successfully done. Block Hash: " + blockObject.BlockHash);
 #else
-                                                ClassUtility.TryDeserialize(line, out blockObject, ObjectCreationHandling.Reuse);
+
+                                                ClassBlockUtility.StringToBlockObject(line, out blockObject);
 #endif
                                             }
                                         }

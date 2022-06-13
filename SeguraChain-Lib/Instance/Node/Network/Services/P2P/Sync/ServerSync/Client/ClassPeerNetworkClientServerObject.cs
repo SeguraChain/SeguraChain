@@ -143,7 +143,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 if (!ClientPeerConnectionStatus || _clientAskDisconnection)
                     break;
 
-                if (!_clientSocket.IsConnected)
+                if (!_clientSocket.IsConnected())
                     break;
 
                 if (_peerFirewallSettingObject.PeerEnableFirewallLink)
@@ -212,8 +212,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 }
             }
 
-            ClassUtility.CloseSocket(_clientSocket);
-
+            _clientSocket?.Kill(SocketShutdown.Both);
         }
 
         #endregion
@@ -1929,6 +1928,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
             try
             {
+                if (!_clientSocket.IsConnected())
+                    return false;
+
                 byte[] packetContentEncrypted = null;
 
                 if (encrypted)
@@ -1957,15 +1959,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                         packetSendObject.PacketSignature = peerObject.GetClientCryptoStreamObject.DoSignatureProcess(packetSendObject.PacketHash, peerObject.PeerInternPrivateKey);
                 }
 
-                if (_clientSocket.IsConnected)
-                {
+                if (!_clientSocket.IsConnected())
+                    return false;
+
                     using (NetworkStream networkStream = new NetworkStream(_clientSocket.Socket))
                     {
                         if (await networkStream.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(Convert.ToBase64String(packetSendObject.GetPacketData()) + ClassPeerPacketSetting.PacketPeerSplitSeperator), _cancellationTokenListenPeerPacket, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize))
                             return true;
 
                     }
-                }
+                
             }
             catch
             {

@@ -152,7 +152,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                                                     break;
                                             }
 
-                                            ClassUtility.CloseSocket(clientApiTcp);
+                                            clientApiTcp?.Kill(SocketShutdown.Both);
                                         }
                                     }), 0, _cancellationTokenSourcePeerApiServer, clientApiTcp);
                                 }

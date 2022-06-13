@@ -184,7 +184,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// <summary>
         /// Check the connection.
         /// </summary>
-        private bool CheckConnection => _peerSocketClient.IsConnected;
+        private bool CheckConnection => _peerSocketClient.IsConnected();
 
         /// <summary>
         /// Do connection.
@@ -211,14 +211,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                             break;
 
                         _peerSocketClient = new ClassCustomSocket(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp));
-                        await _peerSocketClient.Socket.ConnectAsync(PeerIpTarget, PeerPortTarget);
 
-                        if (_peerSocketClient.IsConnected)
-                        {
-                            successConnect = true;
-                            break;
-                        }
-                        else ClassUtility.CloseSocket(_peerSocketClient);
+                        if (await _peerSocketClient.ConnectAsync(PeerIpTarget, PeerPortTarget))
+                            successConnect = _peerSocketClient.IsConnected();
+                        else _peerSocketClient?.Kill(SocketShutdown.Both);
 
                     }
                     catch
@@ -624,17 +620,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         {
             try
             {
-                if (_peerSocketClient.IsConnected)
-                {
-                    using (NetworkStream networkStream = new NetworkStream(_peerSocketClient.Socket))
-                        return await networkStream.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(Convert.ToBase64String(packet) + ClassPeerPacketSetting.PacketPeerSplitSeperator), cancellation, _peerNetworkSetting.PeerMaxPacketSplitedSendSize);
-                }
+                if (!_peerSocketClient.IsConnected())
+                    return false;
+
+                using (NetworkStream networkStream = new NetworkStream(_peerSocketClient.Socket))
+                    return await networkStream.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(Convert.ToBase64String(packet) + ClassPeerPacketSetting.PacketPeerSplitSeperator), cancellation, _peerNetworkSetting.PeerMaxPacketSplitedSendSize);
             }
             catch
             {
-
+                return false;
             }
-            return false;
         }
 
         /// <summary>
@@ -647,7 +642,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             CancelTaskDoConnection();
             CancelTaskPeerPacketKeepAlive();
             CancelTaskListenPeerPacketResponse();
-            ClassUtility.CloseSocket(_peerSocketClient);
+            _peerSocketClient?.Kill(SocketShutdown.Both);
         }
 
 

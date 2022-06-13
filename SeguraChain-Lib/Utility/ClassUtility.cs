@@ -928,14 +928,6 @@ namespace SeguraChain_Lib.Utility
             }
         }
 
-        /// <summary>
-        /// Close Socket Client.
-        /// </summary>
-        /// <param name="socket"></param>
-        public static void CloseSocket(ClassCustomSocket socket)
-        {
-            socket?.Shutdown(SocketShutdown.Both);
-        }
 
         /// <summary>
         /// Return each packet splitted received.

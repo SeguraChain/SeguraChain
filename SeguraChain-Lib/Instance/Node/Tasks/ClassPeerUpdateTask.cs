@@ -116,7 +116,6 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
             {
                 Debug.WriteLine("Error on waiting the last block transaction confirmation: " + error.Message);
 #endif
-
             }
         }
 
