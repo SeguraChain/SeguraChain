@@ -74,7 +74,7 @@ Every devs and potential users can send me their returns about the project, pote
   
   
 <h3>If you want to donate to the project:</h3>
-<h4>If possible please put the note: Donation just to tracking them:</h4>
+<h4>just to tracking them, if possible please put the note: Donation</h4>
 
 > BTC: 39mUsJFhjU6GDrchCkQ4iJsmdvD8S2jpzU
 
