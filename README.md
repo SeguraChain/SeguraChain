@@ -25,9 +25,9 @@ Everything has been developed in C#, and support Net5, a downgrade to NetFramewo
 
 > Newtonsoft.Json.
 
-> Open.NAT.
+> Open.NAT. **(Only available for NET4.8)**
 
-> Portable.BouncyCastle. (Need a replacement to gain performances).
+> Portable.BouncyCastle. **Replaced by OpenSSL soon.**
 
 > ZXing.net (Desktop wallet only, need a replacement later to erase this library).
 
@@ -73,7 +73,7 @@ https://github.com/SeguraChain/SeguraChain/wiki/Compilation-Platform-Target
 Every devs and potential users can send me their returns about the project, potential fix, issues and more.
   
   
-<h3>If you want to donate to the project:</h3>
+<h3>If you want to donate to the project **If possible please put the note: Donation**:</h3>
 
 > BTC: 39mUsJFhjU6GDrchCkQ4iJsmdvD8S2jpzU
 
