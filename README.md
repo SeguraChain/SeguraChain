@@ -6,6 +6,10 @@ allowing to include updates on it without editing the content of the Blockchain.
 
 ![desktop-wallet](https://user-images.githubusercontent.com/96837446/169908915-f7f41dfb-6aff-4a29-b2e7-65b18c398ad9.png)
 
+<h3>Please follow this wikipage to setup your own blockchain:</h3>
+
+https://github.com/SeguraChain/SeguraChain/wiki/Setup-your-own-Blockchain
+
 
 Planned for the hard fork of **Xenophyte** once completed. > https://xenophyte.com/
 
@@ -16,7 +20,6 @@ Once the whitepaper is complete, I will make the translation of this one into en
 Everything has been developed in C#, and support Net5, a downgrade to NetFramework 4.8 is available.
 
 <b>Visual Studio 2019 16 at minimum is required.</b>
-
 
  
 <h3>Libraries:</h3>
