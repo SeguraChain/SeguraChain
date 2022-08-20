@@ -106,7 +106,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int BlockDifficultyPrecision = 100_000; // The precision put on the difficulty factor calculated.
         public const int GenesisBlockHeight = 1; // The genesis block height.
         public static readonly BigInteger GenesisBlockAmount = 2_973_370 * CoinDecimal; // The genesis block amount reward has pre-mining.
-		public const string GenesisBlockFinalTransactionHash ="DD93226470331793E1F0A22B08ADB95BF72B824E4CEE6EF48C68BEBCD3B49DAB50418AEA357A25371812BC3C498DF7548B6ACD2A99B589160B1394449212B5AB";
+		public const string GenesisBlockFinalTransactionHash ="194AD472A5118B362DFCB6F6CE8CB424FE002D5BF80D901C7435BE80DCF06CA64C9F15B46F038C14E951209DD8F5C70A89A98D6ED5C19C58121C6538236F865E";
         public const int GenesisBlockTransactionCount = 1; // The maximum of transaction inserted on the genesis block.
         public const int BlockAmountNetworkConfirmations = 2; // The minimum amount of network checks on blocks to do with peers, before to enable the task of confirmations on the block.
         public const int BlockAmountSlowNetworkConfirmations = 5; // This amount increment another amount of network checks, once this one is reach, the network counter increment and this one return back to 0.
@@ -197,7 +197,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int PeerDefaultPort = 2400;
         public static readonly Dictionary<string, Dictionary<string, int>> BlockchainStaticPeerList = new Dictionary<string, Dictionary<string, int>>()
         {
-            { "141.95.229.232", new Dictionary<string, int>() { { "D0BFF4A56F062828939E40E6DFD8A5EF58E28A10CB69E9E281C90802632D0345618CB5DA20736C2BAAC458A1EB5239F012621847B40F76C0CD10EA05CC4FD184", PeerDefaultPort } }}
+            { "37.187.83.201", new Dictionary<string, int>() { { "D0BFF4A56F062828939E40E6DFD8A5EF58E28A10CB69E9E281C90802632D0345618CB5DA20736C2BAAC458A1EB5239F012621847B40F76C0CD10EA05CC4FD184", PeerDefaultPort } }}
         }; // This is a static peer list who can't be updated, it's usually used once a peer don't have any peer list saved.
 
 

@@ -107,22 +107,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 {
                     try
                     {
-                        ClassCustomSocket clientPeerTcp = new ClassCustomSocket(await _tcpListenerPeer.AcceptSocketAsync());
+                        ClassCustomSocket clientPeerTcp = new ClassCustomSocket(await _tcpListenerPeer.AcceptSocketAsync(), true);
 
-                        string clientIp = string.Empty;
 
-                        try
-                        {
-                            clientIp = ((IPEndPoint)(clientPeerTcp.Socket.RemoteEndPoint)).Address.ToString();
-                        }
-                        catch
-                        {
-                            clientPeerTcp.Kill(SocketShutdown.Both);
-                            continue;
-                        }
 
                         TaskManager.TaskManager.InsertTask(new Action(async () =>
                         {
+                            string clientIp = clientPeerTcp.GetIp;
+
                             switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
                             {
 

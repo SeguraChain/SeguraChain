@@ -1,4 +1,6 @@
 ﻿using SeguraChain_Lib.Utility;
+using System;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,26 +13,8 @@ namespace SeguraChain_Lib.Other.Object.Network
     public class ClassCustomSocket
     {
         private Socket _socket;
+        private NetworkStream _networkStream;
 
-        public Socket Socket 
-        {
-            get
-            {
-                bool isLocked = false;
-                try
-                {
-                    isLocked = Monitor.TryEnter(_socket);
-                    if (isLocked)
-                        return _socket;
-                }
-                finally
-                {
-                    if (isLocked)
-                        Monitor.Exit(_socket);
-                }
-                return null;
-            }
-        }
 
         public bool Closed { private set; get; }
         public bool Disposed { private set; get; }
@@ -39,9 +23,11 @@ namespace SeguraChain_Lib.Other.Object.Network
         /// Constructor.
         /// </summary>
         /// <param name="socket"></param>
-        public ClassCustomSocket(Socket socket)
+        public ClassCustomSocket(Socket socket, bool isServer)
         {
             _socket = socket;
+            if (isServer)
+                _networkStream = new NetworkStream(_socket);
         }
 
         public async Task<bool> ConnectAsync(string ip, int port)
@@ -54,9 +40,25 @@ namespace SeguraChain_Lib.Other.Object.Network
             {
                 return false;
             }
+
+            _networkStream = new NetworkStream(_socket);
             return true;
         }
 
+        public string GetIp
+        {
+            get
+            {
+                try
+                {
+                    return ((IPEndPoint)(_socket.RemoteEndPoint)).Address.ToString();
+                }
+                catch
+                {
+                    return string.Empty;
+                }
+            }
+        }
 
         /// <summary>
         /// Socket is connected.
@@ -64,11 +66,11 @@ namespace SeguraChain_Lib.Other.Object.Network
         /// <returns></returns>
         public bool IsConnected()
         {
-            if (Disposed || Closed || _socket == null || !_socket.Connected)
-                return false;
-
             try
             {
+                if (Disposed || Closed || _socket == null || !_socket.Connected)
+                    return false;
+
                 return !((_socket.Poll(10, SelectMode.SelectRead) && (_socket.Available == 0)));
             }
             catch
@@ -76,6 +78,41 @@ namespace SeguraChain_Lib.Other.Object.Network
                 return false;
             }
 
+        }
+
+        public async Task<bool> TrySendSplittedPacket(byte[] packetData, CancellationTokenSource cancellation, int packetPeerSplitSeperator)
+        {
+            if (!IsConnected())
+                return false;
+
+            try
+            {
+                return await _networkStream.TrySendSplittedPacket(packetData, cancellation, packetPeerSplitSeperator);
+            }
+            catch
+            {
+            }
+            return false;
+        }
+
+        public async Task<ReadPacketData> TryReadPacketData(int packetLength, CancellationTokenSource cancellation)
+        {
+            ReadPacketData readPacketData = new ReadPacketData();
+
+            if (IsConnected())
+            {
+
+                try
+                {
+                    readPacketData.Data = new byte[packetLength];
+                    readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
+                }
+                catch
+                {
+
+                }
+            }
+            return readPacketData;
         }
 
 
@@ -98,7 +135,7 @@ namespace SeguraChain_Lib.Other.Object.Network
                 _socket?.Close();
             }
         }
-
+         
         private void Dispose()
         {
             if (Disposed)
@@ -106,6 +143,33 @@ namespace SeguraChain_Lib.Other.Object.Network
 
             Disposed = true;
             _socket?.Dispose();
+        }
+
+        public class ReadPacketData : IDisposable
+        {
+            public bool Status;
+            public byte[] Data;
+
+            private bool _disposed;
+
+
+            public void Dispose()
+            {
+                Dispose(true);
+            }
+
+
+            private void Dispose(bool dispose)
+            {
+                if (_disposed || !dispose)
+                    return;
+
+                Array.Resize(ref Data, 0);
+
+                Status = false;
+
+                _disposed = true;
+            }
         }
     }
 }

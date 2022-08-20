@@ -107,10 +107,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
 
                                                 #region Peer encryption streams.
                                                 if (peerObject.PeerClientPacketEncryptionKey != null && peerObject.PeerClientPacketEncryptionKeyIv != null)
-                                                    DictionaryPeerDataObject[peerObject.PeerIp][peerObject.PeerUniqueId].GetClientCryptoStreamObject = new ClassPeerCryptoStreamObject(peerObject.PeerClientPacketEncryptionKey, peerObject.PeerClientPacketEncryptionKeyIv, peerObject.PeerClientPublicKey, peerObject.PeerInternPrivateKey, new CancellationTokenSource());
+                                                    DictionaryPeerDataObject[peerObject.PeerIp][peerObject.PeerUniqueId].GetClientCryptoStreamObject = new ClassPeerCryptoStreamObject(peerObject.PeerIp, peerObject.PeerUniqueId, peerObject.PeerClientPacketEncryptionKey, peerObject.PeerClientPacketEncryptionKeyIv, peerObject.PeerClientPublicKey, peerObject.PeerInternPrivateKey, new CancellationTokenSource());
 
                                                 if (peerObject.PeerInternPacketEncryptionKey != null && peerObject.PeerInternPacketEncryptionKeyIv != null)
-                                                    DictionaryPeerDataObject[peerObject.PeerIp][peerObject.PeerUniqueId].GetInternCryptoStreamObject = new ClassPeerCryptoStreamObject(peerObject.PeerInternPacketEncryptionKey, peerObject.PeerInternPacketEncryptionKeyIv, peerObject.PeerInternPublicKey, peerObject.PeerInternPrivateKey, new CancellationTokenSource());
+                                                    DictionaryPeerDataObject[peerObject.PeerIp][peerObject.PeerUniqueId].GetInternCryptoStreamObject = new ClassPeerCryptoStreamObject(peerObject.PeerIp, peerObject.PeerUniqueId, peerObject.PeerInternPacketEncryptionKey, peerObject.PeerInternPacketEncryptionKeyIv, peerObject.PeerInternPublicKey, peerObject.PeerInternPrivateKey, new CancellationTokenSource());
                                                 
                                                 #endregion
 

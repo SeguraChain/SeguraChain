@@ -119,48 +119,38 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
 
                         await _tcpListenerPeerApi.AcceptSocketAsync().ContinueWith(async clientTask =>
                         {
+                            ClassCustomSocket clientApiTcp = null;
+
                             try
                             {
-                                ClassCustomSocket clientApiTcp = new ClassCustomSocket(await clientTask);
-
-                                if (clientApiTcp != null)
-                                {
-                                    TaskManager.TaskManager.InsertTask(new Action(async () =>
-                                    {
-                                        string clientIp = string.Empty;
-                                        bool exception = false;
-
-
-                                        try
-                                        {
-                                            clientIp = ((IPEndPoint)(clientApiTcp.Socket.RemoteEndPoint)).Address.ToString();
-                                        }
-                                        catch
-                                        {
-                                            exception = true;
-                                        }
-
-                                        if (!exception)
-                                        {
-                                            switch (await HandleIncomingConnection(clientIp, clientApiTcp))
-                                            {
-
-                                                case ClassPeerApiHandleIncomingConnectionEnum.INSERT_CLIENT_IP_EXCEPTION:
-                                                case ClassPeerApiHandleIncomingConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
-                                                    if (_firewallSettingObject.PeerEnableFirewallLink)
-                                                        ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
-                                                    break;
-                                            }
-
-                                            clientApiTcp?.Kill(SocketShutdown.Both);
-                                        }
-                                    }), 0, _cancellationTokenSourcePeerApiServer, clientApiTcp);
-                                }
+                                clientApiTcp = new ClassCustomSocket(await clientTask, true);
                             }
                             catch
                             {
-                                    // Ignored catch the exception once the task is cancelled.
-                                }
+                                // Ignored catch the exception once the task is cancelled.
+                            }
+
+                            if (clientApiTcp != null)
+                            {
+                                TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                {
+                                    string clientIp = clientApiTcp.GetIp;
+
+                                    switch (await HandleIncomingConnection(clientIp, clientApiTcp))
+                                    {
+
+                                        case ClassPeerApiHandleIncomingConnectionEnum.INSERT_CLIENT_IP_EXCEPTION:
+                                        case ClassPeerApiHandleIncomingConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
+                                            if (_firewallSettingObject.PeerEnableFirewallLink)
+                                                ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
+                                            break;
+                                    }
+
+                                    clientApiTcp?.Kill(SocketShutdown.Both);
+
+                                }), 0, _cancellationTokenSourcePeerApiServer, clientApiTcp);
+                            }
+
                         }, _cancellationTokenSourcePeerApiServer.Token);
                     }
                     catch

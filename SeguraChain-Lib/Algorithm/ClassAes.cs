@@ -66,8 +66,7 @@ namespace SeguraChain_Lib.Algorithm
         /// <returns></returns>
         public static bool EncryptionProcess(byte[] content, byte[] key, byte[] iv, out byte[] result)
         {
-            try
-            {
+       
                 if (content != null)
                 {
                     using (RijndaelManaged aesObject = new RijndaelManaged())
@@ -86,16 +85,7 @@ namespace SeguraChain_Lib.Algorithm
                         }
                     }
                 }
-            }
-#if DEBUG
-            catch (Exception error)
-            {
-                Debug.WriteLine("Error on encrypt content. Exception: " + error.Message);
-#else
-            catch
-            {
-#endif
-            }
+
 
             result = null;
             return false;

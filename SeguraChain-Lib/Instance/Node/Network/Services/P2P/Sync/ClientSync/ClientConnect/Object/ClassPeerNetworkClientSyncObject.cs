@@ -14,6 +14,7 @@ using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.Other.Object.Network;
 using SeguraChain_Lib.Utility;
+using static SeguraChain_Lib.Other.Object.Network.ClassCustomSocket;
 
 namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.ClientConnect.Object
 {
@@ -210,7 +211,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                         if (_peerCancellationTokenDoConnection.IsCancellationRequested)
                             break;
 
-                        _peerSocketClient = new ClassCustomSocket(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp));
+                        _peerSocketClient = new ClassCustomSocket(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp), false);
 
                         if (await _peerSocketClient.ConnectAsync(PeerIpTarget, PeerPortTarget))
                             successConnect = _peerSocketClient.IsConnected();
@@ -344,20 +345,17 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                         listPacketReceived.Add(new ClassReadPacketSplitted());
 
-                        byte[] packetBufferOnReceive = new byte[_peerNetworkSetting.PeerMaxPacketBufferSize];
-
-                        using (NetworkStream networkStream = new NetworkStream(_peerSocketClient.Socket))
+                        while (PeerTaskStatus && PeerConnectStatus)
                         {
-                            while (PeerTaskStatus && PeerConnectStatus)
+                            using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSetting.PeerMaxPacketBufferSize, _peerCancellationTokenTaskListenPeerPacketResponse))
                             {
-                                int packetLength = await networkStream.ReadAsync(packetBufferOnReceive, 0, packetBufferOnReceive.Length);
 
-                                if (packetLength == 0 || _peerCancellationTokenTaskListenPeerPacketResponse.IsCancellationRequested)
+                                if (!readPacketData.Status)
                                     break;
 
                                 #region Compile the packet.
 
-                                listPacketReceived = ClassUtility.GetEachPacketSplitted(packetBufferOnReceive, listPacketReceived, _peerCancellationTokenTaskListenPeerPacketResponse);
+                                listPacketReceived = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, _peerCancellationTokenTaskListenPeerPacketResponse);
 
                                 #endregion
 
@@ -436,6 +434,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                 listPacketReceived.GetList.RemoveAll(x => x.Used);
                             }
                         }
+                        
 
                     }
                     catch
@@ -623,8 +622,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                 if (!_peerSocketClient.IsConnected())
                     return false;
 
-                using (NetworkStream networkStream = new NetworkStream(_peerSocketClient.Socket))
-                    return await networkStream.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(Convert.ToBase64String(packet) + ClassPeerPacketSetting.PacketPeerSplitSeperator), cancellation, _peerNetworkSetting.PeerMaxPacketSplitedSendSize);
+                return await _peerSocketClient.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(Convert.ToBase64String(packet) + ClassPeerPacketSetting.PacketPeerSplitSeperator), cancellation, _peerNetworkSetting.PeerMaxPacketSplitedSendSize);
             }
             catch
             {

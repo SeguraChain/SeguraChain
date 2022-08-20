@@ -13,7 +13,7 @@
   </PropertyGroup>
  
 	
-     <PropertyGroup Condition=" '$(TargetFramework)' == 'net5.0-windows'">
+     <PropertyGroup Condition=" '$(TargetFramework)' == 'net5.0'">
         <DefineConstant>NET5</DefineConstant>
     </PropertyGroup>
 	

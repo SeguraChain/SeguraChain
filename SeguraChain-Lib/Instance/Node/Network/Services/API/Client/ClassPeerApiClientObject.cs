@@ -30,6 +30,7 @@ using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.Other.Object.Network;
 using SeguraChain_Lib.Utility;
+using static SeguraChain_Lib.Other.Object.Network.ClassCustomSocket;
 
 namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 {
@@ -129,19 +130,17 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
                             string packetReceived = string.Empty;
 
-                            using (NetworkStream networkStream = new NetworkStream(_clientSocket.Socket))
+
+                            while (continueReading && ClientConnectionStatus)
                             {
-                                while (continueReading && ClientConnectionStatus)
+                                using (ReadPacketData readPacketData = await _clientSocket.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, _cancellationTokenApiClient))
                                 {
-                                    byte[] packetBuffer = new byte[_peerNetworkSettingObject.PeerMaxPacketBufferSize];
 
-                                    int packetLength = await networkStream.ReadAsync(packetBuffer, 0, packetBuffer.Length, _cancellationTokenApiClient.Token);
-
-                                    if (packetLength > 0)
-                                        listPacket.Add(packetBuffer);
+                                    if (readPacketData.Status)
+                                        listPacket.Add(readPacketData.Data);
                                     else break;
 
-                                    packetSizeCount += packetLength;
+                                    packetSizeCount += _peerNetworkSettingObject.PeerMaxPacketBufferSize;
 
                                     ClientConnectTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
 
@@ -190,6 +189,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                     }
                                 }
                             }
+                            
 
                             if (listPacket.Count > 0 && ClientConnectionStatus)
                             {
@@ -1005,24 +1005,18 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
         private async Task<bool> SendApiResponse(string packetToSend, string htmlContentType = "text/json")
         {
             StringBuilder builder = new StringBuilder();
+            builder.AppendLine(@"HTTP/1.1 200 OK");
+            builder.AppendLine(@"Content-Type: " + htmlContentType);
+            builder.AppendLine(@"Content-Length: " + packetToSend.Length);
+            builder.AppendLine(@"Access-Control-Allow-Origin: *");
+            builder.AppendLine(@"");
+            builder.AppendLine(@"" + packetToSend);
 
-            bool sendResult = true;
+            bool sendResult;
 
             try
             {
-
-                builder.AppendLine(@"HTTP/1.1 200 OK");
-                builder.AppendLine(@"Content-Type: " + htmlContentType);
-                builder.AppendLine(@"Content-Length: " + packetToSend.Length);
-                builder.AppendLine(@"Access-Control-Allow-Origin: *");
-                builder.AppendLine(@"");
-                builder.AppendLine(@"" + packetToSend);
-
-                using (NetworkStream networkStream = new NetworkStream(_clientSocket.Socket))
-                {
-                    if (!await networkStream.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(builder.ToString()), _cancellationTokenApiClient, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize))
-                        sendResult = false;
-                }
+                sendResult = await _clientSocket.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(builder.ToString()), _cancellationTokenApiClient, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
             }
             catch
             {

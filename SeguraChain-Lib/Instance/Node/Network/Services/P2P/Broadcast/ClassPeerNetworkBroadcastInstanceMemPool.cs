@@ -26,6 +26,7 @@ using System.Diagnostics;
 using SeguraChain_Lib.Instance.Node.Network.Database.Object;
 using System.Collections.Concurrent;
 using SeguraChain_Lib.Other.Object.Network;
+using static SeguraChain_Lib.Other.Object.Network.ClassCustomSocket;
 
 namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 {
@@ -489,10 +490,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     {
                         try
                         {
-                            _peerSocketClient = new ClassCustomSocket(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp));
-                            await _peerSocketClient.Socket.ConnectAsync(_peerIpTarget, _peerPortTarget);
+                            _peerSocketClient?.Kill(SocketShutdown.Both);
+                            _peerSocketClient = new ClassCustomSocket(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp), false);
 
-                            if (_peerSocketClient.Socket.Connected)
+                            if (await _peerSocketClient.ConnectAsync(_peerIpTarget, _peerPortTarget))
                             {
                                 successConnect = true;
                                 break;
@@ -574,18 +575,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                         using (DisposableList<ClassReadPacketSplitted> listPacketReceived = new DisposableList<ClassReadPacketSplitted>(false, 0, new List<ClassReadPacketSplitted>() { new ClassReadPacketSplitted() }))
                         {
-                            using (NetworkStream networkStream = new NetworkStream(_peerSocketClient.Socket))
-                            {
-                                byte[] packetReceivedBuffer = new byte[_peerNetworkSettingObject.PeerMaxPacketBufferSize];
-                                int packetLength = 0;
 
-                                while (!broadcastResponsePacketStatus && ((packetLength = await networkStream.ReadAsync(packetReceivedBuffer, 0, packetReceivedBuffer.Length)) > 0))
+                            while (!broadcastResponsePacketStatus)
+                            {
+                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, cancellationReceiveBroadcastResponsePacket))
                                 {
-                                    if (cancellationReceiveBroadcastResponsePacket.IsCancellationRequested)
+                                    if (!readPacketData.Status)
                                         break;
 
-                                    if (packetLength > 0)
-                                        listPacketReceived.GetList = ClassUtility.GetEachPacketSplitted(packetReceivedBuffer, listPacketReceived, cancellationReceiveBroadcastResponsePacket).GetList;
+                                    listPacketReceived.GetList = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, cancellationReceiveBroadcastResponsePacket).GetList;
 
                                     if (listPacketReceived.Count > 0 && containSeperator)
                                     {
@@ -639,6 +637,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                     }
                                 }
                             }
+
                         }
                     }
                     catch (Exception error)
@@ -819,7 +818,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                 }),
                             };
 
-                            packetSendObject = ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(packetSendObject, _peerIpTarget, _peerUniqueIdTarget, true, _peerNetworkSettingObject, _peerCancellationToken);
+                            packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(packetSendObject, _peerIpTarget, _peerUniqueIdTarget, true, _peerNetworkSettingObject, _peerCancellationToken);
 
                             if (!await TrySendPacketToPeer(packetSendObject.GetPacketData()))
                             {
@@ -829,7 +828,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                             ClassPeerPacketRecvObject peerPacketRecvMemPoolBlockHeightList = await TryReceiveMemPoolBlockHeightListPacket();
 
-                            ClassTranslatePacket<ClassPeerPacketSendMemPoolBlockHeightList> peerPacketMemPoolBlockHeightListTranslated = TranslatePacketReceived<ClassPeerPacketSendMemPoolBlockHeightList>(peerPacketRecvMemPoolBlockHeightList, ClassPeerEnumPacketResponse.SEND_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE);
+                            ClassTranslatePacket<ClassPeerPacketSendMemPoolBlockHeightList> peerPacketMemPoolBlockHeightListTranslated = await TranslatePacketReceived<ClassPeerPacketSendMemPoolBlockHeightList>(peerPacketRecvMemPoolBlockHeightList, ClassPeerEnumPacketResponse.SEND_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE, _peerCancellationToken);
 
                             if (!peerPacketMemPoolBlockHeightListTranslated.Status)
                             {
@@ -897,7 +896,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                     }),
                                                 };
 
-                                                packetSendObject = ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(packetSendObject, _peerIpTarget, _peerUniqueIdTarget, true, _peerNetworkSettingObject, _peerCancellationToken);
+                                                packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction .BuildSignedPeerSendPacketObject(packetSendObject, _peerIpTarget, _peerUniqueIdTarget, true, _peerNetworkSettingObject, _peerCancellationToken);
 
                                                 if (!await TrySendPacketToPeer(packetSendObject.GetPacketData()))
                                                 {
@@ -983,7 +982,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                     })
                                                 };
 
-                                                packetSendObject = ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(packetSendObject, _peerIpTarget, _peerUniqueIdTarget, true, _peerNetworkSettingObject, _peerCancellationToken);
+                                                packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(packetSendObject, _peerIpTarget, _peerUniqueIdTarget, true, _peerNetworkSettingObject, _peerCancellationToken);
 
                                                 if (!await TrySendPacketToPeer(packetSendObject.GetPacketData()))
                                                 {
@@ -1051,7 +1050,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     {
                         try
                         {
-                            if (!ClassUtility.SocketIsConnected(_peerSocketClient.Socket))
+                            if (!_peerSocketClient.IsConnected())
                             {
                                 StopTaskAndDisconnect();
                                 IsAlive = false;
@@ -1102,18 +1101,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         using (DisposableList<ClassReadPacketSplitted> listPacketReceived = new DisposableList<ClassReadPacketSplitted>())
                         {
                             listPacketReceived.Add(new ClassReadPacketSplitted());
-                            using (NetworkStream networkStream = new NetworkStream(_peerSocketClient.Socket))
+
+                            while (!packetReceived && IsAlive && !taskComplete)
                             {
-                                while (!packetReceived && IsAlive && !taskComplete)
+                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, cancellationReceiveBlockListPacket))
                                 {
-                                    byte[] packetBuffer = new byte[_peerNetworkSettingObject.PeerMaxPacketBufferSize];
-
-                                    int packetLength = await networkStream.ReadAsync(packetBuffer, 0, packetBuffer.Length, cancellationReceiveBlockListPacket.Token);
-
-                                    if (packetLength == 0)
+                                    if (!readPacketData.Status)
                                         break;
 
-                                    listPacketReceived.GetList = ClassUtility.GetEachPacketSplitted(packetBuffer, listPacketReceived, cancellationReceiveBlockListPacket).GetList;
+                                    listPacketReceived.GetList = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, cancellationReceiveBlockListPacket).GetList;
 
                                     if (containSeperator)
                                     {
@@ -1154,9 +1150,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                         break;
                                     }
 
-
                                 }
                             }
+
                         }
                     }
                     catch
@@ -1222,19 +1218,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                 {
                                     listPacketReceived.Add(new ClassReadPacketSplitted());
 
-                                    using (NetworkStream networkStream = new NetworkStream(_peerSocketClient.Socket))
+
+                                    while (!endBroadcast && receiveStatus && IsAlive)
                                     {
-                                        while (!endBroadcast && receiveStatus && IsAlive)
+
+                                        using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, cancellationReceiveTransactionPacket))
                                         {
-
-                                            byte[] packetBuffer = new byte[_peerNetworkSettingObject.PeerMaxPacketBufferSize];
-
-                                            int packetLength = await networkStream.ReadAsync(packetBuffer, 0, packetBuffer.Length, cancellationReceiveTransactionPacket.Token);
-
-                                            if (packetLength == 0)
+                                            if (!readPacketData.Status)
                                                 break;
 
-                                            listPacketReceived.GetList = ClassUtility.GetEachPacketSplitted(packetBuffer, listPacketReceived, cancellationReceiveTransactionPacket).GetList;
+                                            listPacketReceived.GetList = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, cancellationReceiveTransactionPacket).GetList;
 
                                             if (listPacketReceived.GetList.Count(x => x.Complete) == 0)
                                                 continue;
@@ -1279,7 +1272,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                                 if (peerPacketRecvObject.PacketOrder == ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE)
                                                                 {
 
-                                                                    ClassTranslatePacket<ClassPeerPacketSendMemPoolTransaction> packetTranslated = TranslatePacketReceived<ClassPeerPacketSendMemPoolTransaction>(peerPacketRecvObject, ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE);
+                                                                    ClassTranslatePacket<ClassPeerPacketSendMemPoolTransaction> packetTranslated = await TranslatePacketReceived<ClassPeerPacketSendMemPoolTransaction>(peerPacketRecvObject, ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE, cancellationReceiveTransactionPacket);
 
                                                                     if (packetTranslated.Status && packetTranslated.PacketTranslated.ListTransactionObject.Count > 0)
                                                                     {
@@ -1375,9 +1368,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                                             if (endBroadcast)
                                                 break;
-
                                         }
                                     }
+                                    
                                 }
                             }
                             catch
@@ -1458,15 +1451,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         {
                             listPacketReceived.Add(new ClassReadPacketSplitted());
 
-                            using (NetworkStream networkStream = new NetworkStream(_peerSocketClient.Socket))
+
+                            while (IsAlive && !taskDone && !voteStatus)
                             {
-                                while (IsAlive && !taskDone && !voteStatus)
+
+                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, cancellationReceiveMemPoolTransactionVote))
                                 {
-                                    byte[] packetBuffer = new byte[_peerNetworkSettingObject.PeerMaxPacketBufferSize];
+                                    if (!readPacketData.Status)
+                                        break;
 
-                                    int packetLength = await networkStream.ReadAsync(packetBuffer, 0, packetBuffer.Length, cancellationReceiveMemPoolTransactionVote.Token);
-
-                                    foreach (byte dataByte in packetBuffer)
+                                    foreach (byte dataByte in readPacketData.Data)
                                     {
                                         char character = (char)dataByte;
 
@@ -1511,7 +1505,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                     if (peerPacketRecvObject.PacketOrder == ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_VOTE)
                                                     {
 
-                                                        ClassTranslatePacket<ClassPeerPacketSendMemPoolTransactionVote> packetTranslated = TranslatePacketReceived<ClassPeerPacketSendMemPoolTransactionVote>(peerPacketRecvObject, ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_VOTE);
+                                                        ClassTranslatePacket<ClassPeerPacketSendMemPoolTransactionVote> packetTranslated = await TranslatePacketReceived<ClassPeerPacketSendMemPoolTransactionVote>(peerPacketRecvObject, ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_VOTE, cancellationReceiveMemPoolTransactionVote);
 
                                                         if (packetTranslated.Status)
                                                         {
@@ -1547,6 +1541,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                     }
                                 }
                             }
+
                         }
                     }
                     catch
@@ -1589,8 +1584,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             /// <returns></returns>
             private async Task<bool> TrySendPacketToPeer(byte[] packetData)
             {
-                using (NetworkStream networkStream = new NetworkStream(_peerSocketClient.Socket))
-                    return await networkStream.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(Convert.ToBase64String(packetData) + ClassPeerPacketSetting.PacketPeerSplitSeperator), _peerCancellationToken, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
+                return await _peerSocketClient.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(Convert.ToBase64String(packetData) + ClassPeerPacketSetting.PacketPeerSplitSeperator), _peerCancellationToken, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
             }
 
 
@@ -1602,7 +1596,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             /// <param name="peerPacketRecvObject"></param>
             /// <param name="packetResponseExpected"></param>
             /// <returns></returns>
-            private ClassTranslatePacket<T> TranslatePacketReceived<T>(ClassPeerPacketRecvObject peerPacketRecvObject, ClassPeerEnumPacketResponse packetResponseExpected)
+            private async Task<ClassTranslatePacket<T>> TranslatePacketReceived<T>(ClassPeerPacketRecvObject peerPacketRecvObject, ClassPeerEnumPacketResponse packetResponseExpected, CancellationTokenSource cancellation)
             {
                 ClassTranslatePacket<T> translatedPacket = new ClassTranslatePacket<T>();
 
@@ -1619,7 +1613,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                         if (!peerIgnorePacketSignature)
                         {
-                            packetSignatureStatus = CheckPacketSignature(_peerIpTarget,
+                            packetSignatureStatus = await CheckPacketSignature(_peerIpTarget,
                                                             _peerUniqueIdTarget,
                                                             _peerNetworkSettingObject,
                                                             peerPacketRecvObject.PacketContent,
@@ -1631,7 +1625,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                         if (packetSignatureStatus)
                         {
-                            if (TryDecryptPacketPeerContent(_peerIpTarget, _peerUniqueIdTarget, peerPacketRecvObject.PacketContent, out byte[] packetDecrypted))
+                            if (TryDecryptPacketPeerContent(_peerIpTarget, _peerUniqueIdTarget, peerPacketRecvObject.PacketContent, _peerCheckConnectionCancellationToken, out byte[] packetDecrypted))
                             {
                                 if (packetDecrypted != null)
                                 {

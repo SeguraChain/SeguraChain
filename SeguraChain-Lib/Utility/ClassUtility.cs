@@ -1163,12 +1163,7 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         public static string DeepCopy(this string srcString)
         {
-            string copiedString = string.Empty;
-
-            foreach (char character in srcString)
-                copiedString += character;
-
-            return copiedString;
+            return srcString.AsEnumerable().ToString();
         }
 
         /// <summary>
