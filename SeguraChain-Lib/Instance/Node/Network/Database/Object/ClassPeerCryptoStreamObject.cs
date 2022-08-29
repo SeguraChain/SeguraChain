@@ -48,7 +48,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
             PeerIp = peerIp;
             PeerUniqueId = peerUniqueId;
             _semaphoreCryptoObject = new SemaphoreSlim(1, 1);
-            UpdateEncryptionStream(key, iv, publicKey, privateKey, cancellation);
+            UpdateEncryptionStream(key, iv, publicKey, privateKey, cancellation).Wait();
         }
 
         /// <summary>
@@ -60,12 +60,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         /// <param name="privateKey"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        public void UpdateEncryptionStream(byte[] key, byte[] iv, string publicKey, string privateKey, CancellationTokenSource cancellation)
+        public async Task<bool> UpdateEncryptionStream(byte[] key, byte[] iv, string publicKey, string privateKey, CancellationTokenSource cancellation)
         {
-            if (_semaphoreCryptoObject.TryWaitExecuteAction(() =>
+            return await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
             {
                 InitializeAesAndEcdsaSign(key, iv, publicKey, privateKey);
-            }, cancellation)) ;
+            }, cancellation);
         }
 
         /// <summary>
@@ -82,7 +82,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
 
             try
             {
-                 _aesManaged?.Dispose();
+                if (publicKey.IsNullOrEmpty(false, out _) || privateKey.IsNullOrEmpty(false, out _))
+                    return;
+
+                _aesManaged?.Dispose();
                 _encryptCryptoTransform?.Dispose();
                 _decryptCryptoTransform?.Dispose();
 
