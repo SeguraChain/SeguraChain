@@ -20,7 +20,7 @@ using SeguraChain_Lib.Utility;
 
 namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Service
 {
-    public class ClassPeerNetworkSyncServerObject : IDisposable
+    public class ClassPeerNetworkSyncServerObject :  IDisposable
     {
         public bool NetworkPeerServerStatus;
         private TcpListener _tcpListenerPeer;
@@ -224,31 +224,43 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                         return ClassPeerNetworkServerHandleConnectionEnum.INSERT_CLIENT_IP_EXCEPTION;
                 }
 
-                #region Ensure to not have too much incoming connection from the same ip.
-
-                long randomId = await GeneratePeerUniqueIdAsync(clientIp, _cancellationTokenSourcePeerServer, timestampEnd);
-
-                if (randomId == -1)
-                    return ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION;
-
-                if (!_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryAdd(randomId,
-                    new ClassPeerNetworkClientServerObject(clientPeerTcp, _cancellationTokenSourcePeerServer, clientIp, peerIpOpenNatServer, _peerNetworkSettingObject, _firewallSettingObject)))
-                    return ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION;
-
-
-                #endregion
-
-                //bool semaphoreUsed = false;
-
-                _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
-
-                /*
-                if (!semaphoreUsed)
+                // Linked to main server tcp listener task and the semaphore delay.
+                using (CancellationTokenSource cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSourcePeerServer.Token, new CancellationTokenSource(_peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay).Token))
                 {
-                    _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].Dispose();
-                    _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryRemove(randomId, out _);
-                    return ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT;
-                }*/
+                    #region Ensure to not have too much incoming connection from the same ip.
+
+                    long randomId = await GeneratePeerUniqueIdAsync(clientIp, cancellation, timestampEnd);
+
+                    if (randomId == -1)
+                        return ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION;
+
+                    if (!_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryAdd(randomId,
+                        new ClassPeerNetworkClientServerObject(clientPeerTcp, _cancellationTokenSourcePeerServer, clientIp, peerIpOpenNatServer, _peerNetworkSettingObject, _firewallSettingObject)))
+                        return ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION;
+
+
+                    #endregion
+
+                    bool handlePeerClientStatus = false;
+                    try
+                    {
+                        // Against flood.
+                        handlePeerClientStatus = await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.TryWaitAsync(cancellation);
+                        if (handlePeerClientStatus)
+                            _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
+                        else
+                        {
+                            Debug.WriteLine("Failed to handle client ip from: " + clientIp + " | "+ _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection == null);
+                            _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].Dispose();
+                            return ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT;
+                        }
+                    }
+                    finally
+                    {
+                        if (handlePeerClientStatus)
+                            _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
+                    }
+                }
             }
             catch
             {

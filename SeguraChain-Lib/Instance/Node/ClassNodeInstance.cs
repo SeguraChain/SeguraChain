@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,7 +67,8 @@ namespace SeguraChain_Lib.Instance.Node
         /// <returns></returns>
         public bool NodeStart(bool fromWallet)
         {
-            TaskManager.TaskManager.EnableTaskManager();
+            TaskManager.TaskManager.EnableTaskManager(PeerSettingObject.PeerNetworkSettingObject);
+
             PeerToolStatus = true;
 
             string encryptionKey = string.Empty;
@@ -78,7 +80,7 @@ namespace SeguraChain_Lib.Instance.Node
                 encryptionKey = Console.ReadLine();
             }
 
-            TuningNode();
+            //TuningNode();
 
             if (ClassSovereignUpdateDatabase.LoadSovereignUpdateData(encryptionKey, PeerSettingObject.PeerBlockchainDatabaseSettingObject.DataSetting.EnableCompressDatabase, PeerSettingObject.PeerBlockchainDatabaseSettingObject.DataSetting.EnableEncryptionDatabase))
             {
@@ -212,27 +214,20 @@ namespace SeguraChain_Lib.Instance.Node
                 if (!fromWallet)
                     Console.ReadLine();
             }
-
+            
             return false;
         }
 
-        /// <summary>
-        /// Apply tuning node.
-        /// </summary>
-        private void TuningNode()
-        {
-            ThreadPool.SetMinThreads(PeerSettingObject.PeerNetworkSettingObject.PeerMinThreadsPool, PeerSettingObject.PeerNetworkSettingObject.PeerMinThreadsPoolCompletionPort);
-            ThreadPool.SetMaxThreads(PeerSettingObject.PeerNetworkSettingObject.PeerMaxThreadsPool, PeerSettingObject.PeerNetworkSettingObject.PeerMaxThreadsPoolCompletionPort);
-        }
 
         /// <summary>
         /// Peer tool closed.
         /// </summary>
         public async Task NodeStop(bool forceClose = false, bool isWallet = false)
         {
+            TaskManager.TaskManager.StopTaskManager();
+
             ClassLog.WriteLine("Close Peer Tool, please wait a moment..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-            PeerToolStatus = false;
 
 
             #region Close OpenNAT port.
@@ -342,7 +337,7 @@ namespace SeguraChain_Lib.Instance.Node
 
             #endregion
 
-            TaskManager.TaskManager.StopTaskManager();
+            PeerToolStatus = false;
 
 
             if (!forceClose)

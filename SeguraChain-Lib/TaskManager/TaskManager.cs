@@ -1,4 +1,5 @@
-﻿using SeguraChain_Lib.Log;
+﻿using SeguraChain_Lib.Instance.Node.Setting.Object;
+using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.Other.Object.Network;
 using SeguraChain_Lib.TaskManager.Object;
@@ -36,31 +37,28 @@ namespace SeguraChain_Lib.TaskManager
         /// <summary>
         /// Enable the task manager. Check tasks, dispose them if they are faulted, completed, cancelled, or if a timestamp of end has been set and has been reached.
         /// </summary>
-        public static void EnableTaskManager()
+        public static void EnableTaskManager(ClassPeerNetworkSettingObject peerNetworkSettingObject)
         {
             TaskManagerEnabled = true;
 
-            try
-            {
-                #region Auto run task stored.
+           // SetThreadPoolValue(peerNetworkSettingObject);
 
-                Task.Factory.StartNew(async () =>
+            #region Auto run task stored.
+
+            InsertTask(new Action(async () =>
+            {
+
+
+                while (TaskManagerEnabled)
                 {
+                    RunTask();
+                    await Task.Delay(1);
+                }
 
-                    while (TaskManagerEnabled)
-                    {
-                        await RunTask();
-                        await Task.Delay(1);
-                    }
+            }), 0, _cancelTaskManager, null, true);
 
-                }, _cancelTaskManager.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+            #endregion
 
-                #endregion
-            }
-            catch
-            {
-                // Ignored, catch the exception once the task is cancelled.
-            }
 
             #region Auto clean up dead tasks.
 
@@ -173,10 +171,22 @@ namespace SeguraChain_Lib.TaskManager
         }
 
         /// <summary>
+        /// Set thread pools min values and max values.
+        /// </summary>
+        /// <param name="peerNetworkSettingObject"></param>
+        private static void SetThreadPoolValue(ClassPeerNetworkSettingObject peerNetworkSettingObject)
+        {
+
+            ThreadPool.SetMinThreads(peerNetworkSettingObject.PeerMinThreadsPool, peerNetworkSettingObject.PeerMinThreadsPoolCompletionPort);
+            ThreadPool.SetMaxThreads(peerNetworkSettingObject.PeerMaxThreadsPool, peerNetworkSettingObject.PeerMaxThreadsPoolCompletionPort);
+
+        }
+
+        /// <summary>
         /// Run every task registered into the task manager.
         /// </summary>
         /// <returns></returns>
-        private static async Task RunTask()
+        private static void RunTask()
         {
 
             int count = _taskCollection.Count;
@@ -185,23 +195,17 @@ namespace SeguraChain_Lib.TaskManager
 
                 try
                 {
-                    if (_taskCollection[i] == null || _taskCollection[i].Started || _taskCollection[i].Disposed)
+                    if (_taskCollection[i] == null)
                         continue;
 
-
-                    await Task.Factory.StartNew(() =>
+                    if (_taskCollection[i].Started || _taskCollection[i].Disposed ||
+                        (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond))
                     {
-                        try
-                        {
-                            _taskCollection[i].Started = true;
-                            _taskCollection[i].Task = Task.Run(_taskCollection[i].Action, _taskCollection[i].Cancellation.Token);
-                        }
-                        catch
-                        {
-                                    // Catch the exception if the task cannot start.
-                                }
-                    }, _cancelTaskManager.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
-
+                        _taskCollection[i].Started = true;
+                        continue;
+                    }
+                    _taskCollection[i].Started = true;
+                    _taskCollection[i].Task = Task.Run(_taskCollection[i].Action, _taskCollection[i].Cancellation.Token);
 
                 }
                 catch
@@ -344,7 +348,7 @@ namespace SeguraChain_Lib.TaskManager
 
                         while (!cancellationTask.IsCancellationRequested && TaskManagerEnabled && !_cancelTaskManager.IsCancellationRequested)
                         {
-                            if (!TaskManagerEnabled || (timestampEnd > 0 && timestampEnd < CurrentTimestampMillisecond))
+                            if (timestampEnd > 0 && timestampEnd < CurrentTimestampMillisecond)
                                 break;
 
                             try
@@ -359,7 +363,8 @@ namespace SeguraChain_Lib.TaskManager
                             }
                             catch (Exception error)
                             {
-                                ClassLog.WriteLine("Error on insert a new task to the TaskManager | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_TASK_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                                ClassLog.WriteLine("Error on insert a new task to the TaskManager | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_TASK_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true, ConsoleColor.Red);
+                                Thread.Sleep(1);
                             }
                         }
 

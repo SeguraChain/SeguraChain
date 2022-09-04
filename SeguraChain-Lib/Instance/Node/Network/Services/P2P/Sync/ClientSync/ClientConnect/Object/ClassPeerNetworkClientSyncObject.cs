@@ -238,14 +238,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                     _peerCancellationTokenDoConnection.IsCancellationRequested || taskDone)
                     break;
 
-                try
-                {
-                    await Task.Delay(10, cancellation.Token);
-                }
-                catch
-                {
-                    break;
-                }
+                await Task.Delay(10);
+
             }
 
             CancelTaskDoConnection();
@@ -281,20 +275,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                 if (cancellation.IsCancellationRequested ||
                     !PeerConnectStatus || !PeerTaskStatus ||
-                    /*_lastPacketReceivedTimestamp + (_peerNetworkSetting.PeerMaxDelayAwaitResponse * 1000) < TaskManager.TaskManager.CurrentTimestampMillisecond ||*/
                     PeerPacketReceived != null)
                 {
                     break;
                 }
 
-                try
-                {
-                    await Task.Delay(10, cancellation.Token);
-                }
-                catch
-                {
-                    break;
-                }
+                await Task.Delay(10);
+
             }
 
             CancelTaskListenPeerPacketResponse();
@@ -439,8 +426,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                     }
                     catch
                     {
-                        PeerTaskStatus = false;
-
                         if (!CheckConnection)
                             PeerConnectStatus = false;
                     }
