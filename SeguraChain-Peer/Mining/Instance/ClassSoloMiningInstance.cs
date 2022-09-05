@@ -134,18 +134,18 @@ namespace SeguraChain_Peer.Mining.Instance
         private void DestroyMiningInstance()
         {
             // Clean up stats.
-            Array.Clear(_totalHashes, 0, _totalThreads);
-            Array.Clear(_totalShare, 0, _totalThreads);
-            Array.Clear(_totalAlreadyShare, 0, _totalThreads);
-            Array.Clear(_totalRefusedShare, 0, _totalThreads);
-            Array.Clear(_totalUnlockShare, 0, _totalThreads);
-            Array.Clear(_totalLowDifficultyShare, 0, _totalThreads);
-            Array.Clear(_totalHash, 0, _totalThreads);
-            Array.Clear(_nextNonce, 0, _totalThreads);
-            Array.Clear(_minRangeNonce, 0, _totalThreads);
-            Array.Clear(_maxRangeNonce, 0, _totalThreads);
-            Array.Clear(_sha3512Mining, 0, _sha3512Mining.Length);
-            Array.Clear(_walletAddressDecoded, 0, _walletAddressDecoded.Length);
+            Array.Resize(ref _totalHashes, 0);
+            Array.Resize(ref _totalShare, 0);
+            Array.Resize(ref _totalAlreadyShare, 0);
+            Array.Resize(ref _totalRefusedShare, 0);
+            Array.Resize(ref _totalUnlockShare, 0);
+            Array.Resize(ref _totalLowDifficultyShare, 0);
+            Array.Resize(ref _totalHash, 0);
+            Array.Resize(ref _nextNonce, 0);
+            Array.Resize(ref _minRangeNonce, 0);
+            Array.Resize(ref _maxRangeNonce, 0);
+            Array.Resize(ref _sha3512Mining, 0);
+            Array.Resize(ref _walletAddressDecoded, 0);
             foreach (var task in _miningTasks)
             {
                 try

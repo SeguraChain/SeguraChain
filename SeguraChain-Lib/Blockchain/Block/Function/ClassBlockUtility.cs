@@ -62,11 +62,11 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
             string blockHash = ClassUtility.GetHexStringFromByteArray(blockHashBytes).ToLower();
 
             // Clear.
-            Array.Clear(blockHashBytes, 0, blockHashBytes.Length);
-            Array.Clear(blockDifficultyBytes, 0, blockDifficultyBytes.Length);
-            Array.Clear(blockCountTransactionBytes, 0, blockCountTransactionBytes.Length);
-            Array.Clear(blockFinalTransactionHashBytes, 0, blockFinalTransactionHashBytes.Length);
-            Array.Clear(previousWalletAddressWinnerBytes, 0, previousWalletAddressWinnerBytes.Length);
+            Array.Resize(ref blockHashBytes, 0);
+            Array.Resize(ref blockDifficultyBytes, 0);
+            Array.Resize(ref blockCountTransactionBytes, 0);
+            Array.Resize(ref blockFinalTransactionHashBytes, 0);
+            Array.Resize(ref previousWalletAddressWinnerBytes, 0);
 
             return blockHash;
         }
@@ -133,10 +133,10 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
                 }
 
                 // Clean up.
-                Array.Clear(blockHeightBytes, 0, blockHeightBytes.Length);
-                Array.Clear(blockDifficultyBytes, 0, blockDifficultyBytes.Length);
-                Array.Clear(blockCountTransactionBytes, 0, blockCountTransactionBytes.Length);
-                Array.Clear(blockFinalTransactionHashBytes, 0, blockFinalTransactionHashBytes.Length);
+                Array.Resize(ref blockHeightBytes, 0);
+                Array.Resize(ref blockDifficultyBytes, 0);
+                Array.Resize(ref blockCountTransactionBytes, 0);
+                Array.Resize(ref blockFinalTransactionHashBytes, 0);
 
                 return result;
             }

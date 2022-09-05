@@ -114,14 +114,15 @@ namespace SeguraChain_Solo_Miner.Mining
         private void DestroyMiningInstance()
         {
             // Clean up stats.
-            Array.Clear(_totalHashes, 0, _soloMinerSettingObject.SoloMinerThreadSetting.max_thread);
-            Array.Clear(_totalShare, 0, _soloMinerSettingObject.SoloMinerThreadSetting.max_thread);
-            Array.Clear(_totalHash, 0, _soloMinerSettingObject.SoloMinerThreadSetting.max_thread);
-            Array.Clear(_nextNonce, 0, _soloMinerSettingObject.SoloMinerThreadSetting.max_thread);
-            Array.Clear(_minRangeNonce, 0, _soloMinerSettingObject.SoloMinerThreadSetting.max_thread);
-            Array.Clear(_maxRangeNonce, 0, _soloMinerSettingObject.SoloMinerThreadSetting.max_thread);
-            Array.Clear(_sha3512Mining, 0, _sha3512Mining.Length);
-            Array.Clear(_walletAddressDecoded, 0, _walletAddressDecoded.Length);
+            _totalHashes = null;
+            _totalShare = null;
+            _totalHash = null;
+            _nextNonce = null;
+            _minRangeNonce = null;
+            _maxRangeNonce = null;
+            _sha3512Mining = null;
+            _walletAddressDecoded = null;
+
             foreach (var task in _miningTasks)
             {
                 try

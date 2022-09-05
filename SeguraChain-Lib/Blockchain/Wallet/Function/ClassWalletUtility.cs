@@ -99,7 +99,7 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
                 ClassUtility.InsertBlockchainVersionToByteArray(privateKeyWifByteArray, out var finalPrivateKeyHex);
 
                 // Clean up.
-                Array.Clear(privateKeyWifByteArray, 0, privateKeyWifByteArray.Length);
+                Array.Resize(ref privateKeyWifByteArray, 0);
 
                 string privateKeyWif = ClassBase58.EncodeWithCheckSum(ClassUtility.GetByteArrayFromHexString(finalPrivateKeyHex));
 
@@ -123,7 +123,7 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
                 ClassUtility.InsertBlockchainVersionToByteArray(privateKeyWifByteArray, out var finalPrivateKeyHex);
 
                 // Clean up.
-                Array.Clear(privateKeyWifByteArray, 0, privateKeyWifByteArray.Length);
+                Array.Resize(ref privateKeyWifByteArray, 0);
 
                 return ClassBase58.EncodeWithCheckSum(ClassUtility.GetByteArrayFromHexString(finalPrivateKeyHex));
             }

@@ -54,17 +54,18 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                                         (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalInvalidPacket >= peerNetworkSetting.PeerMaxInvalidPacket ||
                                         ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalAttemptConnection >= peerNetworkSetting.PeerMaxAttemptConnection))
                                     {
-                                        long deadTime = currentTimestamp - ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastPacketReceivedTimestamp;
+                                        //long deadTime = currentTimestamp - ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastPacketReceivedTimestamp;
 
                                         if (ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
                                         {
-                                            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].TryRemove(peerUniqueId, out _))
+                                            SetPeerDeadState(peerIp, peerUniqueId, peerNetworkSetting, peerFirewallSetting);
+                                            /*if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].TryRemove(peerUniqueId, out _))
                                             {
 #if DEBUG
                                                 Debug.WriteLine("Peer IP: " + peerIp + " | Peer Unique ID: " + peerUniqueId + " removed from the listing of peers, this one is dead since " + deadTime + " second(s).");
 #endif
                                                 ClassLog.WriteLine("Peer IP: " + peerIp + " | Peer Unique ID: " + peerUniqueId + " removed from the listing of peers, this one is dead since " + deadTime + " second(s).", ClassEnumLogLevelType.LOG_LEVEL_PEER_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                                            }
+                                            }*/
                                         }
                                     }
                                 }

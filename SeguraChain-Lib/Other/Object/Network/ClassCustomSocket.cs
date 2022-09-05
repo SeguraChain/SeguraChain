@@ -26,8 +26,19 @@ namespace SeguraChain_Lib.Other.Object.Network
         public ClassCustomSocket(Socket socket, bool isServer)
         {
             _socket = socket;
+
             if (isServer)
-                _networkStream = new NetworkStream(_socket);
+            {
+                try
+                {
+                    _networkStream = new NetworkStream(_socket);
+                }
+                catch
+                {
+                    Close(SocketShutdown.Both);
+                    Dispose();
+                }
+            }
         }
 
         public async Task<bool> ConnectAsync(string ip, int port)
@@ -40,7 +51,6 @@ namespace SeguraChain_Lib.Other.Object.Network
             {
                 return false;
             }
-
             _networkStream = new NetworkStream(_socket);
             return true;
         }
@@ -68,10 +78,8 @@ namespace SeguraChain_Lib.Other.Object.Network
         {
             try
             {
-                if (Disposed || Closed || _socket == null || !_socket.Connected)
-                    return false;
-
-                return !((_socket.Poll(10, SelectMode.SelectRead) && (_socket.Available == 0)));
+                // return !((_socket.Poll(10, SelectMode.SelectRead) && (_socket.Available == 0)));
+                return (Disposed || Closed || _socket == null || !_socket.Connected || _networkStream == null) ? false : true;
             }
             catch
             {
@@ -98,12 +106,20 @@ namespace SeguraChain_Lib.Other.Object.Network
         public async Task<ReadPacketData> TryReadPacketData(int packetLength, CancellationTokenSource cancellation)
         {
             ReadPacketData readPacketData = new ReadPacketData();
+            _networkStream = new NetworkStream(_socket);
 
             if (IsConnected())
             {
-
                 try
                 {
+                    /*
+                    while(!_socket.Blocking)
+                    {
+                        if (cancellation.IsCancellationRequested || !IsConnected())
+                            return readPacketData;
+
+                        await Task.Delay(1);
+                    }*/
                     readPacketData.Data = new byte[packetLength];
                     readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
                 }
@@ -135,7 +151,7 @@ namespace SeguraChain_Lib.Other.Object.Network
                 _socket?.Close();
             }
         }
-         
+
         private void Dispose()
         {
             if (Disposed)
@@ -164,7 +180,7 @@ namespace SeguraChain_Lib.Other.Object.Network
                 if (_disposed || !dispose)
                     return;
 
-                Array.Resize(ref Data, 0);
+                Data = null;
 
                 Status = false;
 

@@ -144,9 +144,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 if (!ClientPeerConnectionStatus || _clientAskDisconnection)
                     break;
 
-                if (!_clientSocket.IsConnected())
-                    break;
-
                 if (_peerFirewallSettingObject.PeerEnableFirewallLink)
                 {
                     if (!ClassPeerFirewallManager.CheckClientIpStatus(_peerClientIp))
@@ -279,68 +276,71 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                 if (failed)
                                     continue;
 
-                                _onSendingPacketResponse = true;
 
-                                try
+                                TaskManager.TaskManager.InsertTask(async () =>
                                 {
-                                    ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(base64Packet, out bool status);
-                                    if (!status)
-                                    {
-                                        ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                                        ClientPeerConnectionStatus = false;
-                                    }
-                                    else
-                                    {
-                                        switch (await HandlePacket(packetSendObject))
-                                        {
-                                            case ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_TYPE_PACKET:
-                                            case ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET:
-                                                {
-                                                    ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                                                    ClientPeerConnectionStatus = false;
-                                                }
-                                                break;
-                                            case ClassPeerNetworkClientServerHandlePacketEnumStatus.EXCEPTION_PACKET:
-                                            case ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET:
-                                                {
-                                                    ClassPeerCheckManager.InputPeerClientAttemptConnect(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                                                    ClientPeerConnectionStatus = false;
-                                                }
-                                                break;
-                                            case ClassPeerNetworkClientServerHandlePacketEnumStatus.VALID_PACKET:
-                                                {
-                                                    _clientResponseSendSuccessfully = true;
 
-                                                    ClassPeerCheckManager.InputPeerClientValidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject);
-                                                }
-                                                break;
+                                    try
+                                    {
+                                        ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(base64Packet, out bool status);
+                                        if (!status)
+                                        {
+                                            ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                                            ClientPeerConnectionStatus = false;
+                                        }
+                                        else
+                                        {
+                                            switch (await HandlePacket(packetSendObject))
+                                            {
+                                                case ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_TYPE_PACKET:
+                                                case ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET:
+                                                    {
+                                                        ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                                                        ClientPeerConnectionStatus = false;
+                                                    }
+                                                    break;
+                                                case ClassPeerNetworkClientServerHandlePacketEnumStatus.EXCEPTION_PACKET:
+                                                case ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET:
+                                                    {
+                                                        ClassPeerCheckManager.InputPeerClientAttemptConnect(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                                                        ClientPeerConnectionStatus = false;
+                                                    }
+                                                    break;
+                                                case ClassPeerNetworkClientServerHandlePacketEnumStatus.VALID_PACKET:
+                                                    {
+                                                        _clientResponseSendSuccessfully = true;
+
+                                                        ClassPeerCheckManager.InputPeerClientValidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject);
+                                                    }
+                                                    break;
+                                            }
                                         }
                                     }
-                                }
-                                catch(Exception error)
+                                    catch (Exception error)
+                                    {
+                                        Debug.WriteLine("Error to handle packet received from Peer: " + _peerClientIp + " | Exception: " + error.Message);
+                                    }
+
+                                    _onSendingPacketResponse = false;
+
+
+
+                                }, 0, _cancellationTokenListenPeerPacket, null);
+
+                                listPacketReceived.GetList.RemoveAll(x => x.Used);
+
+
+                                if (_clientAskDisconnection || !ClientPeerConnectionStatus)
                                 {
-                                    Debug.WriteLine("Error to handle packet received from Peer: " + _peerClientIp + " | Exception: " + error.Message);
+                                    ClientPeerConnectionStatus = false;
+                                    break;
                                 }
-
-                                _onSendingPacketResponse = false;
-
-
-                            }
-
-                            listPacketReceived.GetList.RemoveAll(x => x.Used);
-
-
-                            if (_clientAskDisconnection || !ClientPeerConnectionStatus)
-                            {
-                                ClientPeerConnectionStatus = false;
-                                break;
                             }
                         }
                     }
+
+                    ClosePeerClient(false);
                 }
-
-                ClosePeerClient(false);
-
             }), 0, _cancellationTokenListenPeerPacket, null);
 
         }
@@ -1809,7 +1809,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                         }
                         break;
                     default:
-                        ClassLog.WriteLine("Invalid packet type received from: " + _peerClientIp + " | Order: "+packetSendObject.PacketOrder, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
+                        ClassLog.WriteLine("Invalid packet type received from: " + _peerClientIp + " | Order: " + packetSendObject.PacketOrder, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                         return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_TYPE_PACKET;
                 }
             }

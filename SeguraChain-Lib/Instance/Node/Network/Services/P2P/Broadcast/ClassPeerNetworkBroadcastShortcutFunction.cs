@@ -61,9 +61,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             if (!await peerNetworkClientSyncObject.TrySendPacketToPeerTarget(packetSendObject.GetPacketData(), peerObject.PeerPort, peerUniqueIdTarget, cancellation, packetTypeExpected, false, false))
                 return default(R);
 
-            if (peerNetworkClientSyncObject.PeerPacketReceivedIgnored)
-                return default(R);
-
             if (peerNetworkClientSyncObject.PeerPacketReceived == null)
                 return default(R);
 

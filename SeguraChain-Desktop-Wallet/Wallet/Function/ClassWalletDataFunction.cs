@@ -281,14 +281,14 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Function
                     }
 
                     if (walletEncryptionIv.Length > 0)
-                        Array.Clear(walletEncryptionIv, 0, walletEncryptionIv.Length);
+                        Array.Resize(ref walletEncryptionIv, 0) ;
 
                     if (walletPassphraseHashArray.Length > 0)
-                        Array.Clear(walletPassphraseHashArray, 0, walletPassphraseHashArray.Length);
+                        Array.Resize(ref walletPassphraseHashArray, 0);
                 }
 
                 if (walletPrivateKeyDecoded.Length > 0)
-                    Array.Clear(walletPrivateKeyDecoded, 0, walletPrivateKeyDecoded.Length);
+                    Array.Resize(ref walletPrivateKeyDecoded, 0);
             }
             else
                 result = ClassWalletEncryptWalletPrivateKeyEnumResult.WALLET_ENCRYPT_PRIVATE_KEY_BAD_FORMAT;

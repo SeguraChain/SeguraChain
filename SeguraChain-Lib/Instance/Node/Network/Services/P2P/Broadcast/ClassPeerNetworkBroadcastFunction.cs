@@ -195,7 +195,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                         newListSelected.Add(indexPeer, new ClassPeerTargetObject()
                         {
-                            PeerNetworkClientSyncObject = new ClassPeerNetworkClientSyncObject(peer.Key, ClassPeerDatabase.DictionaryPeerDataObject[peer.Key][peer.Value].PeerPort, peer.Value, cancellation, peerNetworkSetting, peerFirewallSettingObject)
+                            PeerNetworkClientSyncObject = new ClassPeerNetworkClientSyncObject(peer.Key, ClassPeerDatabase.DictionaryPeerDataObject[peer.Key][peer.Value].PeerPort, peer.Value, peerNetworkSetting, peerFirewallSettingObject)
                         });
 
                         indexPeer++;

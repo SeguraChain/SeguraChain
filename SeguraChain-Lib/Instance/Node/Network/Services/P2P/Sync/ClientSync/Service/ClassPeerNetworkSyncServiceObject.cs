@@ -201,7 +201,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     {
                         int peerPort = BlockchainSetting.BlockchainStaticPeerList[peerIp][peerUniqueId];
 
-                        if (!await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(peerIp, peerPort, peerUniqueId, _cancellationTokenServiceSync, _peerNetworkSettingObject, _peerFirewallSettingObject), _cancellationTokenServiceSync, true))
+                        if (!await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(peerIp, peerPort, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject), _cancellationTokenServiceSync, true))
                             ClassLog.WriteLine("Can't send auth keys to default peer: " + peerIp + ":" + peerPort + " | Peer Unique ID: " + peerUniqueId, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                         else
                         {
@@ -266,7 +266,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         int totalPeerRemoved = 0;
                         int totalTaskComplete = 0;
 
-                        long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + _peerNetworkSettingObject.PeerMaxDelayAwaitResponse;
+                        long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
 
                         CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token);
 
@@ -286,7 +286,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                         int peerPort = ClassPeerDatabase.GetPeerPort(copyPeer.Item1, copyPeer.Item2);
 
-                                        if (await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(copyPeer.Item1, peerPort, copyPeer.Item2, _cancellationTokenServiceSync, _peerNetworkSettingObject, _peerFirewallSettingObject), cancellationTokenSourceTaskSync, true))
+                                        if (await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(copyPeer.Item1, peerPort, copyPeer.Item2, _peerNetworkSettingObject, _peerFirewallSettingObject), cancellationTokenSourceTaskSync, true))
                                         {
                                             totalInitializedSuccessfully++;
                                             ClassPeerCheckManager.CleanPeerState(copyPeer.Item1, copyPeer.Item2, true);
@@ -405,7 +405,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                     string peerUniqueId = peerListToCheck[i1].Item2;
                                     int peerPort = ClassPeerDatabase.GetPeerPort(peerIp, peerUniqueId);
 
-                                    if (await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(peerIp, peerPort, peerUniqueId, _cancellationTokenServiceSync, _peerNetworkSettingObject, _peerFirewallSettingObject), cancellationTokenSourceTaskSync, true))
+                                    if (await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(peerIp, peerPort, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject), cancellationTokenSourceTaskSync, true))
                                     {
                                         totalCheckSuccessfullyDone++;
                                         ClassPeerCheckManager.CleanPeerState(peerIp, peerUniqueId, true);
@@ -1158,7 +1158,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
             int totalTaskComplete = 0;
             int totalResponseOk = 0;
             long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
-            CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token);
+            CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token);
 
             #region Ask peer lists to every peers target.
 
@@ -1213,15 +1213,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 if (totalResponseOk >= totalTaskCount)
                     break;
 
-                if (timestampEnd <= TaskManager.TaskManager.CurrentTimestampMillisecond || _cancellationTokenServiceSync.IsCancellationRequested)
+                if (timestampEnd <= TaskManager.TaskManager.CurrentTimestampMillisecond || cancellationTokenSourceTaskSync.IsCancellationRequested)
                     break;
 
 
                 await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
 
             }
-
-            cancellationTokenSourceTaskSync.Cancel();
 
             ClassLog.WriteLine("Total Peers Task(s) done: " + totalTaskComplete + "/" + totalTaskCount, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
 
@@ -1243,7 +1241,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 int totalTaskComplete = 0;
                 int totalSovereignUpdatedReceived = 0;
 
-                CancellationTokenSource cancellationTokenSourceTaskSyncSovereignUpdate = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token);
+                CancellationTokenSource cancellationTokenSourceTaskSyncSovereignUpdate = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token);
 
                 #region Sync sovereign update hash list from peers.
 
@@ -1308,7 +1306,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 if (hashSetSovereignUpdateHash.Count > 0)
                 {
                     ClassLog.WriteLine(hashSetSovereignUpdateHash.Count + " sovereign update retrieved from peers, sync updates..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
-                    cancellationTokenSourceTaskSyncSovereignUpdate = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token);
+                    cancellationTokenSourceTaskSyncSovereignUpdate = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token);
 
                     timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
                     totalTaskComplete = 0;
@@ -1367,8 +1365,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                         await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                     }
-
-                    cancellationTokenSourceTaskSyncSovereignUpdate.Cancel();
                 }
 
                 return totalSovereignUpdatedReceived;
@@ -1395,7 +1391,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         {
                             long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
 
-                            CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token);
+                            CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token);
 
                             foreach (int i in peerListTarget.Keys)
                             {
@@ -1530,7 +1526,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                             while (totalTaskDone < totalTaskToDo)
                             {
-                                if (timestampEnd <= TaskManager.TaskManager.CurrentTimestampMillisecond)
+                                if (timestampEnd <= TaskManager.TaskManager.CurrentTimestampMillisecond || cancellationTokenSourceTaskSync.IsCancellationRequested)
                                     break;
 
 
@@ -1540,7 +1536,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                             }
 
-                            cancellationTokenSourceTaskSync.Cancel();
 
                             try
                             {
@@ -1662,7 +1657,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         {
                             long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
 
-                            CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token);
+                            CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token);
 
                             foreach (int i in peerListTarget.Keys)
                             {
@@ -1794,7 +1789,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                             while (totalTaskDone < totalTaskToDo)
                             {
-                                if (timestampEnd <= TaskManager.TaskManager.CurrentTimestampMillisecond)
+                                if (timestampEnd <= TaskManager.TaskManager.CurrentTimestampMillisecond || cancellationTokenSourceTaskSync.IsCancellationRequested)
                                     break;
 
                                 if (totalResponseOk >= totalTaskToDo)
@@ -1802,8 +1797,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                 await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                             }
-
-                            cancellationTokenSourceTaskSync.Cancel();
 
 
                             try
@@ -1929,7 +1922,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                             int totalTaskDone = 0;
                             int totalResponseOk = 0;
 
-                            CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token);
+                            CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token);
 
 
 
@@ -2043,7 +2036,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                             while (totalTaskDone < totalTaskToDo)
                             {
-                                if (timestampEnd <= TaskManager.TaskManager.CurrentTimestampMillisecond)
+                                if (timestampEnd <= TaskManager.TaskManager.CurrentTimestampMillisecond || cancellationTokenSourceTaskSync.IsCancellationRequested)
                                     break;
 
 
@@ -2054,8 +2047,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
 
                             }
-
-                            cancellationTokenSourceTaskSync.Cancel();
 
 
                             try
@@ -2157,7 +2148,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                             int totalTaskDone = 0;
                             int totalResponseOk = 0;
 
-                            CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token);
+                            CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token);
 
 
                             foreach (int i in peerListTarget.Keys)
@@ -2275,20 +2266,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                             while (totalTaskDone < totalTaskToDo)
                             {
-                                if (timestampEnd <= TaskManager.TaskManager.CurrentTimestampMillisecond)
+                                if (timestampEnd <= TaskManager.TaskManager.CurrentTimestampMillisecond
+                                    || cancellationTokenSourceTaskSync.IsCancellationRequested)
                                     break;
 
                                 if (totalResponseOk >= totalTaskToDo)
                                     break;
 
-                                // It's a simple block data to ask, do not wait too much longer for retrieve it.
-                                if (_cancellationTokenServiceSync.IsCancellationRequested)
-                                    break;
 
                                 await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                             }
-
-                            cancellationTokenSourceTaskSync.Cancel();
 
                             try
                             {
@@ -2386,7 +2373,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         int totalTaskDone = 0;
                         int totalResponseOk = 0;
 
-                        CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token);
+                        CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token);
 
                         long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000);
 
@@ -2536,7 +2523,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                         while (totalTaskDone < totalTaskToDo)
                         {
-                            if (timestampEnd <= TaskManager.TaskManager.CurrentTimestampMillisecond)
+                            if (timestampEnd <= TaskManager.TaskManager.CurrentTimestampMillisecond || cancellationTokenSourceTaskSync.IsCancellationRequested)
                                 break;
 
                             if (totalResponseOk >= totalTaskToDo)
@@ -2545,7 +2532,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                             await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                         }
 
-                        cancellationTokenSourceTaskSync.Cancel();
 
                         try
                         {
@@ -2875,7 +2861,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     if (ClassPeerCheckManager.CheckPeerClientStatus(packetPeerList.PeerIpList[i], packetPeerList.PeerUniqueIdList[i], false, _peerNetworkSettingObject, _peerFirewallSettingObject))
                         continue;
 
-                    if (await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(packetPeerList.PeerIpList[i], packetPeerList.PeerPortList[i], packetPeerList.PeerUniqueIdList[i], cancellation, _peerNetworkSettingObject, _peerFirewallSettingObject), cancellation, false))
+                    if (await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(packetPeerList.PeerIpList[i], packetPeerList.PeerPortList[i], packetPeerList.PeerUniqueIdList[i], _peerNetworkSettingObject, _peerFirewallSettingObject), cancellation, false))
                         ClassLog.WriteLine("New Peer: " + packetPeerList.PeerIpList[i] + ":" + packetPeerList.PeerPortList[i] + " successfully registered.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
 
 
@@ -3798,7 +3784,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     if (exist)
                         ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].OnUpdateAuthKeys = true;
 
-                    if (await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(peerIp, peerPort, peerUniqueId, _cancellationTokenServiceSync, _peerNetworkSettingObject, _peerFirewallSettingObject), cancellation, forceUpdate))
+                    if (await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(peerIp, peerPort, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject), cancellation, forceUpdate))
                     {
                         ClassLog.WriteLine("Auth keys generated successfully sent, peer target auth keys successfully received and updated.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
                         if (ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
