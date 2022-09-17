@@ -239,7 +239,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             while (!successConnect)
             {
                 if (timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond ||
-                    peerCancellationTokenDoConnection.IsCancellationRequested || taskDone)
+                    peerCancellationTokenDoConnection.IsCancellationRequested)
                     break;
 
                 await Task.Delay(10);
