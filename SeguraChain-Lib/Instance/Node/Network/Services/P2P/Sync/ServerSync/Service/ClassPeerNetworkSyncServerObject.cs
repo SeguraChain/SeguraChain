@@ -109,8 +109,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     {
                         ClassCustomSocket clientPeerTcp = new ClassCustomSocket(await _tcpListenerPeer.AcceptSocketAsync(), true);
 
-
-
                         TaskManager.TaskManager.InsertTask(new Action(async () =>
                         {
                             string clientIp = clientPeerTcp.GetIp;
@@ -147,7 +145,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                         // Ignored, catch the exception once the task is cancelled.
                     }
                 }
-            }), 0, _cancellationTokenSourcePeerServer, null);
+            }), 0, _cancellationTokenSourcePeerServer, null, true);
 
             return true;
         }
@@ -247,10 +245,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                         // Against flood.
                         handlePeerClientStatus = await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.TryWaitAsync(cancellation);
                         if (handlePeerClientStatus)
-                            _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
+                             _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
                         else
                         {
-                            Debug.WriteLine("Failed to handle client ip from: " + clientIp + " | "+ _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection == null);
                             _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].Dispose();
                             return ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT;
                         }

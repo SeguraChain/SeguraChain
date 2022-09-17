@@ -3131,15 +3131,23 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
             int peerPort = peerNetworkClientSyncObject.PeerPortTarget;
             string peerUniqueId = peerNetworkClientSyncObject.PeerUniqueIdTarget;
 
-            ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+            ClassPeerPacketSendObject sendObject;
+            try
             {
-                PacketOrder = ClassPeerEnumPacketSend.ASK_BLOCK_DATA,
-                PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskBlockData()
+                 sendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
                 {
-                    BlockHeight = blockHeightTarget,
-                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
-                })
-            };
+                    PacketOrder = ClassPeerEnumPacketSend.ASK_BLOCK_DATA,
+                    PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskBlockData()
+                    {
+                        BlockHeight = blockHeightTarget,
+                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
+                    })
+                };
+            }
+            catch
+            {
+                return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>>(false, null);
+            }
 
 
             sendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(sendObject, peerIp, peerUniqueId, false, _peerNetworkSettingObject, cancellation);

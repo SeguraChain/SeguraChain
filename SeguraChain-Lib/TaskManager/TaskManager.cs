@@ -41,7 +41,7 @@ namespace SeguraChain_Lib.TaskManager
         {
             TaskManagerEnabled = true;
 
-           // SetThreadPoolValue(peerNetworkSettingObject);
+            SetThreadPoolValue(peerNetworkSettingObject);
 
             #region Auto run task stored.
 
@@ -58,7 +58,6 @@ namespace SeguraChain_Lib.TaskManager
             }), 0, _cancelTaskManager, null, true);
 
             #endregion
-
 
             #region Auto clean up dead tasks.
 

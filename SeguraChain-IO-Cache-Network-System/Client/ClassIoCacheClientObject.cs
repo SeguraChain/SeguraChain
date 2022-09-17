@@ -113,14 +113,9 @@ namespace SeguraChain_IO_Cache_Network_System.Client
                 _tcpClient?.Close();
                 _tcpClient?.Dispose();
             }
-#if !DEBUG
             catch
             {
-#else
-            catch (Exception error)
-            { 
-                Debug.WriteLine(error.Message);
-#endif
+
             }
 
             _listPacketData?.Clear();

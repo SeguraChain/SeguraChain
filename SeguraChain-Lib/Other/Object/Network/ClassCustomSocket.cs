@@ -106,12 +106,15 @@ namespace SeguraChain_Lib.Other.Object.Network
         public async Task<ReadPacketData> TryReadPacketData(int packetLength, CancellationTokenSource cancellation)
         {
             ReadPacketData readPacketData = new ReadPacketData();
-            _networkStream = new NetworkStream(_socket);
 
-            if (IsConnected())
+            try
             {
-                try
+                if (_networkStream == null)
+                    _networkStream = new NetworkStream(_socket);
+
+                if (IsConnected())
                 {
+
                     /*
                     while(!_socket.Blocking)
                     {
@@ -122,11 +125,12 @@ namespace SeguraChain_Lib.Other.Object.Network
                     }*/
                     readPacketData.Data = new byte[packetLength];
                     readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
-                }
-                catch
-                {
 
                 }
+            }
+            catch
+            {
+
             }
             return readPacketData;
         }

@@ -75,6 +75,7 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Object
         public int PeerMaxSemaphoreConnectAwaitDelay;
         public int PeerMaxRangeBlockToSyncPerRequest;
         public int PeerMaxRangeTransactionToSyncPerRequest;
+        public int PeerServerPacketDelay;
         public bool PeerEnableSyncTransactionByRange;
         public bool PeerEnableSovereignPeerVote;
         public int PeerMinThreadsPool;
@@ -125,6 +126,7 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Object
             PeerDelayDeleteDeadPeer = BlockchainSetting.PeerDelayDeleteDeadPeer;
             PeerMinPort = BlockchainSetting.PeerMinPort;
             PeerMaxPort = BlockchainSetting.PeerMaxPort;
+            PeerServerPacketDelay = BlockchainSetting.PeerServerPacketDelay;
             PeerMaxSemaphoreConnectAwaitDelay = BlockchainSetting.PeerMaxSemaphoreConnectAwaitDelay;
             PeerMaxRangeBlockToSyncPerRequest = BlockchainSetting.PeerMaxRangeBlockToSyncPerRequest;
             PeerMaxRangeTransactionToSyncPerRequest = BlockchainSetting.PeerMaxRangeTransactionToSyncPerRequest;

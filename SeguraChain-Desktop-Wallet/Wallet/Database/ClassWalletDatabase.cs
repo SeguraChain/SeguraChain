@@ -533,6 +533,7 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Database
                                                     }
                                                     catch(Exception error)
                                                     {
+
                                                         Debug.WriteLine("Failed to update the sync of the wallet file: " + walletFileName +" | Exception: "+error.Message);
                                                     }
 

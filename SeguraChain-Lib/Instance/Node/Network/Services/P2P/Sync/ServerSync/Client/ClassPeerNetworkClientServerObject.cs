@@ -155,7 +155,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 else
                 {
                     // If any packet are received after the delay, the function close the peer client connection to listen.
-                    if (ClientPeerLastPacketReceived + _peerNetworkSettingObject.PeerMaxDelayConnection < TaskManager.TaskManager.CurrentTimestampSecond)
+                    if (ClientPeerLastPacketReceived + _peerNetworkSettingObject.PeerServerPacketDelay < TaskManager.TaskManager.CurrentTimestampMillisecond)
                     {
                         // On this case, insert invalid attempt of connection.
                         if (!_clientResponseSendSuccessfully)
@@ -223,10 +223,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         /// <returns></returns>
         public void HandlePeerClient()
         {
-            ClientPeerLastPacketReceived = TaskManager.TaskManager.CurrentTimestampSecond + _peerNetworkSettingObject.PeerMaxDelayConnection;
+            ClientPeerLastPacketReceived = TaskManager.TaskManager.CurrentTimestampMillisecond + _peerNetworkSettingObject.PeerServerPacketDelay;
 
             // Launch a task for check the peer connection.
-            TaskManager.TaskManager.InsertTask(new Action(async () => await CheckPeerClientAsync()), 0, _cancellationTokenClientCheckConnectionPeer, _clientSocket);
+            TaskManager.TaskManager.InsertTask(new Action(async () => await CheckPeerClientAsync()), 0, _cancellationTokenClientCheckConnectionPeer, null, false);
 
             // Launch a task to handle packets received.
             TaskManager.TaskManager.InsertTask(new Action(async () =>
@@ -242,7 +242,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                             if (!readPacketData.Status)
                                 break;
 
-                            ClientPeerLastPacketReceived = TaskManager.TaskManager.CurrentTimestampSecond + _peerNetworkSettingObject.PeerMaxDelayConnection;
+                            ClientPeerLastPacketReceived = TaskManager.TaskManager.CurrentTimestampMillisecond + _peerNetworkSettingObject.PeerServerPacketDelay;
 
                             #region Handle packet content received, split the data.
 
@@ -341,7 +341,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                     ClosePeerClient(false);
                 }
-            }), 0, _cancellationTokenListenPeerPacket, null);
+            }), 0, _cancellationTokenListenPeerPacket, null, false);
 
         }
 
