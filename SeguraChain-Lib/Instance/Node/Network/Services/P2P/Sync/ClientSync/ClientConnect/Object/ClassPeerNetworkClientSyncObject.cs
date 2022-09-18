@@ -115,7 +115,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// <returns></returns>
         public async Task<bool> TrySendPacketToPeerTarget(byte[] packet, int peerPort, string peerUniqueId, CancellationTokenSource cancellation, ClassPeerEnumPacketResponse packetResponseExpected, bool keepAlive, bool broadcast)
         {
-            bool result = false;
 
             #region Clean up and cancel previous task.
 
@@ -142,7 +141,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
 
                 if (!await DoConnection())
+                {
+                    ClassLog.WriteLine("Failed to connect to peer " + PeerIpTarget, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_LOWEST_PRIORITY);
+                    ClassPeerCheckManager.InputPeerClientAttemptConnect(PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject);
+                    DisconnectFromTarget();
                     return false;
+                }
             }
 
             #endregion
@@ -154,13 +158,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             {
                 ClassPeerCheckManager.InputPeerClientNoPacketConnectionOpened(PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject);
                 DisconnectFromTarget();
+                return false;
             }
             else
-                result = broadcast ? true : await WaitPacketExpected(cancellation);
+                return broadcast ? true : await WaitPacketExpected(cancellation);
 
             #endregion
 
-            return result;
         }
 
         #region Initialize connection functions.
@@ -198,10 +202,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
             long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSetting.PeerMaxDelayToConnectToTarget * 1000);
 
-            if (_peerCancellationTokenMain.IsCancellationRequested)
-            {
-                Console.WriteLine("main token is dead.");
-            }
 
             var peerCancellationTokenDoConnection = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationTokenMain.Token, new CancellationTokenSource(_peerNetworkSetting.PeerMaxDelayToConnectToTarget * 1000).Token);
 
@@ -239,22 +239,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             while (!successConnect)
             {
                 if (timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond ||
-                    peerCancellationTokenDoConnection.IsCancellationRequested)
+                    peerCancellationTokenDoConnection.IsCancellationRequested )
                     break;
 
                 await Task.Delay(10);
 
             }
 
-            if (successConnect)
-                return true;
-            else
-            {
-                ClassLog.WriteLine("Failed to connect to peer " + PeerIpTarget, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_LOWEST_PRIORITY);
-                ClassPeerCheckManager.InputPeerClientAttemptConnect(PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject);
-                DisconnectFromTarget();
-                return false;
-            }
+            return successConnect;
         }
 
 
@@ -453,16 +445,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                             await Task.Delay(5 * 1000);
                         }
-                        catch (SocketException)
+                        catch (Exception e)
                         {
-                            _peerTaskKeepAliveStatus = false;
-                            break;
+                            if (e is SocketException || e is TaskCanceledException)
+                            {
+                                _peerTaskKeepAliveStatus = false;
+                                break;
+                            }
                         }
-                        catch (TaskCanceledException)
-                        {
-                            _peerTaskKeepAliveStatus = false;
-                            break;
-                        }
+
                     }
 
                 }), 0, _peerCancellationTokenKeepAlive, null);

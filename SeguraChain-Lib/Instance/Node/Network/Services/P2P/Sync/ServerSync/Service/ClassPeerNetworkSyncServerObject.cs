@@ -218,7 +218,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 // If it's a new incoming connection, create a new index of incoming connection.
                 if (!_listPeerIncomingConnectionObject.ContainsKey(clientIp))
                 {
-                    if (!_listPeerIncomingConnectionObject.TryAdd(clientIp, new ClassPeerIncomingConnectionObject(_peerNetworkSettingObject)))
+                   if (!_listPeerIncomingConnectionObject.TryAdd(clientIp, new ClassPeerIncomingConnectionObject(_peerNetworkSettingObject)))
                         return ClassPeerNetworkServerHandleConnectionEnum.INSERT_CLIENT_IP_EXCEPTION;
                 }
 
@@ -244,6 +244,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     {
                         // Against flood.
                         handlePeerClientStatus = await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.TryWaitAsync(cancellation);
+
+
+                        //Debug.WriteLine(handlePeerClientStatus + " | Random ID: "+ randomId+ " | Count: " + _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.Count);
+                        //_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
+
+
+                        
                         if (handlePeerClientStatus)
                              _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
                         else
@@ -394,7 +401,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 {
                     if (_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.Count > 0)
                     {
-                        _listPeerIncomingConnectionObject[clientIp].OnCleanUp = true;
+                        //_listPeerIncomingConnectionObject[clientIp].OnCleanUp = true;
 
                         using (DisposableList<long> listKey = new DisposableList<long>(false, 0, _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.Keys.ToList()))
                         {
@@ -429,7 +436,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                             }
                         }
 
-                        _listPeerIncomingConnectionObject[clientIp].OnCleanUp = false;
+                        //_listPeerIncomingConnectionObject[clientIp].OnCleanUp = false;
                     }
                 }
             }
@@ -491,7 +498,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     {
                         if (_listPeerIncomingConnectionObject[peerIncomingConnectionKey] != null && _listPeerIncomingConnectionObject[peerIncomingConnectionKey]?.ListPeerClientObject?.Count > 0)
                         {
-                            _listPeerIncomingConnectionObject[peerIncomingConnectionKey].OnCleanUp = true;
+                            //_listPeerIncomingConnectionObject[peerIncomingConnectionKey].OnCleanUp = true;
 
                             using (DisposableList<long> listKey = new DisposableList<long>(false, 0, _listPeerIncomingConnectionObject[peerIncomingConnectionKey].ListPeerClientObject.Keys.ToList()))
                             {
@@ -512,7 +519,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                 }
                             }
 
-                            _listPeerIncomingConnectionObject[peerIncomingConnectionKey].OnCleanUp = false;
+                            //_listPeerIncomingConnectionObject[peerIncomingConnectionKey].OnCleanUp = false;
                         }
                     }
                 }

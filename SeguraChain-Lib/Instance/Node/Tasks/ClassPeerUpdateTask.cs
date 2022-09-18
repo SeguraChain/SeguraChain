@@ -497,7 +497,7 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
                         if (lastBlockHeightTransactionConfirmationDone != nextBlockHeightTransactionConfirmationDone)
                         {
                             lastBlockHeightTransactionConfirmationDone = nextBlockHeightTransactionConfirmationDone;
-                            await ClassBlockchainDatabase.SaveBlockchainDatabase(_nodeInstance.PeerSettingObject.PeerBlockchainDatabaseSettingObject, true);
+                            await ClassBlockchainDatabase.SaveBlockchainDatabase(_nodeInstance.PeerSettingObject.PeerBlockchainDatabaseSettingObject, true, _cancellationTokenSourceUpdateTask);
                         }
                     }
                     catch
