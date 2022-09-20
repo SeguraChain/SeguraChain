@@ -18,6 +18,7 @@ using SeguraChain_Lib.Instance.Node.Network.Database.Manager;
 using SeguraChain_Lib.Instance.Node.Network.Enum.Manage;
 using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Other.Object.List;
+using SeguraChain_Lib.TaskManager;
 using SeguraChain_Lib.Utility;
 using SeguraChain_Peer.Mining.Instance;
 
@@ -43,6 +44,7 @@ namespace SeguraChain_Peer.CommandLine
         public const string StopSoloMining = "stop-solo-mining";
         public const string ShowMiningStats = "show-mining-stats";
         public const string GetNodeInternalStats = "get-node-internal-stats";
+        public const string GetTaskManagerStats = "get-task-manager-stats";
         public const string ClearConsoleCommand = "clear";
     }
 
@@ -123,7 +125,7 @@ namespace SeguraChain_Peer.CommandLine
                                 ClassLog.SimpleWriteLine(ClassConsoleCommandLineEnumeration.StopSoloMining + " - Stop the solo mining of your node.");
                                 ClassLog.SimpleWriteLine(ClassConsoleCommandLineEnumeration.ShowMiningStats + " - Show your solo mining stats.");
                                 ClassLog.SimpleWriteLine(ClassConsoleCommandLineEnumeration.GetNodeInternalStats + " - Show your node internal stats. Show the active memory used and stats of the cache if enabled.");
-
+                                ClassLog.SimpleWriteLine(ClassConsoleCommandLineEnumeration.GetTaskManagerStats + "  - Show task manager stats.");
                                 ClassLog.SimpleWriteLine(ClassConsoleCommandLineEnumeration.ClearConsoleCommand + " - Clear the console.");
                             }
                             break;
@@ -468,6 +470,12 @@ namespace SeguraChain_Peer.CommandLine
                                 }
                                 else
                                     ClassLog.SimpleWriteLine("No solo mining instance has been started.", ConsoleColor.Yellow);
+                            }
+                            break;
+                        case ClassConsoleCommandLineEnumeration.GetTaskManagerStats:
+                            {
+                                ClassLog.SimpleWriteLine("Count task(s) TaskManager: " + TaskManager.CountTask);
+                                ClassLog.SimpleWriteLine("Count task(s) completed: " + TaskManager.CountTaskCompleted);
                             }
                             break;
                         case ClassConsoleCommandLineEnumeration.ShowMiningStats:

@@ -11,7 +11,7 @@ namespace SeguraChain_Lib.TaskManager.Object
         public long Id;
         public bool Started;
         public bool Disposed;
-        public Action Action;
+        private Action _action;
         public Task Task;
         public CancellationTokenSource Cancellation;
         public long TimestampEnd;
@@ -26,7 +26,17 @@ namespace SeguraChain_Lib.TaskManager.Object
             Cancellation = cancellation;
             TimestampEnd = timestampEnd;
             Socket = socket;
-            Action = action;
+            _action = action;
+        }
+
+        /// <summary>
+        /// Run the action into a task.
+        /// </summary>
+        public void Run()
+        {
+            Started = true;
+
+            Task = Task.Run(_action, Cancellation.Token);
         }
     }
 }
