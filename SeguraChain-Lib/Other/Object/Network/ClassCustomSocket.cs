@@ -27,6 +27,7 @@ namespace SeguraChain_Lib.Other.Object.Network
         {
             _socket = socket;
 
+
             if (isServer)
             {
                 try
@@ -39,6 +40,7 @@ namespace SeguraChain_Lib.Other.Object.Network
                     Dispose();
                 }
             }
+
         }
 
         public async Task<bool> ConnectAsync(string ip, int port)
@@ -79,7 +81,7 @@ namespace SeguraChain_Lib.Other.Object.Network
             try
             {
                 // return !((_socket.Poll(10, SelectMode.SelectRead) && (_socket.Available == 0)));
-                return (Disposed || Closed || _socket == null || !_socket.Connected || _networkStream == null) ? false : true;
+                return (Disposed || Closed || _socket == null || !_socket.Connected || _networkStream == null) || ((_socket.Poll(10, SelectMode.SelectRead) && (_socket.Available == 0))) ? false : true;
             }
             catch
             {
@@ -115,14 +117,14 @@ namespace SeguraChain_Lib.Other.Object.Network
                 if (IsConnected())
                 {
 
-                    /*
+                    
                     while(!_socket.Blocking)
                     {
                         if (cancellation.IsCancellationRequested || !IsConnected())
                             return readPacketData;
 
                         await Task.Delay(1);
-                    }*/
+                    }
                     readPacketData.Data = new byte[packetLength];
                     readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
 

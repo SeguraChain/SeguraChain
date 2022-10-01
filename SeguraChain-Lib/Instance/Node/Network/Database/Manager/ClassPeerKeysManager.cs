@@ -125,6 +125,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         {
             bool peerUniqueIdExist = false;
 
+            if (sendAskPeerAuthKeysObject.AesEncryptionIv == null || sendAskPeerAuthKeysObject.AesEncryptionKey == null ||
+                sendAskPeerAuthKeysObject.PublicKey.IsNullOrEmpty(false, out _))
+                return peerUniqueIdExist;
 
             if (ClassPeerDatabase.DictionaryPeerDataObject.ContainsKey(peerIp))
             {
@@ -192,7 +195,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="peerNetworkSetting"></param>
         public static async Task<bool> UpdatePeerKeysReceiveTaskSync(string peerIp, string peerUniqueId, ClassPeerPacketSendPeerAuthKeys sendPeerAuthKeysObject, CancellationTokenSource cancellation, ClassPeerNetworkSettingObject peerNetworkSetting)
         {
+            if (sendPeerAuthKeysObject.AesEncryptionIv == null || sendPeerAuthKeysObject.AesEncryptionKey == null ||
+                sendPeerAuthKeysObject.NumericPublicKey.IsNullOrEmpty(false, out _) || sendPeerAuthKeysObject.PublicKey.IsNullOrEmpty(false, out _))
+                return false;
+
             bool peerUniqueIdExist = false;
+
+
             bool result = true;
             if (ClassPeerDatabase.DictionaryPeerDataObject.ContainsKey(peerIp))
             {

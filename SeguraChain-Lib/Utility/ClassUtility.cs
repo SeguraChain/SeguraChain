@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -947,6 +948,7 @@ namespace SeguraChain_Lib.Utility
             {
                 int countSeperator = packetData.Count(x => x == ClassPeerPacketSetting.PacketPeerSplitSeperator);
 
+         
                 string[] splitPacketData = packetData.Split(new[] { ClassPeerPacketSetting.PacketPeerSplitSeperator }, StringSplitOptions.None);
 
                 int completed = 0;
@@ -967,8 +969,12 @@ namespace SeguraChain_Lib.Utility
                 }
             }
             else
+            {
+                if (listPacketReceived.Count == 0)
+                    return listPacketReceived;
+
                 listPacketReceived[listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0].Packet += packetData.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
-            
+            }
             return listPacketReceived;
         }
 
@@ -1014,6 +1020,18 @@ namespace SeguraChain_Lib.Utility
             return null;
         }
 
+        /// <summary>
+        /// Get the address family from the IP.
+        /// </summary>
+        /// <param name="ip"></param>
+        /// <returns></returns>
+        public static AddressFamily GetAddressFamily(string ip)
+        {
+            if (IPAddress.TryParse(ip, out IPAddress address))
+                return address.AddressFamily == AddressFamily.InterNetworkV6 ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;
+
+            return AddressFamily.Unknown;
+        }
 
         #endregion
 

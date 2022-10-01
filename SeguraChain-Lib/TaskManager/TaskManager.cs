@@ -26,7 +26,7 @@ namespace SeguraChain_Lib.TaskManager
         /// Store tasks, task id's to delete.
         /// </summary>
         private static List<ClassTaskObject> _taskCollection = new List<ClassTaskObject>();
-        private static DisposableList<int> _listTaskIdCompleted = new DisposableList<int>();
+        private static DisposableList<long> _listTaskIdCompleted = new DisposableList<long>();
         private const int MaxTaskClean = 10000;
 
         /// <summary>
@@ -132,19 +132,17 @@ namespace SeguraChain_Lib.TaskManager
                             if (isLocked)
                             {
 
-                                using (DisposableList<int> listTaskToDelete = new DisposableList<int>(false, 0, _listTaskIdCompleted.GetList.ToArray()))
+                                using (DisposableList<long> listTaskToDelete = new DisposableList<long>(false, 0, _listTaskIdCompleted.GetList.ToArray()))
                                 {
-                                    for(int i = 0; i < listTaskToDelete.Count; i++)
+                                    foreach(long taskId in listTaskToDelete.GetList)
                                     {
-                                        if (i >= _taskCollection.Count)
-                                            break;
 
                                         try
                                         {
-                                            _taskCollection.RemoveAt(listTaskToDelete[i]);
+                                            _taskCollection.RemoveAll(x => x.Id == taskId);
                                             cleaned = true;
 
-                                            _listTaskIdCompleted.Remove(i);
+                                            _listTaskIdCompleted.Remove(taskId);
                                         }
                                         catch
                                         {
@@ -345,7 +343,7 @@ namespace SeguraChain_Lib.TaskManager
                                 // Ignored, the task dispose can failed.
                             }
 
-                            _listTaskIdCompleted.Add(i);
+                            _listTaskIdCompleted.Add(_taskCollection[i].Id);
                         }
                         catch (Exception error)
                         {

@@ -80,11 +80,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
                                     {
                                         if (IPAddress.TryParse(peerObject.PeerIp, out _))
                                         {
+                                            totalPeerRead++;
+
                                             // Ignore dead peers.
                                             bool insert = !(peerObject.PeerStatus == ClassPeerEnumStatus.PEER_DEAD ||
                                                             peerObject.PeerLastDeadTimestamp + peerNetworkSetting.PeerDeadDelay > TaskManager.TaskManager.CurrentTimestampSecond ||
                                                             peerObject.PeerLastPacketReceivedTimestamp + peerNetworkSetting.PeerDelayDeleteDeadPeer < TaskManager.TaskManager.CurrentTimestampSecond ||
-                                                            peerObject.PeerLastDeadTimestamp + peerNetworkSetting.PeerDelayDeleteDeadPeer >= TaskManager.TaskManager.CurrentTimestampSecond);
+                                                            peerObject.PeerLastDeadTimestamp + peerNetworkSetting.PeerDelayDeleteDeadPeer >= TaskManager.TaskManager.CurrentTimestampSecond) ||
+                                                            peerObject.PeerClientPacketEncryptionKey == null || peerObject.PeerClientPacketEncryptionKeyIv == null ||
+                                                    peerObject.PeerInternPacketEncryptionKey == null || peerObject.PeerInternPacketEncryptionKeyIv == null ||
+                                                    peerObject.PeerInternPrivateKey.IsNullOrEmpty(false, out _) || peerObject.PeerInternPublicKey.IsNullOrEmpty(false, out _);
 
 
                                             if (insert)
@@ -97,7 +102,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
                                                         DictionaryPeerDataObject[peerObject.PeerIp].TryAdd(peerObject.PeerUniqueId, peerObject);
                                                     else
                                                         DictionaryPeerDataObject[peerObject.PeerIp][peerObject.PeerUniqueId] = peerObject;
-                                                   
                                                 }
                                                 else
                                                 {
@@ -105,16 +109,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
                                                     DictionaryPeerDataObject[peerObject.PeerIp].TryAdd(peerObject.PeerUniqueId, peerObject);
                                                 }
 
-                                                #region Peer encryption streams.
-                                                if (peerObject.PeerClientPacketEncryptionKey != null && peerObject.PeerClientPacketEncryptionKeyIv != null)
-                                                    DictionaryPeerDataObject[peerObject.PeerIp][peerObject.PeerUniqueId].GetClientCryptoStreamObject = new ClassPeerCryptoStreamObject(peerObject.PeerIp, peerObject.PeerUniqueId, peerObject.PeerClientPacketEncryptionKey, peerObject.PeerClientPacketEncryptionKeyIv, peerObject.PeerClientPublicKey, peerObject.PeerInternPrivateKey, new CancellationTokenSource());
 
-                                                if (peerObject.PeerInternPacketEncryptionKey != null && peerObject.PeerInternPacketEncryptionKeyIv != null)
-                                                    DictionaryPeerDataObject[peerObject.PeerIp][peerObject.PeerUniqueId].GetInternCryptoStreamObject = new ClassPeerCryptoStreamObject(peerObject.PeerIp, peerObject.PeerUniqueId, peerObject.PeerInternPacketEncryptionKey, peerObject.PeerInternPacketEncryptionKeyIv, peerObject.PeerInternPublicKey, peerObject.PeerInternPrivateKey, new CancellationTokenSource());
-                                                
+                                                #region Peer encryption streams.
+
+                                                DictionaryPeerDataObject[peerObject.PeerIp][peerObject.PeerUniqueId].GetClientCryptoStreamObject = new ClassPeerCryptoStreamObject(peerObject.PeerIp, peerObject.PeerUniqueId, peerObject.PeerClientPacketEncryptionKey, peerObject.PeerClientPacketEncryptionKeyIv, peerObject.PeerClientPublicKey, peerObject.PeerInternPrivateKey, new CancellationTokenSource());
+
+                                                DictionaryPeerDataObject[peerObject.PeerIp][peerObject.PeerUniqueId].GetInternCryptoStreamObject = new ClassPeerCryptoStreamObject(peerObject.PeerIp, peerObject.PeerUniqueId, peerObject.PeerInternPacketEncryptionKey, peerObject.PeerInternPacketEncryptionKeyIv, peerObject.PeerInternPublicKey, peerObject.PeerInternPrivateKey, new CancellationTokenSource());
+
                                                 #endregion
 
-                                                totalPeerRead++;
                                             }
                                         }
                                     }
