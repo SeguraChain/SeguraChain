@@ -229,7 +229,6 @@ namespace SeguraChain_Lib.Instance.Node
             ClassLog.WriteLine("Close Peer Tool, please wait a moment..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
 
-
             #region Close OpenNAT port.
 
 #if !NET5_0_OR_GREATER

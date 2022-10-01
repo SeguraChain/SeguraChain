@@ -17,7 +17,6 @@ namespace SeguraChain_Lib.Other.Object.Network
 
 
         public bool Closed { private set; get; }
-        public bool Disposed { private set; get; }
 
         /// <summary>
         /// Constructor.
@@ -37,7 +36,6 @@ namespace SeguraChain_Lib.Other.Object.Network
                 catch
                 {
                     Close(SocketShutdown.Both);
-                    Dispose();
                 }
             }
 
@@ -81,7 +79,7 @@ namespace SeguraChain_Lib.Other.Object.Network
             try
             {
                 // return !((_socket.Poll(10, SelectMode.SelectRead) && (_socket.Available == 0)));
-                return (Disposed || Closed || _socket == null || !_socket.Connected || _networkStream == null) || ((_socket.Poll(10, SelectMode.SelectRead) && (_socket.Available == 0))) ? false : true;
+                return (Closed || _socket == null || !_socket.Connected || _networkStream == null) ? false : true;
             }
             catch
             {
@@ -117,14 +115,14 @@ namespace SeguraChain_Lib.Other.Object.Network
                 if (IsConnected())
                 {
 
-                    
+                    /*
                     while(!_socket.Blocking)
                     {
                         if (cancellation.IsCancellationRequested || !IsConnected())
                             return readPacketData;
 
                         await Task.Delay(1);
-                    }
+                    }*/
                     readPacketData.Data = new byte[packetLength];
                     readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
 
@@ -141,7 +139,6 @@ namespace SeguraChain_Lib.Other.Object.Network
         public void Kill(SocketShutdown shutdownType)
         {
             Close(shutdownType);
-            Dispose();
         }
 
         private void Close(SocketShutdown shutdownType)
@@ -158,14 +155,6 @@ namespace SeguraChain_Lib.Other.Object.Network
             }
         }
 
-        private void Dispose()
-        {
-            if (Disposed)
-                return;
-
-            Disposed = true;
-            _socket?.Dispose();
-        }
 
         public class ReadPacketData : IDisposable
         {

@@ -386,7 +386,6 @@ namespace SeguraChain_Lib.Blockchain.Database
         /// <returns></returns>
         public static async Task<bool> SaveBlockchainDatabase(ClassBlockchainDatabaseSetting blockchainDatabaseSetting)
         {
-            await BlockchainMemoryManagement.StopMemoryManagement();
 
             return await _semaphoreSaveBlockchain.TryWaitExecuteActionAsync(async () =>
             {
@@ -457,6 +456,7 @@ namespace SeguraChain_Lib.Blockchain.Database
 
                 ClassLog.WriteLine(totalBlockSaved + " block(s) successfully saved into database file.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                 ClassLog.WriteLine(totalTxSaved + " transaction(s) successfully saved into database file.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                await BlockchainMemoryManagement.StopMemoryManagement();
 
             }, _cancellationTokenStopBlockchain);
         }

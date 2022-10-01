@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -206,7 +207,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
             long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSetting.PeerMaxDelayToConnectToTarget * 1000);
 
-
             var peerCancellationTokenDoConnection = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationTokenMain.Token, new CancellationTokenSource(_peerNetworkSetting.PeerMaxDelayToConnectToTarget * 1000).Token);
 
             TaskManager.TaskManager.InsertTask(new Action(async () =>
@@ -311,10 +311,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                 listPacketReceived?.Clear();
 
-                using (listPacketReceived = new DisposableList<ClassReadPacketSplitted>())
+                using (listPacketReceived = new DisposableList<ClassReadPacketSplitted>(false, 0, new List<ClassReadPacketSplitted>()
                 {
-                    listPacketReceived.Add(new ClassReadPacketSplitted());
-
+                    new ClassReadPacketSplitted()
+                }))
+                {
                     while (PeerTaskStatus && PeerConnectStatus)
                     {
                         using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSetting.PeerMaxPacketBufferSize, _peerCancellationTokenTaskListenPeerPacketResponse))
@@ -322,14 +323,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                             ClassPeerCheckManager.UpdatePeerClientLastPacketReceived(PeerIpTarget, PeerUniqueIdTarget, TaskManager.TaskManager.CurrentTimestampSecond);
 
-                           
                             if (!readPacketData.Status)
                                 break;
 
                             #region Compile the packet.
 
-                            if (ClassPeerDatabase.ContainsPeer(PeerIpTarget, PeerUniqueIdTarget))
-                                listPacketReceived = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, _peerCancellationTokenTaskListenPeerPacketResponse);
+                            listPacketReceived = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, _peerCancellationTokenTaskListenPeerPacketResponse);
 
                             #endregion
 
@@ -338,7 +337,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                             if (countCompleted == 0)
                                 continue;
 
-                            if (listPacketReceived[listPacketReceived.Count -1].Used ||
+                            if (listPacketReceived[listPacketReceived.Count - 1].Used ||
                             !listPacketReceived[listPacketReceived.Count - 1].Complete ||
                              listPacketReceived[listPacketReceived.Count - 1].Packet == null ||
                              listPacketReceived[listPacketReceived.Count - 1].Packet.Length == 0)

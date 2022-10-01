@@ -226,7 +226,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             ClientPeerLastPacketReceived = TaskManager.TaskManager.CurrentTimestampMillisecond + _peerNetworkSettingObject.PeerServerPacketDelay;
 
             // Launch a task for check the peer connection.
-            TaskManager.TaskManager.InsertTask(new Action(async () => await CheckPeerClientAsync()), 0, _cancellationTokenClientCheckConnectionPeer, _clientSocket, false);
+            TaskManager.TaskManager.InsertTask(new Action(async () => await CheckPeerClientAsync()), 0, _cancellationTokenClientCheckConnectionPeer);
 
             // Launch a task to handle packets received.
             TaskManager.TaskManager.InsertTask(new Action(async () =>
@@ -327,21 +327,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                 }, 0, _cancellationTokenListenPeerPacket, null);
 
-                                listPacketReceived.GetList.RemoveAll(x => x.Used);
-
-
-                                if (_clientAskDisconnection || !ClientPeerConnectionStatus)
-                                {
-                                    ClientPeerConnectionStatus = false;
-                                    break;
-                                }
                             }
+
+                            listPacketReceived.GetList.RemoveAll(x => x.Used);
                         }
                     }
 
                     ClosePeerClient(false);
                 }
-            }), 0, _cancellationTokenListenPeerPacket, null, false);
+            }), 0, _cancellationTokenListenPeerPacket);
 
         }
 
@@ -1687,14 +1681,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                                             if (timestampStartWaitingResponse + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000) < TaskManager.TaskManager.CurrentTimestampMillisecond)
                                                                                 break;
 
-                                                                            try
-                                                                            {
-                                                                                await Task.Delay(100, _cancellationTokenListenPeerPacket.Token);
-                                                                            }
-                                                                            catch
-                                                                            {
+                                                                            if (!_cancellationTokenListenPeerPacket.IsCancellationRequested)
                                                                                 break;
-                                                                            }
+
+                                                                            await Task.Delay(100);
                                                                         }
 
                                                                         if (!_onWaitingMemPoolTransactionConfirmationReceived)
@@ -1740,14 +1730,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                                     if (timestampStartWaitingResponse + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000) < TaskManager.TaskManager.CurrentTimestampMillisecond)
                                                                         break;
 
-                                                                    try
-                                                                    {
-                                                                        await Task.Delay(100, _cancellationTokenListenPeerPacket.Token);
-                                                                    }
-                                                                    catch
-                                                                    {
+                                                                    if (!_cancellationTokenListenPeerPacket.IsCancellationRequested)
                                                                         break;
-                                                                    }
+
+                                                                    await Task.Delay(100);
+
                                                                 }
 
                                                                 if (!_onWaitingMemPoolTransactionConfirmationReceived)
@@ -1780,7 +1767,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                             _onSendingMemPoolTransaction = false;
 
-                                        }), 0, _cancellationTokenListenPeerPacket, _clientSocket);
+                                        }), 0, _cancellationTokenListenPeerPacket);
 
                                     }
                                     catch
