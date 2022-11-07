@@ -85,6 +85,5 @@ Every devs and potential users can send me their returns about the project, pote
 
 > Monero: 42D44q7CMG4G73EZqzmH3FW6GntGmEd4r1TaMt3VQg939s4B73EJ3twFoLwnwLkMUQeRsLAuXoFLdaFFQ54Pbseb8u1EEka
 
-> Litecoin: MCBC7r7WWBULBhRyYj4XzVco3XQMzM4URt
 
 
