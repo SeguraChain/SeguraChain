@@ -13,6 +13,8 @@ https://github.com/SeguraChain/SeguraChain/wiki/Setup-your-own-Blockchain
 
 Planned for the hard fork of **Xenophyte** once completed. > https://xenophyte.com/
 
+Planned future website: https://segurachain.com/
+
 Please read the whitepaper document, the document is not yet complete but most of important details are actually written.
 
 Once the whitepaper is complete, I will make the translation of this one into english.
@@ -72,7 +74,7 @@ Compilation Platform Target:
 https://github.com/SeguraChain/SeguraChain/wiki/Compilation-Platform-Target
 
 
-<h3>Contacts</h3>
+<h3>Contact</h3>
 
 Discord: https://discord.gg/mvc7v9FDyJ
 
