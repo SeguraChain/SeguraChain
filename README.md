@@ -1,4 +1,4 @@
-<h2>SeguraChain is experimental, do not use it like he is, until the stable release is complete and available.</h2>
+<h2>SeguraChain is not complete, do not use it in production, until a stable release is complete and available.</h2>
 
 Summary: SeguraChain (Secured Chain translated from Spanish) is a technology developed mainly in C#,
 it allows to easily create and understand a decentralized blockchain process, it can be configured to support a sovereign update system,
@@ -70,7 +70,6 @@ https://github.com/SeguraChain/SeguraChain/wiki/Description-of-the-Desktop-Walle
 
 Compilation Platform Target:
 https://github.com/SeguraChain/SeguraChain/wiki/Compilation-Platform-Target
-
 
 
 <h3>Contacts</h3>
