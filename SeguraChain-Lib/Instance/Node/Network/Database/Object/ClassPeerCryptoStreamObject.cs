@@ -28,8 +28,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         private ECPrivateKeyParameters _ecPrivateKeyParameters;
         private ECPublicKeyParameters _ecPublicKeyParameters;
 
+#if DEBUG
         private string PeerIp;
         private string PeerUniqueId;
+#endif
         private bool _initialized;
 
         /// <summary>
@@ -45,8 +47,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         /// <returns></returns>
         public ClassPeerCryptoStreamObject(string peerIp, string peerUniqueId, byte[] key, byte[] iv, string publicKey, string privateKey, CancellationTokenSource cancellation)
         {
+#if DEBUG
             PeerIp = peerIp;
             PeerUniqueId = peerUniqueId;
+#endif
             _semaphoreCryptoObject = new SemaphoreSlim(1, 1);
             UpdateEncryptionStream(key, iv, publicKey, privateKey, cancellation).Wait();
         }
@@ -100,9 +104,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
                 };
 
                 _encryptCryptoTransform = _aesManaged.CreateEncryptor(key, iv);
-
                 _decryptCryptoTransform = _aesManaged.CreateDecryptor(key, iv);
-
                 _ecPrivateKeyParameters = new ECPrivateKeyParameters(new BigInteger(ClassBase58.DecodeWithCheckSum(privateKey, true)), ClassWalletUtility.ECDomain);
                 _ecPublicKeyParameters = new ECPublicKeyParameters(ClassWalletUtility.ECParameters.Curve.DecodePoint(ClassBase58.DecodeWithCheckSum(publicKey, false)), ClassWalletUtility.ECDomain);
 
@@ -112,12 +114,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
 #if DEBUG
             catch (Exception error)
             {
-                Debug.WriteLine("Failed to initialize crypto object of : " + error.Message);
+                Debug.WriteLine("Failed to initialize crypto object of " + PeerIp + " | Exception:" + error.Message);
 #else
-            catch // Ignored.
+            catch 
 
             {
-            
+                // Ignored.
 #endif
                 _initialized = false;
             }
@@ -134,7 +136,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         {
             byte[] result = null;
 
-            if (!await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
+            await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
             {
                 if (_initialized && content != null && content?.Length > 0)
                 {
@@ -144,18 +146,18 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
 
                         result = _encryptCryptoTransform.TransformFinalBlock(packetPadded, 0, packetPadded.Length);
                     }
+#if DEBUG
+                    catch (Exception error)
+                    {
+                        Debug.WriteLine("Error to encrypt data to send to: " + PeerIp + ". Exception: " + error.Message);
+#else
                     catch
                     {
-                        // Ignored.
+                       // Ignored.
+#endif
                     }
                 }
-
-            }, cancellation))
-            {
-#if DEBUG
-                Debug.WriteLine("Failed to encrypt data.");
-#endif
-            }
+            }, cancellation);
 
 
             return result;
@@ -171,7 +173,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         {
             Tuple<byte[], bool> decryptResult = null;
 
-            if (!await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
+            await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
             {
                 if (_initialized && content != null && content?.Length > 0)
                 {
@@ -184,17 +186,18 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
                         decryptResult = new Tuple<byte[], bool>(result, result != null ? result.Length > 0 : false);
 
                     }
+#if DEBUG
+                    catch (Exception error)
+                    {
+                        Debug.WriteLine("Error to decrypt data from: " + PeerIp + ". Exception: " + error.Message);
+#else
                     catch
                     {
-                        // Ignored.
+                       // Ignored.
+#endif
                     }
                 }
-            }, cancellation))
-            {
-#if DEBUG
-                Debug.WriteLine("Failed to decrypt data.");
-#endif
-            }
+            }, cancellation);
 
             return decryptResult;
         }
@@ -210,7 +213,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
             string result = string.Empty;
 
 
-            return await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
+            await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
             {
                 try
                 {
@@ -228,10 +231,18 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
                     // Reset.
                     _signerDoSignature.Reset();
                 }
+#if DEBUG
+                catch (Exception error)
+                {
+                    Debug.WriteLine("Error to sign packet data to send to: " + PeerIp + ". Exception: " + error.Message);
+#else
                 catch
                 {
+                   // Ignored.
+#endif
                 }
-            }, cancellation) ? result : string.Empty;
+            }, cancellation);
+            return result;
         }
 
         /// <summary>
@@ -246,7 +257,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
 
             bool result = false;
 
-            return await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
+            await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
             {
                 try
                 {
@@ -282,14 +293,19 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
                     _signerCheckSignature.Reset();
 
                 }
+#if DEBUG
+                catch (Exception error)
+                {
+                    Debug.WriteLine("Error to check the signature of data from: " + PeerIp + ". Exception: " + error.Message);
+#else
                 catch
                 {
-#if DEBUG
-                    Debug.WriteLine("hash size: " + hash.Length);
+                   // Ignored.
 #endif
                     result = false;
                 }
-            }, cancellation) && result ? true : false;
+            }, cancellation);
+            return result;
         }
     }
 }

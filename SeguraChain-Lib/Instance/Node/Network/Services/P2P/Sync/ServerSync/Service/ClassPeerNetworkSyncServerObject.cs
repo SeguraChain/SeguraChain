@@ -136,7 +136,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                             }
 
 
-                        }), 0, null, null, false);
+                        }), 0, null, null, true);
 
 
                     }

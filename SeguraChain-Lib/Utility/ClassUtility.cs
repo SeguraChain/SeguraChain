@@ -929,52 +929,43 @@ namespace SeguraChain_Lib.Utility
             }
         }
 
-
+        /// <summary>
+        /// Return each packet splitted received.
+        /// </summary>
+        /// <returns></r
         /// <summary>
         /// Return each packet splitted received.
         /// </summary>
         /// <returns></returns>
         public static DisposableList<ClassReadPacketSplitted> GetEachPacketSplitted(byte[] packetBufferOnReceive, DisposableList<ClassReadPacketSplitted> listPacketReceived, CancellationTokenSource cancellation)
         {
-            string packetData = packetBufferOnReceive.GetStringFromByteArrayUtf8().Replace("\0", "");
-
             if (listPacketReceived.Disposed)
                 listPacketReceived = new DisposableList<ClassReadPacketSplitted>();
 
             if (listPacketReceived.Count == 0)
                 listPacketReceived.Add(new ClassReadPacketSplitted());
 
-            if (packetData.Contains(ClassPeerPacketSetting.PacketPeerSplitSeperator))
+            int completed = 0;
+            foreach (byte data in packetBufferOnReceive)
             {
-                int countSeperator = packetData.Count(x => x == ClassPeerPacketSetting.PacketPeerSplitSeperator);
+                char character = (char)data;
 
-         
-                string[] splitPacketData = packetData.Split(new[] { ClassPeerPacketSetting.PacketPeerSplitSeperator }, StringSplitOptions.None);
+                if (cancellation.IsCancellationRequested)
+                    break;
 
-                int completed = 0;
-                foreach (string data in splitPacketData)
+                if (character == '\0')
+                    continue;
+
+                if (character != ClassPeerPacketSetting.PacketPeerSplitSeperator)
+                    listPacketReceived[completed].Packet += character;
+                else
                 {
-                    if (cancellation.IsCancellationRequested)
-                        break;
-
-                    listPacketReceived[listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0].Packet += data.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
-
-                    if (completed < countSeperator)
-                    {
-                        listPacketReceived[listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0].Complete = true;
-                        break;
-                    }
-
+                    listPacketReceived[completed].Complete = true;
+                    listPacketReceived.Add(new ClassReadPacketSplitted());
                     completed++;
                 }
             }
-            else
-            {
-                if (listPacketReceived.Count == 0)
-                    return listPacketReceived;
 
-                listPacketReceived[listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0].Packet += packetData.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
-            }
             return listPacketReceived;
         }
 
