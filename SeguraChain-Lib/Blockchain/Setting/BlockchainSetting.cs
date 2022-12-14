@@ -84,8 +84,8 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public static string WalletAddressDevPublicKey(long timestampSovereignUpdate) => SovereignUpdateGetter.GetLastDevWalletPublicKey(timestampSovereignUpdate);
         public static string WalletAddressDev(long timestampSovereignUpdate) => SovereignUpdateGetter.GetLastDevWalletAddress(timestampSovereignUpdate);
 
-		public const string DefaultWalletAddressDevPublicKey ="YMBT7sXubw9ksQfJNYWxZvqAzyNob3yM3HvoReNBvJ8nYK7HeVAKVRfaqi1douAkmsPC3Tc1gFZjXrCzc2iGSn7jCtiiaGMm3n9k2eMsx3y2x4tQQCyfM876q83H8EdC9y9sL7WUGqZaHxsZnwNJ9TrFqvTj58y4FnaSxZAu3aiPXvjB7rYJF9ckX8BKTAJZ9reMrZ92Wun1Y34eG2wkK8dzoph";
-		public const string DefaultWalletAddressDev ="5RX2c5yToFS3NGzsesrQ6o3ywwcw2KTi5qVD54DfLWpPxn2qexqH4Gcjwsmqom2GKDsU6oZcgATbgUvm4SkFfFHPKbs2kVBTq3Q6hQvEExSN5x";
+		public const string DefaultWalletAddressDevPublicKey ="YHUFYPafSfBmrYa5GgPtStGtV7zbGNsGxkXs1GfJs6oRNv7cdFdsL2R32gyfTPnt3TLiKB8igcY4QqxtY2exu2vuaM6uRK5bgkyVwNq4Qwxy51dKfbNPaKwY7iQ4nnPJxyMNU9G7aLsPVvYTu1DYGnEegEjvr5qhgTgsySqsYCRJ64RmqobAbsQubLQPR55tQ2kwSxAhqiR3DyUn2Pj4nWQF3PY";
+		public const string DefaultWalletAddressDev ="5Pa3tTX6eeeewLUs9y9JNN21DKFJifmp3Rndmt5SLT7m6HRGnBhaPdbydejXHwVwkVxWUsYYR1bJK67PWNSXNpq4sNr6HyzVzJCQWtZebj6DH9";
 
         #endregion
 
@@ -106,7 +106,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int BlockDifficultyPrecision = 100_000; // The precision put on the difficulty factor calculated.
         public const int GenesisBlockHeight = 1; // The genesis block height.
         public static readonly BigInteger GenesisBlockAmount = 2_973_370 * CoinDecimal; // The genesis block amount reward has pre-mining.
-		public const string GenesisBlockFinalTransactionHash ="194AD472A5118B362DFCB6F6CE8CB424FE002D5BF80D901C7435BE80DCF06CA64C9F15B46F038C14E951209DD8F5C70A89A98D6ED5C19C58121C6538236F865E";
+		public const string GenesisBlockFinalTransactionHash ="51F2C9699F37AD6AB88B86235B0BF8E1D32F33285C107F570BE3466C2A703F04EF8D15821D9ED385120168B0663A4FD89DF51C82539C9A3CE5B6E69BD3BDD91D";
         public const int GenesisBlockTransactionCount = 1; // The maximum of transaction inserted on the genesis block.
         public const int BlockAmountNetworkConfirmations = 2; // The minimum amount of network checks on blocks to do with peers, before to enable the task of confirmations on the block.
         public const int BlockAmountSlowNetworkConfirmations = 5; // This amount increment another amount of network checks, once this one is reach, the network counter increment and this one return back to 0.
