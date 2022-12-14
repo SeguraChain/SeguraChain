@@ -303,9 +303,7 @@ namespace SeguraChain_Peer.Mining.Instance
             try
             {
                 if (!_cancellationTokenMiningTasks.IsCancellationRequested)
-                {
                     _cancellationTokenMiningTasks.Cancel();
-                }
             }
             catch
             {

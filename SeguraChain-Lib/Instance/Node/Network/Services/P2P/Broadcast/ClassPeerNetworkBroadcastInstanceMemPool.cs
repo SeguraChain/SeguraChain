@@ -654,7 +654,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 while (!broadcastResponsePacketStatus)
                 {
 
-                    if (_peerCancellationToken.IsCancellationRequested)
+                    if (cancellationReceiveBroadcastResponsePacket.IsCancellationRequested)
                         break;
 
                     if (failed)
@@ -663,14 +663,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     if (timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond)
                         break;
 
-                    try
-                    {
-                        await Task.Delay(10, _peerCancellationToken.Token);
-                    }
-                    catch
-                    {
-                        break;
-                    }
+                    await Task.Delay(10);
                 }
 
                 cancellationReceiveBroadcastResponsePacket.Cancel();

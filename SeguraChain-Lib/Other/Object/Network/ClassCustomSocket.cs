@@ -1,5 +1,6 @@
 ﻿using SeguraChain_Lib.Utility;
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -25,7 +26,7 @@ namespace SeguraChain_Lib.Other.Object.Network
         public ClassCustomSocket(Socket socket, bool isServer)
         {
             _socket = socket;
-
+            _socket.NoDelay = true;
 
             if (isServer)
             {
@@ -97,8 +98,9 @@ namespace SeguraChain_Lib.Other.Object.Network
             {
                 return await _networkStream.TrySendSplittedPacket(packetData, cancellation, packetPeerSplitSeperator);
             }
-            catch
+            catch (Exception error)
             {
+                Debug.WriteLine("Sending packet exception to " + GetIp + " | Exception: " + error.Message);
             }
             return false;
         }
@@ -107,30 +109,24 @@ namespace SeguraChain_Lib.Other.Object.Network
         {
             ReadPacketData readPacketData = new ReadPacketData();
 
+            if (!IsConnected())
+                return readPacketData;
+
             try
             {
-                if (_networkStream == null)
-                    _networkStream = new NetworkStream(_socket);
-
-                if (IsConnected())
+                while (_socket.Available == 0)
                 {
+                    if (cancellation.IsCancellationRequested || !IsConnected())
+                        return readPacketData;
 
-                    /*
-                    while(!_socket.Blocking)
-                    {
-                        if (cancellation.IsCancellationRequested || !IsConnected())
-                            return readPacketData;
-
-                        await Task.Delay(1);
-                    }*/
-                    readPacketData.Data = new byte[packetLength];
-                    readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
-
+                    await Task.Delay(1);
                 }
+                readPacketData.Data = new byte[packetLength];
+                readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
             }
-            catch
+            catch (Exception error)
             {
-
+                Debug.WriteLine("Reading packet exception from " + GetIp + " | Exception: " + error.Message);
             }
             return readPacketData;
         }

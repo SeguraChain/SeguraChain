@@ -109,16 +109,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     {
                         ClassCustomSocket clientPeerTcp = new ClassCustomSocket(await _tcpListenerPeer.AcceptSocketAsync(), true);
 
-                        TaskManager.TaskManager.InsertTask(new Action(async () =>
-                        {
-                            string clientIp = clientPeerTcp.GetIp;
+                        string clientIp = clientPeerTcp.GetIp;
 
-                            switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
-                            {
+                        switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
+                        {
 
 
 #if NET5_0_OR_GREATER
-                                case not ClassPeerNetworkServerHandleConnectionEnum.VALID_HANDLE:
+                            case not ClassPeerNetworkServerHandleConnectionEnum.VALID_HANDLE:
 
 #else
                                     case ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS:
@@ -127,16 +125,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                     case ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
 #endif
 
-                                    {
-                                        if (_firewallSettingObject.PeerEnableFirewallLink)
-                                            ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
-                                        clientPeerTcp.Kill(SocketShutdown.Both);
-                                    }
-                                    break;
-                            }
+                                {
+                                    if (_firewallSettingObject.PeerEnableFirewallLink)
+                                        ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
+                                    clientPeerTcp.Kill(SocketShutdown.Both);
+                                }
+                                break;
+                        }
 
 
-                        }), 0, null, null, true);
 
 
                     }
@@ -145,7 +142,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                         // Ignored, catch the exception once the task is cancelled.
                     }
                 }
-            }), 0, _cancellationTokenSourcePeerServer, null, true);
+            }), 0, _cancellationTokenSourcePeerServer);
 
             return true;
         }

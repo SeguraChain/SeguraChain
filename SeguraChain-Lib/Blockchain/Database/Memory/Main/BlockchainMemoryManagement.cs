@@ -704,14 +704,18 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                 long startHeight = lastBlockHeight;
                 while (startHeight >= BlockchainSetting.GenesisBlockHeight)
                 {
-                    if (_dictionaryBlockObjectMemory[startHeight].Content != null)
+                    if (_dictionaryBlockObjectMemory.ContainsKey(startHeight))
                     {
-                        if (_dictionaryBlockObjectMemory[startHeight].Content.BlockStatus == ClassBlockEnumStatus.LOCKED)
-                            totalBlockLocked++;
-                        else
+
+                        if (_dictionaryBlockObjectMemory[startHeight].Content != null)
                         {
-                            if (startHeight < lastBlockHeight)
-                                break;
+                            if (_dictionaryBlockObjectMemory[startHeight].Content.BlockStatus == ClassBlockEnumStatus.LOCKED)
+                                totalBlockLocked++;
+                            else
+                            {
+                                if (startHeight < lastBlockHeight)
+                                    break;
+                            }
                         }
                     }
                     startHeight--;
@@ -996,42 +1000,46 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     {
                         if (blockHeight < BlockchainSetting.GenesisBlockHeight || cancellation.IsCancellationRequested)
                             break;
-
+                        
                         bool found = false;
 
-                        if (_dictionaryBlockObjectMemory[blockHeight].Content != null)
+                        if (ContainsKey(blockHeight))
                         {
-                            if (_dictionaryBlockObjectMemory[blockHeight].Content.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
+                            if (_dictionaryBlockObjectMemory[blockHeight].Content != null)
                             {
-                                found = true;
-
-                                if (_dictionaryBlockObjectMemory[blockHeight].Content.BlockLastHeightTransactionConfirmationDone > 0 &&
-                                    _dictionaryBlockObjectMemory[blockHeight].Content.IsConfirmedByNetwork)
-                                {
-                                    lastBlockHeightTransactionConfirmationDone = blockHeight;
-                                    break;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            ClassBlockObject blockObject = await GetBlockMirrorObject(blockHeight, cancellation);
-
-                            if (blockObject != null)
-                            {
-                                if (blockObject.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
+                                if (_dictionaryBlockObjectMemory[blockHeight].Content.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
                                 {
                                     found = true;
 
-                                    if (blockObject.BlockLastHeightTransactionConfirmationDone > 0 &&
-                                        blockObject.IsConfirmedByNetwork)
+                                    if (_dictionaryBlockObjectMemory[blockHeight].Content.BlockLastHeightTransactionConfirmationDone > 0 &&
+                                        _dictionaryBlockObjectMemory[blockHeight].Content.IsConfirmedByNetwork)
                                     {
                                         lastBlockHeightTransactionConfirmationDone = blockHeight;
                                         break;
                                     }
                                 }
                             }
+                            else
+                            {
+                                ClassBlockObject blockObject = await GetBlockMirrorObject(blockHeight, cancellation);
+
+                                if (blockObject != null)
+                                {
+                                    if (blockObject.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
+                                    {
+                                        found = true;
+
+                                        if (blockObject.BlockLastHeightTransactionConfirmationDone > 0 &&
+                                            blockObject.IsConfirmedByNetwork)
+                                        {
+                                            lastBlockHeightTransactionConfirmationDone = blockHeight;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
                         }
+
 
                         if (!found)
                             listBlockHeight.Add(blockHeight);
@@ -1107,20 +1115,18 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     found = true;
                 }
 
-                if (!found)
+                if (found || ignoreLockedBlocks || !ContainsKey(blockHeightExpected))
+                    continue;
+
+                if (_dictionaryBlockObjectMemory[blockHeightExpected].Content != null)
                 {
-                    if (!ignoreLockedBlocks)
+                    if (_dictionaryBlockObjectMemory[blockHeightExpected].Content.BlockStatus == ClassBlockEnumStatus.LOCKED)
                     {
-                        if (_dictionaryBlockObjectMemory[blockHeightExpected].Content != null)
-                        {
-                            if (_dictionaryBlockObjectMemory[blockHeightExpected].Content.BlockStatus == ClassBlockEnumStatus.LOCKED)
-                            {
-                                blockMiss.Add(blockHeightExpected);
-                                countBlockListed++;
-                            }
-                        }
+                        blockMiss.Add(blockHeightExpected);
+                        countBlockListed++;
                     }
                 }
+            
             }
 
             return blockMiss;
@@ -4130,6 +4136,9 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                             if (blockHeight >= blockHeightStart && blockHeight <= blockHeightEnd)
                             {
+                                if (!ContainsKey(blockHeight))
+                                    continue;
+
                                 if (_dictionaryBlockObjectMemory[blockHeight].Content != null)
                                 {
                                     blockListAlreadyRetrieved.Add(blockHeight);

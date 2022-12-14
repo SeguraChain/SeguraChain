@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 using SeguraChain_Lib.Blockchain.Block.Object.Structure;
 using SeguraChain_Lib.Blockchain.Mining.Function;
 using SeguraChain_Lib.Blockchain.Mining.Object;
+using SeguraChain_Lib.Instance.Node.Setting.Object;
 using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Other.Object.SHA3;
+using SeguraChain_Lib.TaskManager;
 using SeguraChain_Lib.Utility;
 using SeguraChain_Solo_Miner.Network.Function;
 using SeguraChain_Solo_Miner.Network.Object;
@@ -197,6 +199,8 @@ namespace SeguraChain_Solo_Miner.Mining
         /// </summary>
         public void StartMining()
         {
+            TaskManager.EnableTaskManager(new ClassPeerNetworkSettingObject());
+
             if (GetMiningStatus)
                 StopMining();
 

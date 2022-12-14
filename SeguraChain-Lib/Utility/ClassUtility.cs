@@ -929,41 +929,51 @@ namespace SeguraChain_Lib.Utility
             }
         }
 
-        /// <summary>
-        /// Return each packet splitted received.
-        /// </summary>
-        /// <returns></r
+
         /// <summary>
         /// Return each packet splitted received.
         /// </summary>
         /// <returns></returns>
         public static DisposableList<ClassReadPacketSplitted> GetEachPacketSplitted(byte[] packetBufferOnReceive, DisposableList<ClassReadPacketSplitted> listPacketReceived, CancellationTokenSource cancellation)
         {
+            string packetData = packetBufferOnReceive.GetStringFromByteArrayUtf8().Replace("\0", "");
+
             if (listPacketReceived.Disposed)
                 listPacketReceived = new DisposableList<ClassReadPacketSplitted>();
 
             if (listPacketReceived.Count == 0)
                 listPacketReceived.Add(new ClassReadPacketSplitted());
 
-            int completed = 0;
-            foreach (byte data in packetBufferOnReceive)
+            if (packetData.Contains(ClassPeerPacketSetting.PacketPeerSplitSeperator))
             {
-                char character = (char)data;
+                int countSeperator = packetData.Count(x => x == ClassPeerPacketSetting.PacketPeerSplitSeperator);
 
-                if (cancellation.IsCancellationRequested)
-                    break;
+                string[] splitPacketData = packetData.Split(new[] { ClassPeerPacketSetting.PacketPeerSplitSeperator }, StringSplitOptions.None);
 
-                if (character == '\0')
-                    continue;
+                int completed = 0;
 
-                if (character != ClassPeerPacketSetting.PacketPeerSplitSeperator)
-                    listPacketReceived[completed].Packet += character;
-                else
+                foreach (string data in splitPacketData)
                 {
-                    listPacketReceived[completed].Complete = true;
-                    listPacketReceived.Add(new ClassReadPacketSplitted());
+                    if (cancellation.IsCancellationRequested)
+                        break;
+
+                    listPacketReceived[listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0].Packet += data.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
+
+                    if (completed < countSeperator)
+                    {
+                        listPacketReceived[listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0].Complete = true;
+                        break;
+                    }
+
                     completed++;
                 }
+            }
+            else
+            {
+                int index = listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0;
+
+                if (index < listPacketReceived.Count)
+                    listPacketReceived[index].Packet += packetData;
             }
 
             return listPacketReceived;
@@ -1357,6 +1367,7 @@ namespace SeguraChain_Lib.Utility
                         Array.Copy(packetBytesToSend, countPacketSendLength, dataBytes, 0, packetSize);
 
                         await networkStream.WriteAsync(dataBytes, 0, dataBytes.Length, cancellation.Token);
+
                         countPacketSendLength += packetSize;
 
                         if (countPacketSendLength >= packetLength)
@@ -1365,6 +1376,7 @@ namespace SeguraChain_Lib.Utility
                     }
 
                     await networkStream.FlushAsync(cancellation.Token);
+
                 }
                 else
                 {
@@ -1449,6 +1461,7 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         public static async Task<bool> TryWaitAsync(this SemaphoreSlim semaphore, int delay, CancellationTokenSource cancellation)
         {
+
             try
             {
                 return await semaphore.WaitAsync(delay, cancellation.Token);
@@ -1469,15 +1482,31 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         public static async Task<bool> TryWaitExecuteActionAsync(this SemaphoreSlim semaphore, Action action, CancellationTokenSource cancellation)
         {
-            if (await semaphore.TryWaitAsync(cancellation))
+            bool useSemaphore = false;
+
+            try
             {
-                action.Invoke();
 
-                semaphore.Release();
-                return true;
+                useSemaphore = await semaphore.TryWaitAsync(cancellation);
+
+                if (!useSemaphore)
+                    return false;
+
+                try
+                {
+                    action.Invoke();
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
             }
-
-            return false;
+            finally
+            {
+                if (useSemaphore)
+                    semaphore.Release();
+            }
         }
 
 
@@ -1491,15 +1520,30 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         public static bool TryWaitExecuteAction(this SemaphoreSlim semaphore, Action action, CancellationTokenSource cancellation)
         {
-            if (semaphore.TryWait(cancellation))
+            bool useSemaphore = false;
+
+            try
             {
-                action.Invoke();
 
-                semaphore.Release();
-                return true;
+                useSemaphore = semaphore.TryWait(cancellation);
+
+                if (!useSemaphore)
+                    return false;
+                try
+                {
+                    action.Invoke();
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
             }
-
-            return false;
+            finally
+            {
+                if (useSemaphore)
+                    semaphore.Release();
+            }
         }
 
 

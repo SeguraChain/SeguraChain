@@ -63,7 +63,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// <summary>
         /// Specifications of the connection opened.
         /// </summary>
-        private ClassPeerEnumPacketResponse _packetResponseExpected;
+        public ClassPeerEnumPacketResponse PacketResponseExpected;
         private DisposableList<ClassReadPacketSplitted> listPacketReceived;
         private bool _keepAlive;
 
@@ -130,7 +130,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
             #region Init the client sync object.
 
-            _packetResponseExpected = packetResponseExpected;
+            PacketResponseExpected = packetResponseExpected;
             _keepAlive = keepAlive;
             PeerPortTarget = peerPort;
             PeerUniqueIdTarget = peerUniqueId;
@@ -158,7 +158,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             #region Send packet and wait packet response.
 
 
-            if (!await SendPeerPacket(packet, cancellation))
+            if (!await SendPeerPacket(packet, _peerCancellationTokenMain))
             {
                 ClassPeerCheckManager.InputPeerClientNoPacketConnectionOpened(PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject);
                 DisconnectFromTarget();
@@ -369,7 +369,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                             PeerPacketTypeReceived = peerPacketReceived.PacketOrder;
 
-                            if (peerPacketReceived.PacketOrder == _packetResponseExpected)
+                            if (peerPacketReceived.PacketOrder == PacketResponseExpected)
                             {
                                 PeerPacketReceivedStatus = true;
 
@@ -381,7 +381,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                             }
 #if DEBUG
                             else
-                                Debug.WriteLine("Failed, the packet order expected is invalid: " + peerPacketReceived.PacketOrder + "/" + _packetResponseExpected);
+                                Debug.WriteLine("Failed, the packet order expected is invalid: " + peerPacketReceived.PacketOrder + "/" + PacketResponseExpected);
 #endif
                             break;
                         }
@@ -475,14 +475,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// <returns></returns>
         private async Task<bool> SendPeerPacket(byte[] packet, CancellationTokenSource cancellation)
         {
-            try
-            {
-                return await _peerSocketClient.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(Convert.ToBase64String(packet) + ClassPeerPacketSetting.PacketPeerSplitSeperator), cancellation, _peerNetworkSetting.PeerMaxPacketSplitedSendSize);
-            }
-            catch
-            {
-                return false;
-            }
+            return await _peerSocketClient.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(Convert.ToBase64String(packet) + ClassPeerPacketSetting.PacketPeerSplitSeperator), cancellation, _peerNetworkSetting.PeerMaxPacketSplitedSendSize);
         }
 
         private void CancelHandlePacket()

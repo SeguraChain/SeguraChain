@@ -222,25 +222,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
             return ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPublicKey == peerPublicKeyReceived;
         }
 
-        /// <summary>
-        /// Return the amount of peers alive from a list.
-        /// </summary>
-        /// <param name="peerListTarget"></param>
-        /// <param name="peerNetworkSettingObject"></param>
-        /// <param name="peerFirewallSettingObject"></param>
-        /// <returns></returns>
-        public static int GetCountPeerAliveFromList(Dictionary<int, ClassPeerTargetObject> peerListTarget, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject)
-        {
-            int count = 0;
 
-            foreach(var peer in peerListTarget)
-            {
-                if (CheckPeerClientStatus(peer.Value.PeerIpTarget, peer.Value.PeerUniqueIdTarget, false, peerNetworkSettingObject, peerFirewallSettingObject))
-                    count++;
-            }
-
-            return count;
-        }
 
         #endregion
 
@@ -528,9 +510,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
             else
             {
                 ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastBadStatePacket = TaskManager.TaskManager.CurrentTimestampSecond;
-                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientTotalValidPacket = 0;
-                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientTotalPassedPeerPacketSignature = 0;
-                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist = 0;
+                //ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientTotalValidPacket = 0;
+                //ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientTotalPassedPeerPacketSignature = 0;
+                //ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist = 0;
             }
 
         }

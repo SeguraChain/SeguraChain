@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Reflection;
 using SeguraChain_Lib.Blockchain.Setting;
 using SeguraChain_Lib.Log;
+using SeguraChain_Lib.TaskManager;
 using SeguraChain_Solo_Miner.Argument.Enum;
 using SeguraChain_Solo_Miner.Argument.Function;
 using SeguraChain_Solo_Miner.Exception;
@@ -26,6 +27,7 @@ namespace SeguraChain_Solo_Miner
         /// <param name="args"></param>
         static void Main(string[] args)
         {
+
             AppDomain.CurrentDomain.UnhandledException += ClassUnhandledException.UnhandledException;
             Console.CancelKeyPress += Console_CancelKeyPress;
             ClassLog.SimpleWriteLine(BlockchainSetting.CoinName + " Solo Miner " + Assembly.GetExecutingAssembly().GetName().Version, ConsoleColor.Magenta);
