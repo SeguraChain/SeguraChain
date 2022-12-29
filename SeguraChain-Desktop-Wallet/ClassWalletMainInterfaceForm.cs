@@ -953,10 +953,10 @@ namespace SeguraChain_Desktop_Wallet
                                 labelMainInterfaceNetworkStatsTotalTransactionText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_TRANSACTION_TEXT + blockchainNetworkStatsObject.TotalTransactions;
                                 labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_TRANSACTION_CONFIRMED_TEXT + blockchainNetworkStatsObject.TotalTransactionsConfirmed + @"/" + blockchainNetworkStatsObject.TotalTransactions;
                                 labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_BLOCK_UNLOCKED_CHECKED_TEXT + blockchainNetworkStatsObject.LastBlockHeightTransactionConfirmationDone + @"/" + blockchainNetworkStatsObject.LastBlockHeightUnlocked + _walletMainFormLanguageObject.TEXT_SPACE + @"(" + blockchainNetworkStatsObject.TotalTaskConfirmationsDoneProgress + @"%)";
-                                labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_COIN_CIRCULATING_TEXT + blockchainNetworkStatsObject.TotalCoinCirculatingFormatted + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinMinName;
-                                labelMainInterfaceNetworkStatsTotalCoinPendingText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_COIN_PENDING_TEXT + blockchainNetworkStatsObject.TotalCoinPendingFormatted + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinMinName;
-                                labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_FEE_CIRCULATING_TEXT + blockchainNetworkStatsObject.TotalCoinFeeFormatted + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinMinName;
-                                labelMainInterfaceNetworkStatsTotalCoinSpreadText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_COIN_SPREAD_TEXT + blockchainNetworkStatsObject.TotalCoinsSpreadFormatted + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinMinName;
+                                labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_COIN_CIRCULATING_TEXT + blockchainNetworkStatsObject.TotalCoinCirculatingFormatted + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinTickerName;
+                                labelMainInterfaceNetworkStatsTotalCoinPendingText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_COIN_PENDING_TEXT + blockchainNetworkStatsObject.TotalCoinPendingFormatted + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinTickerName;
+                                labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_FEE_CIRCULATING_TEXT + blockchainNetworkStatsObject.TotalCoinFeeFormatted + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinTickerName;
+                                labelMainInterfaceNetworkStatsTotalCoinSpreadText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_COIN_SPREAD_TEXT + blockchainNetworkStatsObject.TotalCoinsSpreadFormatted + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinTickerName;
                                 complete = true;
                             };
 
@@ -1025,18 +1025,18 @@ namespace SeguraChain_Desktop_Wallet
 
 
                                     // Available balance.
-                                    labelMainInterfaceAvailableBalanceAmountText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_AVAILABLE_BALANCE_AMOUNT_TEXT + currentWalletBalanceObjectOpened.WalletAvailableBalance + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinMinName;
+                                    labelMainInterfaceAvailableBalanceAmountText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_AVAILABLE_BALANCE_AMOUNT_TEXT + currentWalletBalanceObjectOpened.WalletAvailableBalance + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinTickerName;
                                     labelMainInterfaceAvailableBalanceAmountText.Location = new Point(panelSeperatorBalanceLine.Location.X, labelMainInterfaceAvailableBalanceAmountText.Location.Y);
 
                                     // Pending balance.
-                                    labelMainInterfacePendingBalanceAmountText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_PENDING_BALANCE_AMOUNT_TEXT + currentWalletBalanceObjectOpened.WalletPendingBalance + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinMinName;
+                                    labelMainInterfacePendingBalanceAmountText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_PENDING_BALANCE_AMOUNT_TEXT + currentWalletBalanceObjectOpened.WalletPendingBalance + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinTickerName;
                                     labelMainInterfacePendingBalanceAmountText.Location = new Point(panelSeperatorBalanceLine.Location.X, labelMainInterfacePendingBalanceAmountText.Location.Y);
 
                                     // Total balance.
-                                    labelMainInterfaceTotalBalanceAmountText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_TOTAL_BALANCE_AMOUNT_TEXT + currentWalletBalanceObjectOpened.WalletTotalBalance + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinMinName;
+                                    labelMainInterfaceTotalBalanceAmountText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_TOTAL_BALANCE_AMOUNT_TEXT + currentWalletBalanceObjectOpened.WalletTotalBalance + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinTickerName;
                                     labelMainInterfaceTotalBalanceAmountText.Location = new Point(panelSeperatorBalanceLine.Location.X, labelMainInterfaceTotalBalanceAmountText.Location.Y);
 
-                                    labelSendTransactionAvailableBalanceText.Text = _walletMainFormLanguageObject.LABEL_SEND_TRANSACTION_AVAILABLE_BALANCE_TEXT + _walletMainFormLanguageObject.TEXT_SPACE + ClassTransactionUtility.GetFormattedAmountFromBigInteger(walletAvailableBalanceBigInteger) + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinMinName;
+                                    labelSendTransactionAvailableBalanceText.Text = _walletMainFormLanguageObject.LABEL_SEND_TRANSACTION_AVAILABLE_BALANCE_TEXT + _walletMainFormLanguageObject.TEXT_SPACE + ClassTransactionUtility.GetFormattedAmountFromBigInteger(walletAvailableBalanceBigInteger) + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinTickerName;
 
                                 }
                                 catch
@@ -2209,7 +2209,7 @@ namespace SeguraChain_Desktop_Wallet
                                         textBoxSendTransactionFeeCalculated.Text = ClassTransactionUtility.GetFormattedAmountFromBigInteger(sendTransactionFeeCostCalculationResult.TotalFeeCost);
                                         textBoxSendTransactionFeeSizeCost.Text = ClassTransactionUtility.GetFormattedAmountFromBigInteger(sendTransactionFeeCostCalculationResult.FeeSizeCost);
                                         textBoxSendTransactionFeeConfirmationCost.Text = ClassTransactionUtility.GetFormattedAmountFromBigInteger(sendTransactionFeeCostCalculationResult.FeeConfirmationCost);
-                                        textBoxSendTransactionAmountToSpend.Text = ClassTransactionUtility.GetFormattedAmountFromBigInteger(sumToSpend) + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinMinName;
+                                        textBoxSendTransactionAmountToSpend.Text = ClassTransactionUtility.GetFormattedAmountFromBigInteger(sumToSpend) + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinTickerName;
                                     }
                                 }
                                 else

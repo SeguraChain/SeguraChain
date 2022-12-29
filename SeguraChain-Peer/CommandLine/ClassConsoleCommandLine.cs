@@ -171,10 +171,10 @@ namespace SeguraChain_Peer.CommandLine
                                     ClassLog.SimpleWriteLine("Total Block Transaction(s): " + blockchainNetworkStatsObjectObject.TotalTransactions);
                                     ClassLog.SimpleWriteLine("Total Block Transaction(s) confirmed: " + blockchainNetworkStatsObjectObject.TotalTransactionsConfirmed + "/" + blockchainNetworkStatsObjectObject.TotalTransactions);
                                     ClassLog.SimpleWriteLine("Amount of Blocks unlocked checked: " + blockchainNetworkStatsObjectObject.LastBlockHeightTransactionConfirmationDone + "/" + blockchainNetworkStatsObjectObject.LastBlockHeightUnlocked + " (" + blockchainNetworkStatsObjectObject.TotalTaskConfirmationsDoneProgress + "%)");
-                                    ClassLog.SimpleWriteLine("Total amount of coin(s) circulating on the chain: " + blockchainNetworkStatsObjectObject.TotalCoinCirculatingFormatted + " " + BlockchainSetting.CoinMinName);
-                                    ClassLog.SimpleWriteLine("Total amount of fee(s) circulating on the chain: " + blockchainNetworkStatsObjectObject.TotalCoinFeeFormatted + " " + BlockchainSetting.CoinMinName);
-                                    ClassLog.SimpleWriteLine("Total amount of coin(s) in pending on the chain: " + blockchainNetworkStatsObjectObject.TotalCoinPendingFormatted + " " + BlockchainSetting.CoinMinName);
-                                    ClassLog.SimpleWriteLine("Total confirmed coins spread on the blockchain: " + blockchainNetworkStatsObjectObject.TotalCoinsSpreadFormatted.ToString("N" + BlockchainSetting.CoinDecimalNumber, CultureInfo.InvariantCulture) + "/" + blockchainNetworkStatsObjectObject.TotalSupply.ToString("N" + BlockchainSetting.CoinDecimalNumber, CultureInfo.InvariantCulture) + " " + BlockchainSetting.CoinMinName);
+                                    ClassLog.SimpleWriteLine("Total amount of coin(s) circulating on the chain: " + blockchainNetworkStatsObjectObject.TotalCoinCirculatingFormatted + " " + BlockchainSetting.CoinTickerName);
+                                    ClassLog.SimpleWriteLine("Total amount of fee(s) circulating on the chain: " + blockchainNetworkStatsObjectObject.TotalCoinFeeFormatted + " " + BlockchainSetting.CoinTickerName);
+                                    ClassLog.SimpleWriteLine("Total amount of coin(s) in pending on the chain: " + blockchainNetworkStatsObjectObject.TotalCoinPendingFormatted + " " + BlockchainSetting.CoinTickerName);
+                                    ClassLog.SimpleWriteLine("Total confirmed coins spread on the blockchain: " + blockchainNetworkStatsObjectObject.TotalCoinsSpreadFormatted.ToString("N" + BlockchainSetting.CoinDecimalNumber, CultureInfo.InvariantCulture) + "/" + blockchainNetworkStatsObjectObject.TotalSupply.ToString("N" + BlockchainSetting.CoinDecimalNumber, CultureInfo.InvariantCulture) + " " + BlockchainSetting.CoinTickerName);
 
                                     CommandShowSoloMiningStats();
                                 }
@@ -409,8 +409,8 @@ namespace SeguraChain_Peer.CommandLine
                                                 walletPendingBalanceDecimalsCalculated = (decimal)resultBalance.WalletPendingBalance / BlockchainSetting.CoinDecimal;
                                             }
 
-                                            ClassLog.SimpleWriteLine("Confirmed Wallet Balance of " + walletAddress + " is: " + walletBalanceDecimalsCalculated.ToString("N" + BlockchainSetting.CoinDecimalNumber, CultureInfo.InvariantCulture) + " " + BlockchainSetting.CoinMinName + ".");
-                                            ClassLog.SimpleWriteLine("Pending Wallet Balance of " + walletAddress + " is: " + walletPendingBalanceDecimalsCalculated.ToString("N" + BlockchainSetting.CoinDecimalNumber, CultureInfo.InvariantCulture) + " " + BlockchainSetting.CoinMinName + ".");
+                                            ClassLog.SimpleWriteLine("Confirmed Wallet Balance of " + walletAddress + " is: " + walletBalanceDecimalsCalculated.ToString("N" + BlockchainSetting.CoinDecimalNumber, CultureInfo.InvariantCulture) + " " + BlockchainSetting.CoinTickerName + ".");
+                                            ClassLog.SimpleWriteLine("Pending Wallet Balance of " + walletAddress + " is: " + walletPendingBalanceDecimalsCalculated.ToString("N" + BlockchainSetting.CoinDecimalNumber, CultureInfo.InvariantCulture) + " " + BlockchainSetting.CoinTickerName + ".");
                                         }
                                         else
                                             ClassLog.SimpleWriteLine(walletAddress + " is not a valid wallet address.", ConsoleColor.Red);

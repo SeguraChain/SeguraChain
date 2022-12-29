@@ -581,7 +581,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                     case ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION:
                         {
                             _graphicsRecentTransactionHistory.DrawImage(Resources.Wallet_Logo_mining_transaction, rectanglePictureTransactionType);
-                            string transactionAmountText = @"+" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount) + " " + BlockchainSetting.CoinMinName;
+                            string transactionAmountText = @"+" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount) + " " + BlockchainSetting.CoinTickerName;
                             float positionAmountX = ((_widthRecentTransactionHistory * 70f) / 100f) - _graphicsRecentTransactionHistory.MeasureString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont).Width;
 
                             if (recentTransactionHistoryObject.IsMemPool)
@@ -601,9 +601,9 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                             string transactionAmountText;
 
                             if (recentTransactionHistoryObject.IsSender)
-                                transactionAmountText = @"-" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount) + " " + BlockchainSetting.CoinMinName;
+                                transactionAmountText = @"-" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount) + " " + BlockchainSetting.CoinTickerName;
                             else
-                                transactionAmountText = @"+" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount) + " " + BlockchainSetting.CoinMinName;
+                                transactionAmountText = @"+" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount) + " " + BlockchainSetting.CoinTickerName;
 
                             float positionAmountX = ((_widthRecentTransactionHistory * 70f) / 100f) - _graphicsRecentTransactionHistory.MeasureString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont).Width;
 
@@ -626,14 +626,14 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                             if (recentTransactionHistoryObject.IsSender)
                             {
                                 _graphicsRecentTransactionHistory.DrawImage(Resources.Wallet_Logo_outgoing_normal_transaction, rectanglePictureTransactionType);
-                                transactionAmountText = @"-" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount + blockTransaction.TransactionObject.Fee) + " " + BlockchainSetting.CoinMinName;
+                                transactionAmountText = @"-" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount + blockTransaction.TransactionObject.Fee) + " " + BlockchainSetting.CoinTickerName;
                                 float positionAmountX = ((_widthRecentTransactionHistory * 70f) / 100f) - _graphicsRecentTransactionHistory.MeasureString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont).Width;
                                 _graphicsRecentTransactionHistory.DrawString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont, new SolidBrush(ClassWalletDefaultSetting.DefaultLabelTransactionOutgoingForeColor), positionAmountX, positionAmountY);
                             }
                             else
                             {
                                 _graphicsRecentTransactionHistory.DrawImage(Resources.Wallet_Logo_incoming_normal_transaction, rectanglePictureTransactionType);
-                                transactionAmountText = @"+" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount) + " " + BlockchainSetting.CoinMinName;
+                                transactionAmountText = @"+" + ClassTransactionUtility.GetFormattedAmountFromBigInteger(blockTransaction.TransactionObject.Amount) + " " + BlockchainSetting.CoinTickerName;
 
                                 float positionAmountX = ((_widthRecentTransactionHistory * 70f) / 100f) - _graphicsRecentTransactionHistory.MeasureString(transactionAmountText, ClassWalletDefaultSetting.DefaultPanelRecentTransactionHistoryFont).Width;
 

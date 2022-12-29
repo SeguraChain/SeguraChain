@@ -1381,7 +1381,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                 // Draw transaction amount.
                 positionBaseX = _dictionaryTransactionHistory[walletFileOpened].ColumnHashMaxWidth;
 
-                string amountToShow = ClassGraphicsUtility.GetMeasureStringToDraw((ClassTransactionUtility.GetFormattedAmountFromBigInteger(transactionHistoryInformationObject.Amount) + @" " + BlockchainSetting.CoinMinName), positionBaseX, _dictionaryTransactionHistory[walletFileOpened].ColumnAmountMaxWidth, _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, middlePositionX, out widthText);
+                string amountToShow = ClassGraphicsUtility.GetMeasureStringToDraw((ClassTransactionUtility.GetFormattedAmountFromBigInteger(transactionHistoryInformationObject.Amount) + @" " + BlockchainSetting.CoinTickerName), positionBaseX, _dictionaryTransactionHistory[walletFileOpened].ColumnAmountMaxWidth, _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, middlePositionX, out widthText);
 
                 positionBaseX = (positionBaseX + middlePositionX) - (widthText / 2);
 
@@ -1730,7 +1730,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                     // Draw transaction amount.
                     positionBaseX = _dictionaryTransactionHistory[walletFileOpened].ColumnHashMaxWidth;
 
-                    string amountToShow = ClassGraphicsUtility.GetMeasureStringToDraw((ClassTransactionUtility.GetFormattedAmountFromBigInteger(transactionHistoryInformationObject.Amount) + @" " + BlockchainSetting.CoinMinName), positionBaseX, _dictionaryTransactionHistory[walletFileOpened].ColumnAmountMaxWidth, graphicsTarget, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, middlePositionX, out widthText);
+                    string amountToShow = ClassGraphicsUtility.GetMeasureStringToDraw((ClassTransactionUtility.GetFormattedAmountFromBigInteger(transactionHistoryInformationObject.Amount) + @" " + BlockchainSetting.CoinTickerName), positionBaseX, _dictionaryTransactionHistory[walletFileOpened].ColumnAmountMaxWidth, graphicsTarget, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, middlePositionX, out widthText);
 
                     positionBaseX = (positionBaseX + middlePositionX) - (widthText / 2);
 

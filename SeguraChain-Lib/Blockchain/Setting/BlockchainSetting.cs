@@ -27,8 +27,8 @@ namespace SeguraChain_Lib.Blockchain.Setting
         /// Computations settings for wallet generator.
         /// </summary>
         public const int WalletPublicKeyByteArrayLength = 64;
-        public const int WalletPrivateKeyWifByteArrayLength = 71; // I select that length just for fun.
-        public const int WalletAddressByteArrayLength = 65; // The same.
+        public const int WalletPrivateKeyWifByteArrayLength = 71;
+        public const int WalletAddressByteArrayLength = 64;
 
         /// <summary>
         /// Signature Settings.
@@ -54,7 +54,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         /// <summary>
         /// Coin Settings.
         /// </summary>
-        public const long CoinDecimal = 100_000_000;
+		public const long CoinDecimal = 100_000_000;
         public const int CoinDecimalNumber = 8;
         public const long MinFeeTransaction = CoinDecimal / 500_000;
         public const long FeeTransactionPerKb = CoinDecimal / 500_000;
@@ -65,7 +65,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         /// </summary>
         public const int MaxTransactionPerBlock = 300_000;
         public const int BlockRewardHalvingRange = 100_000;
-        public static readonly BigInteger BlockRewardStatic = (10 * CoinDecimal);
+		public static readonly BigInteger BlockRewardStatic = 10 * CoinDecimal;
         public const decimal BlockDevFeePercent = 0.005m;
         public static readonly BigInteger MaxSupply = 26_000_000 * CoinDecimal;
 
@@ -84,8 +84,8 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public static string WalletAddressDevPublicKey(long timestampSovereignUpdate) => SovereignUpdateGetter.GetLastDevWalletPublicKey(timestampSovereignUpdate);
         public static string WalletAddressDev(long timestampSovereignUpdate) => SovereignUpdateGetter.GetLastDevWalletAddress(timestampSovereignUpdate);
 
-		public const string DefaultWalletAddressDevPublicKey ="YHUFYPafSfBmrYa5GgPtStGtV7zbGNsGxkXs1GfJs6oRNv7cdFdsL2R32gyfTPnt3TLiKB8igcY4QqxtY2exu2vuaM6uRK5bgkyVwNq4Qwxy51dKfbNPaKwY7iQ4nnPJxyMNU9G7aLsPVvYTu1DYGnEegEjvr5qhgTgsySqsYCRJ64RmqobAbsQubLQPR55tQ2kwSxAhqiR3DyUn2Pj4nWQF3PY";
-		public const string DefaultWalletAddressDev ="5Pa3tTX6eeeewLUs9y9JNN21DKFJifmp3Rndmt5SLT7m6HRGnBhaPdbydejXHwVwkVxWUsYYR1bJK67PWNSXNpq4sNr6HyzVzJCQWtZebj6DH9";
+		public const string DefaultWalletAddressDevPublicKey ="YJsTWxPxMxDTmjSBuXSjzhNxc4RrJs4Mhm1ingTUia176CgAB3yhgoGDjvHXtDhwYBdBYhEJAP9pjfA3vJFvbEdUMQm4hhUdvTmBG6fgdSL227sPviB9AC9Ev1fNmrCeDGa1xpHvyoSgPaVYz8rCoxJiej8EP82pYcUmyGpxieUAfeyPkGssP4DzEs9SvqWEJ6oEG1SidwUdCbQgc6DDBhmk2Fr";
+		public const string DefaultWalletAddressDev ="4Y91WT95Zm5swVNEfXYvru5qEPRvNCGAHxYsCARvpova11unQCFUnNdHo6HXfD6XgP5nSzBXgxQevKHErTXPPsCArMBz9owDKHsk8uVSKtiesL";
 
         #endregion
 
@@ -99,14 +99,14 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public static BigInteger BlockRewardWithDevFee(long blockHeight) => (BlockReward(blockHeight) - BlockDevFee(blockHeight));
 
 
-        public const string BlockRewardName = "BLOCK"; // Block reward transaction name.
+        public const string BlockRewardName = "BLOCKCHAIN"; // Block reward transaction name.
         public const int BlockTime = 60; // The block time scheduled in seconds.
         public const int BlockExpectedPerDay = (int)((24 * 60d) / (BlockTime / 60d)); // The average of blocks calculated from the scheduled Block Time and the amount of minutes in a single day.
         public const int BlockDifficultyRangeCalculation = BlockExpectedPerDay / 3; // Use previous blocks for generate the new block difficulty.
         public const int BlockDifficultyPrecision = 100_000; // The precision put on the difficulty factor calculated.
         public const int GenesisBlockHeight = 1; // The genesis block height.
-        public static readonly BigInteger GenesisBlockAmount = 2_973_370 * CoinDecimal; // The genesis block amount reward has pre-mining.
-		public const string GenesisBlockFinalTransactionHash ="2FAB209847A9B0A5C5DE3EA8C176B8591A347DFEEB6F520235AB6024238DCB04A70A832647AEC59B5B5F5172C6764FA7C35C93A463CD656704170F6CF35B9511";
+		public static readonly BigInteger GenesisBlockAmount = 1_000_000 * CoinDecimal; // The genesis block amount reward has pre-mining.
+		public const string GenesisBlockFinalTransactionHash ="4A5B5E1726B57775C4DF2E5A9657ECA8BE953D7CBC90689C10AE3068E85FBE2115AC93977521668B0C134E91A4E3221353120E248551706346D57360382A3174";
         public const int GenesisBlockTransactionCount = 1; // The maximum of transaction inserted on the genesis block.
         public const int BlockAmountNetworkConfirmations = 2; // The minimum amount of network checks on blocks to do with peers, before to enable the task of confirmations on the block.
         public const int BlockAmountSlowNetworkConfirmations = 5; // This amount increment another amount of network checks, once this one is reach, the network counter increment and this one return back to 0.
@@ -116,11 +116,13 @@ namespace SeguraChain_Lib.Blockchain.Setting
         /// <summary>
         /// Blockchain Properties.
         /// </summary>
-        public const string CoinName = "XENOPHYTE";
-        public const string CoinMinName = "XENOP";
+		public const string CoinName = "XENOPHYTE";
+		public const string CoinTickerName = "XENOP";
         public const string BlockchainVersion = "01"; // Version of the blockchain used on Base58.
         public static readonly byte[] BlockchainVersionByteArray = ClassUtility.GetByteArrayFromHexString(BlockchainVersion);
         public const int BlockchainChecksum = 16; // Checksum size used on Base58.
+		public const bool BlockchainDefaultEnableCompressingDatabase = true;
+		public const bool BlockchainDefaultDataFormatIsJson = false;
 
         /// <summary>
         /// Used on some parts of the code: Encryption, network and more..
@@ -198,7 +200,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int PeerDefaultPort = 2400;
         public static readonly Dictionary<string, Dictionary<string, int>> BlockchainStaticPeerList = new Dictionary<string, Dictionary<string, int>>()
         {
-            { "37.187.83.201", new Dictionary<string, int>() { { "D0BFF4A56F062828939E40E6DFD8A5EF58E28A10CB69E9E281C90802632D0345618CB5DA20736C2BAAC458A1EB5239F012621847B40F76C0CD10EA05CC4FD184", PeerDefaultPort } }}
+			{ "37.187.83.201", new Dictionary<string, int>() { { "2401", 2400} }},
         }; // This is a static peer list who can't be updated, it's usually used once a peer don't have any peer list saved.
 
 

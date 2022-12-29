@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using SeguraChain_Lib.Blockchain.Database.Memory.Main.Enum;
+using SeguraChain_Lib.Blockchain.Setting;
 using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Utility;
 
@@ -36,9 +37,9 @@ namespace SeguraChain_Lib.Blockchain.Database.DatabaseSetting
         /// Default data settings.
         /// </summary>
         public const bool DefaultEnableEncryptionDatabase = false;
-        public const bool DefaultEnableCompressingDatabase = true;
+        public const bool DefaultEnableCompressingDatabase = BlockchainSetting.BlockchainDefaultEnableCompressingDatabase;
         public const bool DefaultEnableCachingDatabase = true;
-        public const bool DefaultDataFormatIsJson = false;
+        public const bool DefaultDataFormatIsJson = BlockchainSetting.BlockchainDefaultDataFormatIsJson;
         public const ClassBlockchainDatabaseCacheTypeEnum DefaultCacheType = ClassBlockchainDatabaseCacheTypeEnum.CACHE_DISK;
         public const CacheEnumName DefaultCacheName = CacheEnumName.IO_CACHE;
 

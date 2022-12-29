@@ -116,14 +116,16 @@ namespace SeguraChain_Lib.Other.Object.List
                 {
                     for (int i = 0; i < GetList.Count; i++)
                         GetList[i] = default(V);
+
+                    GetList?.Clear();
+                    GetList?.TrimExcess();
                 }
             }
             catch
             {
                 // Ignored.
             }
-            GetList?.Clear();
-            GetList?.TrimExcess();
+
         }
 
         public void ClearTask()
