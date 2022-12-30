@@ -44,7 +44,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
             {
                 if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternTimestampKeyGenerated + peerNetworkSettingObject.PeerMaxAuthKeysExpire < currentTimestamp || forceUpdate)
                 {
-                    if (ClassAes.GenerateKey(ClassUtility.GetByteArrayFromStringAscii(ClassUtility.GetRandomWord(RandomWordKeySize)), true, out ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey))
+                    if (ClassAes.GenerateKey(ClassUtility.GetRandomWord(RandomWordKeySize).GetByteArray(true), true, out ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey))
                     {
                         ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKeyIv = ClassAes.GenerateIv(ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey, BlockchainSetting.PeerIvIterationCount);
                         ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey = GeneratePeerPrivateKey();
@@ -71,7 +71,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                     PeerUniqueId = peerUniqueId
                 }))
                 {
-                    if (ClassAes.GenerateKey(ClassUtility.GetByteArrayFromStringAscii(ClassUtility.GetRandomWord(RandomWordKeySize)), true, out ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey))
+                    if (ClassAes.GenerateKey(ClassUtility.GetRandomWord(RandomWordKeySize).GetByteArray(true), true, out ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey))
                     {
 
                         ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKeyIv = ClassAes.GenerateIv(ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey, BlockchainSetting.PeerIvIterationCount);
@@ -102,7 +102,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         {
             ClassPeerObject peerObject = new ClassPeerObject { PeerIp = peerIp, PeerPort = peerPort, PeerUniqueId = peerUniqueId, PeerStatus = ClassPeerEnumStatus.PEER_ALIVE };
 
-            if (ClassAes.GenerateKey(ClassUtility.GetByteArrayFromStringAscii(ClassUtility.GetRandomWord(RandomWordKeySize)), true, out peerObject.PeerInternPacketEncryptionKey))
+            if (ClassAes.GenerateKey(ClassUtility.GetRandomWord(RandomWordKeySize).GetByteArray(true), true, out peerObject.PeerInternPacketEncryptionKey))
             {
                 peerObject.PeerInternPacketEncryptionKeyIv = ClassAes.GenerateIv(peerObject.PeerInternPacketEncryptionKey, BlockchainSetting.PeerIvIterationCount);
                 peerObject.PeerInternPrivateKey = GeneratePeerPrivateKey();
@@ -278,7 +278,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
             string randomWord = ClassUtility.GetRandomWord(RandomWordKeySize);
 
             using (ClassSha3512DigestDisposable sha512 = new ClassSha3512DigestDisposable())
-                sha512.Compute(ClassUtility.GetByteArrayFromStringAscii(randomWord), out privateKeyBytes);
+                sha512.Compute(randomWord.GetByteArray(true), out privateKeyBytes);
 
             ClassUtility.InsertBlockchainVersionToByteArray(privateKeyBytes, out var privateKeyHex);
 

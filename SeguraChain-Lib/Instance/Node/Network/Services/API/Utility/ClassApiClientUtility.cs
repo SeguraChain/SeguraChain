@@ -480,11 +480,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Utility
 
                         using (DisposableList<byte[]> disposableData = new DisposableList<byte[]>(false))
                         {
-                            disposableData.Add(ClassUtility.GetByteArrayFromStringAscii(ClassUtility.SerializeData(new ClassApiPeerPacketObjectSend()
+                            disposableData.Add((ClassUtility.SerializeData(new ClassApiPeerPacketObjectSend()
                             {
                                 PacketType = packetType,
                                 PacketContentObjectSerialized = packetContent
-                            })));
+                            })).GetByteArray(true));
 
                             request.ContentLength = disposableData[0].Length;
 

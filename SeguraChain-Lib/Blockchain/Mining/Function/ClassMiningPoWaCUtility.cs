@@ -377,7 +377,7 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
             {
                 using (ClassSha3512DigestDisposable sha3512 = new ClassSha3512DigestDisposable())
                 {
-                    sha3512.Compute(ClassUtility.GetByteArrayFromStringAscii(previousFinalBlockTransactionHash), out byte[] pocShareKey);
+                    sha3512.Compute(previousFinalBlockTransactionHash.GetByteArray(true), out byte[] pocShareKey);
                     Array.Resize(ref pocShareKey, ClassAes.EncryptionKeyByteArraySize);
                     return pocShareKey;
                 }
@@ -896,16 +896,8 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
                     {
                         for (int i = 0; i < currentMiningSetting.PowRoundAesShare; i++)
                         {
-                            int packetLength = pocShareData.Length;
-                            int paddingSizeRequired = 16 - packetLength % 16;
-                            byte[] paddedBytes = new byte[packetLength + paddingSizeRequired];
-
-                            Buffer.BlockCopy(pocShareData, 0, paddedBytes, 0, packetLength);
-
-                            for (int j = 0; j < paddingSizeRequired; j++)
-                                paddedBytes[packetLength + j] = (byte)paddingSizeRequired;
-
-                            pocShareData = encryptCryptoTransform.TransformFinalBlock(paddedBytes, 0, paddedBytes.Length);
+                            byte[] paddedPocShareData = ClassUtility.DoPadding(pocShareData);
+                            pocShareData = encryptCryptoTransform.TransformFinalBlock(paddedPocShareData, 0, paddedPocShareData.Length);
                         }
                     }
                 }
@@ -945,9 +937,7 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
                         for (int i = 0; i < currentMiningSetting.PowRoundAesShare; i++)
                         {
                             pocShareData = decryptCryptoTransform.TransformFinalBlock(pocShareData, 0, pocShareData.Length);
-                            byte[] a = new byte[pocShareData.Length - pocShareData[pocShareData.Length - 1]];
-                            Buffer.BlockCopy(pocShareData, 0, a, 0, a.Length);
-                            pocShareData = a;
+                            pocShareData = ClassUtility.UndoPadding(pocShareData);
                         }
                     }
                 }

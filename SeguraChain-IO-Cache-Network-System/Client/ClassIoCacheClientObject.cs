@@ -182,7 +182,7 @@ namespace SeguraChain_IO_Cache_Network_System.Client
         {
             try
             {
-                byte[] packetContent = ClassUtility.GetByteArrayFromStringUtf8(JsonConvert.SerializeObject(packetData));
+                byte[] packetContent = JsonConvert.SerializeObject(packetData).GetByteArray();
 
                 using(NetworkStream network = new NetworkStream(_tcpClient.Client))
                 {

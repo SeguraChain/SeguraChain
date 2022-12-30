@@ -71,7 +71,7 @@ namespace SeguraChain_Lib.Blockchain.Sovereign.Database
                 }
                 else
                 {
-                    if (!ClassAes.GenerateKey(ClassUtility.GetByteArrayFromStringAscii(encryptionKey), true, out _sovereignDataStandardEncryptionKey))
+                    if (!ClassAes.GenerateKey(encryptionKey.GetByteArray(true), true, out _sovereignDataStandardEncryptionKey))
                     {
                         ClassLog.WriteLine("Can't generate standard encryption key for decrypt peer list.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                         return false;
@@ -179,7 +179,7 @@ namespace SeguraChain_Lib.Blockchain.Sovereign.Database
 
                         if (_useEncryption)
                         {
-                            if (ClassAes.EncryptionProcess(ClassUtility.GetByteArrayFromStringAscii(ClassUtility.SerializeData(sovereignUpdateObject.Value, Formatting.None)), _sovereignDataStandardEncryptionKey, _sovereignDataStandardEncryptionKeyIv, out byte[] encryptedResult))
+                            if (ClassAes.EncryptionProcess(ClassUtility.SerializeData(sovereignUpdateObject.Value, Formatting.None).GetByteArray(true), _sovereignDataStandardEncryptionKey, _sovereignDataStandardEncryptionKeyIv, out byte[] encryptedResult))
                             {
                                 writerSovUpdate.WriteLine(Convert.ToBase64String(encryptedResult));
                                 totalSaved++;

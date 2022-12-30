@@ -13,7 +13,6 @@ using SeguraChain_Lib.Instance.Node.Setting.Object;
 using SeguraChain_Lib.Utility;
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using BigInteger = Org.BouncyCastle.Math.BigInteger;
@@ -52,13 +51,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 PacketOrder = packetType,
                 PacketContent = ClassUtility.SerializeData(packetToSend)
             };
+            packetSendObject.PacketHash = ClassUtility.GenerateSha256FromString(packetSendObject.PacketContent + packetSendObject.PacketOrder);
+            packetSendObject.PacketSignature = ClassWalletUtility.WalletGenerateSignature(peerObject.PeerInternPrivateKey, packetSendObject.PacketHash);
 
-            packetSendObject = await BuildSignedPeerSendPacketObject(packetSendObject, peerIpTarget, peerUniqueIdTarget, true, peerNetworkSetting, cancellation);
 
             if (packetSendObject == null)
                 return default(R);
 
-            if (!await peerNetworkClientSyncObject.TrySendPacketToPeerTarget(packetSendObject.GetPacketData(), peerObject.PeerPort, peerUniqueIdTarget, cancellation, packetTypeExpected, false, false))
+            if (!await peerNetworkClientSyncObject.TrySendPacketToPeerTarget(packetSendObject, true, peerObject.PeerPort, peerUniqueIdTarget, cancellation, packetTypeExpected, false, false))
                 return default(R);
 
             if (peerNetworkClientSyncObject.PeerPacketReceived == null)
@@ -73,17 +73,18 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 return default(R);
 
 
-            Tuple<byte[], bool> packetTupleDecrypted = await ClassPeerDatabase.DictionaryPeerDataObject[peerIpTarget][peerUniqueIdTarget].GetInternCryptoStreamObject.DecryptDataProcess(Convert.FromBase64String(peerNetworkClientSyncObject.PeerPacketReceived.PacketContent), cancellation);
-            if (packetTupleDecrypted.Item1 == null || !packetTupleDecrypted.Item2)
+            byte[] packetTupleDecrypted = await ClassPeerDatabase.DictionaryPeerDataObject[peerIpTarget][peerUniqueIdTarget].GetInternCryptoStreamObject.DecryptDataProcess(Convert.FromBase64String(peerNetworkClientSyncObject.PeerPacketReceived.PacketContent), cancellation);
+            if (packetTupleDecrypted == null)
             {
+                // From keys directly, without the intern crypto stream object linked to the peer client.
                 if (ClassAes.DecryptionProcess(Convert.FromBase64String(peerNetworkClientSyncObject.PeerPacketReceived.PacketContent), ClassPeerDatabase.DictionaryPeerDataObject[peerIpTarget][peerUniqueIdTarget].PeerInternPacketEncryptionKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIpTarget][peerUniqueIdTarget].PeerInternPacketEncryptionKeyIv, out byte[] packetDecrypted))
-                    packetTupleDecrypted = new Tuple<byte[], bool>(packetDecrypted, true);
+                    packetTupleDecrypted = packetDecrypted;
             }
 
-            if (packetTupleDecrypted.Item1 == null || !packetTupleDecrypted.Item2)
+            if (packetTupleDecrypted == null)
                 return default(R);
 
-            if (!ClassUtility.TryDeserialize(packetTupleDecrypted.Item1.GetStringFromByteArrayAscii(), out R peerPacketReceived))
+            if (!ClassUtility.TryDeserialize(packetTupleDecrypted.GetStringFromByteArrayAscii(), out R peerPacketReceived))
                 return default(R);
 
             if (EqualityComparer<R>.Default.Equals(peerPacketReceived, default(R)))
@@ -113,23 +114,23 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 {
                     if (cancellation == null)
                     {
-                        if (!ClassAes.EncryptionProcess(ClassUtility.GetByteArrayFromStringUtf8(sendObject.PacketContent), ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKeyIv, out packetContentEncrypted))
+                        if (!ClassAes.EncryptionProcess(sendObject.PacketContent.GetByteArray(), ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKeyIv, out packetContentEncrypted))
                             return null;
                     }
                     else
                     {
-                        packetContentEncrypted = await ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetInternCryptoStreamObject.EncryptDataProcess(ClassUtility.GetByteArrayFromStringUtf8(sendObject.PacketContent), cancellation);
+                        packetContentEncrypted = await ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetInternCryptoStreamObject.EncryptDataProcess(sendObject.PacketContent.GetByteArray(), cancellation);
 
                         if (packetContentEncrypted == null)
                         {
-                            if (!ClassAes.EncryptionProcess(ClassUtility.GetByteArrayFromStringUtf8(sendObject.PacketContent), ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKeyIv, out packetContentEncrypted))
+                            if (!ClassAes.EncryptionProcess(sendObject.PacketContent.GetByteArray(), ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKeyIv, out packetContentEncrypted))
                                 return null;
                         }
                     }
                 }
                 else
                 {
-                    if (!ClassAes.EncryptionProcess(ClassUtility.GetByteArrayFromStringUtf8(sendObject.PacketContent), ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKeyIv, out packetContentEncrypted))
+                    if (!ClassAes.EncryptionProcess(sendObject.GetPacketData(), ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKeyIv, out packetContentEncrypted))
                         return null;
                 }
 

@@ -117,10 +117,10 @@ namespace SeguraChain_Lib.Blockchain.Mining.Object
                 ClassMiningPoWaCEnumInstructions.DO_ENCRYPTED_POC_SHARE,
             };
 
-			MiningSettingTimestamp = 1672244658;
-			MiningSettingContentHash = "AE315AA673676BEF98C6FB142D7C9B283BA343120EE23CD4AB8198C9D9B7A2919C8B2D989867F9F568462E431F2A9F488E150866B0AE93A84A98A9D0F4EE4496";
-			MiningSettingContentHashSignature = "MIGUAkgBCkd7FnAvgMAVoILe0e61yyoYQfu0800neYyXjKlPmt6QmKEvsurrnnvH+mp2WRuc17y0rMlcmdteKmsWD4kfhAqX5asKJHACSANXOx/tzJxIacS2VLfXWINF2ydoADuLyOocisf7Vbs7PAZsT1pIvDxHnO/xNCeegXM5Lr38x3CwD6D+ybSoifuTBjRHlHteHg==";
-			MiningSettingContentDevPublicKey = "YJsTWxPxMxDTmjSBuXSjzhNxc4RrJs4Mhm1ingTUia176CgAB3yhgoGDjvHXtDhwYBdBYhEJAP9pjfA3vJFvbEdUMQm4hhUdvTmBG6fgdSL227sPviB9AC9Ev1fNmrCeDGa1xpHvyoSgPaVYz8rCoxJiej8EP82pYcUmyGpxieUAfeyPkGssP4DzEs9SvqWEJ6oEG1SidwUdCbQgc6DDBhmk2Fr";
+			MiningSettingTimestamp = 1672414727;
+			MiningSettingContentHash = "1C92FC445E40E8790D7E201CA2840463EB6888808884D153EEF4B77B5CCDEF053AAB47AC339EC6935061589E29059192775446A2E61AA4F882FF94573A8EC9FF";
+			MiningSettingContentHashSignature = "MIGUAkgCvNzKvzSqxMyQN+uUH1TTV7VxytFJlTyGIqEMc2x9NdcywRrpWuxW5phuA2RIuvgAj3G6hvo1DC0yASItwAoBTvdeBcywogwCSAPm/L3LgXoU85vsyEg88wQ6J4oDrJbOgJsax6DHsi7l6HCVWdf0L1143ai3q7QbxLGxFFtVnupmYEmF0mf4pSnxmYwXy5QycA==";
+			MiningSettingContentDevPublicKey = "YHpbohbPEEgt7nmMLiKf4ZJQePCjoRWqqwCpGJwipjq67rSPoNwrrRTyxBdyGystNpd5iGpX3WnD9eueS35Kupk59E2QJAHEb4E5zCV7JDTw3oQXNwXfX7H6bfJDoqKsHCncyqCD84djF4BoyccKFAsVqhNfQmX1sZnki1nzpASnhj2hqQ1pg2j7Dc3LPw2KmF6RpgNkdTZpVwhJg7mdWNXBUuw";
         }
     }
 }

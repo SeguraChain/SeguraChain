@@ -56,7 +56,7 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
                     return false;
                 }
 
-                if (!ClassAes.GenerateKey(ClassUtility.GetByteArrayFromStringAscii(encryptionKey), true, out _encryptionKey))
+                if (!ClassAes.GenerateKey(encryptionKey.GetByteArray(true), true, out _encryptionKey))
                 {
                     ClassLog.WriteLine("Can't generate encryption key with custom key for decrypt MemPool database content.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                     return false;
@@ -164,7 +164,7 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
 
                                 if (blockchainDatabaseSetting.DataSetting.EnableEncryptionDatabase)
                                 {
-                                    if (ClassAes.EncryptionProcess(ClassUtility.GetByteArrayFromStringAscii(ClassUtility.SerializeData(txObjects.Value)), _encryptionKey, _encryptionKeyIv, out byte[] encryptedResult))
+                                    if (ClassAes.EncryptionProcess((ClassUtility.SerializeData(txObjects.Value)).GetByteArray(true), _encryptionKey, _encryptionKeyIv, out byte[] encryptedResult))
                                         writer.WriteLine(Convert.ToBase64String(encryptedResult));
                                 }
                                 else

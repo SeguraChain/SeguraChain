@@ -1577,7 +1577,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             /// <returns></returns>
             private async Task<bool> TrySendPacketToPeer(byte[] packetData)
             {
-                return await _peerSocketClient.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(Convert.ToBase64String(packetData) + ClassPeerPacketSetting.PacketPeerSplitSeperator), _peerCancellationToken, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
+                return await _peerSocketClient.TrySendSplittedPacket((Convert.ToBase64String(packetData) + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray(), _peerCancellationToken, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
             }
 
 

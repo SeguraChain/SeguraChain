@@ -184,7 +184,7 @@ namespace SeguraChain_Lib.Blockchain.Transaction.Utility
         private static void BuildBigTransactionHash(ClassTransactionObject transactionData, CancellationTokenSource cancellation, out string bigTransactionHash)
         {
 
-            bigTransactionHash = ClassSha.MakeBigShaHashFromBigData(ClassUtility.GetByteArrayFromStringUtf8(transactionData.BlockHeightTransaction +
+            bigTransactionHash = ClassSha.MakeBigShaHashFromBigData((transactionData.BlockHeightTransaction +
                                                                             transactionData.BlockHeightTransactionConfirmationTarget +
                                                                             transactionData.WalletAddressSender +
                                                                             transactionData.WalletPublicKeySender +
@@ -197,7 +197,7 @@ namespace SeguraChain_Lib.Blockchain.Transaction.Utility
                                                                             transactionData.TransactionVersion +
                                                                             transactionData.TransactionType +
                                                                             transactionData.TimestampBlockHeightCreateSend +
-                                                                            ClassUtility.SerializeData(transactionData.AmountTransactionSource)), cancellation);
+                                                                            ClassUtility.SerializeData(transactionData.AmountTransactionSource)).GetByteArray(), cancellation);
         }
 
         /// <summary>

@@ -30,7 +30,6 @@ namespace SeguraChain_Lib.Utility
 
         private const string Base64Regex = @"^[a-zA-Z0-9\+/]*={0,3}$";
 
-        private static readonly UTF8Encoding Utf8Encoding = new UTF8Encoding(true, false);
 
         private static readonly List<string> ListOfCharacters = new List<string>
         {
@@ -148,7 +147,7 @@ namespace SeguraChain_Lib.Utility
             using (var hash = new ClassSha3512DigestDisposable())
             {
 
-                hash.Compute(GetByteArrayFromStringUtf8(sourceString), out byte[] hashedInputBytes);
+                hash.Compute(sourceString.GetByteArray(), out byte[] hashedInputBytes);
 
                 var hashedInputStringBuilder = new StringBuilder(BlockchainSetting.BlockchainSha512HexStringLength);
 
@@ -173,7 +172,7 @@ namespace SeguraChain_Lib.Utility
             using (var hash = SHA256.Create())
             {
 
-                byte[] hashedInputBytes = hash.ComputeHash(GetByteArrayFromStringUtf8(sourceString));
+                byte[] hashedInputBytes = hash.ComputeHash(sourceString.GetByteArray());
 
                 var hashedInputStringBuilder = new StringBuilder(BlockchainSetting.BlockchainSha256HexStringLength);
 
@@ -296,25 +295,6 @@ namespace SeguraChain_Lib.Utility
             return value.All(t => !char.IsUpper(t));
         }
 
-        /// <summary>
-        /// Convert a string into a byte array object.
-        /// </summary>
-        /// <param name="content"></param>
-        /// <returns></returns>
-        public static byte[] GetByteArrayFromStringAscii(string content)
-        {
-            return Encoding.ASCII.GetBytes(content);
-        }
-
-        /// <summary>
-        /// Convert a string into a byte array object.
-        /// </summary>
-        /// <param name="content"></param>
-        /// <returns></returns>
-        public static byte[] GetByteArrayFromStringUtf8(string content)
-        {
-            return Utf8Encoding.GetBytes(content);
-        }
 
         private static readonly uint[] Lookup32 = CreateLookup32();
 
@@ -539,7 +519,7 @@ namespace SeguraChain_Lib.Utility
                 }
             }
 
-            return GetByteArrayFromStringAscii(word);
+            return word.GetByteArray(true);
         }
 
         #endregion
@@ -980,40 +960,47 @@ namespace SeguraChain_Lib.Utility
         }
 
         /// <summary>
-        /// Do the padding of the packet content before encryption
+        /// Do the padding of the data content.
         /// </summary>
-        /// <param name="packet"></param>
+        /// <param name="data"></param>
         /// <returns></returns>
-        public static byte[] DoPacketPadding(byte[] packet)
+        public static byte[] DoPadding(byte[] data)
         {
-            int packetLength = packet.Length;
-            int paddingSizeRequired = 16 - packetLength % 16;
-            byte[] paddedBytes = new byte[packetLength + paddingSizeRequired];
+            int basePaddingSize = 16;
+            int paddingSizeRequired = basePaddingSize - (data.Length % basePaddingSize);
 
-            Buffer.BlockCopy(packet, 0, paddedBytes, 0, packetLength);
+            while (paddingSizeRequired == 0)
+            {
+                basePaddingSize++;
+                paddingSizeRequired = basePaddingSize - (data.Length % basePaddingSize);
+            }
+
+            byte[] paddedBytes = new byte[data.Length + paddingSizeRequired];
+
+            Array.Copy(data, 0, paddedBytes, 0, data.Length);
 
             for (int i = 0; i < paddingSizeRequired; i++)
-                paddedBytes[packetLength + i] = (byte)paddingSizeRequired;
+                paddedBytes[data.Length + i] = (byte)paddingSizeRequired;
 
             return paddedBytes;
         }
 
         /// <summary>
-        /// Remove the padding of the decrypted packet.
+        /// Remove the padding of the data content.
         /// </summary>
-        /// <param name="decryptedPacket"></param>
+        /// <param name="paddedData"></param>
         /// <returns></returns>
-        public static byte[] UndoPacketPadding(byte[] decryptedPacket)
+        public static byte[] UndoPadding(byte[] paddedData)
         {
-            if (decryptedPacket == null || decryptedPacket?.Length == 0)
+            if (paddedData == null || paddedData?.Length == 0)
                 return null;
 
-            int size = decryptedPacket.Length - decryptedPacket[decryptedPacket.Length - 1];
+            int size = paddedData.Length - paddedData[paddedData.Length - 1];
 
             if (size > 0)
             {
                 byte[] packet = new byte[size];
-                Buffer.BlockCopy(decryptedPacket, 0, packet, 0, packet.Length);
+                Array.Copy(paddedData, 0, packet, 0, packet.Length);
 
                 return packet;
             }
@@ -1139,6 +1126,34 @@ namespace SeguraChain_Lib.Utility
     /// </summary>
     public static class ClassUtilityStringExtension
     {
+
+        /// <summary>
+        /// Convert a string into a byte array object.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns></returns>
+        private static byte[] GetByteArrayUtf8(this string content)
+        {
+            return new UTF8Encoding(true, true).GetBytes(content);
+        }
+
+        /// <summary>
+        /// Convert a string into a byte array object.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns></returns>
+        private static byte[] GetByteArrayAscii(this string content)
+        {
+            return Encoding.ASCII.GetBytes(content);
+        }
+
+
+        public static byte[] GetByteArray(this string src, bool ascii = false)
+        {
+            return !ascii ? src.GetByteArrayUtf8() : src.GetByteArrayAscii();
+        }
+
+
         /// <summary>
         /// Copy a base58 string.
         /// </summary>
@@ -1287,7 +1302,6 @@ namespace SeguraChain_Lib.Utility
     /// </summary>
     public static class ClassUtilityByteArrayExtension
     {
-        private static readonly UTF8Encoding Utf8Encoding = new UTF8Encoding(true, false);
 
         /// <summary>
         /// Get a string from a byte array object.
@@ -1308,7 +1322,7 @@ namespace SeguraChain_Lib.Utility
         {
             try
             {
-                return content != null && content?.Length > 0 ? Utf8Encoding.GetString(content) : null;
+                return content != null && content?.Length > 0 ? new UTF8Encoding().GetString(content) : null;
             }
             catch
             {
@@ -1349,34 +1363,33 @@ namespace SeguraChain_Lib.Utility
             {
                 if (packetBytesToSend.Length >= packetMaxSize && !singleWrite)
                 {
-                    int packetLength = packetBytesToSend.Length;
                     int countPacketSendLength = 0;
 
-                    while (!cancellation.Token.IsCancellationRequested)
+                    while (countPacketSendLength < packetBytesToSend.Length)
                     {
-                        int packetSize = packetMaxSize;
+                        int packetSize = 0;
 
-                        if (countPacketSendLength + packetSize > packetLength)
-                            packetSize = packetLength - countPacketSendLength;
+                        if (countPacketSendLength + packetMaxSize >= packetBytesToSend.Length)
+                            packetSize = packetMaxSize;
+                        else
+                            packetSize = packetBytesToSend.Length - countPacketSendLength;
 
                         if (packetSize <= 0)
                             break;
 
-                        byte[] dataBytes = new byte[packetSize];
+                        //byte[] dataBytes = new byte[packetSize];
 
-                        Array.Copy(packetBytesToSend, countPacketSendLength, dataBytes, 0, packetSize);
+                        //Array.Copy(packetBytesToSend, countPacketSendLength, dataBytes, 0, packetSize);
 
-                        await networkStream.WriteAsync(dataBytes, 0, dataBytes.Length, cancellation.Token);
+                        await networkStream.WriteAsync(packetBytesToSend, countPacketSendLength, packetSize, cancellation.Token);
+                        await networkStream.FlushAsync(cancellation.Token);
 
                         countPacketSendLength += packetSize;
 
-                        if (countPacketSendLength >= packetLength)
+                        if (!cancellation.IsCancellationRequested)
                             break;
 
                     }
-
-                    await networkStream.FlushAsync(cancellation.Token);
-
                 }
                 else
                 {

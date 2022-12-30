@@ -104,7 +104,7 @@ namespace SeguraChain_Lib.Blockchain.Database
 
                 }
 
-                if (!ClassAes.GenerateKey(ClassUtility.GetByteArrayFromStringAscii(encryptionDatabaseKey), true, out _blockchainDataStandardEncryptionKey))
+                if (!ClassAes.GenerateKey(encryptionDatabaseKey.GetByteArray(true), true, out _blockchainDataStandardEncryptionKey))
                 {
                     ClassLog.WriteLine("Can't generate encryption key with custom key for decrypt blockchain database content.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                     return false;
@@ -400,54 +400,68 @@ namespace SeguraChain_Lib.Blockchain.Database
 
                 if (BlockchainMemoryManagement.Count > 0)
                 {
-                    long countBlock = BlockchainMemoryManagement.Count;
-                    ClassLog.WriteLine("Save " + countBlock + " block(s) file(s)..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-                    UTF8Encoding utf8Encoding = new UTF8Encoding(true, false);
-
-                    for (long i = 0; i < countBlock; i++)
+                    while (true)
                     {
+                        long countBlock = BlockchainMemoryManagement.Count;
+                        totalBlockSaved = 0;
+                        ClassLog.WriteLine("Save " + countBlock + " block(s) file(s)..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-                        long blockHeight = i + 1;
 
-                        string blockFileName = ClassBlockchainDatabaseDefaultSetting.BlockDatabaseFileName + blockHeight + ClassBlockchainDatabaseDefaultSetting.BlockDatabaseFileExtension;
-
-                        if (File.Exists(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName))
-                            File.Delete(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName);
-
-                        File.Create(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName).Close();
-
-                        // Initialize Stream Block Writer.
-                        using (StreamWriter writerBlock = blockchainDatabaseSetting.DataSetting.EnableCompressDatabase ?
-                        new StreamWriter(new LZ4Stream(new FileStream(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName, FileMode.Truncate), LZ4StreamMode.Compress, LZ4StreamFlags.HighCompression, ClassBlockchainDatabaseDefaultSetting.Lz4CompressionBlockSize)) :
-                        new StreamWriter(new FileStream(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName, FileMode.Truncate)) { AutoFlush = true })
+                        for (long i = 0; i < countBlock; i++)
                         {
-                            ClassBlockObject blockObject = await BlockchainMemoryManagement.GetBlockDataStrategy(blockHeight, false, true, _cancellationTokenStopBlockchain);
 
-                            while (blockObject == null || blockObject?.BlockTransactions == null || blockObject?.BlockTransactions.Count != blockObject?.TotalTransaction)
-                                blockObject = await BlockchainMemoryManagement.GetBlockDataStrategy(blockHeight, false, true, _cancellationTokenStopBlockchain);
+                            long blockHeight = i + 1;
 
-                            foreach (string blockDataLine in ClassBlockUtility.BlockObjectToStringBlockData(blockObject, blockchainDatabaseSetting.DataSetting.DataFormatIsJson))
+                            string blockFileName = ClassBlockchainDatabaseDefaultSetting.BlockDatabaseFileName + blockHeight + ClassBlockchainDatabaseDefaultSetting.BlockDatabaseFileExtension;
+
+                            if (File.Exists(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName))
+                                File.Delete(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName);
+
+                            File.Create(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName).Close();
+
+                            // Initialize Stream Block Writer.
+                            using (StreamWriter writerBlock = blockchainDatabaseSetting.DataSetting.EnableCompressDatabase ?
+                            new StreamWriter(new LZ4Stream(new FileStream(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName, FileMode.Truncate), LZ4StreamMode.Compress, LZ4StreamFlags.HighCompression, ClassBlockchainDatabaseDefaultSetting.Lz4CompressionBlockSize)) :
+                            new StreamWriter(new FileStream(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName, FileMode.Truncate)) { AutoFlush = true })
                             {
+                                ClassBlockObject blockObjectInformation = await BlockchainMemoryManagement.GetBlockInformationDataStrategy(blockHeight, _cancellationTokenStopBlockchain);
 
-                                byte[] blockDataLineCopy = utf8Encoding.GetBytes(blockDataLine);
+                                while (blockObjectInformation == null)
+                                    blockObjectInformation = await BlockchainMemoryManagement.GetBlockInformationDataStrategy(blockHeight, _cancellationTokenStopBlockchain);
 
-                                if (blockchainDatabaseSetting.DataSetting.EnableEncryptionDatabase)
-                                    ClassAes.EncryptionProcess(blockDataLineCopy, _blockchainDataStandardEncryptionKey, _blockchainDataStandardEncryptionKeyIv, out blockDataLineCopy);
+                                ClassBlockObject blockObject = await BlockchainMemoryManagement.GetBlockDataStrategy(blockHeight, true, true, _cancellationTokenStopBlockchain);
 
-                                await writerBlock.WriteLineAsync(utf8Encoding.GetString(blockDataLineCopy));
+                                while (blockObject == null ||
+                                blockObject?.BlockTransactions == null ||
+                                blockObject?.BlockTransactions?.Count != blockObject?.TotalTransaction ||
+                                blockObject?.TotalTransaction != blockObjectInformation.TotalTransaction)
+                                    blockObject = await BlockchainMemoryManagement.GetBlockDataStrategy(blockHeight, true, true, _cancellationTokenStopBlockchain);
+
+
+                                foreach (string blockDataLine in ClassBlockUtility.BlockObjectToStringBlockData(blockObject, blockchainDatabaseSetting.DataSetting.DataFormatIsJson))
+                                {
+
+                                    byte[] blockDataLineCopy = Encoding.UTF8.GetBytes(blockDataLine);
+
+                                    if (blockchainDatabaseSetting.DataSetting.EnableEncryptionDatabase)
+                                        ClassAes.EncryptionProcess(blockDataLineCopy, _blockchainDataStandardEncryptionKey, _blockchainDataStandardEncryptionKeyIv, out blockDataLineCopy);
+
+                                    await writerBlock.WriteLineAsync(Encoding.UTF8.GetString(blockDataLineCopy));
+                                    await writerBlock.FlushAsync();
+                                }
+
+                                totalTxSaved += blockObject.BlockTransactions.Count;
+                                totalBlockSaved++;
 
 
                             }
 
-                            totalTxSaved += blockObject.BlockTransactions.Count;
-                            totalBlockSaved++;
-
-                            await writerBlock.FlushAsync();
-
+                            await Task.Delay(1);
                         }
 
-                        await Task.Delay(1);
+                        if (countBlock == totalBlockSaved)
+                            break;
                     }
 
                     ClassUtility.CleanGc();
@@ -598,7 +612,7 @@ namespace SeguraChain_Lib.Blockchain.Database
 
                                     if (blockchainDatabaseSetting.DataSetting.EnableEncryptionDatabase)
                                     {
-                                        if (ClassAes.EncryptionProcess(ClassUtility.GetByteArrayFromStringAscii(checkpointLineToWrite), _blockchainDataStandardEncryptionKey, _blockchainDataStandardEncryptionKeyIv, out byte[] result))
+                                        if (ClassAes.EncryptionProcess(checkpointLineToWrite.GetByteArray(true), _blockchainDataStandardEncryptionKey, _blockchainDataStandardEncryptionKeyIv, out byte[] result))
                                         {
                                             if (result == null)
                                                 continue;

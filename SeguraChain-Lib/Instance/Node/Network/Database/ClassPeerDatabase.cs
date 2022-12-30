@@ -187,7 +187,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
                                             foreach (string peerUniqueId in DictionaryPeerDataObject[peerIp].Keys)
                                             {
                                                 // Serialize -> byte array -> compress LZ4 -> encryption -> base 64 string format.
-                                                if (ClassAes.EncryptionProcess(LZ4.LZ4Codec.Wrap(ClassUtility.GetByteArrayFromStringAscii(ClassUtility.SerializeData(DictionaryPeerDataObject[peerIp][peerUniqueId], Formatting.None))), _peerDataStandardEncryptionKey, _peerDataStandardEncryptionKeyIv, out var result))
+                                                if (ClassAes.EncryptionProcess(LZ4.LZ4Codec.Wrap((ClassUtility.SerializeData(DictionaryPeerDataObject[peerIp][peerUniqueId], Formatting.None)).GetByteArray(true)), _peerDataStandardEncryptionKey, _peerDataStandardEncryptionKeyIv, out var result))
                                                 {
                                                     peerWriter.WriteLine(Convert.ToBase64String(result));
 
@@ -217,7 +217,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
                                         foreach (string peerUniqueId in DictionaryPeerDataObject[peerKey].Keys)
                                         {
                                             // Serialize -> byte array -> compress LZ4 -> encryption -> base 64 string format.
-                                            if (ClassAes.EncryptionProcess(LZ4.LZ4Codec.Wrap(ClassUtility.GetByteArrayFromStringAscii(ClassUtility.SerializeData(DictionaryPeerDataObject[peerKey][peerUniqueId], Formatting.None))), _peerDataStandardEncryptionKey, _peerDataStandardEncryptionKeyIv, out var result))
+                                            if (ClassAes.EncryptionProcess(LZ4.LZ4Codec.Wrap((ClassUtility.SerializeData(DictionaryPeerDataObject[peerKey][peerUniqueId], Formatting.None)).GetByteArray(true)), _peerDataStandardEncryptionKey, _peerDataStandardEncryptionKeyIv, out var result))
                                             {
                                                 peerWriter.WriteLine(Convert.ToBase64String(result));
                                                 // Uncompressed peer data.

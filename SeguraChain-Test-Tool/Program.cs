@@ -26,6 +26,7 @@ using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Utility;
 using System.Threading;
 using System.Linq;
+using SeguraChain_Lib.Blockchain.Database.Memory.Main;
 
 namespace SeguraChain_Test_Tool
 {
@@ -40,6 +41,53 @@ namespace SeguraChain_Test_Tool
             bool exit = false;
             while (!exit)
             {
+                string fullLine = "";
+                for (int i = 0; i < Console.WindowWidth-1; i++)
+                    fullLine += "#";
+
+                string otherLine = "#";
+                for (int i = 0; i < ((Console.WindowWidth*96.0d)/100d); i++)
+                    otherLine += " ";
+
+
+                #region AppName line.
+
+                string welcomeText = "Welcome to";
+
+                string welcomeLine = "#";
+                for (int i = 0; i < (((Console.WindowWidth * 50.0d) / 100d) - (welcomeText.Length / 2)); i++)
+                    welcomeLine += " ";
+
+                welcomeLine += welcomeText;
+
+                for (int i = 0; i < ((Console.WindowWidth * (double)(50.0d - welcomeText.Length)) / 100d); i++)
+                    welcomeLine += " ";
+
+                welcomeLine += "#";
+                #endregion
+
+                #region AppName line.
+                string centerLine = "#";
+
+                double rest = Console.WindowWidth - (((Console.WindowWidth * 50.0d) / 100d) - (AppDomain.CurrentDomain.FriendlyName.Length / 2));
+                for (int i = 0; i < (((Console.WindowWidth * 50.0d) / 100d) - (AppDomain.CurrentDomain.FriendlyName.Length/2)); i++)
+                    centerLine += " ";
+
+                centerLine += AppDomain.CurrentDomain.FriendlyName;
+
+                for (int i = 0; i < (rest / 2) + ((AppDomain.CurrentDomain.FriendlyName.Length+1) % AppDomain.CurrentDomain.FriendlyName.Length); i++)
+                    centerLine += " ";
+
+                centerLine += "#";
+                #endregion
+
+                Console.WriteLine(fullLine);
+                Console.WriteLine(otherLine + otherLine[0]);
+                Console.WriteLine(welcomeLine);
+                Console.WriteLine(centerLine);
+                Console.WriteLine(otherLine + otherLine[0]);
+                Console.WriteLine(fullLine);
+
                 Console.WriteLine("Select the function to test:");
 
                 Console.WriteLine((int)EnumListTestMenu.TEST_WALLET_GENERATOR + " - Test Wallet Generator with Signature message system.");
@@ -98,6 +146,15 @@ namespace SeguraChain_Test_Tool
 
         public class TestTool
         {
+            /// <summary>
+            /// Constructor.
+            /// Init default database management.
+            /// </summary>
+            public TestTool()
+            {
+                ClassBlockchainDatabase.BlockchainMemoryManagement = new BlockchainMemoryManagement(new ClassBlockchainDatabaseSetting());
+            }
+
             #region Functions dedicated to tests wallet, transactions in general.
 
             /// <summary>
@@ -788,6 +845,17 @@ namespace SeguraChain_Test_Tool
 
                 #endregion
 
+                #region The maximum supply amount. 
+
+                ClassLog.SimpleWriteLine("Please write the Max Supply amount (default: " + (BlockchainSetting.MaxSupply / BlockchainSetting.CoinDecimal));
+
+                BigInteger maxSupplyAmount;
+
+                while (!BigInteger.TryParse(Console.ReadLine(), out maxSupplyAmount) || maxSupplyAmount < 0)
+                    ClassLog.SimpleWriteLine("The Max Supply amount is invalid, this one cannot be lower than 0, try again:", ConsoleColor.Red);
+
+                #endregion
+
                 #region Genesis Block amount. Starting point.
 
                 ClassLog.SimpleWriteLine("Write the default Block Genesis Amount, this one should be higher than 0:");
@@ -797,10 +865,11 @@ namespace SeguraChain_Test_Tool
 
                 while (
                     !BigInteger.TryParse(Console.ReadLine(), out genesisBlockAmount) ||
-                    genesisBlockAmount < 0)
+                    genesisBlockAmount < 0 || genesisBlockAmount > maxSupplyAmount)
                 {
-                    Console.WriteLine("The genesis block amount cannot be null/empty and should be higher than 0.");
-                    Console.WriteLine("Please try again:");
+                    ClassLog.SimpleWriteLine("The genesis block amount cannot be null/empty and should be higher than 0.", ConsoleColor.Red);
+                    ClassLog.SimpleWriteLine("The genesis block amount cannot be higher than the Max Supply selected: " + maxSupplyAmount + "/" + genesisBlockAmount, ConsoleColor.Red);
+                    ClassLog.SimpleWriteLine("Please try again:", ConsoleColor.Red);
                 }
 
                 #endregion
@@ -1011,6 +1080,9 @@ namespace SeguraChain_Test_Tool
                                         writer.WriteLine("\t\tpublic const long CoinDecimal = " + DoBigNumberSeparator(decimalAmount) + ";");
 
                                     #endregion
+
+                                    else if (blockchainLine.Contains("public static readonly BigInteger MaxSupply"))
+                                        writer.WriteLine("\t\tpublic static readonly BigInteger MaxSupply = " + DoBigNumberSeparator(maxSupplyAmount) + " * CoinDecimal;");
 
                                     #region Genesis block amount.
 

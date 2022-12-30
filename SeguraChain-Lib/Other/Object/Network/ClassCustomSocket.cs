@@ -26,7 +26,6 @@ namespace SeguraChain_Lib.Other.Object.Network
         public ClassCustomSocket(Socket socket, bool isServer)
         {
             _socket = socket;
-            _socket.NoDelay = true;
 
             if (isServer)
             {
@@ -47,12 +46,12 @@ namespace SeguraChain_Lib.Other.Object.Network
             try
             {
                 await _socket.ConnectAsync(ip, port);
+                _networkStream = new NetworkStream(_socket);
             }
             catch
             {
                 return false;
             }
-            _networkStream = new NetworkStream(_socket);
             return true;
         }
 
@@ -109,11 +108,13 @@ namespace SeguraChain_Lib.Other.Object.Network
         {
             ReadPacketData readPacketData = new ReadPacketData();
 
-            if (!IsConnected())
-                return readPacketData;
+
 
             try
             {
+                if (!IsConnected())
+                    return readPacketData;
+                /*
                 while (_socket.Available == 0)
                 {
                     if (cancellation.IsCancellationRequested || !IsConnected())
@@ -121,6 +122,7 @@ namespace SeguraChain_Lib.Other.Object.Network
 
                     await Task.Delay(1);
                 }
+                */
                 readPacketData.Data = new byte[packetLength];
                 readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
             }

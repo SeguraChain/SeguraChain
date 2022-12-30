@@ -79,7 +79,7 @@ namespace SeguraChain_Lib.Algorithm
                         aesObject.Padding = PaddingMode.None;
                         using (ICryptoTransform encryptCryptoTransform = aesObject.CreateEncryptor(key, iv))
                         {
-                            byte[] paddedBytes = ClassUtility.DoPacketPadding(content);
+                            byte[] paddedBytes = ClassUtility.DoPadding(content);
                             result = encryptCryptoTransform.TransformFinalBlock(paddedBytes, 0, paddedBytes.Length);
                             return true;
                         }
@@ -118,7 +118,7 @@ namespace SeguraChain_Lib.Algorithm
                         using (ICryptoTransform decryptCryptoTransform = aesObject.CreateDecryptor(key, iv))
                         {
                             byte[] decryptedPaddedBytes = decryptCryptoTransform.TransformFinalBlock(content, 0, content.Length);
-                            result = ClassUtility.UndoPacketPadding(decryptedPaddedBytes);
+                            result = ClassUtility.UndoPadding(decryptedPaddedBytes);
                             return true;
                         }
                     }

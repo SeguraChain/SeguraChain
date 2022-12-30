@@ -113,9 +113,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                         }
                         else
                         {
+                            /*
                             if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastValidPacket + peerNetworkSettingObject.PeerMaxDelayKeepAliveStats <= TaskManager.TaskManager.CurrentTimestampSecond)
                                 CleanPeerState(peerIp, peerUniqueId, false);
-                            else if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalAttemptConnection >= peerNetworkSettingObject.PeerMaxAttemptConnection ||
+                            else*/ if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalAttemptConnection >= peerNetworkSettingObject.PeerMaxAttemptConnection ||
                                      ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalNoPacketConnectionAttempt >= peerNetworkSettingObject.PeerMaxNoPacketPerConnectionOpened)
                             {
                                 SetPeerDeadState(peerIp, peerUniqueId, peerNetworkSettingObject, peerFirewallSettingObject);

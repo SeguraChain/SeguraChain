@@ -51,7 +51,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         /// <summary>
         /// Database.
         /// </summary>
-        private Dictionary<long, BlockchainMemoryObject> _dictionaryBlockObjectMemory;
+        private SortedDictionary<long, BlockchainMemoryObject> _dictionaryBlockObjectMemory;
         public BlockchainWalletIndexMemoryManagement BlockchainWalletIndexMemoryCacheObject; // Contains block height/transactions linked to a wallet address, usually used for provide an accurate sync of data.
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             // Cache status.
             _pauseMemoryManagement = false;
 
-            _dictionaryBlockObjectMemory = new Dictionary<long, BlockchainMemoryObject>();
+            _dictionaryBlockObjectMemory = new SortedDictionary<long, BlockchainMemoryObject>();
             _listWalletAddressReservedForBlockTransactionCache = new HashSet<string>();
             BlockchainWalletIndexMemoryCacheObject = new BlockchainWalletIndexMemoryManagement(blockchainDatabaseSetting);
 
@@ -4430,11 +4430,9 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                 if (_dictionaryBlockObjectMemory[blockHeight].ContentMirror != null)
                     return _dictionaryBlockObjectMemory[blockHeight].ContentMirror;
-
-                return await GetBlockInformationMemoryDataFromCacheByKey(blockHeight, cancellation);
             }
 
-            return null;
+            return await GetBlockInformationMemoryDataFromCacheByKey(blockHeight, cancellation);
         }
 
         /// <summary>

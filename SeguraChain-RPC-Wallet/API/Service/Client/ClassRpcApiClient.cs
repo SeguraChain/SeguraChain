@@ -453,7 +453,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
 
                 if (_apiRpcConfig.RpcApiSetting.RpcApiEnableSecretKey)
                 {
-                    if (ClassAes.EncryptionProcess(ClassUtility.GetByteArrayFromStringUtf8(packetContentSerialized), _apiRpcConfig.RpcApiSetting.RpcApiSecretKeyArray, _apiRpcConfig.RpcApiSetting.RpcApiSecretIvArray, out byte[] packetContentEncrypted))
+                    if (ClassAes.EncryptionProcess(packetContentSerialized.GetByteArray(), _apiRpcConfig.RpcApiSetting.RpcApiSecretKeyArray, _apiRpcConfig.RpcApiSetting.RpcApiSecretIvArray, out byte[] packetContentEncrypted))
                         packetContentSerialized = Convert.ToBase64String(packetContentEncrypted);
                 }
 
@@ -473,7 +473,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
 
                 using (NetworkStream networkStream = new NetworkStream(_apiTcpClient.Client))
                 {
-                    if (!await networkStream.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(builder.ToString()), _apiCheckerCancellationToken, BlockchainSetting.PeerMaxPacketSplitedSendSize))
+                    if (!await networkStream.TrySendSplittedPacket(builder.ToString().GetByteArray(), _apiCheckerCancellationToken, BlockchainSetting.PeerMaxPacketSplitedSendSize))
                         sendResult = false;
                 }
             }

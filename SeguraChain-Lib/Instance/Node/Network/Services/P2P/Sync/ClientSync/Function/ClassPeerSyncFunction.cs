@@ -86,23 +86,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
             if (!ClassUtility.CheckBase64String(packetContent))
                 return false;
 
-            Tuple<byte[], bool> taskPacketDecrypt;
-
             try
             {
-                taskPacketDecrypt = ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetInternCryptoStreamObject.DecryptDataProcess(Convert.FromBase64String(packetContent), cancellation).Result;
+                packetDecrypted = ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetInternCryptoStreamObject.DecryptDataProcess(Convert.FromBase64String(packetContent), cancellation).Result;
             }
             catch
             {
                 return false;
             }
 
-            if (taskPacketDecrypt == null || taskPacketDecrypt.Item1 == null || !taskPacketDecrypt.Item2 || taskPacketDecrypt.Item1.Length == 0)
-                return false;
-
-            packetDecrypted = taskPacketDecrypt.Item1;
-
-            return true;
+            return packetDecrypted?.Length > 0;
 
         }
 

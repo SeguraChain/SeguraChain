@@ -79,7 +79,7 @@ namespace SeguraChain_RPC_Wallet.Database
                 return false;
             }
 
-            if (!ClassAes.GenerateKey(ClassUtility.GetByteArrayFromStringUtf8(walletDatabasePassword), true, out byte[] walletDatabaseEncryptionKey))
+            if (!ClassAes.GenerateKey(walletDatabasePassword.GetByteArray(), true, out byte[] walletDatabaseEncryptionKey))
                 return false;
 
             byte[] walletDatabaseEncryptionIv = ClassAes.GenerateIv(walletDatabaseEncryptionKey);
@@ -122,7 +122,7 @@ namespace SeguraChain_RPC_Wallet.Database
         /// <returns></returns>
         public bool SaveWalletDatabase(string walletDatabasePath, string walletFilename, string walletDatabasePassword)
         {
-            if (!ClassAes.GenerateKey(ClassUtility.GetByteArrayFromStringUtf8(walletDatabasePassword), true, out byte[] walletDatabaseEncryptionKey))
+            if (!ClassAes.GenerateKey(walletDatabasePassword.GetByteArray(), true, out byte[] walletDatabaseEncryptionKey))
                 return false;
 
             byte[] walletDatabaseEncryptionIv = ClassAes.GenerateIv(walletDatabaseEncryptionKey);
@@ -133,7 +133,7 @@ namespace SeguraChain_RPC_Wallet.Database
                 {
                     foreach (ClassWalletData walletData in _dictionaryWallet.Values)
                     {
-                        if (!ClassAes.EncryptionProcess(ClassUtility.GetByteArrayFromStringUtf8(ClassUtility.SerializeData(walletData)), walletDatabaseEncryptionKey, walletDatabaseEncryptionIv, out byte[] walletDataEncrypted))
+                        if (!ClassAes.EncryptionProcess(ClassUtility.SerializeData(walletData).GetByteArray(), walletDatabaseEncryptionKey, walletDatabaseEncryptionIv, out byte[] walletDataEncrypted))
                             continue;
 
                         writer.WriteLine(Convert.ToBase64String(walletDataEncrypted));

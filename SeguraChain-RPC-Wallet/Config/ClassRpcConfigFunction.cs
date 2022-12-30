@@ -54,7 +54,7 @@ namespace SeguraChain_RPC_Wallet.Config
                         rpcConfig.RpcApiSetting.RpcApiSecretKey = secretKey;
 
                         // Compute the API Secret Key if this one is initialized.
-                        if (ClassAes.GenerateKey(ClassUtility.GetByteArrayFromStringUtf8(secretKey), true, out rpcConfig.RpcApiSetting.RpcApiSecretKeyArray))
+                        if (ClassAes.GenerateKey(secretKey.GetByteArray(), true, out rpcConfig.RpcApiSetting.RpcApiSecretKeyArray))
                         {
                             rpcConfig.RpcApiSetting.RpcApiSecretIvArray = ClassAes.GenerateIv(rpcConfig.RpcApiSetting.RpcApiSecretKeyArray);
                             initKey = true;

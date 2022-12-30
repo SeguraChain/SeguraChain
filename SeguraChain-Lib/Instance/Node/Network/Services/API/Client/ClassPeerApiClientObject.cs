@@ -1016,7 +1016,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
             try
             {
-                sendResult = await _clientSocket.TrySendSplittedPacket(ClassUtility.GetByteArrayFromStringUtf8(builder.ToString()), _cancellationTokenApiClient, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
+                sendResult = await _clientSocket.TrySendSplittedPacket(builder.ToString().GetByteArray(), _cancellationTokenApiClient, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
             }
             catch
             {

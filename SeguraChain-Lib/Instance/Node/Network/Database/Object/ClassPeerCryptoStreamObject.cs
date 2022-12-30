@@ -140,7 +140,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
                 {
                     try
                     {
-                        byte[] packetPadded = ClassUtility.DoPacketPadding(content);
+                        byte[] packetPadded = ClassUtility.DoPadding(content);
 
                         result = _encryptCryptoTransform.TransformFinalBlock(packetPadded, 0, packetPadded.Length);
                     }
@@ -167,36 +167,43 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         /// <param name="content"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        public async Task<Tuple<byte[], bool>> DecryptDataProcess(byte[] content, CancellationTokenSource cancellation)
+        public async Task<byte[]> DecryptDataProcess(byte[] content, CancellationTokenSource cancellation)
         {
-            Tuple<byte[], bool> decryptResult = null;
+            byte[] decryptResult = null;
 
-            await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
+            bool actionStatus = await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
             {
-                if (!_initialized || content == null || content?.Length == 0)
-                    return;
-
                 try
                 {
+                    if (_initialized && content?.Length > 0)
+                    {
+                        byte[] decryptedPaddedPacket = _decryptCryptoTransform.TransformFinalBlock(content, 0, content.Length);
 
-                    byte[] decryptedPaddedPacket = _decryptCryptoTransform.TransformFinalBlock(content, 0, content.Length);
-
-                    if (decryptedPaddedPacket == null)
-                        return;
-
-                    byte[] result = ClassUtility.UndoPacketPadding(decryptedPaddedPacket);
-
-                    decryptResult = new Tuple<byte[], bool>(result, result != null ? result.Length > 0 : false);
-
+                        if (decryptedPaddedPacket != null)
+                            decryptResult = ClassUtility.UndoPadding(decryptedPaddedPacket);
+#if DEBUG
+                        else
+                            Debug.WriteLine("Data is null.");
+#endif
+                    }
+#if DEBUG
+                    else
+                        Debug.WriteLine("Can't start the decrypt process. Init: " + _initialized + " | content status: " + (content.Length > 0));
+#endif
                 }
                 catch (Exception error)
                 {
                     Debug.WriteLine("Error to decrypt packet from " + PeerIp + " | Exception: " + error.Message);
                 }
-                
+
             }, cancellation);
 
-            return decryptResult;
+#if DEBUG
+            if (!actionStatus)
+                Debug.WriteLine("Can't do the action process to decrypt the packet data from " + PeerIp);
+#endif
+
+                return decryptResult;
         }
 
         /// <summary>

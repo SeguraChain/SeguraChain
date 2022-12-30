@@ -81,7 +81,7 @@ namespace SeguraChain_Lib.Blockchain.Wallet.Function
                 if (useBaseWord)
                 {
                     using (ClassSha3512DigestDisposable sha3512Digest = new ClassSha3512DigestDisposable())
-                        sha3512Digest.Compute(ClassUtility.GetByteArrayFromStringAscii(baseWords), out privateKeyWifByteArray);
+                        sha3512Digest.Compute(baseWords.GetByteArray(true), out privateKeyWifByteArray);
                 }
                 else
                 {

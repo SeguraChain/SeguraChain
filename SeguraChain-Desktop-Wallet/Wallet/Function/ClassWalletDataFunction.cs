@@ -234,12 +234,12 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Function
                 int countIteration = 0;
                 using (ClassSha3512DigestDisposable sha3512Digest = new ClassSha3512DigestDisposable())
                 {
-                    sha3512Digest.Compute(ClassUtility.GetByteArrayFromStringUtf8(password + countIteration), out byte[] walletPassphraseHashArray);
+                    sha3512Digest.Compute((password + countIteration).GetByteArray(), out byte[] walletPassphraseHashArray);
                     Array.Resize(ref walletPassphraseHashArray, ClassAes.EncryptionKeyByteArraySize);
                     sha3512Digest.Reset();
 
                     // The IV stay unique.
-                    byte[] walletEncryptionIv = ClassAes.GenerateIv(ClassUtility.GetByteArrayFromStringUtf8(password));
+                    byte[] walletEncryptionIv = ClassAes.GenerateIv((password).GetByteArray());
 
                     while (countIteration < walletTotalIteration)
                     {
@@ -248,7 +248,7 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Function
 
                         // Update the encryption after each encryptions done.
 
-                        byte[] argumentToHash = ClassUtility.GetByteArrayFromStringUtf8(password + countIteration);
+                        byte[] argumentToHash = (password + countIteration).GetByteArray();
                         byte[] passphaseToHash = new byte[walletPassphraseHashArray.Length + argumentToHash.Length];
 
                         Array.Copy(walletPassphraseHashArray, 0, passphaseToHash, 0, walletPassphraseHashArray.Length);
@@ -259,7 +259,7 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Function
                         Array.Resize(ref walletPassphraseHashArray, ClassAes.EncryptionKeyByteArraySize);
                     }
 
-                    if (!ClassAes.GenerateKey(ClassUtility.GetByteArrayFromStringUtf8(password), true, out byte[] passwordKey))
+                    if (!ClassAes.GenerateKey(password.GetByteArray(), true, out byte[] passwordKey))
                         result = ClassWalletEncryptWalletPrivateKeyEnumResult.WALLET_ENCRYPT_PRIVATE_KEY_ERROR;
                     else
                     {
@@ -319,7 +319,7 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Function
 
             using (ClassSha3512DigestDisposable sha3512Digest = new ClassSha3512DigestDisposable())
             {
-                sha3512Digest.Compute(ClassUtility.GetByteArrayFromStringUtf8(password + countIteration), out byte[] walletPassphraseHashArray);
+                sha3512Digest.Compute((password + countIteration).GetByteArray(), out byte[] walletPassphraseHashArray);
                 Array.Resize(ref walletPassphraseHashArray, ClassAes.EncryptionKeyByteArraySize);
                 sha3512Digest.Reset();
 
@@ -329,7 +329,7 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Function
                     countIteration++;
 
                     // Update the encryption after each encryptions done.
-                    byte[] argumentToHash = ClassUtility.GetByteArrayFromStringUtf8(password + countIteration);
+                    byte[] argumentToHash = (password + countIteration).GetByteArray();
                     byte[] passphaseToHash = new byte[walletPassphraseHashArray.Length + argumentToHash.Length];
 
                     Array.Copy(walletPassphraseHashArray, 0, passphaseToHash, 0, walletPassphraseHashArray.Length);
@@ -345,7 +345,7 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Function
                     result = ClassWalletDecryptWalletPrivateKeyEnumResult.WALLET_DECRYPT_PRIVATE_KEY_ERROR;
                 else
                 {
-                    if (!ClassAes.GenerateKey(ClassUtility.GetByteArrayFromStringUtf8(password), true, out byte[] passwordKey))
+                    if (!ClassAes.GenerateKey(password.GetByteArray(), true, out byte[] passwordKey))
                         result = ClassWalletDecryptWalletPrivateKeyEnumResult.WALLET_DECRYPT_PRIVATE_KEY_ERROR;
                     else
                     {

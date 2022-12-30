@@ -378,10 +378,21 @@ namespace SeguraChain_Lib.TaskManager
 
                 long end = timestampEnd - CurrentTimestampMillisecond;
 
-                CancellationTokenSource cancellationTask = CancellationTokenSource.CreateLinkedTokenSource(
-                cancellation != null ?
-                cancellation.Token : new CancellationToken(),
-                end > 0 ? new CancellationTokenSource((int)(end)).Token : new CancellationToken());
+                CancellationTokenSource cancellationTask;
+
+                try
+                {
+
+                    cancellationTask =
+                        cancellation != null && end > 0 ?
+                        CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, new CancellationTokenSource((int)end).Token)
+                        : (end > 0 ? new CancellationTokenSource((int)end) : new CancellationTokenSource());
+
+                }
+                catch
+                {
+                    return;
+                }
 
                 if (useFactory)
                 {
