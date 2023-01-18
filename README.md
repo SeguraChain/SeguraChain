@@ -19,48 +19,53 @@ Please read the whitepaper document, the document is not yet complete but most o
 
 Once the whitepaper is complete, I will make the translation of this one into english.
 
-Everything has been developed in C#, and support Net5, a downgrade to NetFramework 4.8 is available.
+Everything has been developed in C#, and support NET5 (later 6/7), a downgrade to NetFramework 4.8 is available too, you can then use
+**Monodevelop**
 
 <b>Visual Studio 2019 16 at minimum is required.</b>
 
  
 <h3>Libraries:</h3>
 
-> LZ4Net. (The most better ratio between compression/decompression)
+> LZ4Net. (The most better ratio between compression/decompression) 
 
-> Newtonsoft.Json.
+> Newtonsoft.Json. (JSON)
 
 > Open.NAT. **(Only available for NET4.8)**
 
-> Portable.BouncyCastle. **Replaced by OpenSSL soon.**
+> Portable.BouncyCastle. **Replaced by OpenSSL soon to gain performances.**
 
-> ZXing.net (Desktop wallet only, need a replacement later to erase this library).
+> ZXing.net (used by the Desktop wallet only, need a replacement later to erase this library).
 
   
 <h3>To do list:</h3>
 
-> Implement an option to convert the BTC Blockchain database and merge it into the Genesis Block data. (0% done)
+> Implement an option to convert the BTC Blockchain database and merge it into the Genesis Block data. [0%]
 
-> Whitepaper progress. (70% done):
+> Whitepaper progress. [60%]:
 
   - English (100%)
   - French (100%)
 
-> **Complete wallets balance checkpoint disk cache process. (40% done)**
+> **Complete wallets balance checkpoint disk cache process. [40%]**
 
-> **Complete Desktop Wallet features and options. (90% done)**
+> **Complete Desktop Wallet features and options. [90%]**
 
-> **Develop the IO Cache Network mode. (5% done)**
+> **Develop the IO Cache Network mode. [5%]**
 
-> **Develop the RPC Wallet. (50% done)**
+> **Develop the RPC Wallet. [50%]**
 
-> **Develop an example of Mining Pool. (0% done)**
+> **Develop an example of Mining Pool. [0%]**
 
-> **Finish optimizations. (87% done)**
+> **Finish optimizations. [60%]**
 
-> **Develop a block explorer page inside of the node API. (10% done)**
+> **Develop a block explorer page inside of the node API. [10%]**
 
-> **Clean up the source code. (10% done)**
+> **Clean up the source code. [5%]**
+
+> **Include NET6/7 support**.
+
+> **Complete the new packet system data , passing new random packet format by auth keys and unique id's [90%]**. 
 
 <h3>Setup:</h3>
 
@@ -77,8 +82,6 @@ https://github.com/SeguraChain/SeguraChain/wiki/Compilation-Platform-Target
 <h3>Contact</h3>
 
 Discord: https://discord.gg/mvc7v9FDyJ
-
-Linkedin: https://fr.linkedin.com/in/sam-segura
   
 Every devs and potential users can send me their returns about the project, potential fix, issues and more.
   
