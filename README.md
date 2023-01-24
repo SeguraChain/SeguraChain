@@ -63,7 +63,9 @@ Everything has been developed in C#, and support NET5 (later 6/7), a downgrade t
 
 > **Clean up the source code. [5%]**
 
-> **Include NET6/7 support**.
+> **Include NET6/7 support. [0%]**
+
+> **Porting the Desktop Wallet to Telerik. [0%]**
 
 > **Complete the new packet system data , passing new random packet format by auth keys and unique id's [90%]**. 
 
