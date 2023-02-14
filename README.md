@@ -91,11 +91,11 @@ Every devs and potential users can send me their returns about the project, pote
 <h3>If you want to donate to the project:</h3>
 <h4>just to tracking them, if possible please put the note: Donation</h4>
 
-> BTC: 39mUsJFhjU6GDrchCkQ4iJsmdvD8S2jpzU
+> BTC: 39mUsJFhjU6GDrchCkQ4iJsmdvD8S2jpzU | Explorer: https://btc.com/39mUsJFhjU6GDrchCkQ4iJsmdvD8S2jpzU
 
-> Curecoin: B6V6mSNRDFzmDgiPcQKYhBer6GgbM5XJeR
+> Curecoin: B6V6mSNRDFzmDgiPcQKYhBer6GgbM5XJeR | Explorer: https://chainz.cryptoid.info/cure/address.dws?B6V6mSNRDFzmDgiPcQKYhBer6GgbM5XJeR.htm
 
-> Monero: 42D44q7CMG4G73EZqzmH3FW6GntGmEd4r1TaMt3VQg939s4B73EJ3twFoLwnwLkMUQeRsLAuXoFLdaFFQ54Pbseb8u1EEka
+> Monero: 44TSVkQ2k9TVns4AdKpP1bSPQ5ZgHU9sULZZwBrWye82fa6MpLgFFi66mjLMtQEZ7xPXGLz5LPktfH71tFqdX36HCbE3DvU
 
 
 
