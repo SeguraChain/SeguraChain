@@ -7,11 +7,18 @@
   
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net5.0;net48</TargetFrameworks>
+	<TargetFrameworks>net7.0;net6.0;net5.0;net48</TargetFrameworks>
     <RootNamespace>SeguraChain_Solo_Miner</RootNamespace>
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
 
+	<PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0'">
+        <DefineConstant>NET7</DefineConstant>
+    </PropertyGroup>
+
+	<PropertyGroup Condition=" '$(TargetFramework)' == 'net6.0'">
+        <DefineConstant>NET6</DefineConstant>
+    </PropertyGroup>
 	
    <PropertyGroup Condition=" '$(TargetFramework)' == 'net5.0'">
         <DefineConstant>NET5</DefineConstant>
