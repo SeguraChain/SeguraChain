@@ -19,7 +19,7 @@ Please read the whitepaper document, the document is not yet complete but most o
 
 Once the whitepaper is complete, I will make the translation of this one into english.
 
-Everything has been developed in C#, and support NET5 (later 6/7), a downgrade to NetFramework 4.8 is available too, you can then use
+Everything has been developed in C#, and support NET5/NET6/NET7, a downgrade to NetFramework 4.8 is available too, you can then use
 **Monodevelop**
 
 <b>Visual Studio 2019 16 at minimum is required.</b>
@@ -63,7 +63,7 @@ Everything has been developed in C#, and support NET5 (later 6/7), a downgrade t
 
 > **Clean up the source code. [5%]**
 
-> **Include NET6/7 support. [0%]**
+> **Include NET6/7 support. [100%]**
 
 > **Porting the Desktop Wallet to Telerik. [0%]**
 
