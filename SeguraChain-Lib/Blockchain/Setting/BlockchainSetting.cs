@@ -105,8 +105,8 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int BlockDifficultyRangeCalculation = BlockExpectedPerDay / 3; // Use previous blocks for generate the new block difficulty.
         public const int BlockDifficultyPrecision = 100_000; // The precision put on the difficulty factor calculated.
         public const int GenesisBlockHeight = 1; // The genesis block height.
-		public static readonly BigInteger GenesisBlockAmount = 2_000_000 * CoinDecimal; // The genesis block amount reward has pre-mining.
-		public const string GenesisBlockFinalTransactionHash ="1E64F80CEE090BFB496E7BDE08317E8BAC85FC8FF996B58A399CF05006E9A0D1316AFB4B2B0433BCBD67783383A5F286E142565ECB513A20C7817E438376AB77";
+		public static readonly BigInteger GenesisBlockAmount = 3_000_000 * CoinDecimal; // The genesis block amount reward has pre-mining.
+		public const string GenesisBlockFinalTransactionHash ="84133C9B3525ECCC01A65BCF111A1A8BFF13D22D3568244F800E5D5A6D8DF61D91B0D0CBC38DC08D7FCACDD2D74D76F039EBC37F82EFCD936A7F4834C7E7E313";
         public const int GenesisBlockTransactionCount = 1; // The maximum of transaction inserted on the genesis block.
         public const int BlockAmountNetworkConfirmations = 2; // The minimum amount of network checks on blocks to do with peers, before to enable the task of confirmations on the block.
         public const int BlockAmountSlowNetworkConfirmations = 5; // This amount increment another amount of network checks, once this one is reach, the network counter increment and this one return back to 0.
