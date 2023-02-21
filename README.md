@@ -22,7 +22,7 @@ Once the whitepaper is complete, I will make the translation of this one into en
 Everything has been developed in C#, and support NET5/NET6/NET7, a downgrade to NetFramework 4.8 is available too, you can then use
 **Monodevelop**
 
-<b>Visual Studio 2019 16 at minimum is required.</b>
+<b>Visual Studio 2022 is required.</b>
 
  
 <h3>Libraries:</h3>
