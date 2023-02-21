@@ -908,7 +908,7 @@ namespace SeguraChain_Test_Tool
 
                 #endregion
 
-                #region Default blockchain database setting.
+                #region Default blockchain sdatabase setting.
 
                 ClassLog.SimpleWriteLine("Do you want to use the compressed mode on the blockchain data to save ?[Y/N]");
                 bool useCompressedMode = Console.ReadLine().ToLower() == "y";
@@ -940,7 +940,7 @@ namespace SeguraChain_Test_Tool
                         long blockHeight = BlockchainSetting.GenesisBlockHeight;
                         BigInteger blockDifficulty = BlockchainSetting.MiningMinDifficulty;
 
-                        ClassTransactionObject blockTransaction = ClassTransactionUtility.BuildTransaction(blockHeight, blockHeight + BlockchainSetting.TransactionMandatoryMinBlockTransactionConfirmations, BlockchainSetting.BlockRewardName, BlockchainSetting.WalletAddressDevPublicKey(0), string.Empty, genesisBlockAmount, 0, walletAddress, timestampCreate, ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION, 0, string.Empty, string.Empty, privateKey, string.Empty, null, timestampCreate, new CancellationTokenSource());
+                        ClassTransactionObject blockTransaction = ClassTransactionUtility.BuildTransaction(blockHeight, blockHeight + BlockchainSetting.TransactionMandatoryMinBlockTransactionConfirmations, BlockchainSetting.BlockRewardName, publicKey, string.Empty, genesisBlockAmount * decimalAmount, 0, walletAddress, timestampCreate, ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION, 0, string.Empty, string.Empty, privateKey, string.Empty, null, timestampCreate, new CancellationTokenSource());
 
                         Console.WriteLine("Genesis block transaction hash: " + blockTransaction.TransactionHash);
 
