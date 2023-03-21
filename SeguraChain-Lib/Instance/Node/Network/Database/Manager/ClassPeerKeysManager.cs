@@ -31,7 +31,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="cancellation"></param>
         /// <param name="peerNetworkSettingObject"></param>
         /// <param name="forceUpdate"></param>
-        public static async Task<bool> UpdatePeerInternalKeys(string peerIp, int peerPort, string peerUniqueId, CancellationTokenSource cancellation, ClassPeerNetworkSettingObject peerNetworkSettingObject, bool forceUpdate)
+        public static async Task<bool> UpdatePeerInternalKeys(string peerIp, 
+            int peerPort, 
+            string peerUniqueId, 
+            CancellationTokenSource cancellation, 
+            ClassPeerNetworkSettingObject peerNetworkSettingObject,
+            ClassPeerFirewallSettingObject peerFirewallSettingObject,
+            bool incomingConnection,
+            bool forceUpdate)
         {
             bool result = false;
 
@@ -42,7 +49,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
 
             if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].ContainsKey(peerUniqueId))
             {
-                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternTimestampKeyGenerated + peerNetworkSettingObject.PeerMaxAuthKeysExpire < currentTimestamp || forceUpdate)
+                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternTimestampKeyGenerated + peerNetworkSettingObject.PeerMaxAuthKeysExpire < currentTimestamp || forceUpdate
+                     || !ClassPeerCheckManager.CheckPeerClientStatus(peerIp, peerUniqueId, incomingConnection, peerNetworkSettingObject, peerFirewallSettingObject))
                 {
                     if (ClassAes.GenerateKey(ClassUtility.GetRandomWord(RandomWordKeySize).GetByteArray(true), true, out ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey))
                     {

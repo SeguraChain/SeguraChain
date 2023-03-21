@@ -2717,7 +2717,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
             if (targetExist)
             {
-                if (await ClassPeerKeysManager.UpdatePeerInternalKeys(peerIp, peerPort, peerUniqueId, cancellation, _peerNetworkSettingObject, forceUpdate))
+                if (await ClassPeerKeysManager.UpdatePeerInternalKeys(peerIp, peerPort, peerUniqueId, cancellation, _peerNetworkSettingObject, _peerFirewallSettingObject, false, forceUpdate))
                     peerObject = ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId];
             }
             else

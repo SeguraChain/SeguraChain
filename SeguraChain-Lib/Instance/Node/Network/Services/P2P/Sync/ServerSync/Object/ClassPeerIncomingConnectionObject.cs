@@ -13,7 +13,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Obj
 
         public ClassPeerIncomingConnectionObject(ClassPeerNetworkSettingObject peerNetworkSettingObject)
         {
-            SemaphoreHandleConnection = new SemaphoreSlim(1, peerNetworkSettingObject.PeerMaxThreadsPool);
+            SemaphoreHandleConnection = new SemaphoreSlim(1, 1);
             ListPeerClientObject = new ConcurrentDictionary<long, ClassPeerNetworkClientServerObject>();
             OnCleanUp = false;
         }

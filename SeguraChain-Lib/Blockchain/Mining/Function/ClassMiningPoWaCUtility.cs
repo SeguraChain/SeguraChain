@@ -432,7 +432,7 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
 
                         // Fill Poc random data with random data on the checksum part. Increase by 32 bytes the length of the PoC share (Checksum 32 bytes size).
                         using (RNGCryptoServiceProvider rngCrypto = new RNGCryptoServiceProvider())
-                            rngCrypto.GetBytes(pocRandomData, currentMiningSetting.RandomDataShareNumberSize + currentMiningSetting.RandomDataShareTimestampSize, currentMiningSetting.RandomDataShareChecksum); 
+                            rngCrypto.GetBytes(pocRandomData, currentMiningSetting.RandomDataShareNumberSize + currentMiningSetting.RandomDataShareTimestampSize, currentMiningSetting.RandomDataShareChecksum);
 
                         // Copy wallet address decoded.
                         Array.Copy(walletAddressDecoded, 0, pocRandomData, currentMiningSetting.RandomDataShareNumberSize + currentMiningSetting.RandomDataShareTimestampSize + currentMiningSetting.RandomDataShareChecksum, currentMiningSetting.WalletAddressDataSize);

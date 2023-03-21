@@ -114,7 +114,7 @@ namespace SeguraChain_Lib.Other.Object.Network
             {
                 if (!IsConnected())
                     return readPacketData;
-                /*
+                
                 while (_socket.Available == 0)
                 {
                     if (cancellation.IsCancellationRequested || !IsConnected())
@@ -122,7 +122,7 @@ namespace SeguraChain_Lib.Other.Object.Network
 
                     await Task.Delay(1);
                 }
-                */
+                
                 readPacketData.Data = new byte[packetLength];
                 readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
             }
