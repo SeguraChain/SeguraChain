@@ -82,7 +82,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
 
             try
             {
-                if (publicKey.IsNullOrEmpty(false, out _) || privateKey.IsNullOrEmpty(false, out _))
+                if (publicKey.IsNullOrEmpty(false, out _) ||
+                    privateKey.IsNullOrEmpty(false, out _))
                     return;
 
                 _aesManaged?.Dispose();
@@ -141,12 +142,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
                 {
                     try
                     {
-                        byte[] packetPadded = ClassUtility.DoPadding(content);
+                        content = ClassUtility.DoPadding(content);
+                        result = _encryptCryptoTransform.TransformFinalBlock(content, 0, content.Length);
 
-                        result = _encryptCryptoTransform.TransformFinalBlock(packetPadded, 0, packetPadded.Length);
                     }
-                    catch
+                    catch(Exception error)
                     {
+#if DEBUG
+                        Debug.WriteLine("error to encrypt packet data. Exception: " + error.Message);
+#endif
                         // Ignored.
                     }
                 }
@@ -176,16 +180,20 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
             {
                 try
                 {
+
+
                     if (_initialized && content?.Length > 0)
                     {
-                        byte[] decryptedPaddedPacket = _decryptCryptoTransform.TransformFinalBlock(content, 0, content.Length);
+                        decryptResult = _decryptCryptoTransform.TransformFinalBlock(content, 0, content.Length);
 
-                        if (decryptedPaddedPacket != null)
-                            decryptResult = ClassUtility.UndoPadding(decryptedPaddedPacket);
+                        
+                        if (decryptResult != null)
+                            decryptResult = ClassUtility.UndoPadding(decryptResult);
 #if DEBUG
                         else
                             Debug.WriteLine("Data is null.");
 #endif
+                        
                     }
 #if DEBUG
                     else
@@ -194,7 +202,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
                 }
                 catch (Exception error)
                 {
+#if DEBUG
                     Debug.WriteLine("Error to decrypt packet from " + PeerIp + " | Exception: " + error.Message);
+#endif
                 }
 
             }, cancellation);
@@ -204,7 +214,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
                 Debug.WriteLine("Can't do the action process to decrypt the packet data from " + PeerIp);
 #endif
 
-                return decryptResult;
+            return decryptResult;
         }
 
         /// <summary>

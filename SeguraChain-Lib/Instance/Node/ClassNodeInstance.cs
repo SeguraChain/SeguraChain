@@ -214,7 +214,7 @@ namespace SeguraChain_Lib.Instance.Node
                 if (!fromWallet)
                     Console.ReadLine();
             }
-            
+
             return false;
         }
 
@@ -339,17 +339,15 @@ namespace SeguraChain_Lib.Instance.Node
             PeerToolStatus = false;
 
 
-            if (!forceClose)
+
+            if (!forceClose && !isWallet)
             {
-                ClassLog.CloseLogStreams();
                 ClassLog.WriteLine("Peer tool successfully closed. Press a key to exit.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                 Console.ReadLine();
             }
-            else
-            {
-                if (!isWallet)
-                    Process.GetCurrentProcess().Kill();
-            }
+
+            ClassLog.CloseLogStreams();
+
         }
 
         #endregion
@@ -386,7 +384,7 @@ namespace SeguraChain_Lib.Instance.Node
 
         #region OpenNAT.
 
-        #if !NET5_0_OR_GREATER
+#if !NET5_0_OR_GREATER
         
                 /// <summary>
                 /// Open Peer port with NAT to get the port available to the public network.
@@ -456,7 +454,7 @@ namespace SeguraChain_Lib.Instance.Node
 
                 }
 
-        #endif
+#endif
 
         #endregion
 

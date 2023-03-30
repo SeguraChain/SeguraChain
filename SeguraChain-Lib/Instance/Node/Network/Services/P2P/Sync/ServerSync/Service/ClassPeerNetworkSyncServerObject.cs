@@ -412,9 +412,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                 {
                                     try
                                     {
-                                        if (!_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[key].ClientPeerConnectionStatus ||
-                                            _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[key].ClientPeerLastPacketReceived + _peerNetworkSettingObject.PeerMaxDelayConnection < TaskManager.TaskManager.CurrentTimestampSecond)
+                                        if (!_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[key].ClientPeerConnectionStatus)
                                         {
+                                            _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[key].ClosePeerClient(false);
                                             _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[key].Dispose();
                                             remove = true;
                                         }

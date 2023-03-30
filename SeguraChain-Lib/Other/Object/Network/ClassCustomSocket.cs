@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace SeguraChain_Lib.Other.Object.Network
 {
+  
+    
+
     /// <summary>
     /// Custom socket class.
     /// </summary>
@@ -79,7 +82,10 @@ namespace SeguraChain_Lib.Other.Object.Network
             try
             {
                 // return !((_socket.Poll(10, SelectMode.SelectRead) && (_socket.Available == 0)));
-                return (Closed || _socket == null || !_socket.Connected || _networkStream == null) ? false : true;
+                return (Closed || 
+                    _socket == null || 
+                    !ClassUtility.SocketIsConnected(_socket) ||
+                    _networkStream == null) ? false : true;
             }
             catch
             {
@@ -88,13 +94,22 @@ namespace SeguraChain_Lib.Other.Object.Network
 
         }
 
+        /// <summary>
+        /// Try to send a splitted packet data.
+        /// </summary>
+        /// <param name="packetData"></param>
+        /// <param name="cancellation"></param>
+        /// <param name="packetPeerSplitSeperator"></param>
+        /// <returns></returns>
         public async Task<bool> TrySendSplittedPacket(byte[] packetData, CancellationTokenSource cancellation, int packetPeerSplitSeperator)
         {
-            if (!IsConnected())
-                return false;
 
             try
             {
+
+               // packetData = packetData.InputData(ClassPeerPacketSetting.PacketSeperatorBegin.GetByteArray(), true);
+               // packetData = packetData.InputData(ClassPeerPacketSetting.PacketSeperatorEnd.GetByteArray(), false);
+
                 return await _networkStream.TrySendSplittedPacket(packetData, cancellation, packetPeerSplitSeperator);
             }
             catch (Exception error)
@@ -112,19 +127,67 @@ namespace SeguraChain_Lib.Other.Object.Network
 
             try
             {
-                if (!IsConnected())
-                    return readPacketData;
                 
-                while (_socket.Available == 0)
+                /*while (_socket.Available == 0)
                 {
                     if (cancellation.IsCancellationRequested || !IsConnected())
                         return readPacketData;
 
                     await Task.Delay(1);
-                }
-                
+                }*/
+
+               /* bool foundBegin = false;
+                bool foundEnd = false;*/
+
                 readPacketData.Data = new byte[packetLength];
                 readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
+
+
+                /*using (DisposableList<byte> listData = new DisposableList<byte>())
+                {
+                    while (!foundBegin && !foundEnd)
+                    {
+                        readPacketData.Data = new byte[packetLength];
+                        readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
+
+                        if (!readPacketData.Status || !IsConnected())
+                            break;
+
+                        if (!foundBegin)
+                        {
+                            string data = readPacketData.Data.GetStringFromByteArrayUtf8();
+                            int indexOfBegin = data.IndexOf(ClassPeerPacketSetting.PacketSeperatorBegin);
+
+                            if (indexOfBegin > -1)
+                                foundBegin = true;
+
+                            int indexOfEnd = data.IndexOf(ClassPeerPacketSetting.PacketSeperatorEnd);
+
+                            if (indexOfBegin > -1)
+                                foundEnd = true;
+
+                            if (foundBegin && foundEnd)
+                               data = data.GetStringBetweenTwoStrings(ClassPeerPacketSetting.PacketSeperatorBegin, ClassPeerPacketSetting.PacketSeperatorEnd);
+                            else if (foundBegin && !foundEnd)
+                               data = data.Substring(indexOfBegin + ClassPeerPacketSetting.PacketSeperatorBegin.Length);
+
+                            foreach (var dataByte in data.GetByteArray())
+                                listData.Add(dataByte);
+
+                           
+                            if (foundBegin && foundEnd)
+                                break;
+                        }
+                        
+                    }
+
+                    if (foundBegin && foundEnd)
+                    {
+                        readPacketData.Data = listData.GetList.ToArray();
+                        readPacketData.Status = true;
+                    }    
+                }*/
+
             }
             catch (Exception error)
             {
@@ -146,10 +209,14 @@ namespace SeguraChain_Lib.Other.Object.Network
 
             Closed = true;
 
-            if (IsConnected())
+            try
             {
                 _socket?.Shutdown(shutdownType);
                 _socket?.Close();
+            }
+            catch
+            {
+                // Ignored.
             }
         }
 

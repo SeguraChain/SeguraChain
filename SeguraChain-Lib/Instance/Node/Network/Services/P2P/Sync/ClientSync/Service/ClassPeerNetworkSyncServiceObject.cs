@@ -454,15 +454,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
 
                                 ClassLog.WriteLine(countPeer + " peer lists are received.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
-
                             }
 
                             ClearPeerTargetList(peerTargetList);
                         }
-
-
-
-
                     }
                     catch (Exception error)
                     {
@@ -1107,8 +1102,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         }
 
         #endregion
-
-
 
         #region Peer Task Sync - Tasks Packet functions.
 
@@ -2994,7 +2987,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
                 {
-                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
+                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, false);
                     return new Tuple<bool, List<string>>(true, null);
                 }
 
@@ -3075,7 +3068,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
                 {
-                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
+                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, false);
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassSovereignUpdateObject>>(true, null);
                 }
 
@@ -3168,7 +3161,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
 
                 {
-                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
+                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, false);
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendNetworkInformation>>(true, null);
                 }
 
@@ -3254,7 +3247,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
                 {
-                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
+                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, false);
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>>(true, null);
                 }
 
@@ -3347,7 +3340,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
                 {
-                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
+                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, false);
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionData>>(true, null);
                 }
 
@@ -3441,7 +3434,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
                 {
-                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
+                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, false);
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionDataByRange>>(true, null);
                 }
 

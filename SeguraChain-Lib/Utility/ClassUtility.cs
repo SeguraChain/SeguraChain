@@ -916,46 +916,55 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         public static DisposableList<ClassReadPacketSplitted> GetEachPacketSplitted(byte[] packetBufferOnReceive, DisposableList<ClassReadPacketSplitted> listPacketReceived, CancellationTokenSource cancellation)
         {
-            string packetData = packetBufferOnReceive.GetStringFromByteArrayUtf8().Replace("\0", "");
-
-            if (listPacketReceived.Disposed)
-                listPacketReceived = new DisposableList<ClassReadPacketSplitted>();
-
-            if (listPacketReceived.Count == 0)
-                listPacketReceived.Add(new ClassReadPacketSplitted());
-
-            if (packetData.Contains(ClassPeerPacketSetting.PacketPeerSplitSeperator))
+            try
             {
-                int countSeperator = packetData.Count(x => x == ClassPeerPacketSetting.PacketPeerSplitSeperator);
+                string packetData = packetBufferOnReceive.GetStringFromByteArrayUtf8().Replace("\0", "");
 
-                string[] splitPacketData = packetData.Split(new[] { ClassPeerPacketSetting.PacketPeerSplitSeperator }, StringSplitOptions.None);
+                if (listPacketReceived == null)
+                    listPacketReceived = new DisposableList<ClassReadPacketSplitted>();
 
-                int completed = 0;
+                if (listPacketReceived.Disposed)
+                    listPacketReceived = new DisposableList<ClassReadPacketSplitted>();
 
-                foreach (string data in splitPacketData)
+                if (listPacketReceived.Count == 0)
+                    listPacketReceived.Add(new ClassReadPacketSplitted());
+
+                if (packetData.Contains(ClassPeerPacketSetting.PacketPeerSplitSeperator))
                 {
-                    if (cancellation.IsCancellationRequested)
-                        break;
+                    int countSeperator = packetData.Count(x => x == ClassPeerPacketSetting.PacketPeerSplitSeperator);
 
-                    listPacketReceived[listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0].Packet += data.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
+                    string[] splitPacketData = packetData.Split(new[] { ClassPeerPacketSetting.PacketPeerSplitSeperator }, StringSplitOptions.None);
 
-                    if (completed < countSeperator)
+                    int completed = 0;
+
+                    foreach (string data in splitPacketData)
                     {
-                        listPacketReceived[listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0].Complete = true;
-                        break;
-                    }
+                        if (cancellation.IsCancellationRequested)
+                            break;
 
-                    completed++;
+                        listPacketReceived[listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0].Packet += data.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
+
+                        if (completed < countSeperator)
+                        {
+                            listPacketReceived[listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0].Complete = true;
+                            break;
+                        }
+
+                        completed++;
+                    }
+                }
+                else
+                {
+                    int index = listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : -1;
+
+                    if (index != -1)
+                        listPacketReceived[index].Packet += packetData;
                 }
             }
-            else
+            catch
             {
-                int index = listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0;
 
-                if (index < listPacketReceived.Count)
-                    listPacketReceived[index].Packet += packetData;
             }
-
             return listPacketReceived;
         }
 
@@ -968,12 +977,6 @@ namespace SeguraChain_Lib.Utility
         {
             int basePaddingSize = 16;
             int paddingSizeRequired = basePaddingSize - (data.Length % basePaddingSize);
-
-            while (paddingSizeRequired == 0)
-            {
-                basePaddingSize++;
-                paddingSizeRequired = basePaddingSize - (data.Length % basePaddingSize);
-            }
 
             byte[] paddedBytes = new byte[data.Length + paddingSizeRequired];
 
@@ -1342,6 +1345,30 @@ namespace SeguraChain_Lib.Utility
                 return compare == null || source.Length != compare.Length ? false : !source.Where((t, i) => t != compare[i]).Any();
 
             return compare != null ? true : false;
+        }
+    
+    
+        /// <summary>
+        /// Input data target.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="data"></param>
+        /// <param name="begin"></param>
+        /// <returns></returns>
+        public static byte[] InputData(this byte[] source, byte[] data, bool begin)
+        {
+            byte[] newData = new byte[source.Length + data.Length];
+            if (begin)
+            {
+                Array.Copy(data, 0, newData, 0, data.Length);
+                Array.Copy(source, 0, newData, data.Length, source.Length);
+            }
+            else
+            {
+                Array.Copy(source, 0, newData, 0, source.Length);
+                Array.Copy(data, 0, newData, source.Length, data.Length);
+            }
+            return newData;
         }
     }
 

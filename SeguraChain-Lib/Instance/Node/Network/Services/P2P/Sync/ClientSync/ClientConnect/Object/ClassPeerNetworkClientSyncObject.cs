@@ -147,7 +147,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                 return false;
 
             
-
             #region Init the client sync object.
 
             PacketResponseExpected = packetResponseExpected;
@@ -343,7 +342,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                             ClassPeerCheckManager.UpdatePeerClientLastPacketReceived(PeerIpTarget, PeerUniqueIdTarget, TaskManager.TaskManager.CurrentTimestampSecond);
 
-                            if (!readPacketData.Status)
+                            if (!readPacketData.Status || readPacketData.Data == null)
                                 break;
 
                             #region Compile the packet.
@@ -352,32 +351,45 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                             #endregion
 
+                            if (listPacketReceived?.GetList == null)
+                                continue;
+
                             int countCompleted = listPacketReceived.GetList.Count(x => x.Complete);
 
                             if (countCompleted == 0)
                                 continue;
 
-                            if (listPacketReceived[listPacketReceived.Count - 1].Used ||
-                            !listPacketReceived[listPacketReceived.Count - 1].Complete ||
-                             listPacketReceived[listPacketReceived.Count - 1].Packet == null ||
-                             listPacketReceived[listPacketReceived.Count - 1].Packet.Length == 0)
+                            try
+                            {
+                                if (listPacketReceived[0].Used ||
+                                !listPacketReceived[0].Complete ||
+                                 listPacketReceived[0].Packet == null ||
+                                 listPacketReceived[0].Packet.Length == 0)
+                                    continue;
+                            }
+                            catch(Exception error)
+                            {
+#if DEBUG
+                                Debug.WriteLine("Failed to compile the packet data. Exception: " + error.Message);
+#endif
                                 continue;
+                            }
 
                             byte[] base64Packet = null;
                             bool failed = false;
 
-                            listPacketReceived[listPacketReceived.Count - 1].Used = true;
+                            listPacketReceived[0].Used = true;
 
                             try
                             {
-                                base64Packet = Convert.FromBase64String(listPacketReceived[listPacketReceived.Count - 1].Packet);
+                                base64Packet = Convert.FromBase64String(listPacketReceived[0].Packet);
                             }
                             catch
                             {
                                 failed = true;
                             }
 
-                            listPacketReceived[listPacketReceived.Count - 1].Packet.Clear();
+                            listPacketReceived[0].Packet.Clear();
 
                             if (failed)
                                 continue;
@@ -404,7 +416,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                 PeerPacketReceived = peerPacketReceived;
 
                             }
-
                             else
                             {
                                 PeerPacketReceivedStatus = peerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS;

@@ -266,7 +266,10 @@ namespace SeguraChain_Lib.TaskManager
                     for (int i = 0; i < _taskCollection.Count; i++)
                     {
 
-                        if (_taskCollection[i] == null || _taskCollection[i].Task == null || _taskCollection[i].Disposed || !_taskCollection[i].Started)
+                        if (_taskCollection[i] == null || 
+                            _taskCollection[i].Task == null || 
+                            _taskCollection[i].Disposed || 
+                            !_taskCollection[i].Started)
                             continue;
 
 
@@ -279,7 +282,7 @@ namespace SeguraChain_Lib.TaskManager
                             {
                                 if (_taskCollection[i].Task != null && (_taskCollection[i].Task.IsCanceled ||
 #if NET5_0_OR_GREATER
-                                        _taskCollection[i].Task.IsCompletedSuccessfully ||
+                                    _taskCollection[i].Task.IsCompletedSuccessfully ||
 #endif
 
                                     _taskCollection[i].Task.IsFaulted))
@@ -375,7 +378,7 @@ namespace SeguraChain_Lib.TaskManager
         {
             if (TaskManagerEnabled)
             {
-
+                useFactory = true;
                 long end = timestampEnd - CurrentTimestampMillisecond;
 
                 CancellationTokenSource cancellationTask;
