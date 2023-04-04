@@ -64,7 +64,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// Specifications of the connection opened.
         /// </summary>
         public ClassPeerEnumPacketResponse PacketResponseExpected;
-        private DisposableList<ClassReadPacketSplitted> listPacketReceived;
         private bool _keepAlive;
 
 
@@ -328,9 +327,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             TaskManager.TaskManager.InsertTask(new Action(async () =>
             {
 
-                listPacketReceived?.Clear();
-
-                using (listPacketReceived = new DisposableList<ClassReadPacketSplitted>(false, 0, new List<ClassReadPacketSplitted>()
+                using (DisposableList<ClassReadPacketSplitted> listPacketReceived = new DisposableList<ClassReadPacketSplitted>(false, 0, new List<ClassReadPacketSplitted>()
                 {
                     new ClassReadPacketSplitted()
                 }))
@@ -347,20 +344,18 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                             #region Compile the packet.
 
-                            listPacketReceived = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, _peerCancellationTokenTaskListenPeerPacketResponse);
+                            ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, _peerCancellationTokenTaskListenPeerPacketResponse);
 
                             #endregion
 
-                            if (listPacketReceived?.GetList == null)
-                                continue;
 
-                            int countCompleted = listPacketReceived.GetList.Count(x => x.Complete);
-
-                            if (countCompleted == 0)
-                                continue;
 
                             try
                             {
+
+                                if (listPacketReceived?.GetList?.Count == 0)
+                                    continue;
+
                                 if (listPacketReceived[0].Used ||
                                 !listPacketReceived[0].Complete ||
                                  listPacketReceived[0].Packet == null ||
@@ -378,18 +373,18 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                             byte[] base64Packet = null;
                             bool failed = false;
 
-                            listPacketReceived[0].Used = true;
 
                             try
                             {
+                                listPacketReceived[0].Used = true;
                                 base64Packet = Convert.FromBase64String(listPacketReceived[0].Packet);
+                               
                             }
                             catch
                             {
                                 failed = true;
                             }
 
-                            listPacketReceived[0].Packet.Clear();
 
                             if (failed)
                                 continue;
@@ -569,7 +564,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// </summary>
         public void DisconnectFromTarget()
         {
-            listPacketReceived?.Clear();
             _peerSocketClient?.Kill(SocketShutdown.Both);
         }
 

@@ -46,7 +46,7 @@ namespace SeguraChain_Lib.Blockchain.Database.DatabaseSetting
         /// <summary>
         /// IO Disk default cache settings.
         /// </summary>
-        public const long DefaultIoDiskCacheMaxBlockPerFile = 100; // Maximum of blocks per io cache file.
+        public const long DefaultIoDiskCacheMaxBlockPerFile = 10; // Maximum of blocks per io cache file.
         public const long DefaultIoCacheDiskTransactionSizePerLine = 1_000_000_000;
         public const int DefaultIoCacheDiskMaxTransactionPerLineOnBlockStringToWrite = 1000; // A maximum of 1000 transactions per line per block. Example, 100 000 tx's are stored on a block, the result return 100 lines who contains 1000 transactions on each.
         public const int DefaultIoCacheDiskMaxKeepAliveDataInMemoryTimeLimit = 600 * 1000; // Maximum of time to keep data in the active memory.

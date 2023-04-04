@@ -448,8 +448,9 @@ namespace SeguraChain_Lib.Blockchain.Database
                                         ClassAes.EncryptionProcess(blockDataLineCopy, _blockchainDataStandardEncryptionKey, _blockchainDataStandardEncryptionKeyIv, out blockDataLineCopy);
 
                                     await writerBlock.WriteLineAsync(Encoding.UTF8.GetString(blockDataLineCopy));
-                                    await writerBlock.FlushAsync();
                                 }
+
+                                await writerBlock.FlushAsync();
 
                                 totalTxSaved += blockObject.BlockTransactions.Count;
                                 totalBlockSaved++;
