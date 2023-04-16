@@ -320,13 +320,14 @@ namespace SeguraChain_Lib.Instance.Node
             else
                 ClassLog.WriteLine("MemPool data saved failed.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
 
+
             #endregion
 
             #region Save Blockchain Data.
 
             ClassLog.WriteLine("Save Blockchain data..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-            if (await ClassBlockchainDatabase.SaveBlockchainDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject))
+            if (ClassBlockchainDatabase.SaveBlockchainDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject).Result)
             {
                 await ClassBlockchainDatabase.CloseBlockchainDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject);
                 ClassLog.WriteLine("Blockchain data saved.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
@@ -336,9 +337,6 @@ namespace SeguraChain_Lib.Instance.Node
 
             #endregion
 
-            PeerToolStatus = false;
-
-
 
             if (!forceClose && !isWallet)
             {
@@ -347,6 +345,8 @@ namespace SeguraChain_Lib.Instance.Node
             }
 
             ClassLog.CloseLogStreams();
+            PeerToolStatus = false;
+
 
         }
 

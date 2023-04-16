@@ -83,6 +83,7 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Object
         public int PeerMaxThreadsPool;
         public int PeerMaxThreadsPoolCompletionPort;
         public int PeerMaxTaskIncomingConnection;
+        public bool PeerEnableParanoidCheck;
 
         /// <summary>
         /// API.
@@ -137,6 +138,7 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Object
             PeerMaxThreadsPool = PeerMinThreadsPool * ClassUtility.GetMaxAvailableProcessorCount();
             PeerMaxThreadsPoolCompletionPort = PeerMinThreadsPoolCompletionPort  * ClassUtility.GetMaxAvailableProcessorCount();
             PeerMaxTaskIncomingConnection = BlockchainSetting.PeerMaxTaskIncomingConnection;
+            PeerEnableParanoidCheck = BlockchainSetting.PeerEnableParanoidCheck;
 
             // API Part.
             ListenApiIp = BlockchainSetting.PeerDefaultApiIp;

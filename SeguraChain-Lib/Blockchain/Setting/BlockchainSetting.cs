@@ -193,6 +193,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const bool PeerEnableSyncTransactionByRange = true;
         public const bool PeerEnableSovereignPeerVote = false;
         public const int PeerMaxTaskIncomingConnection = 200;
+        public const bool PeerEnableParanoidCheck = false;
 
         /// <summary>
         /// The default P2P port.
