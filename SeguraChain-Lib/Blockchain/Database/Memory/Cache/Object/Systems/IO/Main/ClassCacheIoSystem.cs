@@ -160,7 +160,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                 // The task has been cancelled.
                             }
                             totalTaskDone++;
-                        }), 0, cancellation);
+                        }), 0, cancellation, null, true);
                     }
                     else
                         await _dictionaryCacheIoIndexObject[ioFileName].PurgeIoBlockDataMemory(false, cancellation, 0, false);
@@ -219,7 +219,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                     // The task has been cancelled or the file stream is locked, closed.
                                 }
                                 totalTaskDone++;
-                            }), 0, cancellation);
+                            }), 0, cancellation, null, true);
                         }
                         else
                         {
@@ -473,7 +473,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                     }
 
                                     totalTaskDone++;
-                                }), 0, cancellation);
+                                }), 0, cancellation, null, true);
                             }
                             else
                             {
@@ -653,7 +653,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                     }
                                     totalTaskDone++;
 
-                                }), 0, cancellation);
+                                }), 0, cancellation, null, true);
                             }
                             else
                             {
@@ -877,7 +877,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                         }
 
                                         totalTaskDone++;
-                                    }), 0, cancellation);
+                                    }), 0, cancellation, null, true);
                                 }
 
                                 while (totalTaskDone < totalTaskToDo && !cancel && !cancellationIoCache.IsCancellationRequested)

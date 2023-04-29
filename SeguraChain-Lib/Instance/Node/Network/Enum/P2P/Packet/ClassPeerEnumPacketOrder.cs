@@ -1,11 +1,12 @@
-﻿using System.Text;
+﻿using SeguraChain_Lib.Utility;
 
 namespace SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Packet
 {
     public class ClassPeerPacketSetting
     {
-        public const string PacketSeperatorBegin = "HELL";
-        public const string PacketSeperatorEnd = "FLAME";
+        public static readonly byte[] PacketSeperatorBegin = "HELL".GetByteArray();
+        public static readonly byte[] PacketSeperatorEnd = "FLAME".GetByteArray();
+        public const int PacketSeperatorLength = 6;
         public const char PacketPeerSplitSeperator = '*';
         public const int PacketMaxLengthReceive = 10000000; // Maximum of 10000000 characters until to get the packet split seperator.
     }

@@ -849,7 +849,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                                         break;
                                                                 }
 
-                                                                
+
                                                             }
                                                             #region Paranoid check disabled.
                                                             else
@@ -1601,7 +1601,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
             }
         }
 
-        private class ClassBlockSync {
+        private class ClassBlockSync
+        {
             public long BlockHeight;
             public string BlockHash;
             public int PeerId;
@@ -1653,43 +1654,50 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                             foreach (var blockHeight in listBlockHeightTarget.GetAll)
                             {
 
-                                if (!_listPeerNetworkInformationStats.ContainsKey(peerListTarget[i].PeerIpTarget))
-                                    break;
-
-                                if (!_listPeerNetworkInformationStats[peerListTarget[i].PeerIpTarget].ContainsKey(peerListTarget[i].PeerUniqueIdTarget))
-                                    break;
-
-
-                                if (_listPeerNetworkInformationStats[peerListTarget[i].PeerIpTarget][peerListTarget[i].PeerUniqueIdTarget].LastBlockHeightUnlocked < blockHeight)
-                                    break;
-
-                                CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token);
-
-                                Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>> result = await SendAskBlockData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeight, refuseLockedBlock, cancellationTokenSourceTaskSync);
-
-                                if (result == null || !result.Item1 || result.Item2 == null)
-                                    continue;
-
-                                if (result.Item2.ObjectReturned.BlockData.BlockHeight != blockHeight)
-                                    ClassPeerCheckManager.InputPeerClientInvalidPacket(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                                else
+                                try
                                 {
-                                    ClassBlockObject blockObject = result.Item2.ObjectReturned.BlockData;
+                                    if (!_listPeerNetworkInformationStats.ContainsKey(peerListTarget[i].PeerIpTarget))
+                                        break;
 
-                                    #region Ensure to clean the block object received.
+                                    if (!_listPeerNetworkInformationStats[peerListTarget[i].PeerIpTarget].ContainsKey(peerListTarget[i].PeerUniqueIdTarget))
+                                        break;
 
-                                    blockObject.BlockTransactionFullyConfirmed = false;
-                                    blockObject.BlockUnlockValid = false;
-                                    blockObject.BlockNetworkAmountConfirmations = 0;
-                                    blockObject.BlockSlowNetworkAmountConfirmations = 0;
-                                    blockObject.BlockLastHeightTransactionConfirmationDone = 0;
-                                    blockObject.BlockTotalTaskTransactionConfirmationDone = 0;
-                                    blockObject.BlockTransactionConfirmationCheckTaskDone = false;
-                                    blockObject?.BlockTransactions.Clear();
 
-                                    listBlockObjectsReceived[blockHeight].Add(i1, blockObject);
+                                    if (_listPeerNetworkInformationStats[peerListTarget[i].PeerIpTarget][peerListTarget[i].PeerUniqueIdTarget].LastBlockHeightUnlocked < blockHeight)
+                                        break;
 
-                                    #endregion
+                                    CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token);
+
+                                    Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>> result = await SendAskBlockData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeight, refuseLockedBlock, cancellationTokenSourceTaskSync);
+
+                                    if (result == null || !result.Item1 || result.Item2 == null)
+                                        continue;
+
+                                    if (result.Item2.ObjectReturned.BlockData.BlockHeight != blockHeight)
+                                        ClassPeerCheckManager.InputPeerClientInvalidPacket(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                                    else
+                                    {
+                                        ClassBlockObject blockObject = result.Item2.ObjectReturned.BlockData;
+
+                                        #region Ensure to clean the block object received.
+
+                                        blockObject.BlockTransactionFullyConfirmed = false;
+                                        blockObject.BlockUnlockValid = false;
+                                        blockObject.BlockNetworkAmountConfirmations = 0;
+                                        blockObject.BlockSlowNetworkAmountConfirmations = 0;
+                                        blockObject.BlockLastHeightTransactionConfirmationDone = 0;
+                                        blockObject.BlockTotalTaskTransactionConfirmationDone = 0;
+                                        blockObject.BlockTransactionConfirmationCheckTaskDone = false;
+                                        blockObject?.BlockTransactions.Clear();
+
+                                        listBlockObjectsReceived[blockHeight].Add(i1, blockObject);
+
+                                        #endregion
+                                    }
+                                }
+                                catch
+                                {
+                                    // Ignored, catch the exception once the task is cancelled.
                                 }
                             }
                         }
@@ -1784,254 +1792,254 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
 
             return blockListSynced;
-                /*
-                foreach (var blockHeight in listBlockHeightTarget.GetAll)
+            /*
+            foreach (var blockHeight in listBlockHeightTarget.GetAll)
+            {
+                int totalTaskToDo = peerListTarget.Count;
+                int totalTaskDone = 0;
+                int totalResponseOk = 0;
+
+                using (DisposableConcurrentDictionary<string, int> listOfRankedPeerPublicKeySaved = new DisposableConcurrentDictionary<string, int>())
                 {
-                    int totalTaskToDo = peerListTarget.Count;
-                    int totalTaskDone = 0;
-                    int totalResponseOk = 0;
-
-                    using (DisposableConcurrentDictionary<string, int> listOfRankedPeerPublicKeySaved = new DisposableConcurrentDictionary<string, int>())
+                    using (DisposableConcurrentDictionary<string, ClassBlockObject> listBlockObjectsReceived = new DisposableConcurrentDictionary<string, ClassBlockObject>())
                     {
-                        using (DisposableConcurrentDictionary<string, ClassBlockObject> listBlockObjectsReceived = new DisposableConcurrentDictionary<string, ClassBlockObject>())
-                        {
-                            using (DisposableConcurrentDictionary<string, ConcurrentDictionary<bool, float>> listBlockObjectsReceivedVotes = new DisposableConcurrentDictionary<string, ConcurrentDictionary<bool, float>>())
-                            { 
+                        using (DisposableConcurrentDictionary<string, ConcurrentDictionary<bool, float>> listBlockObjectsReceivedVotes = new DisposableConcurrentDictionary<string, ConcurrentDictionary<bool, float>>())
+                        { 
 
 
-                                foreach (int i in peerListTarget.Keys)
+                            foreach (int i in peerListTarget.Keys)
+                            {
+                                if (peerListTarget[i] == null)
                                 {
-                                    if (peerListTarget[i] == null)
-                                    {
-                                        totalTaskDone++;
-                                        continue;
-                                    }
+                                    totalTaskDone++;
+                                    continue;
+                                }
 
-                                    if (!ClassPeerCheckManager.CheckPeerClientInitializationStatus(peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget))
-                                    {
-                                        totalTaskDone++;
-                                        continue;
-                                    }
+                                if (!ClassPeerCheckManager.CheckPeerClientInitializationStatus(peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget))
+                                {
+                                    totalTaskDone++;
+                                    continue;
+                                }
 
-                                    if (!_listPeerNetworkInformationStats.ContainsKey(peerListTarget[i].PeerIpTarget))
-                                    {
-                                        totalTaskDone++;
-                                        continue;
-                                    }
+                                if (!_listPeerNetworkInformationStats.ContainsKey(peerListTarget[i].PeerIpTarget))
+                                {
+                                    totalTaskDone++;
+                                    continue;
+                                }
 
 
-                                    if (!_listPeerNetworkInformationStats[peerListTarget[i].PeerIpTarget].ContainsKey(peerListTarget[i].PeerUniqueIdTarget))
-                                    {
-                                        totalTaskDone++;
-                                        continue;
-                                    }
+                                if (!_listPeerNetworkInformationStats[peerListTarget[i].PeerIpTarget].ContainsKey(peerListTarget[i].PeerUniqueIdTarget))
+                                {
+                                    totalTaskDone++;
+                                    continue;
+                                }
 
-                                    if (_listPeerNetworkInformationStats[peerListTarget[i].PeerIpTarget][peerListTarget[i].PeerUniqueIdTarget].LastBlockHeightUnlocked < blockHeight)
-                                    {
-                                        totalTaskDone++;
-                                        continue;
-                                    }
+                                if (_listPeerNetworkInformationStats[peerListTarget[i].PeerIpTarget][peerListTarget[i].PeerUniqueIdTarget].LastBlockHeightUnlocked < blockHeight)
+                                {
+                                    totalTaskDone++;
+                                    continue;
+                                }
 
-                                    int i1 = i;
-                                    TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                int i1 = i;
+                                TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                {
+                                    if (peerListTarget.ContainsKey(i1))
                                     {
-                                        if (peerListTarget.ContainsKey(i1))
+                                        CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token);
+
+                                        Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>> result = await SendAskBlockData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeight, refuseLockedBlock, cancellationTokenSourceTaskSync);
+
+                                        if (result != null)
                                         {
-                                            CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token);
-
-                                            Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>> result = await SendAskBlockData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeight, refuseLockedBlock, cancellationTokenSourceTaskSync);
-
-                                            if (result != null)
+                                            if (result.Item1 && result.Item2 != null)
                                             {
-                                                if (result.Item1 && result.Item2 != null)
+                                                if (result.Item2.ObjectReturned.BlockData.BlockHeight != blockHeight)
+                                                    ClassPeerCheckManager.InputPeerClientInvalidPacket(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                                                else
                                                 {
-                                                    if (result.Item2.ObjectReturned.BlockData.BlockHeight != blockHeight)
-                                                        ClassPeerCheckManager.InputPeerClientInvalidPacket(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                                                    else
+                                                    bool peerRanked = false;
+
+                                                    if (_peerNetworkSettingObject.PeerEnableSovereignPeerVote)
                                                     {
-                                                        bool peerRanked = false;
+                                                        if (CheckIfPeerIsRanked(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, result.Item2.ObjectReturned, result.Item2.PacketNumericHash, result.Item2.PacketNumericSignature, cancellationTokenSourceTaskSync, out string numericPublicKeyOut))
+                                                            peerRanked = !listOfRankedPeerPublicKeySaved.ContainsKey(numericPublicKeyOut) ? listOfRankedPeerPublicKeySaved.TryAdd(numericPublicKeyOut, 0) : false;
+                                                    }
 
-                                                        if (_peerNetworkSettingObject.PeerEnableSovereignPeerVote)
+                                                    ClassBlockObject blockObject = result.Item2.ObjectReturned.BlockData;
+
+                                                    #region Ensure to clean the block object received.
+
+                                                    blockObject.BlockTransactionFullyConfirmed = false;
+                                                    blockObject.BlockUnlockValid = false;
+                                                    blockObject.BlockNetworkAmountConfirmations = 0;
+                                                    blockObject.BlockSlowNetworkAmountConfirmations = 0;
+                                                    blockObject.BlockLastHeightTransactionConfirmationDone = 0;
+                                                    blockObject.BlockTotalTaskTransactionConfirmationDone = 0;
+                                                    blockObject.BlockTransactionConfirmationCheckTaskDone = false;
+                                                    blockObject?.BlockTransactions.Clear();
+
+                                                    #endregion
+
+                                                    string blockObjectHash = ClassUtility.GenerateSha256FromString(string.Concat("", ClassBlockUtility.BlockObjectToStringBlockData(blockObject, false).ToList()));
+
+                                                    bool insertStatus = false;
+
+                                                    if (!listBlockObjectsReceived.ContainsKey(blockObjectHash))
+                                                        insertStatus = listBlockObjectsReceived.TryAdd(blockObjectHash, blockObject);
+                                                    else
+                                                        insertStatus = true;
+
+                                                    if (insertStatus)
+                                                    {
+                                                        bool insertVoteStatus = false;
+                                                        if (!listBlockObjectsReceivedVotes.ContainsKey(blockObjectHash))
                                                         {
-                                                            if (CheckIfPeerIsRanked(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, result.Item2.ObjectReturned, result.Item2.PacketNumericHash, result.Item2.PacketNumericSignature, cancellationTokenSourceTaskSync, out string numericPublicKeyOut))
-                                                                peerRanked = !listOfRankedPeerPublicKeySaved.ContainsKey(numericPublicKeyOut) ? listOfRankedPeerPublicKeySaved.TryAdd(numericPublicKeyOut, 0) : false;
-                                                        }
-
-                                                        ClassBlockObject blockObject = result.Item2.ObjectReturned.BlockData;
-
-                                                        #region Ensure to clean the block object received.
-
-                                                        blockObject.BlockTransactionFullyConfirmed = false;
-                                                        blockObject.BlockUnlockValid = false;
-                                                        blockObject.BlockNetworkAmountConfirmations = 0;
-                                                        blockObject.BlockSlowNetworkAmountConfirmations = 0;
-                                                        blockObject.BlockLastHeightTransactionConfirmationDone = 0;
-                                                        blockObject.BlockTotalTaskTransactionConfirmationDone = 0;
-                                                        blockObject.BlockTransactionConfirmationCheckTaskDone = false;
-                                                        blockObject?.BlockTransactions.Clear();
-
-                                                        #endregion
-
-                                                        string blockObjectHash = ClassUtility.GenerateSha256FromString(string.Concat("", ClassBlockUtility.BlockObjectToStringBlockData(blockObject, false).ToList()));
-
-                                                        bool insertStatus = false;
-
-                                                        if (!listBlockObjectsReceived.ContainsKey(blockObjectHash))
-                                                            insertStatus = listBlockObjectsReceived.TryAdd(blockObjectHash, blockObject);
-                                                        else
-                                                            insertStatus = true;
-
-                                                        if (insertStatus)
-                                                        {
-                                                            bool insertVoteStatus = false;
-                                                            if (!listBlockObjectsReceivedVotes.ContainsKey(blockObjectHash))
+                                                            if (listBlockObjectsReceivedVotes.TryAdd(blockObjectHash, new ConcurrentDictionary<bool, float>()))
                                                             {
-                                                                if (listBlockObjectsReceivedVotes.TryAdd(blockObjectHash, new ConcurrentDictionary<bool, float>()))
+                                                                // Ranked.
+                                                                if (listBlockObjectsReceivedVotes[blockObjectHash].TryAdd(true, 0))
                                                                 {
-                                                                    // Ranked.
-                                                                    if (listBlockObjectsReceivedVotes[blockObjectHash].TryAdd(true, 0))
-                                                                    {
-                                                                        if (listBlockObjectsReceivedVotes[blockObjectHash].TryAdd(false, 0))
-                                                                            insertVoteStatus = true;
-                                                                    }
+                                                                    if (listBlockObjectsReceivedVotes[blockObjectHash].TryAdd(false, 0))
+                                                                        insertVoteStatus = true;
                                                                 }
+                                                            }
+                                                        }
+                                                        else
+                                                            insertVoteStatus = true;
+
+                                                        if (insertVoteStatus)
+                                                        {
+                                                            if (peerRanked)
+                                                            {
+                                                                if (listBlockObjectsReceivedVotes[blockObjectHash].ContainsKey(true))
+                                                                    listBlockObjectsReceivedVotes[blockObjectHash][true]++;
                                                             }
                                                             else
-                                                                insertVoteStatus = true;
-
-                                                            if (insertVoteStatus)
                                                             {
-                                                                if (peerRanked)
-                                                                {
-                                                                    if (listBlockObjectsReceivedVotes[blockObjectHash].ContainsKey(true))
-                                                                        listBlockObjectsReceivedVotes[blockObjectHash][true]++;
-                                                                }
-                                                                else
-                                                                {
-                                                                    if (listBlockObjectsReceivedVotes[blockObjectHash].ContainsKey(false))
-                                                                        listBlockObjectsReceivedVotes[blockObjectHash][false]++;
-                                                                }
-
-                                                                totalResponseOk++;
+                                                                if (listBlockObjectsReceivedVotes[blockObjectHash].ContainsKey(false))
+                                                                    listBlockObjectsReceivedVotes[blockObjectHash][false]++;
                                                             }
+
+                                                            totalResponseOk++;
                                                         }
                                                     }
-
                                                 }
-                                            }
 
+                                            }
                                         }
 
-                                        totalTaskDone++;
+                                    }
 
-                                    }), 0, null);
+                                    totalTaskDone++;
 
-                                }
+                                }), 0, null);
 
-                                while (totalTaskDone < totalTaskToDo)
-                                    await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
+                            }
+
+                            while (totalTaskDone < totalTaskToDo)
+                                await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
 
 
-                                try
+                            try
+                            {
+                                if (totalResponseOk < _peerNetworkSettingObject.PeerMinAvailablePeerSync)
+                                    return blockListSynced;
+
+                                ClassLog.WriteLine(listBlockObjectsReceived.Count + " different block(s) data received for sync the block height: " + blockHeight + ". Calculate votes..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+
+                                using (DisposableDictionary<string, float> majorityVoteBlockSeed = new DisposableDictionary<string, float>())
                                 {
-                                    if (totalResponseOk < _peerNetworkSettingObject.PeerMinAvailablePeerSync)
-                                        return blockListSynced;
-
-                                    ClassLog.WriteLine(listBlockObjectsReceived.Count + " different block(s) data received for sync the block height: " + blockHeight + ". Calculate votes..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-
-                                    using (DisposableDictionary<string, float> majorityVoteBlockSeed = new DisposableDictionary<string, float>())
+                                    using (DisposableDictionary<string, float> majorityVoteBlockNormal = new DisposableDictionary<string, float>())
                                     {
-                                        using (DisposableDictionary<string, float> majorityVoteBlockNormal = new DisposableDictionary<string, float>())
+
+                                        float totalSeedVotes = 0;
+                                        float totalNormalVotes = 0;
+
+                                        #region Sorting votes done.
+
+                                        foreach (var dictionaryVote in listBlockObjectsReceivedVotes.GetList)
                                         {
+                                            if (!majorityVoteBlockSeed.ContainsKey(dictionaryVote.Key))
+                                                majorityVoteBlockSeed.Add(dictionaryVote.Key, 0);
 
-                                            float totalSeedVotes = 0;
-                                            float totalNormalVotes = 0;
+                                            if (!majorityVoteBlockNormal.ContainsKey(dictionaryVote.Key))
+                                                majorityVoteBlockNormal.Add(dictionaryVote.Key, 0);
 
-                                            #region Sorting votes done.
-
-                                            foreach (var dictionaryVote in listBlockObjectsReceivedVotes.GetList)
+                                            if (dictionaryVote.Value.Count > 0)
                                             {
-                                                if (!majorityVoteBlockSeed.ContainsKey(dictionaryVote.Key))
-                                                    majorityVoteBlockSeed.Add(dictionaryVote.Key, 0);
-
-                                                if (!majorityVoteBlockNormal.ContainsKey(dictionaryVote.Key))
-                                                    majorityVoteBlockNormal.Add(dictionaryVote.Key, 0);
-
-                                                if (dictionaryVote.Value.Count > 0)
+                                                if (dictionaryVote.Value.ContainsKey(true))
                                                 {
-                                                    if (dictionaryVote.Value.ContainsKey(true))
-                                                    {
-                                                        majorityVoteBlockSeed[dictionaryVote.Key] += dictionaryVote.Value[true];
-                                                        totalSeedVotes += dictionaryVote.Value[true];
-                                                    }
-                                                    if (dictionaryVote.Value.ContainsKey(false))
-                                                    {
-                                                        majorityVoteBlockNormal[dictionaryVote.Key] += dictionaryVote.Value[false];
-                                                        totalNormalVotes += dictionaryVote.Value[false];
-                                                    }
+                                                    majorityVoteBlockSeed[dictionaryVote.Key] += dictionaryVote.Value[true];
+                                                    totalSeedVotes += dictionaryVote.Value[true];
+                                                }
+                                                if (dictionaryVote.Value.ContainsKey(false))
+                                                {
+                                                    majorityVoteBlockNormal[dictionaryVote.Key] += dictionaryVote.Value[false];
+                                                    totalNormalVotes += dictionaryVote.Value[false];
                                                 }
                                             }
-
-                                            string blockHashSeedSelected = majorityVoteBlockSeed.GetList.OrderByDescending(x => x.Value).First().Key;
-                                            string blockHashNormSelected = majorityVoteBlockNormal.GetList.OrderByDescending(x => x.Value).First().Key;
-                                            float blockHashSeedSelectedCountVote = majorityVoteBlockSeed.GetList.OrderByDescending(x => x.Value).First().Value;
-                                            float blockHashNormSelectedCountVote = majorityVoteBlockNormal.GetList.OrderByDescending(x => x.Value).First().Value;
-
-                                            // Calculate percent.
-                                            if (totalSeedVotes < blockHashSeedSelectedCountVote)
-                                                blockHashSeedSelectedCountVote = (blockHashSeedSelectedCountVote / totalSeedVotes) * 100f;
-                                            else
-                                            {
-                                                // All seed agree together.
-                                                blockHashSeedSelectedCountVote = 100f;
-                                            }
-
-                                            // Calculate percent.
-                                            if (totalNormalVotes < blockHashNormSelectedCountVote)
-                                                blockHashNormSelectedCountVote = (blockHashNormSelectedCountVote / totalNormalVotes) * 100f;
-                                            else
-                                            {
-                                                // All noral peer agree together.
-                                                blockHashNormSelectedCountVote = 100f;
-                                            }
-
-                                            #endregion
-
-                                            #region Select the hash most voted.
-
-                                            // Perfect equality.
-                                            if (blockHashNormSelected == blockHashSeedSelected)
-                                                blockListSynced.Add(listBlockObjectsReceived[blockHashSeedSelected].BlockHeight, listBlockObjectsReceived[blockHashSeedSelected]);
-                                            else
-                                            {
-                                                // Seed select.
-                                                if (blockHashSeedSelectedCountVote > blockHashNormSelectedCountVote)
-                                                    blockListSynced.Add(listBlockObjectsReceived[blockHashSeedSelected].BlockHeight, listBlockObjectsReceived[blockHashSeedSelected]);
-                                                // Normal select.
-                                                else
-                                                    blockListSynced.Add(listBlockObjectsReceived[blockHashNormSelected].BlockHeight, listBlockObjectsReceived[blockHashNormSelected]);
-                                            }
-
-                                            #endregion
-
-                                            ClassLog.WriteLine("Block height: " + blockHeight + " data retrieved from peers successfully, continue the sync..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                                         }
+
+                                        string blockHashSeedSelected = majorityVoteBlockSeed.GetList.OrderByDescending(x => x.Value).First().Key;
+                                        string blockHashNormSelected = majorityVoteBlockNormal.GetList.OrderByDescending(x => x.Value).First().Key;
+                                        float blockHashSeedSelectedCountVote = majorityVoteBlockSeed.GetList.OrderByDescending(x => x.Value).First().Value;
+                                        float blockHashNormSelectedCountVote = majorityVoteBlockNormal.GetList.OrderByDescending(x => x.Value).First().Value;
+
+                                        // Calculate percent.
+                                        if (totalSeedVotes < blockHashSeedSelectedCountVote)
+                                            blockHashSeedSelectedCountVote = (blockHashSeedSelectedCountVote / totalSeedVotes) * 100f;
+                                        else
+                                        {
+                                            // All seed agree together.
+                                            blockHashSeedSelectedCountVote = 100f;
+                                        }
+
+                                        // Calculate percent.
+                                        if (totalNormalVotes < blockHashNormSelectedCountVote)
+                                            blockHashNormSelectedCountVote = (blockHashNormSelectedCountVote / totalNormalVotes) * 100f;
+                                        else
+                                        {
+                                            // All noral peer agree together.
+                                            blockHashNormSelectedCountVote = 100f;
+                                        }
+
+                                        #endregion
+
+                                        #region Select the hash most voted.
+
+                                        // Perfect equality.
+                                        if (blockHashNormSelected == blockHashSeedSelected)
+                                            blockListSynced.Add(listBlockObjectsReceived[blockHashSeedSelected].BlockHeight, listBlockObjectsReceived[blockHashSeedSelected]);
+                                        else
+                                        {
+                                            // Seed select.
+                                            if (blockHashSeedSelectedCountVote > blockHashNormSelectedCountVote)
+                                                blockListSynced.Add(listBlockObjectsReceived[blockHashSeedSelected].BlockHeight, listBlockObjectsReceived[blockHashSeedSelected]);
+                                            // Normal select.
+                                            else
+                                                blockListSynced.Add(listBlockObjectsReceived[blockHashNormSelected].BlockHeight, listBlockObjectsReceived[blockHashNormSelected]);
+                                        }
+
+                                        #endregion
+
+                                        ClassLog.WriteLine("Block height: " + blockHeight + " data retrieved from peers successfully, continue the sync..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                                     }
                                 }
-                                catch (Exception error)
-                                {
-                                    ClassLog.WriteLine("Error on trying to sync a block metadata from peers. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-    #if DEBUG
-                                    Debug.WriteLine("Error on trying to sync a block metadata from peers. Exception: " + error.Message);
-    #endif
-                                }
+                            }
+                            catch (Exception error)
+                            {
+                                ClassLog.WriteLine("Error on trying to sync a block metadata from peers. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+#if DEBUG
+                                Debug.WriteLine("Error on trying to sync a block metadata from peers. Exception: " + error.Message);
+#endif
                             }
                         }
                     }
                 }
-
-                return blockListSynced;*/
             }
+
+            return blockListSynced;*/
+        }
 
         /// <summary>
         /// Start to ask a transaction data by a transaction id target.
@@ -2638,7 +2646,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                         while (totalTaskDone < totalTaskToDo)
                             await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
-                        
+
 
 
                         try
@@ -3245,14 +3253,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
             string peerUniqueId = peerNetworkClientSyncObject.PeerUniqueIdTarget;
 
             ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+            {
+                PacketOrder = ClassPeerEnumPacketSend.ASK_BLOCK_DATA,
+                PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskBlockData()
                 {
-                    PacketOrder = ClassPeerEnumPacketSend.ASK_BLOCK_DATA,
-                    PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskBlockData()
-                    {
-                        BlockHeight = blockHeightTarget,
-                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
-                    })
-                };
+                    BlockHeight = blockHeightTarget,
+                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
+                })
+            };
 
 
             sendObject.PacketHash = ClassUtility.GenerateSha256FromString(sendObject.PacketContent + sendObject.PacketOrder);

@@ -532,8 +532,6 @@ namespace SeguraChain_Lib.Blockchain.Database
             BlockchainMemoryManagement.BlockchainWalletIndexMemoryCacheObject.Clear();
 
             DictionaryCheckpointObjects.Clear();
-
-            ClassUtility.CleanGc();
         }
 
         #region Functions dedicated to checkpoint(s) data.

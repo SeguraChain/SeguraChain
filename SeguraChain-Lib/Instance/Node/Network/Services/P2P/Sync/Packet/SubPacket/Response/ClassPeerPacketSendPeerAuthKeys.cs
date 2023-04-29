@@ -9,5 +9,7 @@
         public int PeerPort;
         public int PeerApiPort;
         public long PacketTimestamp;
+        public byte[] PeerPacketBegin;
+        public byte[] PeerPacketEnd;
     }
 }

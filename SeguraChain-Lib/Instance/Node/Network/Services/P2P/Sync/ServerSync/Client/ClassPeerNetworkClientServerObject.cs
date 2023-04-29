@@ -235,7 +235,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                     while (ClientPeerConnectionStatus && !_clientAskDisconnection)
                     {
-                        using (ReadPacketData readPacketData = await _clientSocket.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, _cancellationTokenListenPeerPacket))
+                        ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(_peerClientIp, _peerUniqueId);
+
+                        using (ReadPacketData readPacketData = await _clientSocket.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, peerObject != null ? peerObject.PeerClientPacketBegin : null, peerObject != null ? peerObject.PeerClientPacketEnd : null, _cancellationTokenListenPeerPacket))
                         {
                             if (!readPacketData.Status || readPacketData.Data == null)
                                 break;
@@ -1965,7 +1967,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                     packetSendObject.PacketSignature = await peerObject.GetClientCryptoStreamObject.DoSignatureProcess(packetSendObject.PacketHash, peerObject.PeerInternPrivateKey, _cancellationTokenListenPeerPacket);
 
 
-                return await _clientSocket.TrySendSplittedPacket((Convert.ToBase64String(packetSendObject.GetPacketData()) + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray(), _cancellationTokenListenPeerPacket, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
+                return await _clientSocket.TrySendSplittedPacket((Convert.ToBase64String(packetSendObject.GetPacketData()) + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray(), peerObject != null ? peerObject.PeerClientPacketBegin : null, peerObject != null ? peerObject.PeerClientPacketEnd : null, _cancellationTokenListenPeerPacket, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
 
             }
             catch

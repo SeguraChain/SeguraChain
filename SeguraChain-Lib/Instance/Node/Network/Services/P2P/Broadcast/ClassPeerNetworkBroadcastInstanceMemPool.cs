@@ -493,7 +493,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                             _peerSocketClient?.Kill(SocketShutdown.Both);
                             _peerSocketClient = new ClassCustomSocket(new Socket(ClassUtility.GetAddressFamily(_peerIpTarget), SocketType.Stream, ProtocolType.Tcp), false);
 
-                            if (await _peerSocketClient.ConnectAsync(_peerIpTarget, _peerPortTarget))
+                            if (await _peerSocketClient.ConnectAsync(_peerIpTarget, _peerPortTarget, _peerNetworkSettingObject.PeerMaxDelayToConnectToTarget * 1000))
                             {
                                 successConnect = true;
                                 break;
@@ -578,7 +578,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                             while (!broadcastResponsePacketStatus)
                             {
-                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, cancellationReceiveBroadcastResponsePacket))
+
+                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, peerObject.PeerClientPacketBegin, peerObject.PeerClientPacketEnd, cancellationReceiveBroadcastResponsePacket))
                                 {
                                     if (!readPacketData.Status)
                                         break;
@@ -1097,7 +1098,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                             while (!packetReceived && IsAlive && !taskComplete)
                             {
-                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, cancellationReceiveBlockListPacket))
+                                ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(_peerIpTarget, _peerUniqueIdTarget);
+
+                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize,peerObject.PeerClientPacketBegin, peerObject.PeerClientPacketEnd, cancellationReceiveBlockListPacket))
                                 {
                                     if (!readPacketData.Status)
                                         break;
@@ -1214,8 +1217,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                                     while (!endBroadcast && receiveStatus && IsAlive)
                                     {
+                                        ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(_peerIpTarget, _peerUniqueIdTarget);
 
-                                        using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, cancellationReceiveTransactionPacket))
+                                        using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, peerObject.PeerClientPacketBegin, peerObject.PeerClientPacketEnd, cancellationReceiveTransactionPacket))
                                         {
                                             if (!readPacketData.Status)
                                                 break;
@@ -1447,8 +1451,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                             while (IsAlive && !taskDone && !voteStatus)
                             {
+                                ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(_peerIpTarget, _peerUniqueIdTarget);
 
-                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, cancellationReceiveMemPoolTransactionVote))
+                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, peerObject.PeerClientPacketBegin, peerObject.PeerClientPacketEnd, cancellationReceiveMemPoolTransactionVote))
                                 {
                                     if (!readPacketData.Status)
                                         break;
@@ -1577,7 +1582,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             /// <returns></returns>
             private async Task<bool> TrySendPacketToPeer(byte[] packetData)
             {
-                return await _peerSocketClient.TrySendSplittedPacket((Convert.ToBase64String(packetData) + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray(), _peerCancellationToken, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
+                ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(_peerIpTarget, _peerUniqueIdTarget);
+                return await _peerSocketClient.TrySendSplittedPacket(
+                    (Convert.ToBase64String(packetData) + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray(),
+                    peerObject.PeerClientPacketBegin,
+                     peerObject.PeerClientPacketEnd,
+                    _peerCancellationToken, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
             }
 
 

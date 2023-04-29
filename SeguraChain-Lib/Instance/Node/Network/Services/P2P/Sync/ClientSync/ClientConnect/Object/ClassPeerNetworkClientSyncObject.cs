@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SeguraChain_Lib.Instance.Node.Network.Database;
 using SeguraChain_Lib.Instance.Node.Network.Database.Manager;
+using SeguraChain_Lib.Instance.Node.Network.Database.Object;
 using SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Packet;
 using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast;
 using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet;
@@ -240,7 +241,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                         
                         _peerSocketClient = new ClassCustomSocket(new Socket(ClassUtility.GetAddressFamily(PeerIpTarget), SocketType.Stream, ProtocolType.Tcp), false);
 
-                        if (await _peerSocketClient.ConnectAsync(PeerIpTarget, PeerPortTarget))
+                        if (await _peerSocketClient.ConnectAsync(PeerIpTarget, PeerPortTarget, _peerNetworkSetting.PeerMaxDelayToConnectToTarget * 1000))
                             successConnect = _peerSocketClient.IsConnected();
                         else _peerSocketClient?.Kill(SocketShutdown.Both);
 
@@ -334,7 +335,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                 {
                     while (PeerTaskStatus && PeerConnectStatus)
                     {
-                        using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSetting.PeerMaxPacketBufferSize, _peerCancellationTokenTaskListenPeerPacketResponse))
+                        var peerObject = ClassPeerDatabase.GetPeerObject(PeerIpTarget, PeerUniqueIdTarget);
+
+                        using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSetting.PeerMaxPacketBufferSize, peerObject.PeerInternPacketBegin, peerObject.PeerInternPacketEnd, _peerCancellationTokenTaskListenPeerPacketResponse))
                         {
 
                             ClassPeerCheckManager.UpdatePeerClientLastPacketReceived(PeerIpTarget, PeerUniqueIdTarget, TaskManager.TaskManager.CurrentTimestampSecond);
@@ -512,9 +515,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         private async Task<bool> SendPeerPacket(byte[] packet, CancellationTokenSource cancellation)
         {
             string packetData = Convert.ToBase64String(packet) + ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString();
-            return await _peerSocketClient.TrySendSplittedPacket(packetData.GetByteArray(), cancellation, _peerNetworkSetting.PeerMaxPacketSplitedSendSize);
+
+            ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(PeerIpTarget, PeerUniqueIdTarget);
+
+            return await _peerSocketClient.TrySendSplittedPacket(packetData.GetByteArray(), peerObject.PeerClientPacketBegin, peerObject.PeerClientPacketEnd, cancellation, _peerNetworkSetting.PeerMaxPacketSplitedSendSize);
         }
 
+        /// <summary>
+        /// Cancel the handle of packet.
+        /// </summary>
         private void CancelHandlePacket()
         {
             try
