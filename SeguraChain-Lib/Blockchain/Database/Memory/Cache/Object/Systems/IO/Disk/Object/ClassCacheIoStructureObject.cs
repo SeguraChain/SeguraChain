@@ -14,7 +14,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// </summary>
         public ClassBlockObject BlockObject
         {
-            [MethodImpl(MethodImplOptions.Synchronized)]
+            
             get
             {
                 if (!IsNull)
@@ -27,27 +27,28 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
                 return null;
             }
-            [MethodImpl(MethodImplOptions.Synchronized)]
+            
             set
             {
                 if (value != null)
                 {
                     bool lockedBlock = false;
 
-                    try
+                    lock (value)
                     {
-                        lockedBlock = Monitor.TryEnter(value);
-
-                        if (lockedBlock)
+                        try
                         {
-                            if (value.BlockIsUpdated)
-                                IsUpdated = true;
+                            lockedBlock = Monitor.TryEnter(value);
 
-                            if (!IsNull)
+                            if (lockedBlock)
                             {
+                                if (value.BlockIsUpdated)
+                                    IsUpdated = true;
 
-                                lock(_blockObject)
+                                if (!IsNull)
                                 {
+
+
                                     if (value.BlockFromMemory || value.BlockCloned || !value.BlockFromCache)
                                     {
                                         bool isUpdated = _blockObject.BlockLastChangeTimestamp <= value.BlockLastChangeTimestamp;
@@ -67,30 +68,30 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                                     _blockObject.BlockCloned = false;
                                     _blockObject.Disposed = false;
                                     LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
-                                }
-                            }
-                            else
-                            {
-                                _blockObject = value.BlockFromMemory || value.BlockCloned || !value.BlockFromCache ? value.DirectCloneBlockObject() : value;
-                                _blockObject.BlockFromMemory = false;
-                                _blockObject.BlockFromCache = true;
-                                _blockObject.BlockCloned = false;
-                                _blockObject.BlockIsUpdated = false;
-                                _blockObject.Disposed = false;
-                                LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
-                            }
 
-                            if (_ioDataSizeOnMemory == 0)
-                                _ioDataSizeOnMemory = ClassBlockUtility.GetIoBlockSizeOnMemory(_blockObject);
+                                }
+                                else
+                                {
+                                    _blockObject = value.BlockFromMemory || value.BlockCloned || !value.BlockFromCache ? value.DirectCloneBlockObject() : value;
+                                    _blockObject.BlockFromMemory = false;
+                                    _blockObject.BlockFromCache = true;
+                                    _blockObject.BlockCloned = false;
+                                    _blockObject.BlockIsUpdated = false;
+                                    _blockObject.Disposed = false;
+                                    LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
+                                }
+
+                                if (_ioDataSizeOnMemory == 0)
+                                    _ioDataSizeOnMemory = ClassBlockUtility.GetIoBlockSizeOnMemory(_blockObject);
+                            }
+                        }
+                        finally
+                        {
+                            if (lockedBlock)
+                                Monitor.Exit(value);
+
                         }
                     }
-                    finally
-                    {
-                        if (lockedBlock)
-                            Monitor.Exit(value);
-
-                    }
-
                 }
                 else
                 {
@@ -126,7 +127,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// </summary>
         public long IoDataSizeOnMemory
         {
-            [MethodImpl(MethodImplOptions.Synchronized)]
+            
             get
             {
                 if (_ioDataSizeOnMemory == 0)
@@ -188,7 +189,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// </summary>
         public bool IsNull
         {
-            [MethodImpl(MethodImplOptions.Synchronized)]
+            
             get
             {
                 if (_blockObject == null)

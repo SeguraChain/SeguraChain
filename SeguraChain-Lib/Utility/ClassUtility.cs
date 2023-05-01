@@ -1033,7 +1033,6 @@ namespace SeguraChain_Lib.Utility
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="objectData"></param>
-        [MethodImpl(MethodImplOptions.Synchronized)]
         public static T LockReturnObject<T>(T objectData)
         {
             bool locked = false;
@@ -1043,7 +1042,7 @@ namespace SeguraChain_Lib.Utility
             {
 
                 if (!Monitor.IsEntered(objectData))
-                    Monitor.TryEnter(objectData, ref locked);
+                    locked = Monitor.TryEnter(objectData);
                 else
                     locked = true;
 
@@ -1444,15 +1443,8 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         public static bool TryWait(this SemaphoreSlim semaphore, CancellationTokenSource cancellation)
         {
-            try
-            {
-                semaphore.Wait(cancellation.Token);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            semaphore.Wait(cancellation.Token);
+            return true;
         }
 
         /// <summary>
@@ -1463,14 +1455,7 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         public static bool TryWaitWithDelay(this SemaphoreSlim semaphore, int delay, CancellationTokenSource cancellation)
         {
-            try
-            {
-                return semaphore.Wait(delay, cancellation.Token);
-            }
-            catch
-            {
-                return false;
-            }
+            return semaphore.Wait(delay, cancellation.Token);
         }
 
         /// <summary>
@@ -1481,15 +1466,9 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         public static async Task<bool> TryWaitAsync(this SemaphoreSlim semaphore, CancellationTokenSource cancellation)
         {
-            try
-            {
-                await semaphore.WaitAsync(cancellation.Token);
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+
+            await semaphore.WaitAsync(cancellation.Token);
+            return true;
         }
 
         /// <summary>
@@ -1502,14 +1481,8 @@ namespace SeguraChain_Lib.Utility
         public static async Task<bool> TryWaitAsync(this SemaphoreSlim semaphore, int delay, CancellationTokenSource cancellation)
         {
 
-            try
-            {
-                return await semaphore.WaitAsync(delay, cancellation.Token);
-            }
-            catch
-            {
-                return false;
-            }
+            return await semaphore.WaitAsync(delay, cancellation.Token);
+
         }
 
 
@@ -1532,15 +1505,8 @@ namespace SeguraChain_Lib.Utility
                 if (!useSemaphore)
                     return false;
 
-                try
-                {
-                    action.Invoke();
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
+                action.Invoke();
+                return true;
             }
             finally
             {
@@ -1569,15 +1535,9 @@ namespace SeguraChain_Lib.Utility
 
                 if (!useSemaphore)
                     return false;
-                try
-                {
-                    action.Invoke();
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
+
+                action.Invoke();
+                return true;
             }
             finally
             {

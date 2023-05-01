@@ -139,7 +139,7 @@ namespace SeguraChain_Peer.CommandLine
                                         ClassLog.SimpleWriteLine("Solo mining instance stopped.", ConsoleColor.DarkYellow);
                                     }
                                 }
-                                _nodeInstance.NodeStop().Wait();
+                                 _nodeInstance.NodeStop().Wait();
                                 return false;
                             }
                         case ClassConsoleCommandLineEnumeration.StatusCommand:

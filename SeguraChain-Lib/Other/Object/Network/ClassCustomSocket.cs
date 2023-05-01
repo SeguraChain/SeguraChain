@@ -118,6 +118,7 @@ namespace SeguraChain_Lib.Other.Object.Network
 
                 if (packetBegin != null && packetEnd != null)
                 {
+                    //packetData = ClassUtility.CompressDataLz4(packetData);
                     //packetData = packetData.InputData(packetBegin, true);
                     //packetData = packetData.InputData(packetEnd, false);
                     //Debug.WriteLine("Packet data to send: " + packetData.GetStringFromByteArrayUtf8());
@@ -163,30 +164,31 @@ namespace SeguraChain_Lib.Other.Object.Network
                     bool foundBegin = false;
                     bool foundEnd = false;
 
-                    using (DisposableList<byte> listData = new DisposableList<byte>())
-                    {
+                  //  using (DisposableList<byte> listData = new DisposableList<byte>())
+                  //  {
 
-                        readPacketData.Data = new byte[packetLength];
-                        readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
+ 
+                   //     while (!foundBegin && !foundEnd)
+                 //       {
+                            readPacketData.Data = new byte[packetLength];
+                            readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
 
-                       /* while (!foundBegin && !foundEnd)
-                        {*/
+                  
+                            /*
+                            if (!readPacketData.Status || !IsConnected())
+                                break;*/
 
-                            /*using(DisposableList<byte> packetDataList = new DisposableList<byte>())
-                            { 
+                            using(DisposableList<byte> listDataSorting = new DisposableList<byte>())
+                            {
                                 foreach(byte data in readPacketData.Data)
                                 {
                                     if (data != '\0')
-                                        packetDataList.Add(data);
+                                        listDataSorting.Add(data);
                                 }
+                                readPacketData.Data = listDataSorting.GetList.ToArray();
+                            }
 
-                                readPacketData.Data = packetDataList.GetList.ToArray();
-                                readPacketData.Status = readPacketData.Data.Length > 0;
-                            }*/
-                           //Debug.WriteLine("Packet data received: " + Convert.ToBase64String(readPacketData.Data));
-
-                          //  if (!readPacketData.Status || !IsConnected())
-                          //      break;
+                            //Debug.WriteLine("Packet data received: " + readPacketData.Data.GetStringFromByteArrayUtf8());
 
                             /*
                             if (packetBegin == null || packetEnd == null)
@@ -198,10 +200,13 @@ namespace SeguraChain_Lib.Other.Object.Network
                                         if (cancellation.IsCancellationRequested)
                                             break;
 
-                                        if (!foundBegin)
+                                        if (!foundBegin && !foundEnd)
                                         {
                                             string packetBeginString = peerObject.PeerInternPacketBegin.GetStringFromByteArrayUtf8();
                                             string packetEndString = peerObject.PeerInternPacketEnd.GetStringFromByteArrayUtf8();
+
+                                            Debug.WriteLine("Use packet seperator: " + packetBeginString + " | " + packetEndString + " for: " + GetIp);
+
 
                                             string data = readPacketData.Data.GetStringFromByteArrayUtf8();
                                             int indexOfBegin = data.IndexOf(packetBeginString);
@@ -228,8 +233,11 @@ namespace SeguraChain_Lib.Other.Object.Network
                                         }
                                     }
                                 }
-                                else
+
+                                if (!foundBegin && !foundEnd)
                                 {
+                                    Debug.WriteLine("Use default packet seperator for: " + GetIp);
+
                                     string packetBeginString = ClassPeerPacketSetting.PacketSeperatorBegin.GetStringFromByteArrayUtf8();
                                     string packetEndString = ClassPeerPacketSetting.PacketSeperatorEnd.GetStringFromByteArrayUtf8();
 
@@ -255,50 +263,54 @@ namespace SeguraChain_Lib.Other.Object.Network
 
                                     if (foundBegin && foundEnd)
                                         break;
+
                                 }
                             }
                             else
                             {
-                                if (!foundBegin)
-                                {
-                                    string packetBeginString = packetBegin.GetStringFromByteArrayUtf8();
-                                    string packetEndString = packetEnd.GetStringFromByteArrayUtf8();
 
-                                    string data = readPacketData.Data.GetStringFromByteArrayUtf8();
-                                    int indexOfBegin = data.IndexOf(packetBeginString);
+                                string packetBeginString = packetBegin.GetStringFromByteArrayUtf8();
+                                string packetEndString = packetEnd.GetStringFromByteArrayUtf8();
 
-                                    if (indexOfBegin > -1)
-                                        foundBegin = true;
+                                string data = readPacketData.Data.GetStringFromByteArrayUtf8();
+                                int indexOfBegin = data.IndexOf(packetBeginString);
 
-                                    int indexOfEnd = data.IndexOf(packetEndString);
+                                if (indexOfBegin > -1)
+                                    foundBegin = true;
 
-                                    if (indexOfBegin > -1)
-                                        foundEnd = true;
+                                int indexOfEnd = data.IndexOf(packetEndString);
 
-                                    if (foundBegin && foundEnd)
-                                        data = data.GetStringBetweenTwoStrings(packetBeginString, packetEndString);
-                                    else if (foundBegin && !foundEnd)
-                                        data = data.Substring(indexOfBegin + packetBeginString.Length);
+                                if (indexOfBegin > -1)
+                                    foundEnd = true;
 
-                                    foreach (var dataByte in data.GetByteArray())
-                                        listData.Add(dataByte);
+                                if (foundBegin && foundEnd)
+                                    data = data.GetStringBetweenTwoStrings(packetBeginString, packetEndString);
+                                else if (foundBegin && !foundEnd)
+                                    data = data.Substring(indexOfBegin + packetBeginString.Length);
+
+                                Debug.WriteLine("Begin: " + indexOfBegin + " | End: " + indexOfEnd);
+
+                                foreach (var dataByte in data.GetByteArray())
+                                    listData.Add(dataByte);
 
 
-                                    if (foundBegin && foundEnd)
-                                        break;
-                                }
+                                if (foundBegin && foundEnd)
+                                    break;
+
 
                             }
-                        
-                            */
-                        //}
 
+                            */
+                       // }
+
+                        /*
                         if (foundBegin && foundEnd)
                         {
                             readPacketData.Data = listData.GetList.ToArray();
                             readPacketData.Status = true;
-                        }
-                    }
+                            Debug.WriteLine("Packet data result: " + readPacketData.Data.GetStringFromByteArrayUtf8());
+                        }*/
+                    //}
                 }
             }
             catch (Exception error)

@@ -378,7 +378,6 @@ namespace SeguraChain_Lib.TaskManager
         {
             if (TaskManagerEnabled)
             {
-                useFactory = true;
                 long end = timestampEnd - CurrentTimestampMillisecond;
 
                 CancellationTokenSource cancellationTask;

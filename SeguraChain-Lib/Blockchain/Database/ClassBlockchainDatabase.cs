@@ -498,6 +498,13 @@ namespace SeguraChain_Lib.Blockchain.Database
         /// </summary>
         public static async Task CloseBlockchainDatabase(ClassBlockchainDatabaseSetting blockchainDatabaseSetting)
         {
+            if (blockchainDatabaseSetting.BlockchainCacheSetting.EnableCacheDatabase)
+            {
+                ClassLog.WriteLine("Close and clear blockchain database cache..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                await BlockchainMemoryManagement.CloseCache(_cancellationTokenStopBlockchain);
+                ClassLog.WriteLine("Blockchain database cache cleaned and closed.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+            }
+
             try
             {
                 if (!_cancellationTokenStopBlockchain.IsCancellationRequested)
@@ -508,12 +515,6 @@ namespace SeguraChain_Lib.Blockchain.Database
                 // Ignored, try to force parallel tasks in waiting.
             }
 
-            if (blockchainDatabaseSetting.BlockchainCacheSetting.EnableCacheDatabase)
-            {
-                ClassLog.WriteLine("Close and clear blockchain database cache..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                await BlockchainMemoryManagement.CloseCache();
-                ClassLog.WriteLine("Blockchain database cache cleaned and closed.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-            }
 
 
             ClassLog.WriteLine("Save checkpoint(s)..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
