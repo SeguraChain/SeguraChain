@@ -259,33 +259,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                 if (listPacketReceived[index] == null || !listPacketReceived[index].Complete || listPacketReceived[index].Used)
                                     continue;
 
-                                byte[] base64Packet = null;
-                                bool failed = !ClassUtility.CheckBase64String(listPacketReceived[index].Packet);
 
-                                if (!failed)
-                                {
-                                    try
-                                    {
-                                        base64Packet = Convert.FromBase64String(listPacketReceived[index].Packet);
-                                        failed = base64Packet == null || base64Packet.Length == 0;
-                                    }
-                                    catch
-                                    {
-                                        failed = true;
-                                    }
-                                }
 
                                 listPacketReceived[index].Used = true;
-                                listPacketReceived[index].Packet.Clear();
 
-                                if (failed)
-                                    continue;
 
                                 _onHandlePacketResponse = true;
 
                                 try
                                 {
-                                    ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(base64Packet, out bool status);
+                                    ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(listPacketReceived[index].Packet, out bool status);
                                     if (!status)
                                     {
                                         ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
@@ -293,11 +276,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     }
                                     else
                                     {
-                                        switch (await HandlePacket(packetSendObject
-#if DEBUG
-                                            , base64Packet
-#endif
-                                            ))
+                                        switch (await HandlePacket(packetSendObject))
                                         {
                                             case ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_TYPE_PACKET:
                                             case ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET:
@@ -365,11 +344,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         /// </summary>
         /// <param name="packet">Packet received to handle.</param>
         /// <returns>Return the status of the handle of the packet.</returns>
-        private async Task<ClassPeerNetworkClientServerHandlePacketEnumStatus> HandlePacket(ClassPeerPacketSendObject packetSendObject
-#if DEBUG
-            , byte[] packetData
-#endif
-            )
+        private async Task<ClassPeerNetworkClientServerHandlePacketEnumStatus> HandlePacket(ClassPeerPacketSendObject packetSendObject)
         {
 
             try
@@ -1967,7 +1942,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                     packetSendObject.PacketSignature = await peerObject.GetClientCryptoStreamObject.DoSignatureProcess(packetSendObject.PacketHash, peerObject.PeerInternPrivateKey, _cancellationTokenListenPeerPacket);
 
 
-                return await _clientSocket.TrySendSplittedPacket((Convert.ToBase64String(packetSendObject.GetPacketData()) + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray(), peerObject != null ? peerObject.PeerClientPacketBegin : null, peerObject != null ? peerObject.PeerClientPacketEnd : null, _cancellationTokenListenPeerPacket, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
+                return await _clientSocket.TrySendSplittedPacket((packetSendObject.GetPacketData() + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray(), peerObject != null ? peerObject.PeerClientPacketBegin : null, peerObject != null ? peerObject.PeerClientPacketEnd : null, _cancellationTokenListenPeerPacket, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
 
             }
             catch

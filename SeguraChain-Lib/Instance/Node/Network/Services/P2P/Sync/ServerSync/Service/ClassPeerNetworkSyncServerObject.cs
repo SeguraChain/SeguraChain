@@ -20,7 +20,7 @@ using SeguraChain_Lib.Utility;
 
 namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Service
 {
-    public class ClassPeerNetworkSyncServerObject :  IDisposable
+    public class ClassPeerNetworkSyncServerObject : IDisposable
     {
         public bool NetworkPeerServerStatus;
         private TcpListener _tcpListenerPeer;
@@ -215,7 +215,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 // If it's a new incoming connection, create a new index of incoming connection.
                 if (!_listPeerIncomingConnectionObject.ContainsKey(clientIp))
                 {
-                   if (!_listPeerIncomingConnectionObject.TryAdd(clientIp, new ClassPeerIncomingConnectionObject(_peerNetworkSettingObject)))
+                    if (!_listPeerIncomingConnectionObject.TryAdd(clientIp, new ClassPeerIncomingConnectionObject(_peerNetworkSettingObject)))
                         return ClassPeerNetworkServerHandleConnectionEnum.INSERT_CLIENT_IP_EXCEPTION;
                 }
 
@@ -247,9 +247,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                         //_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
 
 
-                        
+
                         if (handlePeerClientStatus)
-                             _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
+                            _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
                         else
                         {
                             _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].Dispose();

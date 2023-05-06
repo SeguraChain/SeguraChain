@@ -66,25 +66,25 @@ namespace SeguraChain_Lib.Algorithm
         /// <returns></returns>
         public static bool EncryptionProcess(byte[] content, byte[] key, byte[] iv, out byte[] result)
         {
-       
-                if (content != null)
+
+            if (content != null)
+            {
+                using (RijndaelManaged aesObject = new RijndaelManaged())
                 {
-                    using (RijndaelManaged aesObject = new RijndaelManaged())
+                    aesObject.KeySize = EncryptionKeySize;
+                    aesObject.BlockSize = EncryptionBlockSize;
+                    aesObject.Key = key;
+                    aesObject.IV = iv;
+                    aesObject.Mode = CipherMode.CBC;
+                    aesObject.Padding = PaddingMode.PKCS7;
+                    using (ICryptoTransform encryptCryptoTransform = aesObject.CreateEncryptor(key, iv))
                     {
-                        aesObject.KeySize = EncryptionKeySize;
-                        aesObject.BlockSize = EncryptionBlockSize;
-                        aesObject.Key = key;
-                        aesObject.IV = iv;
-                        aesObject.Mode = CipherMode.CFB;
-                        aesObject.Padding = PaddingMode.None;
-                        using (ICryptoTransform encryptCryptoTransform = aesObject.CreateEncryptor(key, iv))
-                        {
-                            byte[] paddedBytes = ClassUtility.DoPadding(content);
-                            result = encryptCryptoTransform.TransformFinalBlock(paddedBytes, 0, paddedBytes.Length);
-                            return true;
-                        }
+                        byte[] paddedBytes = ClassUtility.DoPadding(content);
+                        result = encryptCryptoTransform.TransformFinalBlock(paddedBytes, 0, paddedBytes.Length);
+                        return true;
                     }
                 }
+            }
 
 
             result = null;
@@ -113,8 +113,8 @@ namespace SeguraChain_Lib.Algorithm
                         aesObject.BlockSize = EncryptionBlockSize;
                         aesObject.Key = key;
                         aesObject.IV = iv;
-                        aesObject.Mode = CipherMode.CFB;
-                        aesObject.Padding = PaddingMode.None;
+                        aesObject.Mode = CipherMode.CBC;
+                        aesObject.Padding = PaddingMode.PKCS7;
                         using (ICryptoTransform decryptCryptoTransform = aesObject.CreateDecryptor(key, iv))
                         {
                             byte[] decryptedPaddedBytes = decryptCryptoTransform.TransformFinalBlock(content, 0, content.Length);
@@ -138,6 +138,5 @@ namespace SeguraChain_Lib.Algorithm
             result = null;
             return false;
         }
-
     }
 }

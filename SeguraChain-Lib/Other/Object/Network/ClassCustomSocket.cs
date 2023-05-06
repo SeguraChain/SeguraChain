@@ -115,7 +115,7 @@ namespace SeguraChain_Lib.Other.Object.Network
 
             try
             {
-
+                Debug.WriteLine("Packet data to send length: " + packetData.Length);
                 if (packetBegin != null && packetEnd != null)
                 {
                     //packetData = ClassUtility.CompressDataLz4(packetData);
@@ -141,15 +141,17 @@ namespace SeguraChain_Lib.Other.Object.Network
             try
             {
 
-                /*while (_socket.Available == 0)
+                while (_socket.Available == 0 && IsConnected())
                 {
-                    if (cancellation.IsCancellationRequested || !IsConnected())
+                    if (cancellation.IsCancellationRequested)
                         return readPacketData;
 
                     await Task.Delay(1);
-                }*/
+                }
 
 
+                if (!IsConnected())
+                    return readPacketData;
 
                 //readPacketData.Data = new byte[packetLength];
                 //readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
@@ -161,8 +163,8 @@ namespace SeguraChain_Lib.Other.Object.Network
                 }
                 else
                 {
-                    bool foundBegin = false;
-                    bool foundEnd = false;
+                    /*bool foundBegin = false;
+                    bool foundEnd = false;*/
 
                   //  using (DisposableList<byte> listData = new DisposableList<byte>())
                   //  {
