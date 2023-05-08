@@ -11,8 +11,6 @@
         public string NumericPublicKey; // Used for check packet signed by the numeric peer key if this one has the seed rank.
         public int PeerPort;
         public bool PeerIsPublic;
-        public byte[] PeerPacketBegin;
-        public byte[] PeerPacketEnd;
         public long PacketTimestamp;
     }
 }

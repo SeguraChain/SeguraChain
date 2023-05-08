@@ -916,55 +916,46 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         public static DisposableList<ClassReadPacketSplitted> GetEachPacketSplitted(byte[] packetBufferOnReceive, DisposableList<ClassReadPacketSplitted> listPacketReceived, CancellationTokenSource cancellation)
         {
-            try
+            string packetData = packetBufferOnReceive.GetStringFromByteArrayUtf8().Replace("\0", "");
+
+            if (listPacketReceived.Disposed)
+                listPacketReceived = new DisposableList<ClassReadPacketSplitted>();
+
+            if (listPacketReceived.Count == 0)
+                listPacketReceived.Add(new ClassReadPacketSplitted());
+
+            if (packetData.Contains(ClassPeerPacketSetting.PacketPeerSplitSeperator))
             {
-                string packetData = packetBufferOnReceive.GetStringFromByteArrayUtf8().Replace("\0", "");
+                int countSeperator = packetData.Count(x => x == ClassPeerPacketSetting.PacketPeerSplitSeperator);
 
-                if (listPacketReceived == null)
-                    listPacketReceived = new DisposableList<ClassReadPacketSplitted>();
+                string[] splitPacketData = packetData.Split(new[] { ClassPeerPacketSetting.PacketPeerSplitSeperator }, StringSplitOptions.None);
 
-                if (listPacketReceived.Disposed)
-                    listPacketReceived = new DisposableList<ClassReadPacketSplitted>();
+                int completed = 0;
 
-                if (listPacketReceived.Count == 0)
-                    listPacketReceived.Add(new ClassReadPacketSplitted());
-
-                if (packetData.Contains(ClassPeerPacketSetting.PacketPeerSplitSeperator))
+                foreach (string data in splitPacketData)
                 {
-                    int countSeperator = packetData.Count(x => x == ClassPeerPacketSetting.PacketPeerSplitSeperator);
+                    if (cancellation.IsCancellationRequested)
+                        break;
 
-                    string[] splitPacketData = packetData.Split(new[] { ClassPeerPacketSetting.PacketPeerSplitSeperator }, StringSplitOptions.None);
+                    listPacketReceived[listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0].Packet += data.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
 
-                    int completed = 0;
-
-                    foreach (string data in splitPacketData)
+                    if (completed < countSeperator)
                     {
-                        if (cancellation.IsCancellationRequested)
-                            break;
-
-                        listPacketReceived[listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0].Packet += data.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
-
-                        if (completed < countSeperator)
-                        {
-                            listPacketReceived[listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0].Complete = true;
-                            break;
-                        }
-
-                        completed++;
+                        listPacketReceived[listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0].Complete = true;
+                        break;
                     }
-                }
-                else
-                {
-                    int index = listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : -1;
 
-                    if (index != -1)
-                        listPacketReceived[index].Packet += packetData;
+                    completed++;
                 }
             }
-            catch
+            else
             {
+                int index = listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0;
 
+                if (index < listPacketReceived.Count)
+                    listPacketReceived[index].Packet += packetData;
             }
+
             return listPacketReceived;
         }
 
@@ -977,6 +968,12 @@ namespace SeguraChain_Lib.Utility
         {
             int basePaddingSize = 16;
             int paddingSizeRequired = basePaddingSize - (data.Length % basePaddingSize);
+
+            while (paddingSizeRequired == 0)
+            {
+                basePaddingSize++;
+                paddingSizeRequired = basePaddingSize - (data.Length % basePaddingSize);
+            }
 
             byte[] paddedBytes = new byte[data.Length + paddingSizeRequired];
 
@@ -1033,6 +1030,7 @@ namespace SeguraChain_Lib.Utility
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="objectData"></param>
+        [MethodImpl(MethodImplOptions.Synchronized)]
         public static T LockReturnObject<T>(T objectData)
         {
             bool locked = false;
@@ -1042,7 +1040,7 @@ namespace SeguraChain_Lib.Utility
             {
 
                 if (!Monitor.IsEntered(objectData))
-                    locked = Monitor.TryEnter(objectData);
+                    Monitor.TryEnter(objectData, ref locked);
                 else
                     locked = true;
 
@@ -1345,30 +1343,6 @@ namespace SeguraChain_Lib.Utility
 
             return compare != null ? true : false;
         }
-    
-    
-        /// <summary>
-        /// Input data target.
-        /// </summary>
-        /// <param name="source"></param>
-        /// <param name="data"></param>
-        /// <param name="begin"></param>
-        /// <returns></returns>
-        public static byte[] InputData(this byte[] source, byte[] data, bool begin)
-        {
-            byte[] newData = new byte[source.Length + data.Length];
-            if (begin)
-            {
-                Array.Copy(data, 0, newData, 0, data.Length);
-                Array.Copy(source, 0, newData, data.Length, source.Length);
-            }
-            else
-            {
-                Array.Copy(source, 0, newData, 0, source.Length);
-                Array.Copy(data, 0, newData, source.Length, data.Length);
-            }
-            return newData;
-        }
     }
 
     public static class ClassUtilityNetworkStreamExtension
@@ -1443,8 +1417,15 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         public static bool TryWait(this SemaphoreSlim semaphore, CancellationTokenSource cancellation)
         {
-            semaphore.Wait(cancellation.Token);
-            return true;
+            try
+            {
+                semaphore.Wait(cancellation.Token);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -1455,7 +1436,14 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         public static bool TryWaitWithDelay(this SemaphoreSlim semaphore, int delay, CancellationTokenSource cancellation)
         {
-            return semaphore.Wait(delay, cancellation.Token);
+            try
+            {
+                return semaphore.Wait(delay, cancellation.Token);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -1466,9 +1454,15 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         public static async Task<bool> TryWaitAsync(this SemaphoreSlim semaphore, CancellationTokenSource cancellation)
         {
-
-            await semaphore.WaitAsync(cancellation.Token);
-            return true;
+            try
+            {
+                await semaphore.WaitAsync(cancellation.Token);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -1481,8 +1475,14 @@ namespace SeguraChain_Lib.Utility
         public static async Task<bool> TryWaitAsync(this SemaphoreSlim semaphore, int delay, CancellationTokenSource cancellation)
         {
 
-            return await semaphore.WaitAsync(delay, cancellation.Token);
-
+            try
+            {
+                return await semaphore.WaitAsync(delay, cancellation.Token);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
 
@@ -1505,8 +1505,15 @@ namespace SeguraChain_Lib.Utility
                 if (!useSemaphore)
                     return false;
 
-                action.Invoke();
-                return true;
+                try
+                {
+                    action.Invoke();
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
             }
             finally
             {
@@ -1535,9 +1542,15 @@ namespace SeguraChain_Lib.Utility
 
                 if (!useSemaphore)
                     return false;
-
-                action.Invoke();
-                return true;
+                try
+                {
+                    action.Invoke();
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
             }
             finally
             {

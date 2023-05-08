@@ -19,7 +19,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         /// <summary>
         /// Encryption/Decryption streams.
         /// </summary>
-        private Aes _aesManaged;
+        private RijndaelManaged _aesManaged;
         private ICryptoTransform _encryptCryptoTransform;
         private ICryptoTransform _decryptCryptoTransform;
         private SemaphoreSlim _semaphoreCryptoObject;
@@ -82,24 +82,22 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
 
             try
             {
-                if (publicKey.IsNullOrEmpty(false, out _) ||
-                    privateKey.IsNullOrEmpty(false, out _))
+                if (publicKey.IsNullOrEmpty(false, out _) || privateKey.IsNullOrEmpty(false, out _))
                     return;
 
                 _aesManaged?.Dispose();
                 _encryptCryptoTransform?.Dispose();
                 _decryptCryptoTransform?.Dispose();
 
-
-                _aesManaged = Aes.Create("AesManaged");
-                _aesManaged.KeySize = ClassAes.EncryptionKeySize;
-                _aesManaged.BlockSize = ClassAes.EncryptionBlockSize;
-                _aesManaged.Key = key;
-                _aesManaged.IV = iv;
-                _aesManaged.Mode = CipherMode.CBC;
-                _aesManaged.Padding = PaddingMode.PKCS7;
-
-              
+                _aesManaged = new RijndaelManaged()
+                {
+                    KeySize = ClassAes.EncryptionKeySize,
+                    BlockSize = ClassAes.EncryptionBlockSize,
+                    Key = key,
+                    IV = iv,
+                    Mode = CipherMode.CFB,
+                    Padding = PaddingMode.None
+                };
 
                 _encryptCryptoTransform = _aesManaged.CreateEncryptor(key, iv);
 
@@ -136,39 +134,28 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         {
             byte[] result = null;
 
-            bool useSemaphore = false;
-            try
+            if (!await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
             {
-                useSemaphore = await _semaphoreCryptoObject.TryWaitAsync(cancellation);
-
-                if (useSemaphore)
+                if (_initialized && content != null && content?.Length > 0)
                 {
-                    if (_initialized && content != null && content?.Length > 0)
+                    try
                     {
-                        try
-                        {
-                            content = ClassUtility.DoPadding(content);
-                            result = _encryptCryptoTransform.TransformFinalBlock(content, 0, content.Length);
+                        byte[] packetPadded = ClassUtility.DoPadding(content);
 
-                        }
-                        catch (Exception error)
-                        {
-#if DEBUG
-                            Debug.WriteLine("error to encrypt packet data. Exception: " + error.Message);
-#endif
-                            // Ignored.
-                        }
+                        result = _encryptCryptoTransform.TransformFinalBlock(packetPadded, 0, packetPadded.Length);
                     }
-
+                    catch
+                    {
+                        // Ignored.
+                    }
                 }
-            }
-            finally
+
+            }, cancellation))
             {
-
-                if (useSemaphore)
-                    _semaphoreCryptoObject.Release();
+#if DEBUG
+                Debug.WriteLine("Failed to encrypt data.");
+#endif
             }
-
 
 
             return result;
@@ -183,52 +170,40 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         public async Task<byte[]> DecryptDataProcess(byte[] content, CancellationTokenSource cancellation)
         {
             byte[] decryptResult = null;
-            bool useSemaphore = false;
-            try
+
+            bool actionStatus = await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
             {
-                useSemaphore = await _semaphoreCryptoObject.TryWaitAsync(cancellation);
-
-                if (useSemaphore)
+                try
                 {
-                    try
+                    if (_initialized && content?.Length > 0)
                     {
+                        byte[] decryptedPaddedPacket = _decryptCryptoTransform.TransformFinalBlock(content, 0, content.Length);
 
-
-                        if (_initialized && content?.Length > 0)
-                        {
-                            decryptResult = _decryptCryptoTransform.TransformFinalBlock(content, 0, content.Length);
-
-
-                            if (decryptResult != null)
-                                decryptResult = ClassUtility.UndoPadding(decryptResult);
-#if DEBUG
-                            else
-                                Debug.WriteLine("Data is null.");
-#endif
-
-                        }
+                        if (decryptedPaddedPacket != null)
+                            decryptResult = ClassUtility.UndoPadding(decryptedPaddedPacket);
 #if DEBUG
                         else
-                            Debug.WriteLine("Can't start the decrypt process. Init: " + _initialized + " | content status: " + (content.Length > 0));
+                            Debug.WriteLine("Data is null.");
 #endif
                     }
-                    catch (Exception error)
-                    {
 #if DEBUG
-                        Debug.WriteLine("Error to decrypt packet from " + PeerIp + " | Exception: " + error.Message);
-                        Debug.WriteLine("Content: " + content.GetStringFromByteArrayUtf8());
+                    else
+                        Debug.WriteLine("Can't start the decrypt process. Init: " + _initialized + " | content status: " + (content.Length > 0));
 #endif
-                    }
-
                 }
-            }
-            finally
-            {
-                if (useSemaphore)
-                    _semaphoreCryptoObject.Release();
-            }
+                catch (Exception error)
+                {
+                    Debug.WriteLine("Error to decrypt packet from " + PeerIp + " | Exception: " + error.Message);
+                }
 
-            return decryptResult;
+            }, cancellation);
+
+#if DEBUG
+            if (!actionStatus)
+                Debug.WriteLine("Can't do the action process to decrypt the packet data from " + PeerIp);
+#endif
+
+                return decryptResult;
         }
 
         /// <summary>

@@ -133,8 +133,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
                             while (continueReading && ClientConnectionStatus)
                             {
-
-                                using (ReadPacketData readPacketData = await _clientSocket.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, null, null, _cancellationTokenApiClient, true))
+                                using (ReadPacketData readPacketData = await _clientSocket.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, _cancellationTokenApiClient))
                                 {
 
                                     if (readPacketData.Status)
@@ -1017,7 +1016,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
             try
             {
-                sendResult = await _clientSocket.TrySendSplittedPacket(builder.ToString().GetByteArray(), null, null, _cancellationTokenApiClient, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
+                sendResult = await _clientSocket.TrySendSplittedPacket(builder.ToString().GetByteArray(), _cancellationTokenApiClient, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
             }
             catch
             {

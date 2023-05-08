@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using SeguraChain_Lib.Instance.Node.Network.Database;
 using SeguraChain_Lib.Instance.Node.Network.Database.Manager;
-using SeguraChain_Lib.Instance.Node.Network.Database.Object;
 using SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Packet;
 using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast;
 using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet;
@@ -36,7 +36,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         public string PeerIpTarget;
         public int PeerPortTarget;
         public string PeerUniqueIdTarget;
-
+     
 
         /// <summary>
         /// Packet received.
@@ -65,6 +65,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// Specifications of the connection opened.
         /// </summary>
         public ClassPeerEnumPacketResponse PacketResponseExpected;
+        private DisposableList<ClassReadPacketSplitted> listPacketReceived;
         private bool _keepAlive;
 
 
@@ -131,7 +132,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             if (toSignAndEncrypt)
             {
                 packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(packetSendObject, PeerIpTarget, peerUniqueId, false, _peerNetworkSetting, _peerCancellationTokenMain);
-
+               
                 if (packetSendObject == null ||
                     packetSendObject.PacketContent.IsNullOrEmpty(false, out _) ||
                     packetSendObject.PacketHash.IsNullOrEmpty(false, out _) ||
@@ -141,11 +142,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             }
 
 
-           string packetData = packetSendObject.GetPacketData();
+            byte[] packetData = packetSendObject.GetPacketData();
 
             if (packetData == null)
                 return false;
 
+            
 
             #region Init the client sync object.
 
@@ -238,10 +240,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                             break;
 
                         _peerSocketClient?.Kill(SocketShutdown.Both);
-
+                        
                         _peerSocketClient = new ClassCustomSocket(new Socket(ClassUtility.GetAddressFamily(PeerIpTarget), SocketType.Stream, ProtocolType.Tcp), false);
 
-                        if (await _peerSocketClient.ConnectAsync(PeerIpTarget, PeerPortTarget, _peerNetworkSetting.PeerMaxDelayToConnectToTarget * 1000))
+                        if (await _peerSocketClient.ConnectAsync(PeerIpTarget, PeerPortTarget))
                             successConnect = _peerSocketClient.IsConnected();
                         else _peerSocketClient?.Kill(SocketShutdown.Both);
 
@@ -262,7 +264,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             while (!successConnect)
             {
                 if (timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond ||
-                    peerCancellationTokenDoConnection.IsCancellationRequested)
+                    peerCancellationTokenDoConnection.IsCancellationRequested )
                     break;
 
                 await Task.Delay(10);
@@ -328,57 +330,63 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             TaskManager.TaskManager.InsertTask(new Action(async () =>
             {
 
-                using (DisposableList<ClassReadPacketSplitted> listPacketReceived = new DisposableList<ClassReadPacketSplitted>(false, 0, new List<ClassReadPacketSplitted>()
+                listPacketReceived?.Clear();
+
+                using (listPacketReceived = new DisposableList<ClassReadPacketSplitted>(false, 0, new List<ClassReadPacketSplitted>()
                 {
                     new ClassReadPacketSplitted()
                 }))
                 {
                     while (PeerTaskStatus && PeerConnectStatus)
                     {
-                        var peerObject = ClassPeerDatabase.GetPeerObject(PeerIpTarget, PeerUniqueIdTarget);
-
-                        using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSetting.PeerMaxPacketBufferSize, peerObject.PeerInternPacketBegin, peerObject.PeerInternPacketEnd, _peerCancellationTokenTaskListenPeerPacketResponse))
+                        using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSetting.PeerMaxPacketBufferSize, _peerCancellationTokenTaskListenPeerPacketResponse))
                         {
 
                             ClassPeerCheckManager.UpdatePeerClientLastPacketReceived(PeerIpTarget, PeerUniqueIdTarget, TaskManager.TaskManager.CurrentTimestampSecond);
 
-                            if (!readPacketData.Status || readPacketData.Data == null)
+                            if (!readPacketData.Status)
                                 break;
 
                             #region Compile the packet.
 
-                            ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, _peerCancellationTokenTaskListenPeerPacketResponse);
+                            listPacketReceived = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, _peerCancellationTokenTaskListenPeerPacketResponse);
 
                             #endregion
 
+                            int countCompleted = listPacketReceived.GetList.Count(x => x.Complete);
 
+                            if (countCompleted == 0)
+                                continue;
+
+                            if (listPacketReceived[listPacketReceived.Count - 1].Used ||
+                            !listPacketReceived[listPacketReceived.Count - 1].Complete ||
+                             listPacketReceived[listPacketReceived.Count - 1].Packet == null ||
+                             listPacketReceived[listPacketReceived.Count - 1].Packet.Length == 0)
+                                continue;
+
+                            byte[] base64Packet = null;
+                            bool failed = false;
+
+                            listPacketReceived[listPacketReceived.Count - 1].Used = true;
 
                             try
                             {
-
-                                if (listPacketReceived?.GetList?.Count == 0)
-                                    continue;
-
-                                if (listPacketReceived[0].Used ||
-                                !listPacketReceived[0].Complete ||
-                                 listPacketReceived[0].Packet == null ||
-                                 listPacketReceived[0].Packet.Length == 0)
-                                    continue;
+                                base64Packet = Convert.FromBase64String(listPacketReceived[listPacketReceived.Count - 1].Packet);
                             }
-                            catch (Exception error)
+                            catch
                             {
-#if DEBUG
-                                Debug.WriteLine("Failed to compile the packet data. Exception: " + error.Message);
-#endif
-                                continue;
+                                failed = true;
                             }
 
-    
+                            listPacketReceived[listPacketReceived.Count - 1].Packet.Clear();
 
-                            ClassPeerPacketRecvObject peerPacketReceived = new ClassPeerPacketRecvObject(listPacketReceived[0].Packet, out bool status);
+                            if (failed)
+                                continue;
+
+                            ClassPeerPacketRecvObject peerPacketReceived = new ClassPeerPacketRecvObject(base64Packet, out bool status);
 
                             if (!status)
-                            {
+                            { 
 #if DEBUG
                                 Debug.WriteLine("Can't build packet data from: " + _peerSocketClient.GetIp);
 #endif
@@ -397,6 +405,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                 PeerPacketReceived = peerPacketReceived;
 
                             }
+
                             else
                             {
                                 PeerPacketReceivedStatus = peerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS;
@@ -495,16 +504,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// <param name="packet"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        private async Task<bool> SendPeerPacket(string packet, CancellationTokenSource cancellation)
+        private async Task<bool> SendPeerPacket(byte[] packet, CancellationTokenSource cancellation)
         {
-            ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(PeerIpTarget, PeerUniqueIdTarget);
-
-            return await _peerSocketClient.TrySendSplittedPacket((packet + ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString()).GetByteArray(true), peerObject.PeerClientPacketBegin, peerObject.PeerClientPacketEnd, cancellation, _peerNetworkSetting.PeerMaxPacketSplitedSendSize);
+            string packetData = Convert.ToBase64String(packet) + ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString();
+            return await _peerSocketClient.TrySendSplittedPacket(packetData.GetByteArray(), cancellation, _peerNetworkSetting.PeerMaxPacketSplitedSendSize);
         }
 
-        /// <summary>
-        /// Cancel the handle of packet.
-        /// </summary>
         private void CancelHandlePacket()
         {
             try
@@ -554,6 +559,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// </summary>
         public void DisconnectFromTarget()
         {
+            listPacketReceived?.Clear();
             _peerSocketClient?.Kill(SocketShutdown.Both);
         }
 

@@ -146,12 +146,12 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         /// Close the cache.
         /// </summary>
         /// <returns></returns>
-        public async Task CloseCache(CancellationTokenSource cancellation)
+        public async Task CloseCache()
         {
             switch (_blockchainDatabaseSetting.BlockchainCacheSetting.CacheName)
             {
                 case CacheEnumName.IO_CACHE:
-                    await _cacheIoSystem.CleanCacheIoSystem(cancellation);
+                    await _cacheIoSystem.CleanCacheIoSystem();
                     break;
             }
         }
@@ -3260,39 +3260,36 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                     if (_pauseMemoryManagement)
                                                                         break;
 
-                                                                    if (_dictionaryBlockObjectMemory.ContainsKey(blockHeight))
+                                                                    if (_dictionaryBlockObjectMemory[blockHeight].Content != null)
                                                                     {
-                                                                        if (_dictionaryBlockObjectMemory[blockHeight].Content != null)
+                                                                        #region Insert/Update data cache from an element of memory recently updated. 
+
+                                                                        // Ignore locked block.
+                                                                        if (_dictionaryBlockObjectMemory[blockHeight].Content.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
                                                                         {
-                                                                            #region Insert/Update data cache from an element of memory recently updated. 
-
-                                                                            // Ignore locked block.
-                                                                            if (_dictionaryBlockObjectMemory[blockHeight].Content.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
+                                                                            // Used and updated frequently, update disk data to keep changes if a crash happen.
+                                                                            if ((_dictionaryBlockObjectMemory[blockHeight].Content.BlockLastChangeTimestamp + _blockchainDatabaseSetting.BlockchainCacheSetting.GlobalObjectCacheUpdateLimitTime >= timestamp ||
+                                                                            !_dictionaryBlockObjectMemory[blockHeight].ObjectIndexed ||
+                                                                            !_dictionaryBlockObjectMemory[blockHeight].CacheUpdated) &&
+                                                                            (_dictionaryBlockObjectMemory[blockHeight].Content.IsConfirmedByNetwork
+                                                                            && blockHeight >= limitIndexToCache))
                                                                             {
-                                                                                // Used and updated frequently, update disk data to keep changes if a crash happen.
-                                                                                if ((_dictionaryBlockObjectMemory[blockHeight].Content.BlockLastChangeTimestamp + _blockchainDatabaseSetting.BlockchainCacheSetting.GlobalObjectCacheUpdateLimitTime >= timestamp ||
-                                                                                !_dictionaryBlockObjectMemory[blockHeight].ObjectIndexed ||
-                                                                                !_dictionaryBlockObjectMemory[blockHeight].CacheUpdated) &&
-                                                                                (_dictionaryBlockObjectMemory[blockHeight].Content.IsConfirmedByNetwork
-                                                                                && blockHeight >= limitIndexToCache))
-                                                                                {
-                                                                                    dictionaryCache.Add(blockHeight, new Tuple<bool, ClassBlockObject>(false, _dictionaryBlockObjectMemory[blockHeight].Content));
-                                                                                }
-                                                                                // Unused elements.
-                                                                                else
-                                                                                {
+                                                                                dictionaryCache.Add(blockHeight, new Tuple<bool, ClassBlockObject>(false, _dictionaryBlockObjectMemory[blockHeight].Content));
+                                                                            }
+                                                                            // Unused elements.
+                                                                            else
+                                                                            {
 
-                                                                                    if (blockHeight < limitIndexToCache &&
-                                                                                        _dictionaryBlockObjectMemory[blockHeight].Content.IsConfirmedByNetwork)
-                                                                                    {
-                                                                                        if (_dictionaryBlockObjectMemory[blockHeight].Content.BlockLastChangeTimestamp + _blockchainDatabaseSetting.BlockchainCacheSetting.GlobalBlockActiveMemoryKeepAlive <= timestamp)
-                                                                                            dictionaryCache.Add(blockHeight, new Tuple<bool, ClassBlockObject>(true, _dictionaryBlockObjectMemory[blockHeight].Content));
-                                                                                    }
+                                                                                if (blockHeight < limitIndexToCache &&
+                                                                                    _dictionaryBlockObjectMemory[blockHeight].Content.IsConfirmedByNetwork)
+                                                                                {
+                                                                                    if (_dictionaryBlockObjectMemory[blockHeight].Content.BlockLastChangeTimestamp + _blockchainDatabaseSetting.BlockchainCacheSetting.GlobalBlockActiveMemoryKeepAlive <= timestamp)
+                                                                                        dictionaryCache.Add(blockHeight, new Tuple<bool, ClassBlockObject>(true, _dictionaryBlockObjectMemory[blockHeight].Content));
                                                                                 }
                                                                             }
-
-                                                                            #endregion
                                                                         }
+
+                                                                        #endregion
                                                                     }
                                                                 }
                                                             }

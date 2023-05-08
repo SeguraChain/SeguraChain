@@ -493,7 +493,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                             _peerSocketClient?.Kill(SocketShutdown.Both);
                             _peerSocketClient = new ClassCustomSocket(new Socket(ClassUtility.GetAddressFamily(_peerIpTarget), SocketType.Stream, ProtocolType.Tcp), false);
 
-                            if (await _peerSocketClient.ConnectAsync(_peerIpTarget, _peerPortTarget, _peerNetworkSettingObject.PeerMaxDelayToConnectToTarget * 1000))
+                            if (await _peerSocketClient.ConnectAsync(_peerIpTarget, _peerPortTarget))
                             {
                                 successConnect = true;
                                 break;
@@ -578,8 +578,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                             while (!broadcastResponsePacketStatus)
                             {
-
-                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, peerObject.PeerClientPacketBegin, peerObject.PeerClientPacketEnd, cancellationReceiveBroadcastResponsePacket))
+                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, cancellationReceiveBroadcastResponsePacket))
                                 {
                                     if (!readPacketData.Status)
                                         break;
@@ -589,7 +588,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                     if (listPacketReceived.Count > 0 && containSeperator)
                                     {
 
-                                        ClassPeerPacketRecvObject peerPacketRecvObject = new ClassPeerPacketRecvObject(listPacketReceived[listPacketReceived.Count - 1].Packet, out bool status);
+                                        ClassPeerPacketRecvObject peerPacketRecvObject = new ClassPeerPacketRecvObject(Convert.FromBase64String(listPacketReceived[listPacketReceived.Count - 1].Packet), out bool status);
 
                                         listPacketReceived[listPacketReceived.Count - 1].Packet.Clear();
 
@@ -1098,9 +1097,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                             while (!packetReceived && IsAlive && !taskComplete)
                             {
-                                ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(_peerIpTarget, _peerUniqueIdTarget);
-
-                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize,peerObject.PeerClientPacketBegin, peerObject.PeerClientPacketEnd, cancellationReceiveBlockListPacket))
+                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, cancellationReceiveBlockListPacket))
                                 {
                                     if (!readPacketData.Status)
                                         break;
@@ -1111,20 +1108,35 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                     {
                                         packetReceived = true;
 
+                                        bool exceptionBase64 = false;
+                                        byte[] base64Packet = null;
 
-                                        peerPacketRecvObject = new ClassPeerPacketRecvObject(listPacketReceived[listPacketReceived.Count - 1].Packet, out bool status);
+                                        try
+                                        {
+                                            base64Packet = Convert.FromBase64String(listPacketReceived[listPacketReceived.Count - 1].Packet);
+                                        }
+                                        catch
+                                        {
+                                            exceptionBase64 = true;
+                                        }
 
-                                        if (!status)
-                                            failed = true;
+                                        listPacketReceived[listPacketReceived.Count - 1].Packet.Clear();
 
-                                        if (peerPacketRecvObject.PacketContent.IsNullOrEmpty(false, out _))
-                                            failed = true;
+                                        if (!exceptionBase64)
+                                        {
+                                            peerPacketRecvObject = new ClassPeerPacketRecvObject(base64Packet, out bool status);
 
-                                        if (peerPacketRecvObject.PacketOrder != ClassPeerEnumPacketResponse.SEND_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE)
-                                            failed = true;
+                                            if (!status)
+                                                failed = true;
 
-                                        ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerTimestampSignatureWhitelist = peerPacketRecvObject.PeerLastTimestampSignatureWhitelist;
+                                            if (peerPacketRecvObject.PacketContent.IsNullOrEmpty(false, out _))
+                                                failed = true;
 
+                                            if (peerPacketRecvObject.PacketOrder != ClassPeerEnumPacketResponse.SEND_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE)
+                                                failed = true;
+
+                                            ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerTimestampSignatureWhitelist = peerPacketRecvObject.PeerLastTimestampSignatureWhitelist;
+                                        }
 
 
                                         taskComplete = true;
@@ -1202,9 +1214,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                                     while (!endBroadcast && receiveStatus && IsAlive)
                                     {
-                                        ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(_peerIpTarget, _peerUniqueIdTarget);
 
-                                        using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, peerObject.PeerClientPacketBegin, peerObject.PeerClientPacketEnd, cancellationReceiveTransactionPacket))
+                                        using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, cancellationReceiveTransactionPacket))
                                         {
                                             if (!readPacketData.Status)
                                                 break;
@@ -1219,11 +1230,25 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                                                 if (listPacketReceived[i].Complete && listPacketReceived[i].Packet.Length > 0)
                                                 {
+                                                    bool exceptionBase64 = false;
+                                                    byte[] base64Data = null;
 
-                                                    
+                                                    try
+                                                    {
+                                                        base64Data = Convert.FromBase64String(listPacketReceived[i].Packet);
+                                                    }
+                                                    catch
+                                                    {
+                                                        exceptionBase64 = true;
+                                                    }
+
+                                                    listPacketReceived[i].Packet.Clear();
+
+                                                    if (!exceptionBase64)
+                                                    {
                                                         try
                                                         {
-                                                            ClassPeerPacketRecvObject peerPacketRecvObject = new ClassPeerPacketRecvObject(listPacketReceived[i].Packet, out bool status);
+                                                            ClassPeerPacketRecvObject peerPacketRecvObject = new ClassPeerPacketRecvObject(base64Data, out bool status);
 
                                                             if (!status)
                                                             {
@@ -1324,7 +1349,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                         {
                                                             // Ignore formating error.
                                                         }
-                                                    
+                                                    }
 
                                                 }
                                             }
@@ -1422,9 +1447,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                             while (IsAlive && !taskDone && !voteStatus)
                             {
-                                ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(_peerIpTarget, _peerUniqueIdTarget);
 
-                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, peerObject.PeerClientPacketBegin, peerObject.PeerClientPacketEnd, cancellationReceiveMemPoolTransactionVote))
+                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, cancellationReceiveMemPoolTransactionVote))
                                 {
                                     if (!readPacketData.Status)
                                         break;
@@ -1449,45 +1473,62 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                                     if (containSeperator)
                                     {
+                                        bool exceptionBase64 = false;
+                                        byte[] base64Data = null;
+
                                         try
                                         {
-                                            ClassPeerPacketRecvObject peerPacketRecvObject = new ClassPeerPacketRecvObject(listPacketReceived[listPacketReceived.Count - 1].Packet, out bool status);
+                                            base64Data = Convert.FromBase64String(listPacketReceived[listPacketReceived.Count - 1].Packet);
+                                        }
+                                        catch
+                                        {
+                                            exceptionBase64 = true;
+                                        }
 
-                                            if (status)
+                                        listPacketReceived[listPacketReceived.Count - 1].Packet.Clear();
+
+                                        if (!exceptionBase64)
+                                        {
+                                            try
                                             {
-                                                if (peerPacketRecvObject.PacketOrder == ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_VOTE)
+                                                ClassPeerPacketRecvObject peerPacketRecvObject = new ClassPeerPacketRecvObject(base64Data, out bool status);
+
+                                                if (status)
                                                 {
-
-                                                    ClassTranslatePacket<ClassPeerPacketSendMemPoolTransactionVote> packetTranslated = await TranslatePacketReceived<ClassPeerPacketSendMemPoolTransactionVote>(peerPacketRecvObject, ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_VOTE, cancellationReceiveMemPoolTransactionVote);
-
-                                                    if (packetTranslated.Status)
+                                                    if (peerPacketRecvObject.PacketOrder == ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_VOTE)
                                                     {
-                                                        ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerTimestampSignatureWhitelist = peerPacketRecvObject.PeerLastTimestampSignatureWhitelist;
 
-                                                        listTransactionStatus.GetList = packetTranslated.PacketTranslated.ListTransactionHashResult;
+                                                        ClassTranslatePacket<ClassPeerPacketSendMemPoolTransactionVote> packetTranslated = await TranslatePacketReceived<ClassPeerPacketSendMemPoolTransactionVote>(peerPacketRecvObject, ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_VOTE, cancellationReceiveMemPoolTransactionVote);
 
-                                                        voteStatus = true;
+                                                        if (packetTranslated.Status)
+                                                        {
+                                                            ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerTimestampSignatureWhitelist = peerPacketRecvObject.PeerLastTimestampSignatureWhitelist;
+
+                                                            listTransactionStatus.GetList = packetTranslated.PacketTranslated.ListTransactionHashResult;
+
+                                                            voteStatus = true;
+                                                        }
+
+                                                        taskDone = true;
+                                                        break;
                                                     }
-
-                                                    taskDone = true;
-                                                    break;
+                                                    else
+                                                    {
+                                                        IsAlive = false;
+                                                        break;
+                                                    }
                                                 }
                                                 else
                                                 {
                                                     IsAlive = false;
                                                     break;
                                                 }
-                                            }
-                                            else
-                                            {
-                                                IsAlive = false;
-                                                break;
-                                            }
 
-                                        }
-                                        catch
-                                        {
-                                            // Ignored.
+                                            }
+                                            catch
+                                            {
+                                                // Ignored.
+                                            }
                                         }
 
                                     }
@@ -1534,14 +1575,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             /// </summary>
             /// <param name="packetData"></param>
             /// <returns></returns>
-            private async Task<bool> TrySendPacketToPeer(string packetData)
+            private async Task<bool> TrySendPacketToPeer(byte[] packetData)
             {
-                ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(_peerIpTarget, _peerUniqueIdTarget);
-                return await _peerSocketClient.TrySendSplittedPacket(
-                    (packetData + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray(true),
-                    peerObject.PeerClientPacketBegin,
-                     peerObject.PeerClientPacketEnd,
-                    _peerCancellationToken, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
+                return await _peerSocketClient.TrySendSplittedPacket((Convert.ToBase64String(packetData) + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray(), _peerCancellationToken, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
             }
 
 

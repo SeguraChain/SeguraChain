@@ -214,7 +214,7 @@ namespace SeguraChain_Lib.Instance.Node
                 if (!fromWallet)
                     Console.ReadLine();
             }
-
+            
             return false;
         }
 
@@ -222,8 +222,9 @@ namespace SeguraChain_Lib.Instance.Node
         /// <summary>
         /// Peer tool closed.
         /// </summary>
-        public async Task<bool> NodeStop(bool forceClose = false, bool isWallet = false)
+        public async Task NodeStop(bool forceClose = false, bool isWallet = false)
         {
+            TaskManager.TaskManager.StopTaskManager();
 
             ClassLog.WriteLine("Close Peer Tool, please wait a moment..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
@@ -319,16 +320,15 @@ namespace SeguraChain_Lib.Instance.Node
             else
                 ClassLog.WriteLine("MemPool data saved failed.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
 
-
             #endregion
 
             #region Save Blockchain Data.
 
             ClassLog.WriteLine("Save Blockchain data..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-            if (await ClassBlockchainDatabase.SaveBlockchainDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject))
+            if (ClassBlockchainDatabase.SaveBlockchainDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject).Result)
             {
-                await ClassBlockchainDatabase.CloseBlockchainDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject);
+                ClassBlockchainDatabase.CloseBlockchainDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject).Wait();
                 ClassLog.WriteLine("Blockchain data saved.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
             }
             else
@@ -336,18 +336,20 @@ namespace SeguraChain_Lib.Instance.Node
 
             #endregion
 
-            TaskManager.TaskManager.StopTaskManager();
+            PeerToolStatus = false;
 
-            if (!forceClose && !isWallet)
+
+            if (!forceClose)
             {
+                ClassLog.CloseLogStreams();
                 ClassLog.WriteLine("Peer tool successfully closed. Press a key to exit.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                 Console.ReadLine();
             }
-
-            ClassLog.CloseLogStreams();
-            PeerToolStatus = false;
-
-            return true;
+            else
+            {
+                if (!isWallet)
+                    Process.GetCurrentProcess().Kill();
+            }
         }
 
         #endregion
@@ -384,7 +386,7 @@ namespace SeguraChain_Lib.Instance.Node
 
         #region OpenNAT.
 
-#if !NET5_0_OR_GREATER
+        #if !NET5_0_OR_GREATER
         
                 /// <summary>
                 /// Open Peer port with NAT to get the port available to the public network.
@@ -454,7 +456,7 @@ namespace SeguraChain_Lib.Instance.Node
 
                 }
 
-#endif
+        #endif
 
         #endregion
 

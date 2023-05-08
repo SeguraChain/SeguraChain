@@ -63,9 +63,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         /// <summary>
         /// Network status and data.
         /// </summary>
-        public bool ClientPeerConnectionStatus => _clientSocket == null ? false : _clientSocket.IsConnected();
+        public bool ClientPeerConnectionStatus;
         public long ClientPeerLastPacketReceived;
         private bool _clientAskDisconnection;
+        private bool _onSendingPacketResponse;
         private bool _onHandlePacketResponse;
         private bool _clientResponseSendSuccessfully;
 
@@ -89,6 +90,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         /// <param name="peerFirewallSettingObject"></param>
         public ClassPeerNetworkClientServerObject(ClassCustomSocket clientSocket, CancellationTokenSource cancellationTokenHandlePeerConnection, string peerClientIp, string peerServerOpenNatIp, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject)
         {
+            ClientPeerConnectionStatus = true;
             CancellationTokenHandlePeerConnection = CancellationTokenSource.CreateLinkedTokenSource(cancellationTokenHandlePeerConnection.Token);
             _clientSocket = clientSocket;
             _peerNetworkSettingObject = peerNetworkSettingObject;
@@ -122,8 +124,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 return;
 
             if (disposing)
-                TaskManager.TaskManager.InsertTask(() => ClosePeerClient(false), 0, null);
-
+                ClosePeerClient(false);
 
             _disposed = true;
         }
@@ -142,7 +143,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             {
 
 
-                if (!ClientPeerConnectionStatus || _clientAskDisconnection || !_clientSocket.IsConnected())
+                if (!ClientPeerConnectionStatus || _clientAskDisconnection)
                     break;
 
                 if (_peerFirewallSettingObject.PeerEnableFirewallLink)
@@ -151,8 +152,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                         break;
                 }
 
-                if (!(_onHandlePacketResponse || (_enableMemPoolBroadcastClientMode && _onSendingMemPoolTransaction)))
-                {
+                if (!(_onHandlePacketResponse || _onSendingPacketResponse || (_enableMemPoolBroadcastClientMode && _onSendingMemPoolTransaction)))
+                { 
                     // If any packet are received after the delay, the function close the peer client connection to listen.
                     if (ClientPeerLastPacketReceived + _peerNetworkSettingObject.PeerServerPacketDelay < TaskManager.TaskManager.CurrentTimestampMillisecond)
                     {
@@ -166,28 +167,41 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 await Task.Delay(1000);
             }
 
-            TaskManager.TaskManager.InsertTask(() => ClosePeerClient(false), 0, null);
+            ClosePeerClient(true);
         }
 
         /// <summary>
         /// Close peer client connection received.
         /// </summary>
-        public void ClosePeerClient(bool fromListen)
+        public void ClosePeerClient(bool fromCheckConnection)
         {
 
+            ClientPeerConnectionStatus = false;
 
             // Clean up.
             _listMemPoolBroadcastBlockHeight?.Clear();
 
-            if (!fromListen)
+            try
+            {
+                if (_cancellationTokenListenPeerPacket != null)
+                {
+                    if (!_cancellationTokenListenPeerPacket.IsCancellationRequested)
+                        _cancellationTokenListenPeerPacket.Cancel();
+                }
+            }
+            catch
+            {
+                // Ignored.
+            }
+
+            if (!fromCheckConnection)
             {
                 try
                 {
-
-                    if (_cancellationTokenListenPeerPacket != null)
+                    if (_cancellationTokenClientCheckConnectionPeer != null)
                     {
-                        if (!_cancellationTokenListenPeerPacket.IsCancellationRequested)
-                            _cancellationTokenListenPeerPacket.Cancel();
+                        if (!_cancellationTokenClientCheckConnectionPeer.IsCancellationRequested)
+                            _cancellationTokenClientCheckConnectionPeer.Cancel();
                     }
                 }
                 catch
@@ -196,18 +210,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 }
             }
 
-            try
-            {
-                if (_cancellationTokenClientCheckConnectionPeer != null)
-                {
-                    if (!_cancellationTokenClientCheckConnectionPeer.IsCancellationRequested)
-                        _cancellationTokenClientCheckConnectionPeer.Cancel();
-                }
-            }
-            catch
-            {
-                // Ignored.
-            }
             _clientSocket?.Kill(SocketShutdown.Both);
         }
 
@@ -235,11 +237,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                     while (ClientPeerConnectionStatus && !_clientAskDisconnection)
                     {
-                        ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(_peerClientIp, _peerUniqueId);
-
-                        using (ReadPacketData readPacketData = await _clientSocket.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, peerObject != null ? peerObject.PeerClientPacketBegin : null, peerObject != null ? peerObject.PeerClientPacketEnd : null, _cancellationTokenListenPeerPacket))
+                        using (ReadPacketData readPacketData = await _clientSocket.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, _cancellationTokenListenPeerPacket))
                         {
-                            if (!readPacketData.Status || readPacketData.Data == null)
+                            if (!readPacketData.Status)
                                 break;
 
                             ClientPeerLastPacketReceived = TaskManager.TaskManager.CurrentTimestampMillisecond + _peerNetworkSettingObject.PeerServerPacketDelay;
@@ -250,6 +250,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                             #endregion
 
+                            _onSendingPacketResponse = true;
+
                             for (int index = 0; index < listPacketReceived.Count; index++)
                             {
 
@@ -259,30 +261,51 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                 if (listPacketReceived[index] == null || !listPacketReceived[index].Complete || listPacketReceived[index].Used)
                                     continue;
 
+                                byte[] base64Packet = null;
+                                bool failed = !ClassUtility.CheckBase64String(listPacketReceived[index].Packet);
 
+                                if (!failed)
+                                {
+                                    try
+                                    {
+                                        base64Packet = Convert.FromBase64String(listPacketReceived[index].Packet);
+                                        failed = base64Packet == null || base64Packet.Length == 0;
+                                    }
+                                    catch
+                                    {
+                                        failed = true;
+                                    }
+                                }
 
                                 listPacketReceived[index].Used = true;
+                                listPacketReceived[index].Packet.Clear();
 
+                                if (failed)
+                                    continue;
 
                                 _onHandlePacketResponse = true;
 
                                 try
                                 {
-                                    ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(listPacketReceived[index].Packet, out bool status);
+                                    ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(base64Packet, out bool status);
                                     if (!status)
                                     {
                                         ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                                        ClosePeerClient(true);
+                                        ClientPeerConnectionStatus = false;
                                     }
                                     else
                                     {
-                                        switch (await HandlePacket(packetSendObject))
+                                        switch (await HandlePacket(packetSendObject
+#if DEBUG
+                                            , base64Packet
+#endif
+                                            ))
                                         {
                                             case ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_TYPE_PACKET:
                                             case ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET:
                                                 {
 #if DEBUG
-                                                    Debug.WriteLine("Invalid packet data from " + _peerClientIp + " | Order: " + packetSendObject.PacketOrder);
+                                                    Debug.WriteLine("Invalid packet data from "+_peerClientIp+" | Order: "+packetSendObject.PacketOrder);
 #endif
                                                     ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
                                                 }
@@ -290,19 +313,21 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                             case ClassPeerNetworkClientServerHandlePacketEnumStatus.DECRYPT_PACKET_CONTENT_FAILED:
                                                 {
                                                     ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                                                    await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, string.Empty, packetSendObject.PeerLastTimestampSignatureWhitelist)
+                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, string.Empty, packetSendObject.PeerLastTimestampSignatureWhitelist)
                                                     {
                                                         PacketOrder = ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS,
                                                         PacketContent = string.Empty,
-                                                    }, null, false);
-                                                    ClosePeerClient(true);
+                                                    }, null, false))
+                                                    {
+                                                        ClientPeerConnectionStatus = false;
+                                                    }
                                                 }
                                                 break;
                                             case ClassPeerNetworkClientServerHandlePacketEnumStatus.EXCEPTION_PACKET:
                                             case ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET:
                                                 {
                                                     ClassPeerCheckManager.InputPeerClientAttemptConnect(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                                                    ClosePeerClient(true);
+                                                    ClientPeerConnectionStatus = false;
                                                 }
                                                 break;
                                             case ClassPeerNetworkClientServerHandlePacketEnumStatus.VALID_PACKET:
@@ -328,9 +353,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                         }
                     }
 
-                    TaskManager.TaskManager.InsertTask(() => ClosePeerClient(false), 0, null);
+                    ClosePeerClient(false);
                 }
-
             }), 0, _cancellationTokenListenPeerPacket);
 
         }
@@ -344,7 +368,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         /// </summary>
         /// <param name="packet">Packet received to handle.</param>
         /// <returns>Return the status of the handle of the packet.</returns>
-        private async Task<ClassPeerNetworkClientServerHandlePacketEnumStatus> HandlePacket(ClassPeerPacketSendObject packetSendObject)
+        private async Task<ClassPeerNetworkClientServerHandlePacketEnumStatus> HandlePacket(ClassPeerPacketSendObject packetSendObject
+#if DEBUG
+            , byte[] packetData
+#endif
+            )
         {
 
             try
@@ -448,7 +476,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 {
                     case ClassPeerEnumPacketSend.ASK_PEER_AUTH_KEYS: // ! This packet type is not encrypted because we exchange unique encryption keys, public key, numeric public key to the node who ask them. !
                         {
-                            return await SendAuthKeys(peerObject, packetSendObject);
+                            return await SendAuthKeys(peerObject, packetSendObject, false);
                         }
                     case ClassPeerEnumPacketSend.ASK_PEER_LIST:
                         {
@@ -484,7 +512,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                             ClassPeerPacketSendAskListSovereignUpdate packetSendAskListSovereignUpdate = await DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskListSovereignUpdate>(packetSendObject, peerObject);
 
                             if (packetSendAskListSovereignUpdate == null)
-                                return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
+                                return ClassPeerNetworkClientServerHandlePacketEnumStatus.DECRYPT_PACKET_CONTENT_FAILED;
 
                             if (!ClassUtility.CheckPacketTimestamp(packetSendAskListSovereignUpdate.PacketTimestamp, _peerNetworkSettingObject.PeerMaxTimestampDelayPacket, _peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET_TIMESTAMP;
@@ -1608,8 +1636,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                     case ClassPeerEnumPacketSend.ASK_MEM_POOL_TRANSACTION_BROADCAST_CONFIRMATION_RECEIVED:
                         {
 
-                            if (!ClassUtility.TryDeserialize(packetSendObject.PacketContent, out ClassPeerPacketAskMemPoolTransactionBroadcastConfirmationReceived packetAskMemPoolBroadcastTransactionConfirmationReceived, ObjectCreationHandling.Reuse)
-                                || packetAskMemPoolBroadcastTransactionConfirmationReceived == null)
+                            if (!ClassUtility.TryDeserialize(packetSendObject.PacketContent, out ClassPeerPacketAskMemPoolTransactionBroadcastConfirmationReceived packetAskMemPoolBroadcastTransactionConfirmationReceived, ObjectCreationHandling.Reuse) 
+                                || packetAskMemPoolBroadcastTransactionConfirmationReceived  == null)
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
 
                             if (!ClassUtility.CheckPacketTimestamp(packetAskMemPoolBroadcastTransactionConfirmationReceived.PacketTimestamp, _peerNetworkSettingObject.PeerMaxTimestampDelayPacket, _peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
@@ -1690,7 +1718,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                                     }, peerObject, true))
                                                                     {
                                                                         exceptionOnSending = true;
-                                                                        ClosePeerClient(true);
+                                                                        ClientPeerConnectionStatus = false;
                                                                         break;
                                                                     }
 
@@ -1740,7 +1768,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                             }, peerObject, true))
                                                             {
                                                                 exceptionOnSending = true;
-                                                                ClosePeerClient(true);
+                                                                ClientPeerConnectionStatus = false;
                                                             }
 
                                                             if (!exceptionOnSending)
@@ -1769,7 +1797,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                             }
 
                                             if (exceptionOnSending)
-                                                ClosePeerClient(true);
+                                                ClientPeerConnectionStatus = false;
                                             else
                                             {
                                                 // End broadcast transaction. Packet not encrypted, no content.
@@ -1779,7 +1807,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                     PacketContent = string.Empty,
                                                 }, peerObject, false))
                                                 {
-                                                    ClosePeerClient(true);
+                                                    ClientPeerConnectionStatus = false;
                                                 }
                                                 else
                                                     _listMemPoolBroadcastBlockHeight[packetMemPoolAskMemPoolTransactionList.BlockHeight] += countMemPoolTxSent;
@@ -1841,7 +1869,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         /// </summary>
         /// <param name="packetSendObject"></param>
         /// <returns></returns>
-        private async Task<ClassPeerNetworkClientServerHandlePacketEnumStatus> SendAuthKeys(ClassPeerObject peerObject, ClassPeerPacketSendObject packetSendObject)
+        private async Task<ClassPeerNetworkClientServerHandlePacketEnumStatus> SendAuthKeys(ClassPeerObject peerObject, ClassPeerPacketSendObject packetSendObject, bool resendKeys)
         {
 
             ClassPeerPacketSendAskPeerAuthKeys packetSendPeerAuthKeysObject = JsonConvert.DeserializeObject<ClassPeerPacketSendAskPeerAuthKeys>(packetSendObject.PacketContent);
@@ -1849,7 +1877,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             if (!ClassUtility.CheckPacketTimestamp(packetSendPeerAuthKeysObject.PacketTimestamp, _peerNetworkSettingObject.PeerMaxTimestampDelayPacket, _peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET_TIMESTAMP;
 
-            if (!await ClassPeerKeysManager.UpdatePeerInternalKeys(_peerClientIp, packetSendPeerAuthKeysObject.PeerPort, _peerUniqueId, _cancellationTokenListenPeerPacket, _peerNetworkSettingObject, _peerFirewallSettingObject, true, false))
+            if (!await ClassPeerKeysManager.UpdatePeerInternalKeys(_peerClientIp, packetSendPeerAuthKeysObject.PeerPort, _peerUniqueId, _cancellationTokenListenPeerPacket, _peerNetworkSettingObject, true))
             {
                 await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                 {
@@ -1857,7 +1885,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                     PacketContent = string.Empty,
                 }, peerObject, false);
 
-                return ClassPeerNetworkClientServerHandlePacketEnumStatus.DECRYPT_PACKET_CONTENT_FAILED;
+                return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
             }
 
             if (!await ClassPeerKeysManager.UpdatePeerKeysReceivedNetworkServer(_peerClientIp, _peerUniqueId, packetSendPeerAuthKeysObject, _cancellationTokenListenPeerPacket))
@@ -1868,14 +1896,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                     PacketContent = string.Empty,
                 }, peerObject, false);
 
-                return ClassPeerNetworkClientServerHandlePacketEnumStatus.DECRYPT_PACKET_CONTENT_FAILED;
+                return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
             }
 
 
             peerObject = ClassPeerDatabase.GetPeerObject(_peerClientIp, _peerUniqueId);
 
             if (peerObject == null)
-                return ClassPeerNetworkClientServerHandlePacketEnumStatus.DECRYPT_PACKET_CONTENT_FAILED;
+                return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
 
             if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
             {
@@ -1942,7 +1970,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                     packetSendObject.PacketSignature = await peerObject.GetClientCryptoStreamObject.DoSignatureProcess(packetSendObject.PacketHash, peerObject.PeerInternPrivateKey, _cancellationTokenListenPeerPacket);
 
 
-                return await _clientSocket.TrySendSplittedPacket((packetSendObject.GetPacketData() + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray(), peerObject != null ? peerObject.PeerClientPacketBegin : null, peerObject != null ? peerObject.PeerClientPacketEnd : null, _cancellationTokenListenPeerPacket, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
+                return await _clientSocket.TrySendSplittedPacket((Convert.ToBase64String(packetSendObject.GetPacketData()) + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray(), _cancellationTokenListenPeerPacket, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
 
             }
             catch
@@ -1992,7 +2020,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 #if DEBUG
                 Debug.WriteLine("Failed to decrypt the packet content: " + System.Enum.GetName(typeof(ClassPeerEnumPacketSend), packetSendObject.PacketOrder));
 #endif
-                return default;
+                 return default;
             }
 
 
@@ -2084,6 +2112,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             return null;
         }
 
-        #endregion
+#endregion
     }
 }

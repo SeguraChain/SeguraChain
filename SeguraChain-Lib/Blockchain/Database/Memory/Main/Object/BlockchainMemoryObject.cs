@@ -38,36 +38,37 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main.Object
             {
                 if (value != null)
                 {
-
-                    if (_content != null)
+                    lock (value)
                     {
-                        if (_content.BlockLastChangeTimestamp <= value.BlockLastChangeTimestamp)
+                        if (_content != null)
                         {
-                            if (value.BlockFromCache || value.BlockCloned || !value.BlockFromMemory)
+                            if (_content.BlockLastChangeTimestamp <= value.BlockLastChangeTimestamp)
                             {
-                                _content?.Dispose();
-                                _content = value.DirectCloneBlockObject();
-                            }
-                            else _content = value;
+                                if (value.BlockFromCache || value.BlockCloned || !value.BlockFromMemory)
+                                {
+                                    _content?.Dispose();
+                                    _content = value.DirectCloneBlockObject();
+                                }
+                                else _content = value;
 
+                                _content.BlockCloned = false;
+                                _content.BlockFromCache = false;
+                                _content.BlockIsUpdated = false;
+                                _content.BlockFromMemory = true;
+                            }
+                        }
+                        else
+                        {
+                            _content = value.BlockFromCache || value.BlockCloned || !value.BlockFromMemory ? value.DirectCloneBlockObject() : value;
                             _content.BlockCloned = false;
                             _content.BlockFromCache = false;
                             _content.BlockIsUpdated = false;
                             _content.BlockFromMemory = true;
                         }
-                    }
-                    else
-                    {
-                        _content = value.BlockFromCache || value.BlockCloned || !value.BlockFromMemory ? value.DirectCloneBlockObject() : value;
-                        _content.BlockCloned = false;
-                        _content.BlockFromCache = false;
-                        _content.BlockIsUpdated = false;
-                        _content.BlockFromMemory = true;
-                    }
 
-                    if (value.IsChecked)
-                        ContentMirror = value;
-
+                        if (value.IsChecked)
+                            ContentMirror = value;
+                    }
                 }
                 else
                 {

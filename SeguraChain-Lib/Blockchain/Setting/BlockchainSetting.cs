@@ -106,7 +106,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int BlockDifficultyPrecision = 100_000; // The precision put on the difficulty factor calculated.
         public const int GenesisBlockHeight = 1; // The genesis block height.
 		public static readonly BigInteger GenesisBlockAmount = 3_000_000 * CoinDecimal; // The genesis block amount reward has pre-mining.
-		public const string GenesisBlockFinalTransactionHash ="7B2952A69DA453C51DBDAC0329D7F643E142E624D7C6C5D4DF9EF902DAB67A0060D7EA71100112A77C1A02EDA330D6405A0F749C7AA6FE5FC0BB18EF38887798";
+		public const string GenesisBlockFinalTransactionHash ="E9B974F351677D39E44F14024DDD12AAC3FA770F43B7D8BCBEB106F6A932FCBF47EDDF02DDF0B72037587559917614EFAAAC8AD758DC1E5BF828F2682423176D";
         public const int GenesisBlockTransactionCount = 1; // The maximum of transaction inserted on the genesis block.
         public const int BlockAmountNetworkConfirmations = 2; // The minimum amount of network checks on blocks to do with peers, before to enable the task of confirmations on the block.
         public const int BlockAmountSlowNetworkConfirmations = 5; // This amount increment another amount of network checks, once this one is reach, the network counter increment and this one return back to 0.
@@ -121,7 +121,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const string BlockchainVersion = "01"; // Version of the blockchain used on Base58.
         public static readonly byte[] BlockchainVersionByteArray = ClassUtility.GetByteArrayFromHexString(BlockchainVersion);
         public const int BlockchainChecksum = 16; // Checksum size used on Base58.
-		public const bool BlockchainDefaultEnableCompressingDatabase = true;
+		public const bool BlockchainDefaultEnableCompressingDatabase = false;
 		public const bool BlockchainDefaultDataFormatIsJson = false;
 
         /// <summary>
@@ -193,7 +193,6 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const bool PeerEnableSyncTransactionByRange = true;
         public const bool PeerEnableSovereignPeerVote = false;
         public const int PeerMaxTaskIncomingConnection = 200;
-        public const bool PeerEnableParanoidCheck = false;
 
         /// <summary>
         /// The default P2P port.

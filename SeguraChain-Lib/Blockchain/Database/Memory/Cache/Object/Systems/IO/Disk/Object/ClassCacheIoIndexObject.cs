@@ -39,6 +39,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         private FileStream _ioDataStructureFileLockStream;
         private string _ioDataStructureFilename;
         private string _ioDataStructureFilePath;
+        private UTF8Encoding _ioDataUtf8Encoding;
         private long _lastIoCacheFileLength;
         private long _totalIoCacheFileSize;
         private long _lastIoCacheTotalFileSizeWritten;
@@ -67,6 +68,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
             _ioDataStructureFilePath = blockchainDatabaseSetting.GetBlockchainCacheDirectoryPath + ioDataStructureFilename;
             _ioStructureObjectsDictionary = new Dictionary<long, ClassCacheIoStructureObject>();
             _ioSemaphoreAccess = new SemaphoreSlim(1, 1);
+            _ioDataUtf8Encoding = new UTF8Encoding(true, false);
         }
 
         #region Initialize Io Cache Index functions.
@@ -84,7 +86,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                 File.Create(_ioDataStructureFilePath).Close();
             }
 
-            _ioDataStructureFileLockStream = new FileStream(_ioDataStructureFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.Read, _blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskReadStreamBufferSize, FileOptions.Asynchronous | FileOptions.Asynchronous);
+            _ioDataStructureFileLockStream = new FileStream(_ioDataStructureFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.Read, _blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskReadStreamBufferSize, FileOptions.Asynchronous | FileOptions.RandomAccess);
 
             return ioCacheFileExist ? await RunIoDataIndexingAsync() : new Tuple<bool, HashSet<long>>(true, new HashSet<long>());
         }
@@ -97,7 +99,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         {
             await ResetSeekLockStreamAsync(null);
 
-            using (StreamReader reader = new StreamReader(_ioDataStructureFileLockStream, Encoding.UTF8, false, _blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskReadStreamBufferSize, true))
+            using (StreamReader reader = new StreamReader(_ioDataStructureFileLockStream, _ioDataUtf8Encoding, false, _blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskReadStreamBufferSize, true))
             {
                 string ioDataLine;
 
@@ -1200,7 +1202,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
                 if (readResult.Item1)
                 {
-                    string ioDataLine = readResult.Item2.GetStringFromByteArrayUtf8();
+                    string ioDataLine = _ioDataUtf8Encoding.GetString(readResult.Item2);
 
                     if (BlockHeightMatchToIoDataLine(blockHeight, ioDataLine))
                         IoStringDataLineToBlockObject(ioDataLine, _blockchainDatabaseSetting, blockInformationsOnly, cancellation, out blockObject);
@@ -1248,7 +1250,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
                             if (readResult.Item1)
                             {
-                                var ioDataLine = readResult.Item2.GetStringFromByteArrayUtf8();
+                                var ioDataLine = _ioDataUtf8Encoding.GetString(readResult.Item2);
 
                                 if (BlockHeightMatchToIoDataLine(blockHeight, ioDataLine))
                                 {
@@ -1328,20 +1330,13 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                                 byte[] blockData = new byte[sizeByBlockToRead];
 
                                 if (cancellation == null)
-                                {
                                     await ioFileStream.ReadAsync(blockData, 0, blockData.Length);
-                                    await ioFileStream.FlushAsync();
-                                }
                                 else
-                                {
                                     await ioFileStream.ReadAsync(blockData, 0, blockData.Length, cancellation.Token);
-                                    await ioFileStream.FlushAsync(cancellation.Token);
-                                }
+
                                 listData.Add(blockData);
 
                                 size += sizeByBlockToRead;
-
-
                             }
                             else
                             {
@@ -1352,15 +1347,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                                     byte[] blockData = new byte[rest];
 
                                     if (cancellation == null)
-                                    {
                                         await ioFileStream.ReadAsync(blockData, 0, blockData.Length);
-                                        await ioFileStream.FlushAsync();
-                                    }
                                     else
-                                    {
                                         await ioFileStream.ReadAsync(blockData, 0, blockData.Length, cancellation.Token);
-                                        await ioFileStream.FlushAsync(cancellation.Token);
-                                    }
+
                                     listData.Add(blockData);
 
                                     size += rest;
@@ -1425,7 +1415,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                         }
                     }
 
-                    var writeResult = await WriteByBlock(ioDataLine.GetByteArray(), cancellation, _ioDataStructureFileLockStream);
+                    var writeResult = WriteByBlock(_ioDataUtf8Encoding.GetBytes(ioDataLine), cancellation, _ioDataStructureFileLockStream);
 
                     if (writeResult.Item1)
                         dataLength += writeResult.Item2;
@@ -1533,13 +1523,13 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
                                         if (readResult.Item1)
                                         {
-                                            string ioDataLine = readResult.Item2.GetStringFromByteArrayUtf8();
+                                            string ioDataLine = _ioDataUtf8Encoding.GetString(readResult.Item2);
 
                                             if (BlockHeightMatchToIoDataLine(blockHeight, ioDataLine))
                                             {
                                                 long position = writer.Position;
 
-                                                var writeResult = await WriteByBlock(readResult.Item2, cancellation, writer);
+                                                var writeResult = WriteByBlock(readResult.Item2, cancellation, writer);
 
                                                 if (writeResult.Item1)
                                                 {
@@ -1604,7 +1594,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                                         }
                                     }
 
-                                    Tuple<bool, long> writeResult = await WriteByBlock(ioDataLine.GetByteArray(), cancellation, writer);
+                                    Tuple<bool, long> writeResult = WriteByBlock(_ioDataUtf8Encoding.GetBytes(ioDataLine), cancellation, writer);
 
                                     if (writeResult.Item1)
                                         dataLength += writeResult.Item2;
@@ -1684,7 +1674,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                                     }
                                 }
 
-                                var writeResult = await WriteByBlock(ioDataLine.GetByteArray(), cancellation, _ioDataStructureFileLockStream);
+                                var writeResult = WriteByBlock(_ioDataUtf8Encoding.GetBytes(ioDataLine), cancellation, _ioDataStructureFileLockStream);
 
                                 if (writeResult.Item1)
                                     dataLength += writeResult.Item2;
@@ -1744,7 +1734,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// <param name="cancellation"></param>
         /// <param name="ioFileStream"></param>
         /// <returns></returns>
-        private async Task<Tuple<bool, long>> WriteByBlock(byte[] data, CancellationTokenSource cancellation, FileStream ioFileStream)
+        private Tuple<bool, long> WriteByBlock(byte[] data, CancellationTokenSource cancellation, FileStream ioFileStream)
         {
             bool writeStatus = true;
             long dataSizeWritten = 0;
@@ -1778,8 +1768,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
                             Array.Copy(data, dataSizeWritten, blockData, 0, blockData.Length);
 
-                            await ioFileStream.WriteAsync(blockData, 0, blockData.Length, cancellation.Token);
-                            await ioFileStream.FlushAsync(cancellation.Token);
+                            ioFileStream.Write(blockData, 0, blockData.Length);
 
                             dataSizeWritten += sizeByBlockToWrite;
                             tmpWriteBeforeSleep += sizeByBlockToWrite;
@@ -1794,8 +1783,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
                                 Array.Copy(data, dataSizeWritten, blockData, 0, blockData.Length);
 
-                                await ioFileStream.WriteAsync(blockData, 0, blockData.Length, cancellation.Token);
-                                await ioFileStream.FlushAsync(cancellation.Token);
+                                ioFileStream.Write(blockData, 0, blockData.Length);
 
                                 dataSizeWritten += rest;
                                 tmpWriteBeforeSleep += rest;
