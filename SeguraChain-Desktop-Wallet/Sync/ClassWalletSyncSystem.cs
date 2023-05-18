@@ -1810,7 +1810,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                 string nodeLocalIp = _nodeInstance.PeerSettingObject.PeerNetworkSettingObject.ListenIp;
                                 string openNatIp = _nodeInstance.PeerOpenNatPublicIp;
 
-                                using (DisposableDictionary<string, ClassTransactionEnumStatus> sendTransactionResult = await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(nodeLocalIp, openNatIp, openNatIp, new List<ClassTransactionObject>() { transactionObject }, _nodeInstance.PeerSettingObject.PeerNetworkSettingObject, _nodeInstance.PeerSettingObject.PeerFirewallSettingObject, cancellation, true))
+                                using (DisposableDictionary<string, ClassTransactionEnumStatus> sendTransactionResult = await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(_nodeInstance.PeerDatabase, nodeLocalIp, openNatIp, openNatIp, new List<ClassTransactionObject>() { transactionObject }, _nodeInstance.PeerSettingObject.PeerNetworkSettingObject, _nodeInstance.PeerSettingObject.PeerFirewallSettingObject, cancellation, true))
                                 {
 
                                     KeyValuePair<string, ClassTransactionEnumStatus> sendTransactionResultElement = sendTransactionResult.GetList.ElementAt(0);

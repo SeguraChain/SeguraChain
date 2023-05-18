@@ -31,55 +31,55 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="cancellation"></param>
         /// <param name="peerNetworkSettingObject"></param>
         /// <param name="forceUpdate"></param>
-        public static async Task<bool> UpdatePeerInternalKeys(string peerIp, int peerPort, string peerUniqueId, CancellationTokenSource cancellation, ClassPeerNetworkSettingObject peerNetworkSettingObject, bool forceUpdate)
+        public static async Task<bool> UpdatePeerInternalKeys(ClassPeerDatabase peerDatabase, string peerIp, int peerPort, string peerUniqueId, CancellationTokenSource cancellation, ClassPeerNetworkSettingObject peerNetworkSettingObject, bool forceUpdate)
         {
             bool result = false;
 
             long currentTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
 
-            if (!ClassPeerDatabase.DictionaryPeerDataObject.ContainsKey(peerIp))
-                ClassPeerDatabase.DictionaryPeerDataObject.Add(peerIp, new ConcurrentDictionary<string, ClassPeerObject>());
+            if (!await peerDatabase.ContainsIp(peerIp, cancellation))
+                peerDatabase.Add(peerIp, new ConcurrentDictionary<string, ClassPeerObject>());
 
-            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].ContainsKey(peerUniqueId))
+            if (await peerDatabase.ContainsPeer(peerIp,peerUniqueId, cancellation))
             {
-                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternTimestampKeyGenerated + peerNetworkSettingObject.PeerMaxAuthKeysExpire < currentTimestamp || forceUpdate)
+                if (peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternTimestampKeyGenerated + peerNetworkSettingObject.PeerMaxAuthKeysExpire < currentTimestamp || forceUpdate)
                 {
-                    if (ClassAes.GenerateKey(ClassUtility.GetRandomWord(RandomWordKeySize).GetByteArray(true), true, out ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey))
+                    if (ClassAes.GenerateKey(ClassUtility.GetRandomWord(RandomWordKeySize).GetByteArray(true), true, out peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKey))
                     {
-                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKeyIv = ClassAes.GenerateIv(ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey, BlockchainSetting.PeerIvIterationCount);
-                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey = GeneratePeerPrivateKey();
-                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPublicKey = GeneratePeerPublicKeyFromPrivateKey(ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey);
-                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerPort = peerPort;
-                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternTimestampKeyGenerated = currentTimestamp;
+                        peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKeyIv = ClassAes.GenerateIv(peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKey, BlockchainSetting.PeerIvIterationCount);
+                        peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey = GeneratePeerPrivateKey();
+                        peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPublicKey = GeneratePeerPublicKeyFromPrivateKey(peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey);
+                        peerDatabase[peerIp, peerUniqueId, cancellation].PeerPort = peerPort;
+                        peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternTimestampKeyGenerated = currentTimestamp;
 
-                        if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetInternCryptoStreamObject == null)
+                        if (peerDatabase[peerIp, peerUniqueId, cancellation].GetInternCryptoStreamObject == null)
                         {
-                            ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetInternCryptoStreamObject = new ClassPeerCryptoStreamObject(peerIp, peerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKeyIv, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey, cancellation);
+                            peerDatabase[peerIp, peerUniqueId, cancellation].GetInternCryptoStreamObject = new ClassPeerCryptoStreamObject(peerIp, peerUniqueId, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKey, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKeyIv, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPublicKey, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey, cancellation);
                             result = true;
                         }
                         else
-                            result = await ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetInternCryptoStreamObject.UpdateEncryptionStream(ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKeyIv, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey, cancellation);
+                            result = await peerDatabase[peerIp, peerUniqueId, cancellation].GetInternCryptoStreamObject.UpdateEncryptionStream(peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKey, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKeyIv, peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientPublicKey, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey, cancellation);
                     }
                 }
             }
             else
             {
-                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].TryAdd(peerUniqueId, new ClassPeerObject()
+                if (peerDatabase[peerIp, cancellation].TryAdd(peerUniqueId, new ClassPeerObject()
                 {
                     PeerPort = peerPort,
                     PeerIp = peerIp,
                     PeerUniqueId = peerUniqueId
                 }))
                 {
-                    if (ClassAes.GenerateKey(ClassUtility.GetRandomWord(RandomWordKeySize).GetByteArray(true), true, out ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey))
+                    if (ClassAes.GenerateKey(ClassUtility.GetRandomWord(RandomWordKeySize).GetByteArray(true), true, out peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKey))
                     {
 
-                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKeyIv = ClassAes.GenerateIv(ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey, BlockchainSetting.PeerIvIterationCount);
-                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey = GeneratePeerPrivateKey();
-                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPublicKey = GeneratePeerPublicKeyFromPrivateKey(ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey);
-                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternTimestampKeyGenerated = currentTimestamp;
+                        peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKeyIv = ClassAes.GenerateIv(peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKey, BlockchainSetting.PeerIvIterationCount);
+                        peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey = GeneratePeerPrivateKey();
+                        peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPublicKey = GeneratePeerPublicKeyFromPrivateKey(peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey);
+                        peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternTimestampKeyGenerated = currentTimestamp;
 
-                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetInternCryptoStreamObject = new ClassPeerCryptoStreamObject(peerIp, peerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKeyIv, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey, cancellation); ;
+                        peerDatabase[peerIp, peerUniqueId, cancellation].GetInternCryptoStreamObject = new ClassPeerCryptoStreamObject(peerIp, peerUniqueId, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKey, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKeyIv, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPublicKey, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey, cancellation); ;
 
                         result = true;
                     }
@@ -121,7 +121,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="peerUniqueId"></param>
         /// <param name="sendAskPeerAuthKeysObject"></param>
         /// <param name="cancellation"></param>
-        public static async Task<bool> UpdatePeerKeysReceivedNetworkServer(string peerIp, string peerUniqueId, ClassPeerPacketSendAskPeerAuthKeys sendAskPeerAuthKeysObject, CancellationTokenSource cancellation)
+        public static async Task<bool> UpdatePeerKeysReceivedNetworkServer(ClassPeerDatabase peerDatabase, string peerIp, string peerUniqueId, ClassPeerPacketSendAskPeerAuthKeys sendAskPeerAuthKeysObject, CancellationTokenSource cancellation)
         {
             bool peerUniqueIdExist = false;
 
@@ -129,37 +129,37 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                 sendAskPeerAuthKeysObject.PublicKey.IsNullOrEmpty(false, out _))
                 return peerUniqueIdExist;
 
-            if (ClassPeerDatabase.DictionaryPeerDataObject.ContainsKey(peerIp))
+            if (await peerDatabase.ContainsIp(peerIp, cancellation))
             {
-                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].ContainsKey(peerUniqueId))
+                if (peerDatabase[peerIp, cancellation].ContainsKey(peerUniqueId))
                 {
                     peerUniqueIdExist = true;
 
 
-                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPacketEncryptionKey = sendAskPeerAuthKeysObject.AesEncryptionKey;
-                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPacketEncryptionKeyIv = sendAskPeerAuthKeysObject.AesEncryptionIv;
-                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPublicKey = sendAskPeerAuthKeysObject.PublicKey;
-                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerPort = sendAskPeerAuthKeysObject.PeerPort;
-                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerIsPublic = sendAskPeerAuthKeysObject.PeerIsPublic;
-                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerUniqueId = peerUniqueId;
-                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerNumericPublicKey = sendAskPeerAuthKeysObject.NumericPublicKey;
-                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastValidPacket = TaskManager.TaskManager.CurrentTimestampSecond;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientPacketEncryptionKey = sendAskPeerAuthKeysObject.AesEncryptionKey;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientPacketEncryptionKeyIv = sendAskPeerAuthKeysObject.AesEncryptionIv;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientPublicKey = sendAskPeerAuthKeysObject.PublicKey;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerPort = sendAskPeerAuthKeysObject.PeerPort;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerIsPublic = sendAskPeerAuthKeysObject.PeerIsPublic;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerUniqueId = peerUniqueId;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerNumericPublicKey = sendAskPeerAuthKeysObject.NumericPublicKey;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerLastValidPacket = TaskManager.TaskManager.CurrentTimestampSecond;
 
                     if (sendAskPeerAuthKeysObject.AesEncryptionKey != null && sendAskPeerAuthKeysObject.AesEncryptionIv != null)
                     {
-                        if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject == null)
-                            ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject = new ClassPeerCryptoStreamObject(peerIp, peerUniqueId, sendAskPeerAuthKeysObject.AesEncryptionKey, sendAskPeerAuthKeysObject.AesEncryptionIv, sendAskPeerAuthKeysObject.PublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey, cancellation);
+                        if (peerDatabase[peerIp, peerUniqueId, cancellation].GetClientCryptoStreamObject == null)
+                            peerDatabase[peerIp, peerUniqueId, cancellation].GetClientCryptoStreamObject = new ClassPeerCryptoStreamObject(peerIp, peerUniqueId, sendAskPeerAuthKeysObject.AesEncryptionKey, sendAskPeerAuthKeysObject.AesEncryptionIv, sendAskPeerAuthKeysObject.PublicKey, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey, cancellation);
                         else
-                            await ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject.UpdateEncryptionStream(sendAskPeerAuthKeysObject.AesEncryptionKey, sendAskPeerAuthKeysObject.AesEncryptionIv, sendAskPeerAuthKeysObject.PublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey, cancellation);
+                            await peerDatabase[peerIp, peerUniqueId, cancellation].GetClientCryptoStreamObject.UpdateEncryptionStream(sendAskPeerAuthKeysObject.AesEncryptionKey, sendAskPeerAuthKeysObject.AesEncryptionIv, sendAskPeerAuthKeysObject.PublicKey, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey, cancellation);
                     }
                 }
             }
             else
-                ClassPeerDatabase.DictionaryPeerDataObject.Add(peerIp, new ConcurrentDictionary<string, ClassPeerObject>());
+                peerDatabase.Add(peerIp, new ConcurrentDictionary<string, ClassPeerObject>());
 
             if (!peerUniqueIdExist)
             {
-                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].TryAdd(peerUniqueId, new ClassPeerObject()
+                if (peerDatabase[peerIp, cancellation].TryAdd(peerUniqueId, new ClassPeerObject()
                 {
                     PeerUniqueId = peerUniqueId,
                     PeerClientPacketEncryptionKey = sendAskPeerAuthKeysObject.AesEncryptionKey,
@@ -176,7 +176,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                     {
                         peerUniqueIdExist = true;
 
-                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject = new ClassPeerCryptoStreamObject(peerIp, peerUniqueId, sendAskPeerAuthKeysObject.AesEncryptionKey, sendAskPeerAuthKeysObject.AesEncryptionIv, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey, cancellation);
+                        peerDatabase[peerIp, peerUniqueId, cancellation].GetClientCryptoStreamObject = new ClassPeerCryptoStreamObject(peerIp, peerUniqueId, sendAskPeerAuthKeysObject.AesEncryptionKey, sendAskPeerAuthKeysObject.AesEncryptionIv, peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientPublicKey, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey, cancellation);
                     }
                 }
             }
@@ -193,7 +193,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="sendPeerAuthKeysObject"></param>
         /// <param name="cancellation"></param>
         /// <param name="peerNetworkSetting"></param>
-        public static async Task<bool> UpdatePeerKeysReceiveTaskSync(string peerIp, string peerUniqueId, ClassPeerPacketSendPeerAuthKeys sendPeerAuthKeysObject, CancellationTokenSource cancellation, ClassPeerNetworkSettingObject peerNetworkSetting)
+        public static async Task<bool> UpdatePeerKeysReceiveTaskSync(ClassPeerDatabase peerDatabase, string peerIp, string peerUniqueId, ClassPeerPacketSendPeerAuthKeys sendPeerAuthKeysObject, CancellationTokenSource cancellation, ClassPeerNetworkSettingObject peerNetworkSetting)
         {
             if (sendPeerAuthKeysObject.AesEncryptionIv == null || sendPeerAuthKeysObject.AesEncryptionKey == null ||
                 sendPeerAuthKeysObject.NumericPublicKey.IsNullOrEmpty(false, out _) || sendPeerAuthKeysObject.PublicKey.IsNullOrEmpty(false, out _))
@@ -203,39 +203,39 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
 
 
             bool result = true;
-            if (ClassPeerDatabase.DictionaryPeerDataObject.ContainsKey(peerIp))
+            if (await peerDatabase.ContainsIp(peerIp,cancellation))
             {
-                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].ContainsKey(peerUniqueId))
+                if (peerDatabase[peerIp, cancellation].ContainsKey(peerUniqueId))
                 {
                     peerUniqueIdExist = true;
 
 
 
-                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPacketEncryptionKey = sendPeerAuthKeysObject.AesEncryptionKey;
-                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPacketEncryptionKeyIv = sendPeerAuthKeysObject.AesEncryptionIv;
-                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPublicKey = sendPeerAuthKeysObject.PublicKey;
-                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerIp = peerIp;
-                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerUniqueId = peerUniqueId;
-                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerPort = sendPeerAuthKeysObject.PeerPort;
-                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerNumericPublicKey = sendPeerAuthKeysObject.NumericPublicKey;
-                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastValidPacket = TaskManager.TaskManager.CurrentTimestampSecond;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientPacketEncryptionKey = sendPeerAuthKeysObject.AesEncryptionKey;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientPacketEncryptionKeyIv = sendPeerAuthKeysObject.AesEncryptionIv;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientPublicKey = sendPeerAuthKeysObject.PublicKey;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerIp = peerIp;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerUniqueId = peerUniqueId;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerPort = sendPeerAuthKeysObject.PeerPort;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerNumericPublicKey = sendPeerAuthKeysObject.NumericPublicKey;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerLastValidPacket = TaskManager.TaskManager.CurrentTimestampSecond;
 
                     if (sendPeerAuthKeysObject.AesEncryptionKey != null && sendPeerAuthKeysObject.AesEncryptionIv != null)
                     {
-                        if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject == null)
-                            ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject = new ClassPeerCryptoStreamObject(peerIp, peerUniqueId, sendPeerAuthKeysObject.AesEncryptionKey, sendPeerAuthKeysObject.AesEncryptionIv, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey, cancellation);
+                        if (peerDatabase[peerIp, peerUniqueId, cancellation].GetClientCryptoStreamObject == null)
+                            peerDatabase[peerIp, peerUniqueId, cancellation].GetClientCryptoStreamObject = new ClassPeerCryptoStreamObject(peerIp, peerUniqueId, sendPeerAuthKeysObject.AesEncryptionKey, sendPeerAuthKeysObject.AesEncryptionIv, peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientPublicKey, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey, cancellation);
                         else
-                            result = await ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject.UpdateEncryptionStream(sendPeerAuthKeysObject.AesEncryptionKey, sendPeerAuthKeysObject.AesEncryptionIv, sendPeerAuthKeysObject.PublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey, cancellation);
+                            result = await peerDatabase[peerIp, peerUniqueId, cancellation].GetClientCryptoStreamObject.UpdateEncryptionStream(sendPeerAuthKeysObject.AesEncryptionKey, sendPeerAuthKeysObject.AesEncryptionIv, sendPeerAuthKeysObject.PublicKey, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey, cancellation);
                     }
 
                 }
             }
             else
-                ClassPeerDatabase.DictionaryPeerDataObject.Add(peerIp, new ConcurrentDictionary<string, ClassPeerObject>());
+                peerDatabase.Add(peerIp, new ConcurrentDictionary<string, ClassPeerObject>());
 
             if (!peerUniqueIdExist)
             {
-                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].TryAdd(peerUniqueId, new ClassPeerObject
+                if (peerDatabase[peerIp, cancellation].TryAdd(peerUniqueId, new ClassPeerObject
                 {
                     PeerClientPacketEncryptionKey = sendPeerAuthKeysObject.AesEncryptionKey,
                     PeerClientPacketEncryptionKeyIv = sendPeerAuthKeysObject.AesEncryptionIv,
@@ -250,8 +250,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
 
                     if (sendPeerAuthKeysObject.AesEncryptionKey != null &&
                         sendPeerAuthKeysObject.AesEncryptionIv != null &&
-                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject != null)
-                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject = new ClassPeerCryptoStreamObject(peerIp, peerUniqueId, sendPeerAuthKeysObject.AesEncryptionKey, sendPeerAuthKeysObject.AesEncryptionIv, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey, cancellation);
+                        peerDatabase[peerIp, peerUniqueId, cancellation].GetClientCryptoStreamObject != null)
+                        peerDatabase[peerIp, peerUniqueId, cancellation].GetClientCryptoStreamObject = new ClassPeerCryptoStreamObject(peerIp, peerUniqueId, sendPeerAuthKeysObject.AesEncryptionKey, sendPeerAuthKeysObject.AesEncryptionIv, peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientPublicKey, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey, cancellation);
                 }
             }
 
