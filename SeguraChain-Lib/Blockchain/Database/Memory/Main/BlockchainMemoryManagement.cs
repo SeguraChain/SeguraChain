@@ -4334,38 +4334,24 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             }
 
 
-                            ClassBlockObject getBlockObject = null;
-                            bool semaphoreUsed = false;
-
-                            try
+                            ClassBlockObject getBlockObject = await GetBlockMemoryDataFromCacheByKey(blockHeight, false, false, cancellation);
+                            if (blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight)
                             {
-                                semaphoreUsed = await _semaphoreSlimMemoryAccess.TryWaitAsync(cancellation);
-
-                                if (semaphoreUsed)
+                                // In this case, we retrieve the element of the active memory.
+                                if (_dictionaryBlockObjectMemory[blockHeight].Content != null)
                                 {
-                                    getBlockObject = await GetBlockMemoryDataFromCacheByKey(blockHeight, false, false, cancellation);
-                                    if (blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight)
-                                    {
-                                        // In this case, we retrieve the element of the active memory.
-                                        if (_dictionaryBlockObjectMemory[blockHeight].Content != null)
-                                        {
-                                            _dictionaryBlockObjectMemory[blockHeight].ObjectCacheType = CacheBlockMemoryEnumState.IN_ACTIVE_MEMORY;
+                                    _dictionaryBlockObjectMemory[blockHeight].ObjectCacheType = CacheBlockMemoryEnumState.IN_ACTIVE_MEMORY;
 
-                                            getBlockObject = _dictionaryBlockObjectMemory[blockHeight].Content;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (getBlockObject != null)
-                                            await Add(getBlockObject.BlockHeight, null, CacheBlockMemoryInsertEnumType.INSERT_IN_PERSISTENT_CACHE_OBJECT, cancellation);
-                                    }
+                                    getBlockObject = _dictionaryBlockObjectMemory[blockHeight].Content;
                                 }
                             }
-                            finally
+                            else
                             {
-                                if (semaphoreUsed)
-                                    _semaphoreSlimMemoryAccess.Release();
+                                if (getBlockObject != null)
+                                    await Add(getBlockObject.BlockHeight, null, CacheBlockMemoryInsertEnumType.INSERT_IN_PERSISTENT_CACHE_OBJECT, cancellation);
                             }
+
+
                             return getBlockObject;
                         }
                     }
