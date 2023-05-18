@@ -966,7 +966,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
             {
                 long totalMemoryUsagePendingCalculation = 0;
 
-                using (DisposableList<string> listIoBlockFile = new DisposableList<string>(false, 0, _dictionaryCacheIoIndexObject.Keys.ToList()))
+                using (DisposableList<string> listIoBlockFile = new DisposableList<string>(false, 0,_dictionaryCacheIoIndexObject.Keys.ToList()))
                 {
                     foreach (string ioFileName in listIoBlockFile.GetList)
                     {

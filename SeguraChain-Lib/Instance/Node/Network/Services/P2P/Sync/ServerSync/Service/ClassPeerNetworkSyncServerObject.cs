@@ -8,7 +8,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using SeguraChain_Lib.Instance.Node.Network.Database;
 using SeguraChain_Lib.Instance.Node.Network.Services.Firewall.Manager;
 using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Client;
 using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Object;
@@ -30,7 +29,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
         public string PeerIpOpenNatServer;
         private ClassPeerNetworkSettingObject _peerNetworkSettingObject;
         private ClassPeerFirewallSettingObject _firewallSettingObject;
-        private ClassPeerDatabase _peerDatabase;
 
         #region Dispose functions
 
@@ -67,15 +65,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
         /// <param name="peerIpOpenNatServer">The Public IP of the node, permit to ignore it on sync.</param>
         /// <param name="peerNetworkSettingObject">The network setting object.</param>
         /// <param name="firewallSettingObject">The firewall setting object.</param>
-        public ClassPeerNetworkSyncServerObject(string peerIpOpenNatServer, 
-            ClassPeerNetworkSettingObject peerNetworkSettingObject,
-            ClassPeerFirewallSettingObject firewallSettingObject,
-            ClassPeerDatabase peerDatabase)
+        public ClassPeerNetworkSyncServerObject(string peerIpOpenNatServer, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject firewallSettingObject)
         {
             PeerIpOpenNatServer = peerIpOpenNatServer;
             _peerNetworkSettingObject = peerNetworkSettingObject;
             _firewallSettingObject = firewallSettingObject;
-            _peerDatabase = peerDatabase;
         }
 
         #region Peer Server management functions.
@@ -236,13 +230,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                         return ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION;
 
                     if (!_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryAdd(randomId,
-                        new ClassPeerNetworkClientServerObject(clientPeerTcp, 
-                        _cancellationTokenSourcePeerServer, 
-                        clientIp, 
-                        peerIpOpenNatServer, 
-                        _peerNetworkSettingObject,
-                        _firewallSettingObject,
-                        _peerDatabase)))
+                        new ClassPeerNetworkClientServerObject(clientPeerTcp, _cancellationTokenSourcePeerServer, clientIp, peerIpOpenNatServer, _peerNetworkSettingObject, _firewallSettingObject)))
                         return ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION;
 
 
