@@ -10,7 +10,6 @@ using SeguraChain_Lib.Blockchain.Mining.Function;
 using SeguraChain_Lib.Blockchain.Mining.Object;
 using SeguraChain_Lib.Blockchain.Setting;
 using SeguraChain_Lib.Blockchain.Stats.Function;
-using SeguraChain_Lib.Instance.Node.Network.Database;
 using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast;
 using SeguraChain_Lib.Instance.Node.Setting.Object;
 using SeguraChain_Lib.Log;
@@ -274,7 +273,7 @@ namespace SeguraChain_Peer.Mining.Instance
         /// <summary>
         /// Start the mining process.
         /// </summary>
-        public void StartMining(ClassPeerDatabase peerDatabase)
+        public void StartMining()
         {
             if (GetMiningStatus)
                 StopMining();
@@ -286,7 +285,7 @@ namespace SeguraChain_Peer.Mining.Instance
             UpdateMiningHashrate();
 
             for (int i = 0; i < _totalThreads; i++)
-                RunMiningTask(i, peerDatabase);
+                RunMiningTask(i);
             
         }
 
@@ -444,7 +443,7 @@ namespace SeguraChain_Peer.Mining.Instance
         /// Run a mining task.
         /// </summary>
         /// <param name="idThread"></param>
-        private void RunMiningTask(int idThread, ClassPeerDatabase peerDatabase)
+        private void RunMiningTask(int idThread)
         {
             try
             {
@@ -509,18 +508,18 @@ namespace SeguraChain_Peer.Mining.Instance
                                         // Submit the share if this one reach the difficulty of the block or if this one is higher.
                                         if (pocShareObject.PoWaCShareDifficulty >= _currentBlockDifficulty)
                                         {
-                                            ClassBlockEnumMiningShareVoteStatus unlockResult = await ClassBlockchainDatabase.UnlockCurrentBlockAsync(_currentBlockHeight, pocShareObject, false, _apiServerIp, _apiServerOpenNatIp, false, false, _peerNetworkSettingObject, _peerFirewallSettingObject, peerDatabase, _cancellationTokenMiningTasks);
+                                            ClassBlockEnumMiningShareVoteStatus unlockResult = await ClassBlockchainDatabase.UnlockCurrentBlockAsync(_currentBlockHeight, pocShareObject, false, _apiServerIp, _apiServerOpenNatIp, false, false, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenMiningTasks);
                                          
                                             switch (unlockResult)
                                             {
                                                 case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED:
                                                     _totalUnlockShare[idThread]++;
-                                                    ClassPeerNetworkBroadcastFunction.BroadcastMiningShareAsync(peerDatabase, _apiServerIp, _apiServerOpenNatIp, string.Empty, pocShareObject, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                                                    ClassPeerNetworkBroadcastFunction.BroadcastMiningShareAsync(_apiServerIp, _apiServerOpenNatIp, string.Empty, pocShareObject, _peerNetworkSettingObject, _peerFirewallSettingObject);
                                                     break;
                                                 case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_NOCONSENSUS:
                                                 case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND:
                                                     _totalAlreadyShare[idThread]++;
-                                                    ClassPeerNetworkBroadcastFunction .BroadcastMiningShareAsync(peerDatabase, _apiServerIp, _apiServerOpenNatIp, string.Empty, pocShareObject, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                                                    ClassPeerNetworkBroadcastFunction .BroadcastMiningShareAsync(_apiServerIp, _apiServerOpenNatIp, string.Empty, pocShareObject, _peerNetworkSettingObject, _peerFirewallSettingObject);
                                                     break;
                                                 case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_REFUSED:
                                                     _totalRefusedShare[idThread]++;

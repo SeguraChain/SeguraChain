@@ -36,7 +36,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
         private Dictionary<string, Dictionary<string, ClassPeerNetworkClientBroadcastMemPool>> _listPeerNetworkClientBroadcastMemPoolSender; // Peer IP | [Peer Unique ID | Client broadcast object]
         private ClassPeerNetworkSettingObject _peerNetworkSettingObject;
         private ClassPeerFirewallSettingObject _peerFirewallSettingObject;
-        private ClassPeerDatabase _peerDatabase;
         private CancellationTokenSource _cancellation;
         private string _peerOpenNatIp;
         private bool _peerNetworkBroadcastInstanceMemPoolStatus;
@@ -44,14 +43,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
         /// <summary>
         /// Constructor.
         /// </summary>
-        public ClassPeerNetworkBroadcastInstanceMemPool(ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject, string peerOpenNatIp, ClassPeerDatabase peerDatabase)
+        public ClassPeerNetworkBroadcastInstanceMemPool(ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject, string peerOpenNatIp)
         {
             _listPeerNetworkClientBroadcastMemPoolReceiver = new Dictionary<string, Dictionary<string, ClassPeerNetworkClientBroadcastMemPool>>();
             _listPeerNetworkClientBroadcastMemPoolSender = new Dictionary<string, Dictionary<string, ClassPeerNetworkClientBroadcastMemPool>>();
             _peerNetworkSettingObject = peerNetworkSettingObject;
             _peerFirewallSettingObject = peerFirewallSettingObject;
             _peerOpenNatIp = peerOpenNatIp;
-            _peerDatabase = peerDatabase;
         }
 
         /// <summary>
@@ -70,16 +68,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 {
                     #region Generate sender/receiver broadcast instances by targetting public peers.
 
-                    if (_peerDatabase.Count > 0)
+                    if (ClassPeerDatabase.DictionaryPeerDataObject.Count > 0)
                     {
-                        foreach (string peerIpTarget in _peerDatabase.Keys.ToArray())
+                        foreach (string peerIpTarget in ClassPeerDatabase.DictionaryPeerDataObject.Keys.ToArray())
                         {
 
                             if (peerIpTarget.IsNullOrEmpty(false, out _))
                                 continue;
 
 
-                            ConcurrentDictionary<string, ClassPeerObject> peerObject = await _peerDatabase.GetPeerCollectionObject(peerIpTarget, _cancellation);
+                            ConcurrentDictionary<string, ClassPeerObject> peerObject = ClassPeerDatabase.GetPeerCollectionObject(peerIpTarget);
 
                             if (peerObject == null)
                                 continue;
@@ -96,7 +94,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                 {
                                     if (!peerUniqueIdTarget.IsNullOrEmpty(false, out _))
                                     {
-                                        if (await ClassPeerCheckManager.CheckPeerClientStatus(_peerDatabase, peerIpTarget, peerUniqueIdTarget, false, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellation))
+                                        if (ClassPeerCheckManager.CheckPeerClientStatus(peerIpTarget, peerUniqueIdTarget, false, _peerNetworkSettingObject, _peerFirewallSettingObject))
                                         {
                                             if (peerObject[peerUniqueIdTarget].PeerIsPublic)
                                             {
@@ -114,8 +112,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                                                                                                            peerPortTarget,
                                                                                                                                            false,
                                                                                                                                            _peerNetworkSettingObject,
-                                                                                                                                           _peerFirewallSettingObject,
-                                                                                                                                           _peerDatabase));
+                                                                                                                                           _peerFirewallSettingObject));
                                                     if (!await RunPeerNetworkClientBroadcastMemPool(peerIpTarget, peerUniqueIdTarget, false))
                                                     {
                                                         _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].StopTaskAndDisconnect();
@@ -138,8 +135,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                                                                                                                peerPortTarget,
                                                                                                                                                true,
                                                                                                                                                _peerNetworkSettingObject,
-                                                                                                                                               _peerFirewallSettingObject,
-                                                                                                                                               _peerDatabase));
+                                                                                                                                               _peerFirewallSettingObject));
 
                                                         if (!await RunPeerNetworkClientBroadcastMemPool(peerIpTarget, peerUniqueIdTarget, true))
                                                         {
@@ -399,7 +395,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             private int _peerPortTarget;
             private ClassPeerNetworkSettingObject _peerNetworkSettingObject;
             private ClassPeerFirewallSettingObject _peerFirewallSettingObject;
-            private ClassPeerDatabase _peerDatabase;
             private CancellationTokenSource _peerCancellationToken;
             private CancellationTokenSource _peerCheckConnectionCancellationToken;
             private CancellationTokenSource _peerDoConnectionCancellationToken;
@@ -415,7 +410,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             /// <param name="peerPortTarget"></param>
             /// <param name="peerNetworkSettingObject"></param>
             /// <param name="peerFirewallSettingObject"></param>
-            public ClassPeerNetworkClientBroadcastMemPool(string peerIpTarget, string peerUniqueIdTarget, int peerPortTarget, bool onSendBroadcastMode, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject, ClassPeerDatabase peerDatabase)
+            public ClassPeerNetworkClientBroadcastMemPool(string peerIpTarget, string peerUniqueIdTarget, int peerPortTarget, bool onSendBroadcastMode, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject)
             {
                 _peerIpTarget = peerIpTarget;
                 _peerUniqueIdTarget = peerUniqueIdTarget;
@@ -423,7 +418,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 _onSendBroadcastMode = onSendBroadcastMode;
                 _peerNetworkSettingObject = peerNetworkSettingObject;
                 _peerFirewallSettingObject = peerFirewallSettingObject;
-                _peerDatabase = peerDatabase;
                 _memPoolListBlockHeightTransactionReceived = new Dictionary<long, HashSet<string>>();
                 _memPoolListBlockHeightTransactionSend = new Dictionary<long, HashSet<string>>();
             }
@@ -547,7 +541,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             /// <returns></returns>
             public async Task<bool> TryAskBroadcastMode()
             {
-                var peerObject = await _peerDatabase.GetPeerObject(_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken);
+                var peerObject = ClassPeerDatabase.GetPeerObject(_peerIpTarget, _peerUniqueIdTarget);
 
                 if (peerObject == null)
                     return false;
@@ -634,7 +628,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                             break;
                                         }
 
-                                        _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, cancellationReceiveBroadcastResponsePacket].PeerTimestampSignatureWhitelist = peerPacketRecvObject.PeerLastTimestampSignatureWhitelist;
+                                        ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerTimestampSignatureWhitelist = peerPacketRecvObject.PeerLastTimestampSignatureWhitelist;
 
                                         broadcastResponsePacketStatus = true;
 
@@ -751,8 +745,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         try
                         {
                             ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId,
-                                _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken].PeerInternPublicKey,
-                                _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerInternPublicKey,
+                                ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerClientLastTimestampPeerPacketSignatureWhitelist)
                             {
                                 PacketOrder = ClassPeerEnumPacketSend.ASK_KEEP_ALIVE,
                                 PacketContent = ClassUtility.SerializeData(new ClassPeerPacketAskKeepAlive()
@@ -807,8 +801,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                             #region First ask the mem pool block height list and their transaction counts.
 
                             ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId,
-                                _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken].PeerInternPublicKey,
-                                _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerInternPublicKey,
+                                ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerClientLastTimestampPeerPacketSignatureWhitelist)
                             {
                                 PacketOrder = ClassPeerEnumPacketSend.ASK_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE,
                                 PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskMemPoolBlockHeightList()
@@ -817,9 +811,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                 }),
                             };
 
-                            packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(
-                                _peerDatabase,
-                                packetSendObject, _peerIpTarget, _peerUniqueIdTarget, true, _peerNetworkSettingObject, _peerCancellationToken);
+                            packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(packetSendObject, _peerIpTarget, _peerUniqueIdTarget, true, _peerNetworkSettingObject, _peerCancellationToken);
 
                             if (!await TrySendPacketToPeer(packetSendObject.GetPacketData()))
                             {
@@ -885,8 +877,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                 // Ensure to be compatible with most recent transactions sent.
 
                                                 packetSendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId,
-                                                    _peerDatabase[_peerIpTarget,_peerUniqueIdTarget, _peerCancellationToken].PeerInternPublicKey,
-                                                    _peerDatabase[_peerIpTarget,_peerUniqueIdTarget, _peerCancellationToken].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                    ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerInternPublicKey,
+                                                    ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                 {
                                                     PacketOrder = ClassPeerEnumPacketSend.ASK_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE,
                                                     PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskMemPoolTransactionList()
@@ -897,14 +889,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                     }),
                                                 };
 
-                                                packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(
-                                                    _peerDatabase,
-                                                    packetSendObject, 
-                                                    _peerIpTarget, 
-                                                    _peerUniqueIdTarget, 
-                                                    true, 
-                                                    _peerNetworkSettingObject,
-                                                    _peerCancellationToken);
+                                                packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction .BuildSignedPeerSendPacketObject(packetSendObject, _peerIpTarget, _peerUniqueIdTarget, true, _peerNetworkSettingObject, _peerCancellationToken);
 
                                                 if (!await TrySendPacketToPeer(packetSendObject.GetPacketData()))
                                                 {
@@ -980,7 +965,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                                             using (DisposableList<ClassTransactionObject> listTransactionObjectToSend = await ClassMemPoolDatabase.GetMemPoolTxObjectFromBlockHeight(blockHeight, true, _peerCancellationToken))
                                             {
-                                                ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId, _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken].PeerInternPublicKey, _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                 {
                                                     PacketOrder = ClassPeerEnumPacketSend.ASK_MEM_POOL_TRANSACTION_VOTE,
                                                     PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskMemPoolTransactionVote()
@@ -990,7 +975,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                     })
                                                 };
 
-                                                packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(_peerDatabase, packetSendObject, _peerIpTarget, _peerUniqueIdTarget, true, _peerNetworkSettingObject, _peerCancellationToken);
+                                                packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(packetSendObject, _peerIpTarget, _peerUniqueIdTarget, true, _peerNetworkSettingObject, _peerCancellationToken);
 
                                                 if (!await TrySendPacketToPeer(packetSendObject.GetPacketData()))
                                                 {
@@ -1150,7 +1135,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                             if (peerPacketRecvObject.PacketOrder != ClassPeerEnumPacketResponse.SEND_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE)
                                                 failed = true;
 
-                                            _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, cancellationReceiveBlockListPacket].PeerTimestampSignatureWhitelist = peerPacketRecvObject.PeerLastTimestampSignatureWhitelist;
+                                            ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerTimestampSignatureWhitelist = peerPacketRecvObject.PeerLastTimestampSignatureWhitelist;
                                         }
 
 
@@ -1274,7 +1259,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                             if (peerPacketRecvObject.PacketOrder == ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE ||
                                                             peerPacketRecvObject.PacketOrder == ClassPeerEnumPacketResponse.SEND_MEM_POOL_END_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE)
                                                             {
-                                                                _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, cancellationReceiveTransactionPacket].PeerTimestampSignatureWhitelist = peerPacketRecvObject.PeerLastTimestampSignatureWhitelist;
+                                                                ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerTimestampSignatureWhitelist = peerPacketRecvObject.PeerLastTimestampSignatureWhitelist;
 
                                                                 // Receive transaction.
                                                                 if (peerPacketRecvObject.PacketOrder == ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE)
@@ -1331,8 +1316,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                                                                         // Send the confirmation of receive.
                                                                         if (!await TrySendPacketToPeer(new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId,
-                                                                        _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, cancellationReceiveTransactionPacket].PeerInternPublicKey,
-                                                                        _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, cancellationReceiveTransactionPacket].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                                        ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerInternPublicKey,
+                                                                        ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                                         {
                                                                             PacketOrder = ClassPeerEnumPacketSend.ASK_MEM_POOL_TRANSACTION_BROADCAST_CONFIRMATION_RECEIVED,
                                                                             PacketContent = ClassUtility.SerializeData(new ClassPeerPacketAskMemPoolTransactionBroadcastConfirmationReceived()
@@ -1517,7 +1502,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                                                         if (packetTranslated.Status)
                                                         {
-                                                            _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, cancellationReceiveMemPoolTransactionVote].PeerTimestampSignatureWhitelist = peerPacketRecvObject.PeerLastTimestampSignatureWhitelist;
+                                                            ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerTimestampSignatureWhitelist = peerPacketRecvObject.PeerLastTimestampSignatureWhitelist;
 
                                                             listTransactionStatus.GetList = packetTranslated.PacketTranslated.ListTransactionHashResult;
 
@@ -1595,6 +1580,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 return await _peerSocketClient.TrySendSplittedPacket((Convert.ToBase64String(packetData) + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray(), _peerCancellationToken, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
             }
 
+
+
             /// <summary>
             /// Translate the packet received.
             /// </summary>
@@ -1610,18 +1597,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 {
                     if (!peerPacketRecvObject.PacketContent.IsNullOrEmpty(false, out _))
                     {
-                        bool peerIgnorePacketSignature = await ClassPeerCheckManager.CheckPeerClientWhitelistStatus(_peerDatabase, _peerIpTarget, _peerUniqueIdTarget, _peerNetworkSettingObject, cancellation);
+                        bool peerIgnorePacketSignature = ClassPeerCheckManager.CheckPeerClientWhitelistStatus(_peerIpTarget, _peerUniqueIdTarget, _peerNetworkSettingObject);
 
                         if (!peerIgnorePacketSignature)
-                            peerIgnorePacketSignature = _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, cancellation].PeerTimestampSignatureWhitelist >= TaskManager.TaskManager.CurrentTimestampSecond;
+                            peerIgnorePacketSignature = ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerTimestampSignatureWhitelist >= TaskManager.TaskManager.CurrentTimestampSecond;
 
                         bool packetSignatureStatus = true;
 
                         if (!peerIgnorePacketSignature)
                         {
-                            packetSignatureStatus = await CheckPacketSignature(
-                                                            _peerDatabase,
-                                                            _peerIpTarget,
+                            packetSignatureStatus = await CheckPacketSignature(_peerIpTarget,
                                                             _peerUniqueIdTarget,
                                                             _peerNetworkSettingObject,
                                                             peerPacketRecvObject.PacketContent,
@@ -1633,7 +1618,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                         if (packetSignatureStatus)
                         {
-                            if (TryDecryptPacketPeerContent(_peerDatabase, _peerIpTarget, _peerUniqueIdTarget, peerPacketRecvObject.PacketContent, _peerCheckConnectionCancellationToken, out byte[] packetDecrypted))
+                            if (TryDecryptPacketPeerContent(_peerIpTarget, _peerUniqueIdTarget, peerPacketRecvObject.PacketContent, _peerCheckConnectionCancellationToken, out byte[] packetDecrypted))
                             {
                                 if (packetDecrypted != null)
                                 {

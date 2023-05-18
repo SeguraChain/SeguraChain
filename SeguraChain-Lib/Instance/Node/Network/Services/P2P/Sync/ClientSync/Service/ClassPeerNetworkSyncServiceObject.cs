@@ -49,7 +49,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         /// </summary>
         private ClassPeerNetworkSettingObject _peerNetworkSettingObject;
         private ClassPeerFirewallSettingObject _peerFirewallSettingObject;
-        private ClassPeerDatabase _peerDatabase;
         public string PeerOpenNatServerIp;
 
         /// <summary>
@@ -73,16 +72,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         /// <param name="peerOpenNatServerIp"></param>
         /// <param name="peerNetworkSettingObject"></param>
         /// <param name="peerFirewallSettingObject"></param>
-        public ClassPeerNetworkSyncServiceObject(string peerOpenNatServerIp,
-            ClassPeerNetworkSettingObject peerNetworkSettingObject,
-            ClassPeerFirewallSettingObject peerFirewallSettingObject,
-            ClassPeerDatabase peerDatabase)
+        public ClassPeerNetworkSyncServiceObject(string peerOpenNatServerIp, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject)
         {
             PeerOpenNatServerIp = peerOpenNatServerIp;
             _peerNetworkSettingObject = peerNetworkSettingObject;
             _peerFirewallSettingObject = peerFirewallSettingObject;
             _listPeerNetworkInformationStats = new ConcurrentDictionary<string, Dictionary<string, ClassPeerPacketSendNetworkInformation>>();
-            _peerDatabase = peerDatabase;
         }
 
         #region Dispose functions
@@ -195,7 +190,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         /// <returns></returns>
         private async Task StartContactDefaultPeerList()
         {
-            if (_peerDatabase.Count == 0)
+            if (ClassPeerDatabase.DictionaryPeerDataObject.Count == 0)
                 ClassLog.WriteLine("The peer don't have any public peer listed. Contact default peer list to get a new peer list..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
 
             foreach (string peerIp in BlockchainSetting.BlockchainStaticPeerList.Keys)
@@ -206,16 +201,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     {
                         int peerPort = BlockchainSetting.BlockchainStaticPeerList[peerIp][peerUniqueId];
 
-                        if (!await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(peerIp, peerPort, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, _peerDatabase), _cancellationTokenServiceSync, true))
+                        if (!await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(peerIp, peerPort, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject), _cancellationTokenServiceSync, true))
                             ClassLog.WriteLine("Can't send auth keys to default peer: " + peerIp + ":" + peerPort + " | Peer Unique ID: " + peerUniqueId, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                         else
                         {
-                            if (await _peerDatabase.ContainsIp(peerIp, _cancellationTokenServiceSync))
+                            if (ClassPeerDatabase.DictionaryPeerDataObject.ContainsKey(peerIp))
                             {
-                                if (_peerDatabase[peerIp, _cancellationTokenServiceSync].ContainsKey(peerUniqueId))
+                                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].ContainsKey(peerUniqueId))
                                 {
-                                    if (_peerDatabase[peerIp, peerUniqueId, _cancellationTokenServiceSync].PeerIsPublic)
-                                        await ClassPeerCheckManager.InputPeerClientValidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _cancellationTokenServiceSync);
+                                    if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerIsPublic)
+                                        ClassPeerCheckManager.InputPeerClientValidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject);
                                 }
                             }
                         }
@@ -232,7 +227,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         {
             int totalInitializedSuccessfully = 0;
 
-            using (DisposableList<string> peerList = new DisposableList<string>(false, 0, _peerDatabase.Keys.ToList()))
+            using (DisposableList<string> peerList = new DisposableList<string>(false, 0, ClassPeerDatabase.DictionaryPeerDataObject.Keys.ToList()))
             {
                 using (DisposableList<Tuple<string, string>> peerListToInitialize = new DisposableList<Tuple<string, string>>()) // Peer IP | Peer unique id.
                 {
@@ -241,19 +236,19 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     {
 
 
-                        foreach (string peerUniqueId in _peerDatabase[peerIp, _cancellationTokenServiceSync].Keys.ToArray())
+                        foreach (string peerUniqueId in ClassPeerDatabase.DictionaryPeerDataObject[peerIp].Keys.ToArray())
                         {
-                            if (!_peerDatabase[peerIp, peerUniqueId, _cancellationTokenServiceSync].PeerIsPublic)
+                            if (!ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerIsPublic)
                                 continue;
 
-                            if (!await ClassPeerCheckManager.CheckPeerClientStatus(_peerDatabase, peerIp, peerUniqueId, false, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenServiceSync))
+                            if (!ClassPeerCheckManager.CheckPeerClientStatus(peerIp, peerUniqueId, false, _peerNetworkSettingObject, _peerFirewallSettingObject))
                             {
-                                if (_peerDatabase[peerIp, peerUniqueId, _cancellationTokenServiceSync].PeerStatus == ClassPeerEnumStatus.PEER_BANNED && _peerDatabase[peerIp, peerUniqueId, _cancellationTokenServiceSync].PeerBanDate + _peerNetworkSettingObject.PeerBanDelay < TaskManager.TaskManager.CurrentTimestampSecond)
+                                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus == ClassPeerEnumStatus.PEER_BANNED && ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerBanDate + _peerNetworkSettingObject.PeerBanDelay < TaskManager.TaskManager.CurrentTimestampSecond)
                                     peerListToInitialize.Add(new Tuple<string, string>(peerIp, peerUniqueId));
-                                else if (_peerDatabase[peerIp, peerUniqueId, _cancellationTokenServiceSync].PeerStatus == ClassPeerEnumStatus.PEER_DEAD && _peerDatabase[peerIp, peerUniqueId, _cancellationTokenServiceSync].PeerBanDate + _peerNetworkSettingObject.PeerDeadDelay < TaskManager.TaskManager.CurrentTimestampSecond)
+                                else if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus == ClassPeerEnumStatus.PEER_DEAD && ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerBanDate + _peerNetworkSettingObject.PeerDeadDelay < TaskManager.TaskManager.CurrentTimestampSecond)
                                     peerListToInitialize.Add(new Tuple<string, string>(peerIp, peerUniqueId));
                             }
-                            else if (!await ClassPeerCheckManager.CheckPeerClientInitializationStatus(_peerDatabase, peerIp, peerUniqueId, _cancellationTokenServiceSync))
+                            else if (!ClassPeerCheckManager.CheckPeerClientInitializationStatus(peerIp, peerUniqueId))
                                 peerListToInitialize.Add(new Tuple<string, string>(peerIp, peerUniqueId));
 
                         }
@@ -279,27 +274,26 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                     try
                                     {
 
-                                        int peerPort = await _peerDatabase.GetPeerPort(copyPeer.Item1, copyPeer.Item2, _cancellationTokenServiceSync);
+                                        int peerPort = ClassPeerDatabase.GetPeerPort(copyPeer.Item1, copyPeer.Item2);
 
-                                        CancellationTokenSource cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource(_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000).Token);
-                                        if (await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(copyPeer.Item1, peerPort, copyPeer.Item2, _peerNetworkSettingObject, _peerFirewallSettingObject, _peerDatabase), cancellation, true))
+                                        if (await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(copyPeer.Item1, peerPort, copyPeer.Item2, _peerNetworkSettingObject, _peerFirewallSettingObject), CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource(_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000).Token), true))
                                         {
                                             totalInitializedSuccessfully++;
-                                            await ClassPeerCheckManager.CleanPeerState(_peerDatabase, copyPeer.Item1, copyPeer.Item2, true, cancellation);
-                                            await ClassPeerCheckManager.InputPeerClientValidPacket(_peerDatabase, copyPeer.Item1, copyPeer.Item2, _peerNetworkSettingObject, cancellation);
+                                            ClassPeerCheckManager.CleanPeerState(copyPeer.Item1, copyPeer.Item2, true);
+                                            ClassPeerCheckManager.InputPeerClientValidPacket(copyPeer.Item1, copyPeer.Item2, _peerNetworkSettingObject);
                                         }
                                         else
                                         {
                                             ClassLog.WriteLine("Peer to initialize " + copyPeer.Item1 + " is completly dead after asking auth keys, remove it from peer list registered.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
-                                            if (await _peerDatabase.ContainsIp(copyPeer.Item1, cancellation))
+                                            if (ClassPeerDatabase.DictionaryPeerDataObject.ContainsKey(copyPeer.Item1))
                                             {
-                                                if (_peerDatabase[copyPeer.Item1, cancellation].ContainsKey(copyPeer.Item2))
+                                                if (ClassPeerDatabase.DictionaryPeerDataObject[copyPeer.Item1].ContainsKey(copyPeer.Item2))
                                                 {
-                                                    if (_peerDatabase[copyPeer.Item1, cancellation].TryRemove(copyPeer.Item2, out _))
+                                                    if (ClassPeerDatabase.DictionaryPeerDataObject[copyPeer.Item1].TryRemove(copyPeer.Item2, out _))
                                                     {
                                                         totalPeerRemoved++;
-                                                        if (_peerDatabase[copyPeer.Item1, cancellation].Count == 0)
-                                                            await _peerDatabase.Remove(copyPeer.Item1, cancellation);
+                                                        if (ClassPeerDatabase.DictionaryPeerDataObject[copyPeer.Item1].Count == 0)
+                                                            ClassPeerDatabase.DictionaryPeerDataObject.Remove(copyPeer.Item1);
                                                     }
                                                 }
                                             }
@@ -344,20 +338,20 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
             using (DisposableList<Tuple<string, string>> peerListToCheck = new DisposableList<Tuple<string, string>>()) // Peer IP | Peer unique id.
             {
-                foreach (var peerIp in _peerDatabase.Keys.ToArray())
+                foreach (var peer in ClassPeerDatabase.DictionaryPeerDataObject.Keys.ToArray())
                 {
-                    if (await _peerDatabase.ContainsIp(peerIp, _cancellationTokenServiceSync))
+                    if (ClassPeerDatabase.DictionaryPeerDataObject.ContainsKey(peer))
                     {
-                        if (_peerDatabase[peerIp, _cancellationTokenServiceSync].Count > 0)
+                        if (ClassPeerDatabase.DictionaryPeerDataObject[peer].Count > 0)
                         {
-                            foreach (string peerUniqueId in _peerDatabase[peerIp, _cancellationTokenServiceSync].Keys.ToArray())
+                            foreach (string peerUniqueId in ClassPeerDatabase.DictionaryPeerDataObject[peer].Keys.ToArray())
                             {
-                                if (_peerDatabase[peerIp, peerUniqueId, _cancellationTokenServiceSync].PeerIsPublic)
+                                if (ClassPeerDatabase.DictionaryPeerDataObject[peer][peerUniqueId].PeerIsPublic)
                                 {
-                                    if (_peerDatabase[peerIp, peerUniqueId, _cancellationTokenServiceSync].PeerStatus == ClassPeerEnumStatus.PEER_DEAD)
+                                    if (ClassPeerDatabase.DictionaryPeerDataObject[peer][peerUniqueId].PeerStatus == ClassPeerEnumStatus.PEER_DEAD)
                                     {
-                                        if (!peerIp.IsNullOrEmpty(false, out _))
-                                            peerListToCheck.Add(new Tuple<string, string>(peerIp, peerUniqueId));
+                                        if (!peer.IsNullOrEmpty(false, out _))
+                                            peerListToCheck.Add(new Tuple<string, string>(peer, peerUniqueId));
                                     }
                                 }
                             }
@@ -385,13 +379,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 {
                                     string peerIp = peerListToCheck[i1].Item1;
                                     string peerUniqueId = peerListToCheck[i1].Item2;
-                                    int peerPort = await _peerDatabase.GetPeerPort(peerIp, peerUniqueId, _cancellationTokenServiceSync);
+                                    int peerPort = ClassPeerDatabase.GetPeerPort(peerIp, peerUniqueId);
 
-                                    if (await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(peerIp, peerPort, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, _peerDatabase), CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token), true))
+                                    if (await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(peerIp, peerPort, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject), CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token), true))
                                     {
                                         totalCheckSuccessfullyDone++;
-                                        await ClassPeerCheckManager.CleanPeerState(_peerDatabase, peerIp, peerUniqueId, true, _cancellationTokenServiceSync);
-                                        await ClassPeerCheckManager.InputPeerClientValidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _cancellationTokenServiceSync);
+                                        ClassPeerCheckManager.CleanPeerState(peerIp, peerUniqueId, true);
+                                        ClassPeerCheckManager.InputPeerClientValidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject);
                                     }
                                 }
                                 catch
@@ -446,9 +440,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         await StartContactDefaultPeerList();
                         await StartCheckHealthPeers();
 
-                        if (_peerDatabase.Count > 0)
+                        if (ClassPeerDatabase.DictionaryPeerDataObject.Count > 0)
                         {
-                            peerTargetList = await GenerateOrUpdatePeerTargetList(peerTargetList);
+                            peerTargetList = GenerateOrUpdatePeerTargetList(peerTargetList);
 
                             // If true, run every peer check tasks functions.
                             if (peerTargetList.Count > 0)
@@ -463,8 +457,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                             }
 
-                            await ClearPeerTargetList(peerTargetList);
+                            ClearPeerTargetList(peerTargetList);
                         }
+
+
+
+
                     }
                     catch (Exception error)
                     {
@@ -493,16 +491,17 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 {
                     try
                     {
-                        if (_peerDatabase.Count > 0)
+                        if (ClassPeerDatabase.DictionaryPeerDataObject.Count > 0)
                         {
 
-                            peerTargetList = await GenerateOrUpdatePeerTargetList(peerTargetList);
+                            peerTargetList = GenerateOrUpdatePeerTargetList(peerTargetList);
 
                             // If true, run every peer check tasks functions.
                             if (peerTargetList.Count > 0)
                                 ClassLog.WriteLine("Total sovereign update(s) received: " + await StartAskSovereignUpdateListFromListPeerTarget(peerTargetList), ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
 
-                            await ClearPeerTargetList(peerTargetList);
+
+                            ClearPeerTargetList(peerTargetList);
                         }
                     }
                     catch (Exception error)
@@ -533,10 +532,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     try
                     {
 
-                        if (_peerDatabase.Count > 0)
+                        if (ClassPeerDatabase.DictionaryPeerDataObject.Count > 0)
                         {
 
-                            peerTargetList = await GenerateOrUpdatePeerTargetList(peerTargetList);
+                            peerTargetList = GenerateOrUpdatePeerTargetList(peerTargetList);
 
                             // If true, run every peer check tasks functions.
                             if (peerTargetList.Count > 0)
@@ -633,7 +632,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                                                             break;
                                                                                         }
                                                                                         else
-                                                                                            await FixMiningBlockLocked(lastBlockHeight, lastBlockHeightUnlocked, lastBlockHeight, _peerNetworkSettingObject, _peerFirewallSettingObject, _peerDatabase, _cancellationTokenServiceSync);
+                                                                                            await FixMiningBlockLocked(lastBlockHeight, lastBlockHeightUnlocked, lastBlockHeight, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenServiceSync);
                                                                                     }
 
                                                                                     ClassLog.WriteLine("The block height: " + lastBlockHeight + " retrieved from peers, is fixed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
@@ -666,7 +665,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 }
                             }
 
-                            await ClearPeerTargetList(peerTargetList);
+                            ClearPeerTargetList(peerTargetList);
                         }
 
                     }
@@ -698,9 +697,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     {
                         try
                         {
-                            if (_peerDatabase.Count > 0 && ClassBlockchainStats.BlockCount > 0 && ClassBlockchainStats.GetCountBlockLocked() <= 1)
+                            if (ClassPeerDatabase.DictionaryPeerDataObject.Count > 0 && ClassBlockchainStats.BlockCount > 0 && ClassBlockchainStats.GetCountBlockLocked() <= 1)
                             {
-                                peerTargetList.GetList = await GenerateOrUpdatePeerTargetList(peerTargetList.GetList);
+                                peerTargetList.GetList = GenerateOrUpdatePeerTargetList(peerTargetList.GetList);
 
                                 // If true, run every peer check tasks functions.
                                 if (peerTargetList.Count > 0)
@@ -775,7 +774,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                                                                 break;
                                                                                             }
                                                                                             else
-                                                                                                await FixMiningBlockLocked(blockHeightToCheck, lastBlockHeightUnlocked, lastBlockHeight, _peerNetworkSettingObject, _peerFirewallSettingObject, _peerDatabase, _cancellationTokenServiceSync);
+                                                                                                await FixMiningBlockLocked(blockHeightToCheck, lastBlockHeightUnlocked, lastBlockHeight, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenServiceSync);
                                                                                         }
 
                                                                                         ClassLog.WriteLine("The block height: " + blockHeightToCheck + " retrieved from peers, is fixed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
@@ -875,7 +874,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                     }
                                 }
 
-                                await ClearPeerTargetList(peerTargetList.GetList);
+                                ClearPeerTargetList(peerTargetList.GetList);
                             }
                         }
                         catch (Exception error)
@@ -905,9 +904,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     try
                     {
 
-                        if (_peerDatabase.Count > 0 && ClassBlockchainStats.BlockCount > 0)
+                        if (ClassPeerDatabase.DictionaryPeerDataObject.Count > 0 && ClassBlockchainStats.BlockCount > 0)
                         {
-                            peerTargetList = await GenerateOrUpdatePeerTargetList(peerTargetList);
+                            peerTargetList = GenerateOrUpdatePeerTargetList(peerTargetList);
 
                             // If true, run every peer check tasks functions.
                             if (peerTargetList.Count > 0)
@@ -942,7 +941,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                         {
                                             using (DisposableList<long> blockListToSync = new DisposableList<long>(false, 0, new List<long>() { lastBlockHeight }))
                                             {
-                                                peerTargetList = await GenerateOrUpdatePeerTargetList(peerTargetList);
+                                                peerTargetList = GenerateOrUpdatePeerTargetList(peerTargetList);
 
                                                 using (var syncBlockResult = await StartAskBlockObjectFromListPeerTarget(peerTargetList, blockListToSync, true))
                                                 {
@@ -971,17 +970,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                                     {
                                                                         if (currentBlockObjectInformations.BlockStatus == ClassBlockEnumStatus.LOCKED)
                                                                         {
-                                                                            var resultUnlockShare = await ClassBlockchainDatabase.UnlockCurrentBlockAsync(lastBlockHeight,
-                                                                                blockObject.BlockMiningPowShareUnlockObject, 
-                                                                                false, 
-                                                                                _peerNetworkSettingObject.ListenIp, 
-                                                                                PeerOpenNatServerIp, 
-                                                                                false, 
-                                                                                true, 
-                                                                                _peerNetworkSettingObject,
-                                                                                _peerFirewallSettingObject,
-                                                                                _peerDatabase,
-                                                                                _cancellationTokenServiceSync);
+                                                                            var resultUnlockShare = await ClassBlockchainDatabase.UnlockCurrentBlockAsync(lastBlockHeight, blockObject.BlockMiningPowShareUnlockObject, false, _peerNetworkSettingObject.ListenIp, PeerOpenNatServerIp, false, true, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenServiceSync);
 
                                                                             if (resultUnlockShare == ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED)
                                                                                 ClassLog.WriteLine("Attempt to check if the block height: " + lastBlockHeight + " has been mined successfully done.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
@@ -1042,7 +1031,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                             }
 
-                            await ClearPeerTargetList(peerTargetList);
+                            ClearPeerTargetList(peerTargetList);
                         }
                     }
                     catch (Exception error)
@@ -1073,9 +1062,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                     try
                     {
-                        if (_peerDatabase.Count > 0)
+                        if (ClassPeerDatabase.DictionaryPeerDataObject.Count > 0)
                         {
-                            peerTargetList = await GenerateOrUpdatePeerTargetList(peerTargetList);
+                            peerTargetList = GenerateOrUpdatePeerTargetList(peerTargetList);
 
                             // If true, run every peer check tasks functions.
                             if (peerTargetList.Count > 0)
@@ -1118,7 +1107,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                     ClassLog.WriteLine("Current network informations not received. Retry the sync later..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                             }
 
-                           await ClearPeerTargetList(peerTargetList);
+                            ClearPeerTargetList(peerTargetList);
                         }
 
                     }
@@ -1160,7 +1149,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     continue;
                 }
 
-                if (!await ClassPeerCheckManager.CheckPeerClientInitializationStatus(_peerDatabase, peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget, _cancellationTokenServiceSync))
+                if (!ClassPeerCheckManager.CheckPeerClientInitializationStatus(peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget))
                 {
                     totalTaskComplete++;
                     continue;
@@ -1230,7 +1219,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         continue;
                     }
 
-                    if (!await ClassPeerCheckManager.CheckPeerClientInitializationStatus(_peerDatabase, peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget, _cancellationTokenServiceSync))
+                    if (!ClassPeerCheckManager.CheckPeerClientInitializationStatus(peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget))
                     {
                         totalTaskComplete++;
                         continue;
@@ -1288,7 +1277,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                             continue;
                         }
 
-                        if (!await ClassPeerCheckManager.CheckPeerClientInitializationStatus(_peerDatabase, peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget, _cancellationTokenServiceSync))
+                        if (!ClassPeerCheckManager.CheckPeerClientInitializationStatus(peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget))
                         {
                             totalTaskComplete++;
                             continue;
@@ -1360,7 +1349,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                     continue;
                                 }
 
-                                if (!await ClassPeerCheckManager.CheckPeerClientInitializationStatus(_peerDatabase, peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget, _cancellationTokenServiceSync))
+                                if (!ClassPeerCheckManager.CheckPeerClientInitializationStatus(peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget))
                                 {
                                     totalTaskDone++;
                                     continue;
@@ -1385,7 +1374,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                                     if (_peerNetworkSettingObject.PeerEnableSovereignPeerVote)
                                                     {
-                                                        if (CheckIfPeerIsRanked(_peerDatabase, peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, result.Item2.ObjectReturned, result.Item2.PacketNumericHash, result.Item2.PacketNumericSignature, CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token), out string numericPublicKeyOut))
+                                                        if (CheckIfPeerIsRanked(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, result.Item2.ObjectReturned, result.Item2.PacketNumericHash, result.Item2.PacketNumericSignature, CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token), out string numericPublicKeyOut))
                                                             peerRanked = !listOfRankedPeerPublicKeySaved.ContainsKey(numericPublicKeyOut) ? listOfRankedPeerPublicKeySaved.TryAdd(numericPublicKeyOut, 0) : false;
                                                     }
 
@@ -1618,7 +1607,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         continue;
                     }
 
-                    if (!await ClassPeerCheckManager.CheckPeerClientInitializationStatus(_peerDatabase, peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget, _cancellationTokenServiceSync))
+                    if (!ClassPeerCheckManager.CheckPeerClientInitializationStatus(peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget))
                     {
                         totalTaskDone++;
                         continue;
@@ -1657,7 +1646,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                     continue;
 
                                 if (result.Item2.ObjectReturned.BlockData.BlockHeight != blockHeight)
-                                   await ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerDatabase, peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellationTokenSourceTaskSync);
+                                    ClassPeerCheckManager.InputPeerClientInvalidPacket(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
                                 else
                                 {
                                     ClassBlockObject blockObject = result.Item2.ObjectReturned.BlockData;
@@ -2051,7 +2040,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                     continue;
                                 }
 
-                                if (!await ClassPeerCheckManager.CheckPeerClientInitializationStatus(_peerDatabase, peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget, _cancellationTokenServiceSync))
+                                if (!ClassPeerCheckManager.CheckPeerClientInitializationStatus(peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget))
                                 {
                                     totalTaskDone++;
                                     continue;
@@ -2105,7 +2094,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                                                     if (_peerNetworkSettingObject.PeerEnableSovereignPeerVote)
                                                                     {
-                                                                        if (CheckIfPeerIsRanked(_peerDatabase, peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, result.Item2.ObjectReturned, result.Item2.PacketNumericHash, result.Item2.PacketNumericSignature, cancellationTokenSourceTaskSync, out string numericPublicKeyOut))
+                                                                        if (CheckIfPeerIsRanked(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, result.Item2.ObjectReturned, result.Item2.PacketNumericHash, result.Item2.PacketNumericSignature, cancellationTokenSourceTaskSync, out string numericPublicKeyOut))
                                                                             peerRanked = !listOfRankedPeerPublicKeySaved.ContainsKey(numericPublicKeyOut) ? listOfRankedPeerPublicKeySaved.TryAdd(numericPublicKeyOut, 0) : false;
                                                                     }
 
@@ -2275,7 +2264,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 }
 
 
-                                if (!await ClassPeerCheckManager.CheckPeerClientInitializationStatus(_peerDatabase, peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget, _cancellationTokenServiceSync))
+                                if (!ClassPeerCheckManager.CheckPeerClientInitializationStatus(peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget))
                                 {
                                     totalTaskDone++;
                                     continue;
@@ -2320,7 +2309,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                                                 if (_peerNetworkSettingObject.PeerEnableSovereignPeerVote)
                                                                 {
-                                                                    if (CheckIfPeerIsRanked(_peerDatabase, peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget, result.Item2.ObjectReturned, result.Item2.PacketNumericHash, result.Item2.PacketNumericSignature, cancellationTokenSourceTaskSync, out string numericPublicKeyOut))
+                                                                    if (CheckIfPeerIsRanked(peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget, result.Item2.ObjectReturned, result.Item2.PacketNumericHash, result.Item2.PacketNumericSignature, cancellationTokenSourceTaskSync, out string numericPublicKeyOut))
                                                                         peerRanked = !listOfRankedPeerPublicKeySaved.ContainsKey(numericPublicKeyOut) ? listOfRankedPeerPublicKeySaved.TryAdd(numericPublicKeyOut, 0) : false;
                                                                 }
 
@@ -2484,7 +2473,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 continue;
                             }
 
-                            if (!await ClassPeerCheckManager.CheckPeerClientInitializationStatus(_peerDatabase, peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget, _cancellationTokenServiceSync))
+                            if (!ClassPeerCheckManager.CheckPeerClientInitializationStatus(peerListTarget[i].PeerIpTarget, peerListTarget[i].PeerUniqueIdTarget))
                             {
                                 totalTaskDone++;
                                 continue;
@@ -2524,13 +2513,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                             if (result.Item2 != null)
                                             {
                                                 if (result.Item2.ObjectReturned.BlockData.BlockHeight != blockHeightTarget)
-                                                    await ClassPeerCheckManager.InputPeerClientInvalidPacket( _peerDatabase, peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenServiceSync);
+                                                    ClassPeerCheckManager.InputPeerClientInvalidPacket(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
                                                 else
                                                 {
                                                     bool peerRanked = false;
                                                     if (_peerNetworkSettingObject.PeerEnableSovereignPeerVote)
                                                     {
-                                                        if (CheckIfPeerIsRanked(_peerDatabase, peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, result.Item2.ObjectReturned, result.Item2.PacketNumericHash, result.Item2.PacketNumericSignature, cancellationTokenSourceTaskSync, out string numericPublicKeyOut))
+                                                        if (CheckIfPeerIsRanked(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, result.Item2.ObjectReturned, result.Item2.PacketNumericHash, result.Item2.PacketNumericSignature, cancellationTokenSourceTaskSync, out string numericPublicKeyOut))
                                                             peerRanked = !listOfRankedPeerPublicKeySaved.ContainsKey(numericPublicKeyOut) ? listOfRankedPeerPublicKeySaved.TryAdd(numericPublicKeyOut, 0) : false;
                                                     }
 
@@ -2733,11 +2722,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
             string peerUniqueId = peerNetworkClientSyncObject.PeerUniqueIdTarget;
 
             bool targetExist = false;
-            if (!await _peerDatabase.ContainsIp(peerIp, cancellation))
-                _peerDatabase.Add(peerIp, new ConcurrentDictionary<string, ClassPeerObject>());
+            if (!ClassPeerDatabase.DictionaryPeerDataObject.ContainsKey(peerIp))
+                ClassPeerDatabase.DictionaryPeerDataObject.Add(peerIp, new ConcurrentDictionary<string, ClassPeerObject>());
             else
             {
-                if (_peerDatabase[peerIp, cancellation].ContainsKey(peerUniqueId))
+                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].ContainsKey(peerUniqueId))
                     targetExist = true;
             }
 
@@ -2745,14 +2734,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
             if (targetExist)
             {
-                if (await ClassPeerKeysManager.UpdatePeerInternalKeys(_peerDatabase, peerIp, peerPort, peerUniqueId, cancellation, _peerNetworkSettingObject, forceUpdate))
-                    peerObject = _peerDatabase[peerIp, peerUniqueId, cancellation];
+                if (await ClassPeerKeysManager.UpdatePeerInternalKeys(peerIp, peerPort, peerUniqueId, cancellation, _peerNetworkSettingObject, forceUpdate))
+                    peerObject = ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId];
             }
             else
             {
                 peerObject = ClassPeerKeysManager.GeneratePeerObject(peerIp, peerPort, peerUniqueId, cancellation);
                 peerObject.PeerLastPacketReceivedTimestamp = TaskManager.TaskManager.CurrentTimestampSecond + _peerNetworkSettingObject.PeerMaxDelayKeepAliveStats;
-                if (!_peerDatabase[peerIp, cancellation].TryAdd(peerUniqueId, peerObject))
+                if (!ClassPeerDatabase.DictionaryPeerDataObject[peerIp].TryAdd(peerUniqueId, peerObject))
                     return false;
 
                 targetExist = true;
@@ -2811,42 +2800,42 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         ClassLog.WriteLine(peerIp + ":" + peerPort + " can't handle peer auth keys from the packet received. Increment invalid packets.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
                         if (targetExist)
-                            await ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
+                            ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
 
                         return false;
                     }
 
                     peerUniqueId = peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId;
 
-                    targetExist = await _peerDatabase.ContainsPeer(peerIp, peerUniqueId, cancellation);
+                    targetExist = ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId);
 
                     if (!targetExist)
                     {
                         peerObject.PeerUniqueId = peerUniqueId;
 
-                        if (!await _peerDatabase.ContainsIp(peerIp, cancellation))
-                            _peerDatabase.Add(peerIp, new ConcurrentDictionary<string, ClassPeerObject>());
+                        if (!ClassPeerDatabase.DictionaryPeerDataObject.ContainsKey(peerIp))
+                            ClassPeerDatabase.DictionaryPeerDataObject.Add(peerIp, new ConcurrentDictionary<string, ClassPeerObject>());
 
-                        if (!_peerDatabase[peerIp, cancellation].TryAdd(peerUniqueId, peerObject))
-                            return _peerDatabase[peerIp, cancellation].TryAdd(peerUniqueId, peerObject);
+                        if (!ClassPeerDatabase.DictionaryPeerDataObject[peerIp].TryAdd(peerUniqueId, peerObject))
+                            return ClassPeerDatabase.DictionaryPeerDataObject[peerIp].TryAdd(peerUniqueId, peerObject);
 
                         targetExist = true;
                     }
 
-                    if (await ClassPeerKeysManager.UpdatePeerKeysReceiveTaskSync(_peerDatabase, peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerPacketSendPeerAuthKeys, cancellation, _peerNetworkSettingObject))
+                    if (await ClassPeerKeysManager.UpdatePeerKeysReceiveTaskSync(peerIp, peerNetworkClientSyncObject.PeerPacketReceived.PacketPeerUniqueId, peerPacketSendPeerAuthKeys, cancellation, _peerNetworkSettingObject))
                     {
 
-                        await ClassPeerCheckManager.CleanPeerState(_peerDatabase, peerIp, peerUniqueId, true, cancellation);
-                        _peerDatabase[peerIp, peerUniqueId, cancellation].PeerIsPublic = true;
-                        _peerDatabase[peerIp, peerUniqueId, cancellation].PeerStatus = ClassPeerEnumStatus.PEER_ALIVE;
+                        ClassPeerCheckManager.CleanPeerState(peerIp, peerUniqueId, true);
+                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerIsPublic = true;
+                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus = ClassPeerEnumStatus.PEER_ALIVE;
 
                         ClassLog.WriteLine(peerIp + ":" + peerPort + " send propertly auth keys.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                        await ClassPeerCheckManager.InputPeerClientValidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, cancellation);
+                        ClassPeerCheckManager.InputPeerClientValidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject);
                         return true;
                     }
                     else
                     {
-                        await ClassPeerCheckManager.SetPeerDeadState(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
+                        ClassPeerCheckManager.SetPeerDeadState(peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
                         ClassLog.WriteLine(peerIp + ":" + peerPort + " failed to update auth keys.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                         return false;
                     }
@@ -2856,7 +2845,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     ClassLog.WriteLine(peerIp + ":" + peerPort + " exception from packet received: " + error.Message + ", on receiving auth keys, increment invalid packets.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
                     if (targetExist)
-                        await ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
+                        ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
 
                     return false;
                 }
@@ -2877,13 +2866,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         /// <returns></returns>
         private async Task<bool> SendAskPeerList(ClassPeerNetworkClientSyncObject peerNetworkClientSyncObject, CancellationTokenSource cancellation)
         {
-            ClassPeerObject peerObject = await _peerDatabase.GetPeerObject(peerNetworkClientSyncObject.PeerIpTarget, peerNetworkClientSyncObject.PeerUniqueIdTarget, cancellation);
+            ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(peerNetworkClientSyncObject.PeerIpTarget, peerNetworkClientSyncObject.PeerUniqueIdTarget);
 
             string peerIp = peerNetworkClientSyncObject.PeerIpTarget;
             int peerPort = peerNetworkClientSyncObject.PeerPortTarget;
             string peerUniqueId = peerNetworkClientSyncObject.PeerUniqueIdTarget;
 
-            ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId, _peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPublicKey, _peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+            ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
             {
                 PacketOrder = ClassPeerEnumPacketSend.ASK_PEER_LIST,
                 PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskPeerList()
@@ -2910,10 +2899,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     return await HandleUnexpectedPacketOrder(peerIp, peerPort, peerUniqueId, peerNetworkClientSyncObject.PeerPacketReceived, cancellation);
                 }
 
-                if (!TryGetPacketPeerList(_peerDatabase, peerNetworkClientSyncObject, peerIp, _peerNetworkSettingObject, cancellation, out ClassPeerPacketSendPeerList packetPeerList))
+                if (!TryGetPacketPeerList(peerNetworkClientSyncObject, peerIp, _peerNetworkSettingObject, cancellation, out ClassPeerPacketSendPeerList packetPeerList))
                 {
                     ClassLog.WriteLine(peerIp + ":" + peerPort + " can't handle peer packet received. Increment invalid packets", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                    await ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
+                    ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
                     return false;
 
                 }
@@ -2931,14 +2920,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     if (packetPeerList.PeerIpList[i].IsNullOrEmpty(true, out _) || !IPAddress.TryParse(packetPeerList.PeerIpList[i], out _))
                     {
                         ClassLog.WriteLine("Can't register peer: " + packetPeerList.PeerIpList[i] + ":" + packetPeerList.PeerPortList[i] + " because the IP Address is not valid.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
-                        await ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
+                        ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
                         continue;
                     }
 
                     if (packetPeerList.PeerPortList[i] < _peerNetworkSettingObject.PeerMinPort || packetPeerList.PeerPortList[i] > _peerNetworkSettingObject.PeerMaxPort)
                     {
                         ClassLog.WriteLine("Can't register peer: " + packetPeerList.PeerIpList[i] + ":" + packetPeerList.PeerPortList[i] + " because the P2P port is not valid.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
-                        await ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
+                        ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
                         continue;
                     }
 
@@ -2947,15 +2936,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         packetPeerList.PeerUniqueIdList[i].Length != BlockchainSetting.PeerUniqueIdHashLength)
                     {
                         ClassLog.WriteLine("Can't register peer: " + packetPeerList.PeerIpList[i] + " because the unique id: \n" + packetPeerList.PeerUniqueIdList[i] + " is not valid.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
-                        await ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
+                        ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
                         continue;
                     }
 
 
-                    if (await ClassPeerCheckManager.CheckPeerClientStatus(_peerDatabase, packetPeerList.PeerIpList[i], packetPeerList.PeerUniqueIdList[i], false, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation))
+                    if (ClassPeerCheckManager.CheckPeerClientStatus(packetPeerList.PeerIpList[i], packetPeerList.PeerUniqueIdList[i], false, _peerNetworkSettingObject, _peerFirewallSettingObject))
                         continue;
 
-                    if (await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(packetPeerList.PeerIpList[i], packetPeerList.PeerPortList[i], packetPeerList.PeerUniqueIdList[i], _peerNetworkSettingObject, _peerFirewallSettingObject, _peerDatabase), CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token), true))
+                    if (await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(packetPeerList.PeerIpList[i], packetPeerList.PeerPortList[i], packetPeerList.PeerUniqueIdList[i], _peerNetworkSettingObject, _peerFirewallSettingObject), CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token), true))
                         ClassLog.WriteLine("New Peer: " + packetPeerList.PeerIpList[i] + ":" + packetPeerList.PeerPortList[i] + " successfully registered.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
 
                 }
@@ -2976,13 +2965,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         /// <returns></returns>
         private async Task<Tuple<bool, List<string>>> SendAskSovereignUpdateList(ClassPeerNetworkClientSyncObject peerNetworkClientSyncObject, CancellationTokenSource cancellation)
         {
-            ClassPeerObject peerObject = await _peerDatabase.GetPeerObject(peerNetworkClientSyncObject.PeerIpTarget, peerNetworkClientSyncObject.PeerUniqueIdTarget, cancellation);
+            ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(peerNetworkClientSyncObject.PeerIpTarget, peerNetworkClientSyncObject.PeerUniqueIdTarget);
 
             string peerIp = peerNetworkClientSyncObject.PeerIpTarget;
             int peerPort = peerNetworkClientSyncObject.PeerPortTarget;
             string peerUniqueId = peerNetworkClientSyncObject.PeerUniqueIdTarget;
 
-            ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId, _peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPublicKey, _peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+            ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
             {
                 PacketOrder = ClassPeerEnumPacketSend.ASK_LIST_SOVEREIGN_UPDATE,
                 PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskListSovereignUpdate()
@@ -3009,10 +2998,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.SEND_LIST_SOVEREIGN_UPDATE)
                 {
-                    if (!TryGetPacketSovereignUpdateList(_peerDatabase, peerNetworkClientSyncObject, peerIp, _peerNetworkSettingObject, cancellation, out ClassPeerPacketSendListSovereignUpdate packetPeerSovereignUpdateList))
+                    if (!TryGetPacketSovereignUpdateList(peerNetworkClientSyncObject, peerIp, _peerNetworkSettingObject, cancellation, out ClassPeerPacketSendListSovereignUpdate packetPeerSovereignUpdateList))
                     {
                         ClassLog.WriteLine(peerIp + ":" + peerPort + " invalid sovereign update list packet received. Increment invalid packets.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                        await ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
+                        ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
                         return new Tuple<bool, List<string>>(false, null);
                     }
 
@@ -3050,13 +3039,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         /// <returns></returns>
         private async Task<Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassSovereignUpdateObject>>> SendAskSovereignUpdateData(ClassPeerNetworkClientSyncObject peerNetworkClientSyncObject, string sovereignHash, CancellationTokenSource cancellation)
         {
-            ClassPeerObject peerObject = await _peerDatabase.GetPeerObject(peerNetworkClientSyncObject.PeerIpTarget, peerNetworkClientSyncObject.PeerUniqueIdTarget, cancellation);
+            ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(peerNetworkClientSyncObject.PeerIpTarget, peerNetworkClientSyncObject.PeerUniqueIdTarget);
 
             string peerIp = peerNetworkClientSyncObject.PeerIpTarget;
             int peerPort = peerNetworkClientSyncObject.PeerPortTarget;
             string peerUniqueId = peerNetworkClientSyncObject.PeerUniqueIdTarget;
 
-            ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId, _peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPublicKey, _peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+            ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
             {
                 PacketOrder = ClassPeerEnumPacketSend.ASK_SOVEREIGN_UPDATE_FROM_HASH,
                 PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskSovereignUpdateFromHash()
@@ -3084,14 +3073,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.SEND_SOVEREIGN_UPDATE_FROM_HASH)
                 {
 
-                    if (!TryGetPacketSovereignUpdateData(_peerDatabase, peerNetworkClientSyncObject, peerIp, _peerNetworkSettingObject, cancellation, out ClassPeerPacketSendSovereignUpdateFromHash packetSovereignUpdateData))
+                    if (!TryGetPacketSovereignUpdateData(peerNetworkClientSyncObject, peerIp, _peerNetworkSettingObject, cancellation, out ClassPeerPacketSendSovereignUpdateFromHash packetSovereignUpdateData))
                     {
                         ClassLog.WriteLine(peerIp + ":" + peerPort + " a packet sovereign update data received is invalid. Increment invalid packets.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                        await ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
+                        ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
                         return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassSovereignUpdateObject>>(false, null);
                     }
 
-                    await ClassPeerCheckManager.InputPeerClientValidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, cancellation);
+                    ClassPeerCheckManager.InputPeerClientValidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject);
 
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassSovereignUpdateObject>>(true, new ClassPeerSyncPacketObjectReturned<ClassSovereignUpdateObject>()
                     {
@@ -3132,14 +3121,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         /// <returns></returns>
         private async Task<Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendNetworkInformation>>> SendAskNetworkInformation(ClassPeerNetworkClientSyncObject peerNetworkClientSyncObject, CancellationTokenSource cancellation)
         {
-            ClassPeerObject peerObject = await _peerDatabase.GetPeerObject(peerNetworkClientSyncObject.PeerIpTarget, peerNetworkClientSyncObject.PeerUniqueIdTarget, cancellation);
+            ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(peerNetworkClientSyncObject.PeerIpTarget, peerNetworkClientSyncObject.PeerUniqueIdTarget);
 
             string peerIp = peerNetworkClientSyncObject.PeerIpTarget;
             int peerPort = peerNetworkClientSyncObject.PeerPortTarget;
             string peerUniqueId = peerNetworkClientSyncObject.PeerUniqueIdTarget;
 
 
-            ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId, _peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPublicKey, _peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+            ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
             {
                 PacketOrder = ClassPeerEnumPacketSend.ASK_NETWORK_INFORMATION,
                 PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskPeerList()
@@ -3167,14 +3156,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.SEND_NETWORK_INFORMATION)
                 {
 
-                    if (!TryGetPacketNetworkInformation(_peerDatabase, peerNetworkClientSyncObject, peerIp, peerPort, _peerNetworkSettingObject, cancellation, out ClassPeerPacketSendNetworkInformation peerPacketNetworkInformation))
+                    if (!TryGetPacketNetworkInformation(peerNetworkClientSyncObject, peerIp, peerPort, _peerNetworkSettingObject, cancellation, out ClassPeerPacketSendNetworkInformation peerPacketNetworkInformation))
                     {
                         ClassLog.WriteLine(peerIp + ":" + peerPort + "  can't retrieve packet network information from packet received. Increment invalid packets.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                        await ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
+                        ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
                         return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendNetworkInformation>>(false, null);
                     }
 
-                    await ClassPeerCheckManager.InputPeerClientValidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, cancellation);
+                    ClassPeerCheckManager.InputPeerClientValidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject);
 
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendNetworkInformation>>(true, new ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendNetworkInformation>()
                     {
@@ -3224,13 +3213,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         /// <returns></returns>
         private async Task<Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>>> SendAskBlockData(ClassPeerNetworkClientSyncObject peerNetworkClientSyncObject, long blockHeightTarget, bool refuseLockedBlock, CancellationTokenSource cancellation)
         {
-            ClassPeerObject peerObject = await _peerDatabase.GetPeerObject(peerNetworkClientSyncObject.PeerIpTarget, peerNetworkClientSyncObject.PeerUniqueIdTarget, cancellation);
+            ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(peerNetworkClientSyncObject.PeerIpTarget, peerNetworkClientSyncObject.PeerUniqueIdTarget);
 
             string peerIp = peerNetworkClientSyncObject.PeerIpTarget;
             int peerPort = peerNetworkClientSyncObject.PeerPortTarget;
             string peerUniqueId = peerNetworkClientSyncObject.PeerUniqueIdTarget;
 
-            ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId, _peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPublicKey, _peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+            ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
                 {
                     PacketOrder = ClassPeerEnumPacketSend.ASK_BLOCK_DATA,
                     PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskBlockData()
@@ -3259,14 +3248,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.SEND_BLOCK_DATA)
                 {
-                    if (!TryGetPacketBlockData(_peerDatabase, peerNetworkClientSyncObject, peerIp, _peerNetworkSettingObject, blockHeightTarget, refuseLockedBlock, cancellation, out ClassPeerPacketSendBlockData packetSendBlockData))
+                    if (!TryGetPacketBlockData(peerNetworkClientSyncObject, peerIp, _peerNetworkSettingObject, blockHeightTarget, refuseLockedBlock, cancellation, out ClassPeerPacketSendBlockData packetSendBlockData))
                     {
                         ClassLog.WriteLine(peerIp + ":" + peerPort + " invalid block data received. Increment invalid packets.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                        await ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
+                        ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
                         return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>>(false, null);
                     }
 
-                    await ClassPeerCheckManager.InputPeerClientValidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, cancellation);
+                    ClassPeerCheckManager.InputPeerClientValidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject);
 
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>>(true, new ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>()
                     {
@@ -3311,13 +3300,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         /// <returns></returns>
         private async Task<Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionData>>> SendAskBlockTransactionData(ClassPeerNetworkClientSyncObject peerNetworkClientSyncObject, long blockHeightTarget, int transactionId, CancellationTokenSource cancellation)
         {
-            ClassPeerObject peerObject = await _peerDatabase.GetPeerObject(peerNetworkClientSyncObject.PeerIpTarget, peerNetworkClientSyncObject.PeerUniqueIdTarget, cancellation);
+            ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(peerNetworkClientSyncObject.PeerIpTarget, peerNetworkClientSyncObject.PeerUniqueIdTarget);
 
             string peerIp = peerNetworkClientSyncObject.PeerIpTarget;
             int peerPort = peerNetworkClientSyncObject.PeerPortTarget;
             string peerUniqueId = peerNetworkClientSyncObject.PeerUniqueIdTarget;
 
-            ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId, _peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPublicKey, _peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+            ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
             {
                 PacketOrder = ClassPeerEnumPacketSend.ASK_BLOCK_TRANSACTION_DATA,
                 PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskBlockTransactionData()
@@ -3348,14 +3337,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.SEND_BLOCK_TRANSACTION_DATA)
                 {
 
-                    if (!TryGetPacketBlockTransactionData(_peerDatabase, peerNetworkClientSyncObject, peerIp, _peerNetworkSettingObject, blockHeightTarget, cancellation, out ClassPeerPacketSendBlockTransactionData packetSendBlockTransactionData))
+                    if (!TryGetPacketBlockTransactionData(peerNetworkClientSyncObject, peerIp, _peerNetworkSettingObject, blockHeightTarget, cancellation, out ClassPeerPacketSendBlockTransactionData packetSendBlockTransactionData))
                     {
                         ClassLog.WriteLine(peerIp + ":" + peerPort + " send an invalid block transaction data. Increment invalid packets.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                        await ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
+                        ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
                         return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionData>>(false, null);
                     }
 
-                    await ClassPeerCheckManager.InputPeerClientValidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, cancellation);
+                    ClassPeerCheckManager.InputPeerClientValidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject);
 
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionData>>(true, new ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionData>()
                     {
@@ -3405,13 +3394,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         /// <returns></returns>
         private async Task<Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionDataByRange>>> SendAskBlockTransactionDataByRange(ClassPeerNetworkClientSyncObject peerNetworkClientSyncObject, long blockHeightTarget, int transactionIdRangeStart, int transactionIdRangeEnd, DisposableDictionary<string, string> listWalletAndPublicKeys, CancellationTokenSource cancellation)
         {
-            ClassPeerObject peerObject = await _peerDatabase.GetPeerObject(peerNetworkClientSyncObject.PeerIpTarget, peerNetworkClientSyncObject.PeerUniqueIdTarget, cancellation);
+            ClassPeerObject peerObject = ClassPeerDatabase.GetPeerObject(peerNetworkClientSyncObject.PeerIpTarget, peerNetworkClientSyncObject.PeerUniqueIdTarget);
 
             string peerIp = peerNetworkClientSyncObject.PeerIpTarget;
             int peerPort = peerNetworkClientSyncObject.PeerPortTarget;
             string peerUniqueId = peerNetworkClientSyncObject.PeerUniqueIdTarget;
 
-            ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId, _peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPublicKey, _peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientLastTimestampPeerPacketSignatureWhitelist)
+            ClassPeerPacketSendObject sendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist)
             {
                 PacketOrder = ClassPeerEnumPacketSend.ASK_BLOCK_TRANSACTION_DATA_BY_RANGE,
                 PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskBlockTransactionDataByRange()
@@ -3442,14 +3431,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.SEND_BLOCK_TRANSACTION_DATA_BY_RANGE)
                 {
 
-                    if (!TryGetPacketBlockTransactionDataByRange(_peerDatabase, peerNetworkClientSyncObject, peerIp, listWalletAndPublicKeys, _peerNetworkSettingObject, blockHeightTarget, cancellation, out ClassPeerPacketSendBlockTransactionDataByRange packetSendBlockTransactionDataByRange))
+                    if (!TryGetPacketBlockTransactionDataByRange(peerNetworkClientSyncObject, peerIp, listWalletAndPublicKeys, _peerNetworkSettingObject, blockHeightTarget, cancellation, out ClassPeerPacketSendBlockTransactionDataByRange packetSendBlockTransactionDataByRange))
                     {
                         ClassLog.WriteLine(peerIp + ":" + peerPort + " send an invalid block transaction data. Increment invalid packets.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                        await ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
+                        ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
                         return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionDataByRange>>(false, null);
                     }
 
-                    await ClassPeerCheckManager.InputPeerClientValidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, cancellation);
+                    ClassPeerCheckManager.InputPeerClientValidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject);
 
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionDataByRange>>(true, new ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionDataByRange>()
                     {
@@ -3814,12 +3803,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 bool doPeerKeysUpdate = false;
                 bool forceUpdate = false;
                 long timestamp = TaskManager.TaskManager.CurrentTimestampSecond;
-                bool exist = await _peerDatabase.ContainsPeer(peerIp, peerUniqueId, cancellation);
+                bool exist = ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId);
 
 
                 if (exist)
                 {
-                    if (!_peerDatabase[peerIp, peerUniqueId, cancellation].OnUpdateAuthKeys)
+                    if (!ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].OnUpdateAuthKeys)
                     {
                         switch (peerPacketReceived.PacketOrder)
                         {
@@ -3835,7 +3824,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                     }
                                     else
                                     {
-                                        if (_peerDatabase[peerIp, peerUniqueId, cancellation].PeerStatus != ClassPeerEnumStatus.PEER_ALIVE)
+                                        if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus != ClassPeerEnumStatus.PEER_ALIVE)
                                             doPeerKeysUpdate = true;
                                         else
                                             result = false;
@@ -3849,7 +3838,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                         result = true;
                                     else
                                     {
-                                        if (_peerDatabase[peerIp, peerUniqueId, cancellation].PeerStatus != ClassPeerEnumStatus.PEER_ALIVE)
+                                        if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus != ClassPeerEnumStatus.PEER_ALIVE)
                                             doPeerKeysUpdate = true;
                                         else
                                             result = false;
@@ -3875,7 +3864,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 }
                                 break;
                             default:
-                                await ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
+                                ClassPeerCheckManager.InputPeerClientInvalidPacket(peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
                                 break;
                         }
                     }
@@ -3884,14 +3873,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 if (doPeerKeysUpdate)
                 {
                     if (exist)
-                        _peerDatabase[peerIp, peerUniqueId, cancellation].OnUpdateAuthKeys = true;
+                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].OnUpdateAuthKeys = true;
 
-                    if (await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(peerIp, peerPort, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, _peerDatabase), cancellation, forceUpdate))
+                    if (await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(peerIp, peerPort, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject), cancellation, forceUpdate))
                     {
                         ClassLog.WriteLine("Auth keys generated successfully sent, peer target auth keys successfully received and updated.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
-                        if (await _peerDatabase.ContainsPeer(peerIp, peerUniqueId, cancellation))
+                        if (ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
                         {
-                            _peerDatabase[peerIp, peerUniqueId, cancellation].PeerLastUpdateOfKeysTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
+                            ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastUpdateOfKeysTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
                             result = true;
                         }
                     }
@@ -3899,7 +3888,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         ClassLog.WriteLine("Auth keys generated can't be sent to the peer target.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
 
                     if (exist)
-                        _peerDatabase[peerIp, peerUniqueId, cancellation].OnUpdateAuthKeys = false;
+                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].OnUpdateAuthKeys = false;
                 }
 
             }
@@ -3916,9 +3905,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         /// </summary>
         /// <param name="peerTargetList"></param>
         /// <returns></returns>
-        private async Task<Dictionary<int, ClassPeerTargetObject>> GenerateOrUpdatePeerTargetList(Dictionary<int, ClassPeerTargetObject> peerTargetList)
+        private Dictionary<int, ClassPeerTargetObject> GenerateOrUpdatePeerTargetList(Dictionary<int, ClassPeerTargetObject> peerTargetList)
         {
-            return await ClassPeerNetworkBroadcastFunction.GetRandomListPeerTargetAlive(_peerDatabase, _peerNetworkSettingObject.ListenIp, PeerOpenNatServerIp, string.Empty, peerTargetList, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenServiceSync);
+            return ClassPeerNetworkBroadcastFunction.GetRandomListPeerTargetAlive(_peerNetworkSettingObject.ListenIp, PeerOpenNatServerIp, string.Empty, peerTargetList, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenServiceSync);
         }
 
         /// <summary>
@@ -3926,7 +3915,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         /// </summary>
         /// <param name="peerTargetList"></param>
         /// <returns></returns>
-        private async Task ClearPeerTargetList(Dictionary<int, ClassPeerTargetObject> peerTargetList)
+        private void ClearPeerTargetList(Dictionary<int, ClassPeerTargetObject> peerTargetList)
         {
             foreach (int peerKey in peerTargetList.Keys.ToArray())
             {
@@ -3936,7 +3925,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     {
                         peerTargetList[peerKey].PeerNetworkClientSyncObject.DisconnectFromTarget();
 
-                        if (!await ClassPeerCheckManager.CheckPeerClientStatus(_peerDatabase, peerTargetList[peerKey].PeerIpTarget, peerTargetList[peerKey].PeerUniqueIdTarget, false, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenServiceSync))
+                        if (!ClassPeerCheckManager.CheckPeerClientStatus(peerTargetList[peerKey].PeerIpTarget, peerTargetList[peerKey].PeerUniqueIdTarget, false, _peerNetworkSettingObject, _peerFirewallSettingObject))
                         {
                             peerTargetList[peerKey].PeerNetworkClientSyncObject.Dispose();
                             peerTargetList.Remove(peerKey);

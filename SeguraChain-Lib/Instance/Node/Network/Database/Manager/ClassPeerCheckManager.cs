@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using SeguraChain_Lib.Blockchain.Sovereign.Database;
 using SeguraChain_Lib.Blockchain.Wallet.Function;
 using SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Status;
@@ -29,38 +28,38 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="cancellation"></param>
         /// <param name="peerNetworkSetting"></param>
         /// <returns></returns>
-        public static async Task CheckWholePeerStatus(ClassPeerDatabase peerDatabase, CancellationTokenSource cancellation, ClassPeerNetworkSettingObject peerNetworkSetting, ClassPeerFirewallSettingObject peerFirewallSetting)
+        public static void CheckWholePeerStatus(CancellationTokenSource cancellation, ClassPeerNetworkSettingObject peerNetworkSetting, ClassPeerFirewallSettingObject peerFirewallSetting)
         {
-            if (peerDatabase.Count > 0)
+            if (ClassPeerDatabase.DictionaryPeerDataObject.Count > 0)
             {
                 long currentTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
-                foreach (string peerIp in peerDatabase.Keys.ToArray())
+                foreach (string peerIp in ClassPeerDatabase.DictionaryPeerDataObject.Keys.ToArray())
                 {
                     if (cancellation.IsCancellationRequested)
                         break;
 
-                    if (peerDatabase[peerIp, cancellation].Count > 0)
+                    if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].Count > 0)
                     {
-                        foreach (string peerUniqueId in peerDatabase[peerIp, cancellation].Keys.ToArray())
+                        foreach (string peerUniqueId in ClassPeerDatabase.DictionaryPeerDataObject[peerIp].Keys.ToArray())
                         {
                             if (cancellation.IsCancellationRequested)
                                 break;
 
-                            if (peerDatabase[peerIp, peerUniqueId, cancellation].PeerIsPublic)
+                            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerIsPublic)
                             {
-                                if (!await CheckPeerClientStatus(peerDatabase, peerIp, peerUniqueId, false, peerNetworkSetting, peerFirewallSetting, cancellation))
+                                if (!CheckPeerClientStatus(peerIp, peerUniqueId, false, peerNetworkSetting, peerFirewallSetting))
                                 {
-                                    if (peerDatabase[peerIp, peerUniqueId, cancellation].PeerLastPacketReceivedTimestamp + peerNetworkSetting.PeerDelayDeleteDeadPeer <= currentTimestamp &&
-                                       peerDatabase[peerIp, peerUniqueId, cancellation].PeerLastValidPacket + peerNetworkSetting.PeerMaxDelayKeepAliveStats <= currentTimestamp &&
-                                        (peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalInvalidPacket >= peerNetworkSetting.PeerMaxInvalidPacket ||
-                                       peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalAttemptConnection >= peerNetworkSetting.PeerMaxAttemptConnection))
+                                    if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastPacketReceivedTimestamp + peerNetworkSetting.PeerDelayDeleteDeadPeer <= currentTimestamp &&
+                                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastValidPacket + peerNetworkSetting.PeerMaxDelayKeepAliveStats <= currentTimestamp &&
+                                        (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalInvalidPacket >= peerNetworkSetting.PeerMaxInvalidPacket ||
+                                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalAttemptConnection >= peerNetworkSetting.PeerMaxAttemptConnection))
                                     {
-                                        long deadTime = currentTimestamp - peerDatabase[peerIp, peerUniqueId, cancellation].PeerLastPacketReceivedTimestamp;
+                                        long deadTime = currentTimestamp - ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastPacketReceivedTimestamp;
 
-                                        if (await peerDatabase.ContainsPeer(peerIp, peerUniqueId, cancellation))
+                                        if (ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
                                         {
-                                            await SetPeerDeadState(peerDatabase, peerIp, peerUniqueId, peerNetworkSetting, peerFirewallSetting, cancellation);
-                                            if (peerDatabase[peerIp, cancellation].TryRemove(peerUniqueId, out _))
+                                            SetPeerDeadState(peerIp, peerUniqueId, peerNetworkSetting, peerFirewallSetting);
+                                            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].TryRemove(peerUniqueId, out _))
                                             {
 #if DEBUG
                                                 Debug.WriteLine("Peer IP: " + peerIp + " | Peer Unique ID: " + peerUniqueId + " removed from the listing of peers, this one is dead since " + deadTime + " second(s).");
@@ -81,39 +80,32 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// Check if the peer client status is good. (Invalid packets amount, ban delay and more).
         /// </summary>
         /// <returns></returns>
-        public static async Task<bool> CheckPeerClientStatus(ClassPeerDatabase peerDatabase,
-            string peerIp,
-            string peerUniqueId,
-            bool isIncomingConnection,
-            ClassPeerNetworkSettingObject peerNetworkSettingObject,
-            ClassPeerFirewallSettingObject peerFirewallSettingObject,
-            CancellationTokenSource cancellation)
+        public static bool CheckPeerClientStatus(string peerIp, string peerUniqueId, bool isIncomingConnection, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject)
         {
             try
             {
-                if (await peerDatabase.ContainsPeer(peerIp, peerUniqueId, cancellation))
+                if (ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
                 {
-                    if (await CheckPeerClientInitializationStatus(peerDatabase, peerIp, peerUniqueId, cancellation))
+                    if (CheckPeerClientInitializationStatus(peerIp, peerUniqueId))
                     {
-                        if (peerDatabase[peerIp, peerUniqueId, cancellation]?.PeerStatus == ClassPeerEnumStatus.PEER_BANNED || 
-                            peerDatabase[peerIp, peerUniqueId, cancellation]?.PeerStatus == ClassPeerEnumStatus.PEER_DEAD)
+                        if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus == ClassPeerEnumStatus.PEER_BANNED || ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus == ClassPeerEnumStatus.PEER_DEAD)
                         {
 
-                            if (peerDatabase[peerIp, peerUniqueId, cancellation]?.PeerStatus == ClassPeerEnumStatus.PEER_BANNED)
+                            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus == ClassPeerEnumStatus.PEER_BANNED)
                             {
-                                if (peerDatabase[peerIp, peerUniqueId, cancellation]?.PeerBanDate + peerNetworkSettingObject.PeerBanDelay <= TaskManager.TaskManager.CurrentTimestampSecond)
+                                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerBanDate + peerNetworkSettingObject.PeerBanDelay <= TaskManager.TaskManager.CurrentTimestampSecond)
                                 {
-                                    await CleanPeerState(peerDatabase, peerIp, peerUniqueId, true, cancellation);
+                                    CleanPeerState(peerIp, peerUniqueId, true);
                                     return true;
                                 }
                             }
-                            else if (peerDatabase[peerIp, peerUniqueId, cancellation]?.PeerStatus == ClassPeerEnumStatus.PEER_DEAD)
+                            else if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus == ClassPeerEnumStatus.PEER_DEAD)
                             {
                                 if (!isIncomingConnection)
                                 {
-                                    if (peerDatabase[peerIp, peerUniqueId, cancellation]?.PeerLastDeadTimestamp + peerNetworkSettingObject.PeerDeadDelay <= TaskManager.TaskManager.CurrentTimestampSecond)
+                                    if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastDeadTimestamp + peerNetworkSettingObject.PeerDeadDelay <= TaskManager.TaskManager.CurrentTimestampSecond)
                                     {
-                                        await CleanPeerState(peerDatabase, peerIp, peerUniqueId, true, cancellation);
+                                        CleanPeerState(peerIp, peerUniqueId, true);
                                         return true;
                                     }
                                 }
@@ -122,17 +114,17 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                         else
                         {
                             /*
-                            if (peerDatabase[peerIp, peerUniqueId, cancellation].PeerLastValidPacket + peerNetworkSettingObject.PeerMaxDelayKeepAliveStats <= TaskManager.TaskManager.CurrentTimestampSecond)
+                            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastValidPacket + peerNetworkSettingObject.PeerMaxDelayKeepAliveStats <= TaskManager.TaskManager.CurrentTimestampSecond)
                                 CleanPeerState(peerIp, peerUniqueId, false);
-                            else*/ if (peerDatabase[peerIp, peerUniqueId, cancellation]?.PeerTotalAttemptConnection >= peerNetworkSettingObject.PeerMaxAttemptConnection ||
-                                    peerDatabase[peerIp, peerUniqueId, cancellation]?.PeerTotalNoPacketConnectionAttempt >= peerNetworkSettingObject.PeerMaxNoPacketPerConnectionOpened)
+                            else*/ if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalAttemptConnection >= peerNetworkSettingObject.PeerMaxAttemptConnection ||
+                                     ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalNoPacketConnectionAttempt >= peerNetworkSettingObject.PeerMaxNoPacketPerConnectionOpened)
                             {
-                                await SetPeerDeadState(peerDatabase, peerIp, peerUniqueId, peerNetworkSettingObject, peerFirewallSettingObject, cancellation);
+                                SetPeerDeadState(peerIp, peerUniqueId, peerNetworkSettingObject, peerFirewallSettingObject);
                                 return false;
                             }
-                            else if (peerDatabase[peerIp, peerUniqueId, cancellation]?.PeerTotalInvalidPacket >= peerNetworkSettingObject.PeerMaxInvalidPacket)
+                            else if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalInvalidPacket >= peerNetworkSettingObject.PeerMaxInvalidPacket)
                             {
-                                await SetPeerBanState(peerDatabase, peerIp, peerUniqueId, peerNetworkSettingObject, peerFirewallSettingObject, cancellation);
+                                SetPeerBanState(peerIp, peerUniqueId, peerNetworkSettingObject, peerFirewallSettingObject);
                                 return false;
                             }
                             return true;
@@ -156,36 +148,32 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="peerUniqueId"></param>
         /// <param name="peerNetworkSettingObject"></param>
         /// <returns></returns>
-        public static async Task<bool> CheckPeerClientWhitelistStatus(ClassPeerDatabase peerDatabase, 
-            string peerIp,
-            string peerUniqueId, 
-            ClassPeerNetworkSettingObject peerNetworkSettingObject, 
-            CancellationTokenSource cancellation)
+        public static bool CheckPeerClientWhitelistStatus(string peerIp, string peerUniqueId, ClassPeerNetworkSettingObject peerNetworkSettingObject)
         {
             if (peerUniqueId.IsNullOrEmpty(false, out _))
                 return false;
 
-            if (!await peerDatabase.ContainsPeer(peerIp, peerUniqueId, cancellation))
+            if (!ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
                 return false;
 
-            if (peerDatabase[peerIp, peerUniqueId, cancellation]?.PeerLastValidPacket + peerNetworkSettingObject.PeerMaxDelayKeepAliveStats < TaskManager.TaskManager.CurrentTimestampSecond)
+            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastValidPacket + peerNetworkSettingObject.PeerMaxDelayKeepAliveStats < TaskManager.TaskManager.CurrentTimestampSecond)
             {
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientLastTimestampPeerPacketSignatureWhitelist = 0;
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientTotalPassedPeerPacketSignature = 0;
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist = 0;
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientTotalPassedPeerPacketSignature = 0;
                 return false;
             }
 
-            if (peerDatabase[peerIp, peerUniqueId, cancellation]?.PeerClientLastTimestampPeerPacketSignatureWhitelist >= TaskManager.TaskManager.CurrentTimestampSecond)
+            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist >= TaskManager.TaskManager.CurrentTimestampSecond)
                 return true;
 
-            if (peerDatabase[peerIp, peerUniqueId, cancellation]?.PeerClientTotalValidPacket >= peerNetworkSettingObject.PeerMinValidPacket)
+            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientTotalValidPacket >= peerNetworkSettingObject.PeerMinValidPacket)
             {
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientTotalPassedPeerPacketSignature++;
-                if (peerDatabase[peerIp, peerUniqueId, cancellation]?.PeerClientTotalPassedPeerPacketSignature >= peerNetworkSettingObject.PeerMaxWhiteListPacket)
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientTotalPassedPeerPacketSignature++;
+                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientTotalPassedPeerPacketSignature >= peerNetworkSettingObject.PeerMaxWhiteListPacket)
                 {
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientLastTimestampPeerPacketSignatureWhitelist = TaskManager.TaskManager.CurrentTimestampSecond + peerNetworkSettingObject.PeerMaxDelayKeepAliveStats;
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientTotalPassedPeerPacketSignature = 0;
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientTotalValidPacket = 0;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist = TaskManager.TaskManager.CurrentTimestampSecond + peerNetworkSettingObject.PeerMaxDelayKeepAliveStats;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientTotalPassedPeerPacketSignature = 0;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientTotalValidPacket = 0;
                 }
                 return true;
             }
@@ -199,21 +187,21 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="peerIp"></param>
         /// <param name="peerUniqueId"></param>
         /// <returns></returns>
-        public static async Task<bool> CheckPeerClientInitializationStatus(ClassPeerDatabase peerDatabase, string peerIp, string peerUniqueId, CancellationTokenSource cancellation)
+        public static bool CheckPeerClientInitializationStatus(string peerIp, string peerUniqueId)
         {
-            if (!await peerDatabase.ContainsPeer(peerIp, peerUniqueId, cancellation))
+            if (!ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
                 return false;
 
-            if (peerDatabase[peerIp, peerUniqueId, cancellation].PeerIp.IsNullOrEmpty(false, out _) ||
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerUniqueId.IsNullOrEmpty(false, out _) ||
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerPort <= 0 ||
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKey == null ||
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKeyIv == null ||
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPublicKey.IsNullOrEmpty(false, out _) ||
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey.IsNullOrEmpty(false, out _) ||
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientPacketEncryptionKey == null ||
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientPacketEncryptionKeyIv == null ||
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientPublicKey.IsNullOrEmpty(false, out _))
+            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerIp.IsNullOrEmpty(false, out _) ||
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerUniqueId.IsNullOrEmpty(false, out _) ||
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerPort <= 0 ||
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKey == null ||
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPacketEncryptionKeyIv == null ||
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPublicKey.IsNullOrEmpty(false, out _) ||
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey.IsNullOrEmpty(false, out _) ||
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPacketEncryptionKey == null ||
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPacketEncryptionKeyIv == null ||
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPublicKey.IsNullOrEmpty(false, out _))
                 return false;
 
             return true;
@@ -226,13 +214,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="peerUniqueId"></param>
         /// <param name="peerPublicKeyReceived"></param>
         /// <returns></returns>
-        public static async Task<bool> ComparePeerPacketPublicKey(ClassPeerDatabase peerDatabase, string peerIp, string peerUniqueId, string peerPublicKeyReceived, CancellationTokenSource cancellation)
+        public static bool ComparePeerPacketPublicKey(string peerIp, string peerUniqueId, string peerPublicKeyReceived)
         {
-            if (!await peerDatabase.ContainsPeer(peerIp, peerUniqueId, cancellation) ||
+            if (!ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId) ||
                 peerPublicKeyReceived.IsNullOrEmpty(false, out _))
                 return false;
 
-            return peerDatabase[peerIp, peerUniqueId, cancellation]?.PeerClientPublicKey == peerPublicKeyReceived;
+            return ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPublicKey == peerPublicKeyReceived;
         }
 
 
@@ -248,25 +236,25 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="peerUniqueId"></param>
         /// <param name="peerNetworkSettingObject"></param>
         /// <param name="peerFirewallSettingObject"></param>
-        public static async Task InputPeerClientInvalidPacket(ClassPeerDatabase peerDatabase, string peerIp, string peerUniqueId, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject, CancellationTokenSource cancellation)
+        public static void InputPeerClientInvalidPacket(string peerIp, string peerUniqueId, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject)
         {
             long currentTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
 
-            if (!await peerDatabase.ContainsPeer(peerIp, peerUniqueId, cancellation))
+            if (!ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
             {
                 if (peerFirewallSettingObject.PeerEnableFirewallLink)
                     ClassPeerFirewallManager.InsertInvalidPacket(peerIp);
             }
             else
             {
-                if (peerDatabase[peerIp, peerUniqueId, cancellation].PeerLastBadStatePacket + peerNetworkSettingObject.PeerMaxDelayKeepAliveStats <= currentTimestamp)
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalInvalidPacket = 0;
+                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastBadStatePacket + peerNetworkSettingObject.PeerMaxDelayKeepAliveStats <= currentTimestamp)
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalInvalidPacket = 0;
 
-                await UpdatePeerLastBadStatePacket(peerDatabase, peerIp, peerUniqueId, peerFirewallSettingObject, cancellation);
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalInvalidPacket++;
+                UpdatePeerLastBadStatePacket(peerIp, peerUniqueId, peerFirewallSettingObject);
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalInvalidPacket++;
 
-                if (peerDatabase[peerIp, peerUniqueId, cancellation]?.PeerTotalInvalidPacket >= peerNetworkSettingObject.PeerMaxInvalidPacket)
-                   await SetPeerBanState(peerDatabase, peerIp, peerUniqueId, peerNetworkSettingObject, peerFirewallSettingObject, cancellation);
+                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalInvalidPacket >= peerNetworkSettingObject.PeerMaxInvalidPacket)
+                    SetPeerBanState(peerIp, peerUniqueId, peerNetworkSettingObject, peerFirewallSettingObject);
 
             }
         }
@@ -278,25 +266,25 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="peerUniqueId"></param>
         /// <param name="peerNetworkSettingObject"></param>
         /// <param name="peerFirewallSettingObject"></param>
-        public static async Task InputPeerClientNoPacketConnectionOpened(ClassPeerDatabase peerDatabase, string peerIp, string peerUniqueId, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject, CancellationTokenSource cancellation)
+        public static void InputPeerClientNoPacketConnectionOpened(string peerIp, string peerUniqueId, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject)
         {
 
-            if (!await peerDatabase.ContainsPeer(peerIp, peerUniqueId, cancellation))
+            if (!ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
             {
                 if (peerFirewallSettingObject.PeerEnableFirewallLink)
                     ClassPeerFirewallManager.InsertInvalidPacket(peerIp);
             }
             else
             {
-                if (peerDatabase[peerIp, peerUniqueId, cancellation]?.PeerLastBadStatePacket + peerNetworkSettingObject.PeerMaxDelayKeepAliveStats <= TaskManager.TaskManager.CurrentTimestampSecond)
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalNoPacketConnectionAttempt = 0;
+                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastBadStatePacket + peerNetworkSettingObject.PeerMaxDelayKeepAliveStats <= TaskManager.TaskManager.CurrentTimestampSecond)
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalNoPacketConnectionAttempt = 0;
 
-                await UpdatePeerLastBadStatePacket(peerDatabase, peerIp, peerUniqueId, peerFirewallSettingObject, cancellation);
+                UpdatePeerLastBadStatePacket(peerIp, peerUniqueId, peerFirewallSettingObject);
 
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalNoPacketConnectionAttempt++;
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalNoPacketConnectionAttempt++;
 
-                if (peerDatabase[peerIp, peerUniqueId, cancellation]?.PeerTotalNoPacketConnectionAttempt >= peerNetworkSettingObject.PeerMaxNoPacketPerConnectionOpened)
-                   await SetPeerDeadState(peerDatabase, peerIp, peerUniqueId, peerNetworkSettingObject,  peerFirewallSettingObject, cancellation);
+                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalNoPacketConnectionAttempt >= peerNetworkSettingObject.PeerMaxNoPacketPerConnectionOpened)
+                    SetPeerDeadState(peerIp, peerUniqueId, peerNetworkSettingObject,  peerFirewallSettingObject);
             }
         }
 
@@ -307,23 +295,23 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="peerUniqueId"></param>
         /// <param name="peerNetworkSettingObject"></param>
         /// <param name="peerFirewallSettingObject"></param>
-        public static async Task InputPeerClientAttemptConnect(ClassPeerDatabase peerDatabase, string peerIp, string peerUniqueId, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject, CancellationTokenSource cancellation)
+        public static void InputPeerClientAttemptConnect(string peerIp, string peerUniqueId, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject)
         {
-            if (!await peerDatabase.ContainsPeer(peerIp, peerUniqueId, cancellation))
+            if (!ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
             {
                 if (peerFirewallSettingObject.PeerEnableFirewallLink)
                     ClassPeerFirewallManager.InsertInvalidPacket(peerIp);
             }
             else
             {
-                if (peerDatabase[peerIp, peerUniqueId, cancellation]?.PeerLastBadStatePacket + peerNetworkSettingObject.PeerMaxDelayKeepAliveStats <= TaskManager.TaskManager.CurrentTimestampSecond)
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalAttemptConnection = 0;
+                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastBadStatePacket + peerNetworkSettingObject.PeerMaxDelayKeepAliveStats <= TaskManager.TaskManager.CurrentTimestampSecond)
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalAttemptConnection = 0;
 
-               await UpdatePeerLastBadStatePacket(peerDatabase, peerIp, peerUniqueId, peerFirewallSettingObject, cancellation);
+                UpdatePeerLastBadStatePacket(peerIp, peerUniqueId, peerFirewallSettingObject);
 
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalAttemptConnection++;
-                if (peerDatabase[peerIp, peerUniqueId, cancellation]?.PeerTotalAttemptConnection >= peerNetworkSettingObject.PeerMaxAttemptConnection)
-                    await SetPeerDeadState(peerDatabase, peerIp, peerUniqueId, peerNetworkSettingObject, peerFirewallSettingObject, cancellation);
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalAttemptConnection++;
+                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalAttemptConnection >= peerNetworkSettingObject.PeerMaxAttemptConnection)
+                    SetPeerDeadState(peerIp, peerUniqueId, peerNetworkSettingObject, peerFirewallSettingObject);
             }
         }
 
@@ -332,20 +320,20 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// </summary>
         /// <param name="peerIp"></param>
         /// <param name="peerUniqueId"></param>
-        public static async Task InputPeerClientValidPacket(ClassPeerDatabase peerDatabase, string peerIp, string peerUniqueId, ClassPeerNetworkSettingObject peerNetworkSettingObject, CancellationTokenSource cancellation)
+        public static void InputPeerClientValidPacket(string peerIp, string peerUniqueId, ClassPeerNetworkSettingObject peerNetworkSettingObject)
         {
-            if (await peerDatabase.ContainsPeer(peerIp, peerUniqueId, cancellation))
+            if (ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
             {
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerLastValidPacket = TaskManager.TaskManager.CurrentTimestampSecond + peerNetworkSettingObject.PeerMaxDelayKeepAliveStats;
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientTotalValidPacket++;
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalNoPacketConnectionAttempt = 0;
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastValidPacket = TaskManager.TaskManager.CurrentTimestampSecond + peerNetworkSettingObject.PeerMaxDelayKeepAliveStats;
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientTotalValidPacket++;
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalNoPacketConnectionAttempt = 0;
 
-                if (peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientTotalValidPacket >= peerNetworkSettingObject.PeerMaxInvalidPacket)
+                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientTotalValidPacket >= peerNetworkSettingObject.PeerMaxInvalidPacket)
                 {
-                    if (peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalInvalidPacket > 0)
-                        peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalInvalidPacket--;
-                    else if (peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalInvalidPacket < 0)
-                        peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalInvalidPacket = 0;
+                    if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalInvalidPacket > 0)
+                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalInvalidPacket--;
+                    else if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalInvalidPacket < 0)
+                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalInvalidPacket = 0;
                 }
             }
         }
@@ -355,13 +343,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// </summary>
         /// <param name="peerIp"></param>
         /// <param name="peerUniqueId"></param>
-        public static void UpdatePeerClientLastPacketReceived(ClassPeerDatabase peerDatabase, string peerIp, string peerUniqueId, long peerLastTimestampSignatureWhitelist, CancellationTokenSource cancellation)
+        public static void UpdatePeerClientLastPacketReceived(string peerIp, string peerUniqueId, long peerLastTimestampSignatureWhitelist)
         {
             try
             {
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerLastPacketReceivedTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalNoPacketConnectionAttempt = 0;
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientLastTimestampPeerPacketSignatureWhitelist = peerLastTimestampSignatureWhitelist;
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastPacketReceivedTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalNoPacketConnectionAttempt = 0;
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist = peerLastTimestampSignatureWhitelist;
             }
             catch
             {
@@ -379,25 +367,25 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="peerIp"></param>
         /// <param name="peerUniqueId"></param>
         /// <param name="unBanOrUnDead"></param>
-        public static async Task CleanPeerState(ClassPeerDatabase peerDatabase, string peerIp, string peerUniqueId, bool unBanOrUnDead, CancellationTokenSource cancellation)
+        public static void CleanPeerState(string peerIp, string peerUniqueId, bool unBanOrUnDead)
         {
-            if (await peerDatabase.ContainsPeer(peerIp, peerUniqueId, cancellation))
+            if (ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
             {
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerStatus = ClassPeerEnumStatus.PEER_ALIVE;
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalAttemptConnection = 0;
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalInvalidPacket = 0;
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerLastBadStatePacket = 0;
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus = ClassPeerEnumStatus.PEER_ALIVE;
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalAttemptConnection = 0;
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalInvalidPacket = 0;
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastBadStatePacket = 0;
                 if (unBanOrUnDead)
                 {
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerBanDate = 0;
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerLastDeadTimestamp = 0;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerBanDate = 0;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastDeadTimestamp = 0;
                 }
                 if (!unBanOrUnDead)
                 {
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientLastTimestampPeerPacketSignatureWhitelist = 0;
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientTotalPassedPeerPacketSignature = 0;
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalNoPacketConnectionAttempt = 0;
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalAttemptConnection = 0;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist = 0;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientTotalPassedPeerPacketSignature = 0;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalNoPacketConnectionAttempt = 0;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalAttemptConnection = 0;
                 }
                 ClassLog.WriteLine("Peer: " + peerIp + " | Unique ID: " + peerUniqueId + " state has been cleaned.", ClassEnumLogLevelType.LOG_LEVEL_PEER_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY, false, ConsoleColor.Magenta);
             }
@@ -410,23 +398,23 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="peerUniqueId"></param>
         /// <param name="peerNetworkSettingObject"></param>
         /// <param name="peerFirewallSettingObject"></param>
-        public static async Task SetPeerBanState(ClassPeerDatabase peerDatabase, string peerIp, string peerUniqueId, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject, CancellationTokenSource cancellation)
+        public static void SetPeerBanState(string peerIp, string peerUniqueId, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject)
         {
-            if (!await peerDatabase.ContainsPeer(peerIp, peerUniqueId, cancellation))
+            if (!ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
             {
                 if (peerFirewallSettingObject.PeerEnableFirewallLink)
                     ClassPeerFirewallManager.InsertInvalidPacket(peerIp);
             }
             else
             {
-                if (peerDatabase[peerIp, peerUniqueId, cancellation].PeerStatus != ClassPeerEnumStatus.PEER_BANNED)
+                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus != ClassPeerEnumStatus.PEER_BANNED)
                 {
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerStatus = ClassPeerEnumStatus.PEER_BANNED;
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalInvalidPacket = peerNetworkSettingObject.PeerMaxInvalidPacket;
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerBanDate = TaskManager.TaskManager.CurrentTimestampSecond;
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientTotalValidPacket = 0;
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientTotalPassedPeerPacketSignature = 0;
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientLastTimestampPeerPacketSignatureWhitelist = 0;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus = ClassPeerEnumStatus.PEER_BANNED;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalInvalidPacket = peerNetworkSettingObject.PeerMaxInvalidPacket;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerBanDate = TaskManager.TaskManager.CurrentTimestampSecond;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientTotalValidPacket = 0;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientTotalPassedPeerPacketSignature = 0;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist = 0;
                     ClassLog.WriteLine("Peer: " + peerIp + " | Unique ID: " + peerUniqueId + " state has been set to banned temporaly.", ClassEnumLogLevelType.LOG_LEVEL_PEER_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
                 }
             }
@@ -440,22 +428,22 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="peerUniqueId"></param>
         /// <param name="peerNetworkSettingObject"></param>
         /// <param name="peerFirewallSettingObject"></param>
-        public static async Task SetPeerDeadState(ClassPeerDatabase peerDatabase, string peerIp, string peerUniqueId, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject, CancellationTokenSource cancellation)
+        public static void SetPeerDeadState(string peerIp, string peerUniqueId, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject)
         {
-            if (!await peerDatabase.ContainsPeer(peerIp, peerUniqueId, cancellation))
+            if (!ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
             {
                 if (!peerFirewallSettingObject.PeerEnableFirewallLink)
                     ClassPeerFirewallManager.InsertInvalidPacket(peerIp);
             }
             else
             {
-                if (peerDatabase[peerIp, peerUniqueId, cancellation].PeerStatus != ClassPeerEnumStatus.PEER_DEAD)
+                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus != ClassPeerEnumStatus.PEER_DEAD)
                 {
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerStatus = ClassPeerEnumStatus.PEER_DEAD;
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalAttemptConnection = 0;
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalNoPacketConnectionAttempt = 0;
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerLastDeadTimestamp = TaskManager.TaskManager.CurrentTimestampSecond + peerNetworkSettingObject.PeerDeadDelay;
-                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientLastTimestampPeerPacketSignatureWhitelist = 0;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus = ClassPeerEnumStatus.PEER_DEAD;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalAttemptConnection = 0;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerTotalNoPacketConnectionAttempt = 0;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastDeadTimestamp = TaskManager.TaskManager.CurrentTimestampSecond + peerNetworkSettingObject.PeerDeadDelay;
+                    ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist = 0;
 
                     ClassLog.WriteLine("Peer: " + peerIp + " | Unique ID: " + peerUniqueId + " state has been set to dead temporaly.", ClassEnumLogLevelType.LOG_LEVEL_PEER_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
                 }
@@ -470,11 +458,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="numericPublicKeyOut"></param>
         /// <param name="timestampRankDelay"></param>
         /// <returns></returns>
-        public static bool PeerHasSeedRank(ClassPeerDatabase peerDatabase, string peerIp, string peerUniqueId, CancellationTokenSource cancellation, out string numericPublicKeyOut, out long timestampRankDelay)
+        public static bool PeerHasSeedRank(string peerIp, string peerUniqueId, out string numericPublicKeyOut, out long timestampRankDelay)
         {
             timestampRankDelay = 0;
 
-            if (!peerDatabase.GetPeerNumericPublicKey(peerIp, peerUniqueId, cancellation, out numericPublicKeyOut))
+            if (!ClassPeerDatabase.GetPeerNumericPublicKey(peerIp, peerUniqueId, out numericPublicKeyOut))
                 return false;
 
             if (numericPublicKeyOut.IsNullOrEmpty(false, out _))
@@ -513,19 +501,19 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="peerUniqueId"></param>
         /// <param name="peerFirewallSettingObject"></param>
         /// 
-        public static async Task UpdatePeerLastBadStatePacket(ClassPeerDatabase peerDatabase, string peerIp, string peerUniqueId, ClassPeerFirewallSettingObject peerFirewallSettingObject, CancellationTokenSource cancellation)
+        public static void UpdatePeerLastBadStatePacket(string peerIp, string peerUniqueId, ClassPeerFirewallSettingObject peerFirewallSettingObject)
         {
-            if (!await peerDatabase.ContainsPeer(peerIp, peerUniqueId, cancellation))
+            if (!ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId))
             {
                 if (peerFirewallSettingObject.PeerEnableFirewallLink)
                     ClassPeerFirewallManager.InsertInvalidPacket(peerIp);
             }
             else
             {
-                peerDatabase[peerIp, peerUniqueId, cancellation].PeerLastBadStatePacket = TaskManager.TaskManager.CurrentTimestampSecond;
-                //peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientTotalValidPacket = 0;
-                //peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientTotalPassedPeerPacketSignature = 0;
-                //peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientLastTimestampPeerPacketSignatureWhitelist = 0;
+                ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastBadStatePacket = TaskManager.TaskManager.CurrentTimestampSecond;
+                //ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientTotalValidPacket = 0;
+                //ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientTotalPassedPeerPacketSignature = 0;
+                //ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastTimestampPeerPacketSignatureWhitelist = 0;
             }
 
         }

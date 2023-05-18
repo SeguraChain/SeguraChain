@@ -30,7 +30,6 @@ using SeguraChain_Lib.Blockchain.Stats.Function;
 using SeguraChain_Lib.Blockchain.Transaction.Enum;
 using SeguraChain_Lib.Blockchain.Transaction.Object;
 using SeguraChain_Lib.Blockchain.Transaction.Utility;
-using SeguraChain_Lib.Instance.Node.Network.Database;
 using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast;
 using SeguraChain_Lib.Instance.Node.Setting.Object;
 using SeguraChain_Lib.Log;
@@ -846,7 +845,7 @@ namespace SeguraChain_Lib.Blockchain.Database
         /// <param name="peerFirewallSettingObject"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        public static async Task<ClassBlockEnumMiningShareVoteStatus> UnlockCurrentBlockAsync(long blockHeight, ClassMiningPoWaCShareObject miningPowShareObject, bool enableBroadcast, string apiServerIp, string apiServerOpenNatIp, bool unlockTest, bool fromSync, ClassPeerNetworkSettingObject peerNetworkSetting, ClassPeerFirewallSettingObject peerFirewallSettingObject, ClassPeerDatabase peerDatabase, CancellationTokenSource cancellation)
+        public static async Task<ClassBlockEnumMiningShareVoteStatus> UnlockCurrentBlockAsync(long blockHeight, ClassMiningPoWaCShareObject miningPowShareObject, bool enableBroadcast, string apiServerIp, string apiServerOpenNatIp, bool unlockTest, bool fromSync, ClassPeerNetworkSettingObject peerNetworkSetting, ClassPeerFirewallSettingObject peerFirewallSettingObject, CancellationTokenSource cancellation)
         {
             ClassBlockEnumMiningShareVoteStatus resultUnlock = ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_REFUSED;
 
@@ -926,7 +925,7 @@ namespace SeguraChain_Lib.Blockchain.Database
 
                                                                                         if (enableBroadcast)
                                                                                      {
-                                                                                         Tuple<ClassBlockEnumMiningShareVoteStatus, bool> blockMiningShareVoteStatus = await ClassPeerNetworkBroadcastFunction.AskBlockMiningShareVoteToPeerListsAsync(peerDatabase, apiServerIp, apiServerOpenNatIp, string.Empty, blockHeight, miningPowShareObject, peerNetworkSetting, peerFirewallSettingObject, cancellation, true);
+                                                                                         Tuple<ClassBlockEnumMiningShareVoteStatus, bool> blockMiningShareVoteStatus = await ClassPeerNetworkBroadcastFunction.AskBlockMiningShareVoteToPeerListsAsync(apiServerIp, apiServerOpenNatIp, string.Empty, blockHeight, miningPowShareObject, peerNetworkSetting, peerFirewallSettingObject, cancellation, true);
 
 
                                                                                          if (blockMiningShareVoteStatus.Item2)

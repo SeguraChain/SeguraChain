@@ -14,6 +14,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// </summary>
         public ClassBlockObject BlockObject
         {
+            [MethodImpl(MethodImplOptions.Synchronized)]
             get
             {
                 if (!IsNull)
@@ -26,6 +27,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
                 return null;
             }
+            [MethodImpl(MethodImplOptions.Synchronized)]
             set
             {
                 if (value != null)
@@ -124,6 +126,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// </summary>
         public long IoDataSizeOnMemory
         {
+            [MethodImpl(MethodImplOptions.Synchronized)]
             get
             {
                 if (_ioDataSizeOnMemory == 0)
@@ -185,6 +188,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// </summary>
         public bool IsNull
         {
+            [MethodImpl(MethodImplOptions.Synchronized)]
             get
             {
                 if (_blockObject == null)
@@ -222,7 +226,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                         {
                             try
                             {
-                                locked = Monitor.TryEnter(_blockObject);
+                                Monitor.TryEnter(_blockObject, ref locked);
 
                                 if (locked)
                                 {
