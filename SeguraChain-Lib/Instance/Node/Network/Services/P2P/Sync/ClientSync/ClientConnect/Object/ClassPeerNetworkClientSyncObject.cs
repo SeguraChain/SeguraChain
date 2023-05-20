@@ -347,9 +347,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                             if (!readPacketData.Status)
                                 break;
 
+                            try 
+                            { 
                             #region Compile the packet.
 
-                            listPacketReceived = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, _peerCancellationTokenTaskListenPeerPacketResponse);
+                                listPacketReceived = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, _peerCancellationTokenTaskListenPeerPacketResponse);
 
                             #endregion
 
@@ -414,10 +416,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                     Debug.WriteLine("Failed, the packet order expected is invalid: " + peerPacketReceived.PacketOrder + "/" + PacketResponseExpected);
 #endif
                             }
-                            break;
+                            
+                                break;
+                            }
+                            catch
+                            {
+
+                            }
                         }
                     }
-                }
+                 }
 
                 PeerTaskStatus = false;
 
