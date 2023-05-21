@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 using SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Status;
-using System.Threading;
+using SeguraChain_Lib.Utility;
 
 namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
 {
@@ -59,8 +59,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         [JsonIgnore]
         public ClassPeerCryptoStreamObject GetInternCryptoStreamObject { get; set; }
 
-        [JsonIgnore]
-        public SemaphoreSlim SemaphoreUpdateAutKeys;
 
         /// <summary>
         /// Constructor.
@@ -69,7 +67,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         {
             PeerTimestampInsert = TaskManager.TaskManager.CurrentTimestampSecond;
             PeerLastPacketReceivedTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
-            SemaphoreUpdateAutKeys = new SemaphoreSlim(1, 1);
         }
 
     }

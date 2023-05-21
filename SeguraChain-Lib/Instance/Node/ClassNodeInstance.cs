@@ -224,6 +224,7 @@ namespace SeguraChain_Lib.Instance.Node
         /// </summary>
         public async Task NodeStop(bool forceClose = false, bool isWallet = false)
         {
+            TaskManager.TaskManager.StopTaskManager();
 
             ClassLog.WriteLine("Close Peer Tool, please wait a moment..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
@@ -337,7 +338,6 @@ namespace SeguraChain_Lib.Instance.Node
 
             PeerToolStatus = false;
 
-            TaskManager.TaskManager.StopTaskManager();
 
             if (!forceClose)
             {

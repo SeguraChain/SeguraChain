@@ -62,7 +62,11 @@ namespace SeguraChain_Lib.Other.Object.Network
                 try
                 {
                     if (_socket?.RemoteEndPoint == null)
+                    {
+                        // Is dead.
+                        Kill(SocketShutdown.Both);
                         return string.Empty;
+                    }
 
                     return ((IPEndPoint)(_socket.RemoteEndPoint)).Address.ToString();
                 }
@@ -81,8 +85,8 @@ namespace SeguraChain_Lib.Other.Object.Network
         {
             try
             {
-                 return !((_socket.Poll(10, SelectMode.SelectRead) && (_socket.Available == 0)));
-                //return (Closed || _socket == null || !_socket.Connected || _networkStream == null) ? false : true;
+                // return !((_socket.Poll(10, SelectMode.SelectRead) && (_socket.Available == 0)));
+                return (Closed || _socket == null || !_socket.Connected || _networkStream == null) ? false : true;
             }
             catch
             {
@@ -149,17 +153,11 @@ namespace SeguraChain_Lib.Other.Object.Network
 
             Closed = true;
 
-
-            try
+            if (IsConnected())
             {
                 _socket?.Shutdown(shutdownType);
                 _socket?.Close();
             }
-            catch
-            {
-
-            }
-
         }
 
 

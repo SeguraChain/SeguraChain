@@ -137,43 +137,37 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         /// <summary>
         /// Check peer client connection.
         /// </summary>
-        private void CheckPeerClient()
+        private async Task CheckPeerClientAsync()
         {
-            TaskManager.TaskManager.InsertTask(new Action(async () =>
+            while (ClientPeerConnectionStatus)
             {
-                while (ClientPeerConnectionStatus)
+
+
+                if (!ClientPeerConnectionStatus || _clientAskDisconnection)
+                    break;
+
+                if (_peerFirewallSettingObject.PeerEnableFirewallLink)
                 {
-
-                    if (!_clientSocket.IsConnected())
+                    if (!ClassPeerFirewallManager.CheckClientIpStatus(_peerClientIp))
                         break;
-
-                    if (!ClientPeerConnectionStatus || _clientAskDisconnection)
-                        break;
-
-                    if (_peerFirewallSettingObject.PeerEnableFirewallLink)
-                    {
-                        if (!ClassPeerFirewallManager.CheckClientIpStatus(_peerClientIp))
-                            break;
-                    }
-
- 
-                    if (!(_onHandlePacketResponse || _onSendingPacketResponse || (_enableMemPoolBroadcastClientMode && _onSendingMemPoolTransaction)))
-                    {
-                        // If any packet are received after the delay, the function close the peer client connection to listen.
-                        if (ClientPeerLastPacketReceived + _peerNetworkSettingObject.PeerServerPacketDelay < TaskManager.TaskManager.CurrentTimestampMillisecond)
-                        {
-                            // On this case, insert invalid attempt of connection.
-                            if (!_clientResponseSendSuccessfully)
-                                ClassPeerCheckManager.InputPeerClientNoPacketConnectionOpened(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                            break;
-                        }
-                    }
-
-                    await Task.Delay(1000);
                 }
 
-                ClosePeerClient(true);
-            }), 0, _cancellationTokenClientCheckConnectionPeer);
+                if (!(_onHandlePacketResponse || _onSendingPacketResponse || (_enableMemPoolBroadcastClientMode && _onSendingMemPoolTransaction)))
+                { 
+                    // If any packet are received after the delay, the function close the peer client connection to listen.
+                    if (ClientPeerLastPacketReceived + _peerNetworkSettingObject.PeerServerPacketDelay < TaskManager.TaskManager.CurrentTimestampMillisecond)
+                    {
+                        // On this case, insert invalid attempt of connection.
+                        if (!_clientResponseSendSuccessfully)
+                            ClassPeerCheckManager.InputPeerClientNoPacketConnectionOpened(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                        break;
+                    }
+                }
+
+                await Task.Delay(1000);
+            }
+
+            ClosePeerClient(true);
         }
 
         /// <summary>
@@ -232,7 +226,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             ClientPeerLastPacketReceived = TaskManager.TaskManager.CurrentTimestampMillisecond + _peerNetworkSettingObject.PeerServerPacketDelay;
 
             // Launch a task for check the peer connection.
-            CheckPeerClient();
+            TaskManager.TaskManager.InsertTask(new Action(async () => await CheckPeerClientAsync()), 0, _cancellationTokenClientCheckConnectionPeer);
 
             // Launch a task to handle packets received.
             TaskManager.TaskManager.InsertTask(new Action(async () =>

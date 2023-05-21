@@ -386,101 +386,93 @@ namespace SeguraChain_Lib.Blockchain.Database
         /// <returns></returns>
         public static async Task<bool> SaveBlockchainDatabase(ClassBlockchainDatabaseSetting blockchainDatabaseSetting)
         {
-            bool useSemaphore = false;
 
-            try
+            return await _semaphoreSaveBlockchain.TryWaitExecuteActionAsync(async () =>
             {
-                useSemaphore = await _semaphoreSaveBlockchain.TryWaitAsync(_cancellationTokenStopBlockchain);
-                if (useSemaphore)
+
+
+                if (!Directory.Exists(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath))
+                    Directory.CreateDirectory(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath);
+
+                // Counter of data saved.
+                long totalBlockSaved = 0;
+                long totalTxSaved = 0;
+
+                if (BlockchainMemoryManagement.Count > 0)
                 {
 
-                    if (!Directory.Exists(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath))
-                        Directory.CreateDirectory(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath);
-
-                    // Counter of data saved.
-                    long totalBlockSaved = 0;
-                    long totalTxSaved = 0;
-
-                    if (BlockchainMemoryManagement.Count > 0)
+                    while (true)
                     {
+                        long countBlock = BlockchainMemoryManagement.Count;
+                        totalBlockSaved = 0;
+                        ClassLog.WriteLine("Save " + countBlock + " block(s) file(s)..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-                        while (true)
+
+                        for (long i = 0; i < countBlock; i++)
                         {
-                            long countBlock = BlockchainMemoryManagement.Count;
-                            totalBlockSaved = 0;
-                            ClassLog.WriteLine("Save " + countBlock + " block(s) file(s)..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
+                            long blockHeight = i + 1;
 
-                            for (long i = 0; i < countBlock; i++)
+                            string blockFileName = ClassBlockchainDatabaseDefaultSetting.BlockDatabaseFileName + blockHeight + ClassBlockchainDatabaseDefaultSetting.BlockDatabaseFileExtension;
+
+                            if (File.Exists(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName))
+                                File.Delete(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName);
+
+                            File.Create(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName).Close();
+
+                            // Initialize Stream Block Writer.
+                            using (StreamWriter writerBlock = blockchainDatabaseSetting.DataSetting.EnableCompressDatabase ?
+                            new StreamWriter(new LZ4Stream(new FileStream(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName, FileMode.Truncate), LZ4StreamMode.Compress, LZ4StreamFlags.HighCompression, ClassBlockchainDatabaseDefaultSetting.Lz4CompressionBlockSize)) :
+                            new StreamWriter(new FileStream(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName, FileMode.Truncate)) { AutoFlush = true })
                             {
+                                ClassBlockObject blockObjectInformation = await BlockchainMemoryManagement.GetBlockInformationDataStrategy(blockHeight, _cancellationTokenStopBlockchain);
 
-                                long blockHeight = i + 1;
+                                while (blockObjectInformation == null)
+                                    blockObjectInformation = await BlockchainMemoryManagement.GetBlockInformationDataStrategy(blockHeight, _cancellationTokenStopBlockchain);
 
-                                string blockFileName = ClassBlockchainDatabaseDefaultSetting.BlockDatabaseFileName + blockHeight + ClassBlockchainDatabaseDefaultSetting.BlockDatabaseFileExtension;
+                                ClassBlockObject blockObject = await BlockchainMemoryManagement.GetBlockDataStrategy(blockHeight, true, true, _cancellationTokenStopBlockchain);
 
-                                if (File.Exists(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName))
-                                    File.Delete(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName);
+                                while (blockObject == null ||
+                                blockObject?.BlockTransactions == null ||
+                                blockObject?.BlockTransactions?.Count != blockObject?.TotalTransaction ||
+                                blockObject?.TotalTransaction != blockObjectInformation.TotalTransaction)
+                                    blockObject = await BlockchainMemoryManagement.GetBlockDataStrategy(blockHeight, true, true, _cancellationTokenStopBlockchain);
 
-                                File.Create(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName).Close();
 
-                                // Initialize Stream Block Writer.
-                                using (StreamWriter writerBlock = blockchainDatabaseSetting.DataSetting.EnableCompressDatabase ?
-                                new StreamWriter(new LZ4Stream(new FileStream(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName, FileMode.Truncate), LZ4StreamMode.Compress, LZ4StreamFlags.HighCompression, ClassBlockchainDatabaseDefaultSetting.Lz4CompressionBlockSize)) :
-                                new StreamWriter(new FileStream(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryBlockPath + blockFileName, FileMode.Truncate)) { AutoFlush = true })
+                                foreach (string blockDataLine in ClassBlockUtility.BlockObjectToStringBlockData(blockObject, blockchainDatabaseSetting.DataSetting.DataFormatIsJson))
                                 {
-                                    ClassBlockObject blockObjectInformation = await BlockchainMemoryManagement.GetBlockInformationDataStrategy(blockHeight, _cancellationTokenStopBlockchain);
 
-                                    while (blockObjectInformation == null)
-                                        blockObjectInformation = await BlockchainMemoryManagement.GetBlockInformationDataStrategy(blockHeight, _cancellationTokenStopBlockchain);
+                                    byte[] blockDataLineCopy = Encoding.UTF8.GetBytes(blockDataLine);
 
-                                    ClassBlockObject blockObject = await BlockchainMemoryManagement.GetBlockDataStrategy(blockHeight, true, true, _cancellationTokenStopBlockchain);
+                                    if (blockchainDatabaseSetting.DataSetting.EnableEncryptionDatabase)
+                                        ClassAes.EncryptionProcess(blockDataLineCopy, _blockchainDataStandardEncryptionKey, _blockchainDataStandardEncryptionKeyIv, out blockDataLineCopy);
 
-                                    while (blockObject == null ||
-                                    blockObject?.BlockTransactions == null ||
-                                    blockObject?.BlockTransactions?.Count != blockObject?.TotalTransaction ||
-                                    blockObject?.TotalTransaction != blockObjectInformation.TotalTransaction)
-                                        blockObject = await BlockchainMemoryManagement.GetBlockDataStrategy(blockHeight, true, true, _cancellationTokenStopBlockchain);
-
-
-                                    foreach (string blockDataLine in ClassBlockUtility.BlockObjectToStringBlockData(blockObject, blockchainDatabaseSetting.DataSetting.DataFormatIsJson))
-                                    {
-
-                                        byte[] blockDataLineCopy = Encoding.UTF8.GetBytes(blockDataLine);
-
-                                        if (blockchainDatabaseSetting.DataSetting.EnableEncryptionDatabase)
-                                            ClassAes.EncryptionProcess(blockDataLineCopy, _blockchainDataStandardEncryptionKey, _blockchainDataStandardEncryptionKeyIv, out blockDataLineCopy);
-
-                                        await writerBlock.WriteLineAsync(Encoding.UTF8.GetString(blockDataLineCopy));
-                                        await writerBlock.FlushAsync();
-                                    }
-
-                                    totalTxSaved += blockObject.BlockTransactions.Count;
-                                    totalBlockSaved++;
-
-
+                                    await writerBlock.WriteLineAsync(Encoding.UTF8.GetString(blockDataLineCopy));
+                                    await writerBlock.FlushAsync();
                                 }
+
+                                totalTxSaved += blockObject.BlockTransactions.Count;
+                                totalBlockSaved++;
+
 
                             }
 
-                            if (countBlock == totalBlockSaved)
-                                break;
+                            await Task.Delay(1);
                         }
 
-                        ClassUtility.CleanGc();
-
+                        if (countBlock == totalBlockSaved)
+                            break;
                     }
 
-                    ClassLog.WriteLine(totalBlockSaved + " block(s) successfully saved into database file.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                    ClassLog.WriteLine(totalTxSaved + " transaction(s) successfully saved into database file.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                    await BlockchainMemoryManagement.StopMemoryManagement();
+                    ClassUtility.CleanGc();
+
                 }
-            }
-            finally
-            {
-                if (useSemaphore)
-                    _semaphoreSaveBlockchain.Release();
-            }
-            return useSemaphore;
+
+                ClassLog.WriteLine(totalBlockSaved + " block(s) successfully saved into database file.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                ClassLog.WriteLine(totalTxSaved + " transaction(s) successfully saved into database file.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                await BlockchainMemoryManagement.StopMemoryManagement();
+
+            }, _cancellationTokenStopBlockchain);
         }
 
         /// <summary>
