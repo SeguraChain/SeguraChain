@@ -1,4 +1,5 @@
-﻿using SeguraChain_Lib.Utility;
+﻿using Org.BouncyCastle.Bcpg;
+using SeguraChain_Lib.Utility;
 using System;
 using System.Diagnostics;
 using System.Net;
@@ -41,18 +42,25 @@ namespace SeguraChain_Lib.Other.Object.Network
 
         }
 
-        public async Task<bool> ConnectAsync(string ip, int port)
+        public bool Connect(string ip, int port, int timeout)
         {
             try
             {
-                await _socket.ConnectAsync(ip, port);
-                _networkStream = new NetworkStream(_socket);
+                var result = _socket.BeginConnect(ip, port, null, null);
+
+                bool success = result.AsyncWaitHandle.WaitOne(timeout, true);
+
+                if (success)
+                {
+                    _networkStream = new NetworkStream(_socket);
+                    return true;
+                }
             }
             catch
             {
                 return false;
             }
-            return true;
+            return false;
         }
 
         public string GetIp

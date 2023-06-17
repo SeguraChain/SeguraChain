@@ -107,16 +107,23 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 {
                     try
                     {
-                        ClassCustomSocket clientPeerTcp = new ClassCustomSocket(await _tcpListenerPeer.AcceptSocketAsync(), true);
 
-                        string clientIp = clientPeerTcp.GetIp;
-
-                        switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
+                        await _tcpListenerPeer.AcceptSocketAsync().ContinueWith(
+                        async clientTask =>
                         {
+                            var client = await clientTask;
+                            ClassCustomSocket clientPeerTcp = new ClassCustomSocket(client, true);
+
+                            await Task.Factory.StartNew(async () =>
+                            {
+                                string clientIp = clientPeerTcp.GetIp;
+
+                                switch (await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer))
+                                {
 
 
 #if NET5_0_OR_GREATER
-                            case not ClassPeerNetworkServerHandleConnectionEnum.VALID_HANDLE:
+                                case not ClassPeerNetworkServerHandleConnectionEnum.VALID_HANDLE:
 
 #else
                                     case ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS:
@@ -125,13 +132,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                     case ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
 #endif
 
-                                {
-                                    if (_firewallSettingObject.PeerEnableFirewallLink)
-                                        ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
-                                    clientPeerTcp.Kill(SocketShutdown.Both);
+                                        {
+                                            if (_firewallSettingObject.PeerEnableFirewallLink)
+                                                ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
+                                            clientPeerTcp.Kill(SocketShutdown.Both);
+                                        }
+                                        break;
                                 }
-                                break;
-                        }
+                            }, _cancellationTokenSourcePeerServer.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+
+                        }, _cancellationTokenSourcePeerServer.Token);
 
 
 
