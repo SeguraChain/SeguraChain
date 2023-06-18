@@ -123,7 +123,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
 
 #if NET5_0_OR_GREATER
-                                case not ClassPeerNetworkServerHandleConnectionEnum.VALID_HANDLE:
+                                    case not ClassPeerNetworkServerHandleConnectionEnum.VALID_HANDLE:
 
 #else
                                     case ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS:

@@ -90,8 +90,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Rescan
                                 ClassDesktopWalletCommonData.WalletDatabase.WalletOnResync(_walletFilename) && 
                                 ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[_walletFilename].WalletLastBlockHeightSynced == 0)
                             {
-                                if (_walletRescanCancellationToken.IsCancellationRequested)
-                                    break;
+                                _walletRescanCancellationToken.Token.ThrowIfCancellationRequested();
 
                                 // Force to stop.
                                 if (!ClassDesktopWalletCommonData.DesktopWalletStarted)
@@ -105,8 +104,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Rescan
                         {
                             while (ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[_walletFilename].WalletLastBlockHeightSynced < _lastBlockHeightSynced || !ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[_walletFilename].WalletBalanceCalculated)
                             {
-                                if (_walletRescanCancellationToken.IsCancellationRequested)
-                                    break;
+                                _walletRescanCancellationToken.Token.ThrowIfCancellationRequested();
 
                                 // Force to stop.
                                 if (!ClassDesktopWalletCommonData.DesktopWalletStarted)

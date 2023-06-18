@@ -123,21 +123,8 @@ namespace SeguraChain_Lib.Other.Object.Network
         {
             ReadPacketData readPacketData = new ReadPacketData();
 
-
-
             try
             {
-                if (!IsConnected())
-                    return readPacketData;
-                /*
-                while (_socket.Available == 0)
-                {
-                    if (cancellation.IsCancellationRequested || !IsConnected())
-                        return readPacketData;
-
-                    await Task.Delay(1);
-                }
-                */
                 readPacketData.Data = new byte[packetLength];
                 readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
             }

@@ -14,8 +14,9 @@
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
+            {
                 components.Dispose();
-            
+            }
             base.Dispose(disposing);
         }
 
@@ -95,7 +96,7 @@
             // 
             // tabPageStep1
             // 
-            this.tabPageStep1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(55)))), ((int)(((byte)(64)))));
+            this.tabPageStep1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(149)))), ((int)(((byte)(181)))));
             this.tabPageStep1.Controls.Add(this.labelCreateWalletTitleStepOneText);
             this.tabPageStep1.Controls.Add(this.richTextBoxCreateWalletBaseWordContent);
             this.tabPageStep1.Controls.Add(this.checkBoxCreateWalletBaseWordWay);
@@ -202,7 +203,7 @@
             // 
             // tabPageStep2
             // 
-            this.tabPageStep2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(55)))), ((int)(((byte)(64)))));
+            this.tabPageStep2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(149)))), ((int)(((byte)(181)))));
             this.tabPageStep2.Controls.Add(this.buttonCreateWalletBackToStepOne);
             this.tabPageStep2.Controls.Add(this.labelCreateWalletEncryptionRounds);
             this.tabPageStep2.Controls.Add(this.textBoxCreateWalletTotalEncryptionRounds);
@@ -318,7 +319,7 @@
             // 
             // tabPageStep3
             // 
-            this.tabPageStep3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(55)))), ((int)(((byte)(64)))));
+            this.tabPageStep3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(149)))), ((int)(((byte)(181)))));
             this.tabPageStep3.Controls.Add(this.panelCreateWalletInformationResult);
             this.tabPageStep3.Controls.Add(this.panelSaveWallet);
             this.tabPageStep3.Controls.Add(this.panelQrCodeWalletAddress);
@@ -332,7 +333,7 @@
             // 
             // panelCreateWalletInformationResult
             // 
-            this.panelCreateWalletInformationResult.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(95)))), ((int)(((byte)(115)))));
+            this.panelCreateWalletInformationResult.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(192)))), ((int)(((byte)(255)))));
             this.panelCreateWalletInformationResult.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panelCreateWalletInformationResult.Controls.Add(this.labelCreateWalletPrivateKeyDescription);
             this.panelCreateWalletInformationResult.Controls.Add(this.labelCreateWalletWalletAddress);
@@ -347,7 +348,6 @@
             // 
             this.labelCreateWalletPrivateKeyDescription.AutoSize = true;
             this.labelCreateWalletPrivateKeyDescription.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelCreateWalletPrivateKeyDescription.ForeColor = System.Drawing.Color.Snow;
             this.labelCreateWalletPrivateKeyDescription.Location = new System.Drawing.Point(-2, 17);
             this.labelCreateWalletPrivateKeyDescription.Name = "labelCreateWalletPrivateKeyDescription";
             this.labelCreateWalletPrivateKeyDescription.Size = new System.Drawing.Size(331, 13);
@@ -358,7 +358,7 @@
             // 
             this.labelCreateWalletWalletAddress.AutoSize = true;
             this.labelCreateWalletWalletAddress.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelCreateWalletWalletAddress.ForeColor = System.Drawing.Color.RoyalBlue;
+            this.labelCreateWalletWalletAddress.ForeColor = System.Drawing.SystemColors.HotTrack;
             this.labelCreateWalletWalletAddress.Location = new System.Drawing.Point(-2, 96);
             this.labelCreateWalletWalletAddress.Name = "labelCreateWalletWalletAddress";
             this.labelCreateWalletWalletAddress.Size = new System.Drawing.Size(93, 12);
@@ -369,7 +369,6 @@
             // 
             this.labelCreateWalletWalletAddressDescription.AutoSize = true;
             this.labelCreateWalletWalletAddressDescription.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelCreateWalletWalletAddressDescription.ForeColor = System.Drawing.Color.Snow;
             this.labelCreateWalletWalletAddressDescription.Location = new System.Drawing.Point(-2, 83);
             this.labelCreateWalletWalletAddressDescription.Name = "labelCreateWalletWalletAddressDescription";
             this.labelCreateWalletWalletAddressDescription.Size = new System.Drawing.Size(360, 13);
@@ -380,7 +379,7 @@
             // 
             this.labelCreateWalletPrivateKey.AutoSize = true;
             this.labelCreateWalletPrivateKey.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelCreateWalletPrivateKey.ForeColor = System.Drawing.Color.RoyalBlue;
+            this.labelCreateWalletPrivateKey.ForeColor = System.Drawing.SystemColors.HotTrack;
             this.labelCreateWalletPrivateKey.Location = new System.Drawing.Point(-1, 36);
             this.labelCreateWalletPrivateKey.Name = "labelCreateWalletPrivateKey";
             this.labelCreateWalletPrivateKey.Size = new System.Drawing.Size(68, 12);
@@ -389,7 +388,7 @@
             // 
             // panelSaveWallet
             // 
-            this.panelSaveWallet.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(95)))), ((int)(((byte)(115)))));
+            this.panelSaveWallet.BackColor = System.Drawing.Color.AliceBlue;
             this.panelSaveWallet.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panelSaveWallet.Controls.Add(this.labelCreateWalletWalletFileName);
             this.panelSaveWallet.Controls.Add(this.textBoxCreateWalletSaveWalletFile);
@@ -404,7 +403,6 @@
             // 
             this.labelCreateWalletWalletFileName.AutoSize = true;
             this.labelCreateWalletWalletFileName.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelCreateWalletWalletFileName.ForeColor = System.Drawing.Color.Snow;
             this.labelCreateWalletWalletFileName.Location = new System.Drawing.Point(24, 11);
             this.labelCreateWalletWalletFileName.Name = "labelCreateWalletWalletFileName";
             this.labelCreateWalletWalletFileName.Size = new System.Drawing.Size(282, 13);
@@ -444,7 +442,7 @@
             // 
             // panelQrCodeWalletAddress
             // 
-            this.panelQrCodeWalletAddress.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(95)))), ((int)(((byte)(115)))));
+            this.panelQrCodeWalletAddress.BackColor = System.Drawing.Color.AliceBlue;
             this.panelQrCodeWalletAddress.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panelQrCodeWalletAddress.Controls.Add(this.pictureBoxQrCodeWalletAddress);
             this.panelQrCodeWalletAddress.Controls.Add(this.labelCreateWalletQrCodeWalletAddress);
@@ -467,7 +465,6 @@
             // 
             this.labelCreateWalletQrCodeWalletAddress.AutoSize = true;
             this.labelCreateWalletQrCodeWalletAddress.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelCreateWalletQrCodeWalletAddress.ForeColor = System.Drawing.Color.Snow;
             this.labelCreateWalletQrCodeWalletAddress.Location = new System.Drawing.Point(114, 18);
             this.labelCreateWalletQrCodeWalletAddress.Name = "labelCreateWalletQrCodeWalletAddress";
             this.labelCreateWalletQrCodeWalletAddress.Size = new System.Drawing.Size(289, 13);
@@ -476,7 +473,7 @@
             // 
             // panelQrCodePrivateKey
             // 
-            this.panelQrCodePrivateKey.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(80)))), ((int)(((byte)(95)))), ((int)(((byte)(115)))));
+            this.panelQrCodePrivateKey.BackColor = System.Drawing.Color.AliceBlue;
             this.panelQrCodePrivateKey.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.panelQrCodePrivateKey.Controls.Add(this.pictureBoxQrCodePrivateKey);
             this.panelQrCodePrivateKey.Controls.Add(this.labelCreateWalletQrCodePrivateKeyText);
@@ -499,7 +496,6 @@
             // 
             this.labelCreateWalletQrCodePrivateKeyText.AutoSize = true;
             this.labelCreateWalletQrCodePrivateKeyText.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelCreateWalletQrCodePrivateKeyText.ForeColor = System.Drawing.Color.Snow;
             this.labelCreateWalletQrCodePrivateKeyText.Location = new System.Drawing.Point(105, 18);
             this.labelCreateWalletQrCodePrivateKeyText.Name = "labelCreateWalletQrCodePrivateKeyText";
             this.labelCreateWalletQrCodePrivateKeyText.Size = new System.Drawing.Size(310, 13);

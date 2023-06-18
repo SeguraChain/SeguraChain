@@ -47,7 +47,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
         /// <summary>
         /// Check the API Client connection.
         /// </summary>
-        private async Task CheckApiClientAsync()
+        private async System.Threading.Tasks.Task CheckApiClientAsync()
         {
             try
             {
@@ -65,7 +65,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
                     if (_apiClientLastPacketTimestamp + 30 < ClassUtility.GetCurrentTimestampInSecond())
                         break;
 
-                    await Task.Delay(1000);
+                    await System.Threading.Tasks.Task.Delay(1000);
                 }
             }
             catch
@@ -92,7 +92,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
 
             try
             {
-                Task.Factory.StartNew(async () =>
+                new TaskFactory().StartNew(async () =>
                 {
                     try
                     {

@@ -60,7 +60,7 @@ namespace SeguraChain_RPC_Wallet.Node.Client
             try
             {
 
-                Task.Factory.StartNew(async () =>
+                new TaskFactory().StartNew(async () =>
                 {
                     while(_enableAutoUpdateNodeStatsTask)
                     {
@@ -87,7 +87,7 @@ namespace SeguraChain_RPC_Wallet.Node.Client
                             
                         }
 
-                        await Task.Delay(5000);
+                        await System.Threading.Tasks.Task.Delay(5000);
                     }
 
                 }, _cancellationTokenAutoUpdateNodeStats.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);

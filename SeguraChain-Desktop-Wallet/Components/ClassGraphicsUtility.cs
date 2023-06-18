@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-#if DEBUG
-using System.Diagnostics;
-#endif
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
@@ -145,28 +142,27 @@ namespace SeguraChain_Desktop_Wallet.Components
         public static void DrawControlRoundedEdges(Control control, Graphics graphics, int radius, float borderSize, Color borderColor)
         {
             graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            using (GraphicsPath graphicPath = new GraphicsPath())
-            {
-                graphicPath.StartFigure();
-                graphicPath.AddArc(new Rectangle(0, 0, radius, radius), 180, 90);
-                graphicPath.AddLine(radius, 0, control.Width - radius, 0);
-                graphicPath.AddArc(new Rectangle(control.Width - radius, 0, radius, radius), 270, 90);
-                graphicPath.AddLine(control.Width, radius, control.Width, control.Height - radius);
-                graphicPath.AddArc(new Rectangle(control.Width - radius, control.Height - radius, radius, radius), 0, 90);
-                graphicPath.AddLine(control.Width - radius, control.Height, radius, control.Height);
-                graphicPath.AddArc(new Rectangle(0, control.Height - radius, radius, radius), 90, 90);
-                graphicPath.AddLine(0, control.Height - radius, 0, radius);
-                graphicPath.CloseFigure();
-                control.Region = new Region(graphicPath);
+            GraphicsPath graphicPath = new GraphicsPath();
 
-                using (Pen _pen = new Pen(borderColor, borderSize))
-                {
-                    graphics.DrawArc(_pen, new Rectangle(0, 0, radius, radius), 180, 90);
-                    graphics.DrawArc(_pen, new Rectangle(control.Width - radius - 1, -1, radius, radius), 270, 90);
-                    graphics.DrawArc(_pen, new Rectangle(control.Width - radius - 1, control.Height - radius - 1, radius, radius), 0, 90);
-                    graphics.DrawArc(_pen, new Rectangle(0, control.Height - radius - 1, radius, radius), 90, 90);
-                    graphics.DrawRectangle(_pen, 0.0f, 0.0f, control.Width - 1.0f, control.Height - 1.0f);
-                }
+            graphicPath.StartFigure();
+            graphicPath.AddArc(new Rectangle(0, 0, radius, radius), 180, 90);
+            graphicPath.AddLine(radius, 0, control.Width - radius, 0);
+            graphicPath.AddArc(new Rectangle(control.Width - radius, 0, radius, radius), 270, 90);
+            graphicPath.AddLine(control.Width, radius, control.Width, control.Height - radius);
+            graphicPath.AddArc(new Rectangle(control.Width - radius, control.Height - radius, radius, radius), 0, 90);
+            graphicPath.AddLine(control.Width - radius, control.Height, radius, control.Height);
+            graphicPath.AddArc(new Rectangle(0, control.Height - radius, radius, radius), 90, 90);
+            graphicPath.AddLine(0, control.Height - radius, 0, radius);
+            graphicPath.CloseFigure();
+            control.Region = new Region(graphicPath);
+
+            using (Pen _pen = new Pen(borderColor, borderSize))
+            {
+                graphics.DrawArc(_pen, new Rectangle(0, 0, radius, radius), 180, 90);
+                graphics.DrawArc(_pen, new Rectangle(control.Width - radius - 1, -1, radius, radius), 270, 90);
+                graphics.DrawArc(_pen, new Rectangle(control.Width - radius - 1, control.Height - radius - 1, radius, radius), 0, 90);
+                graphics.DrawArc(_pen, new Rectangle(0, control.Height - radius - 1, radius, radius), 90, 90);
+                graphics.DrawRectangle(_pen, 0.0f, 0.0f, control.Width - 1.0f, control.Height - 1.0f);
             }
         }
 
@@ -183,45 +179,28 @@ namespace SeguraChain_Desktop_Wallet.Components
         /// <returns></returns>
         public static string GetMeasureStringToDraw(string str, float positionXStart, int positionXEnd, Graphics graphics, Font font, float middlePosition, out float widthText)
         {
-            #region Default values.
-
             string strFinal = string.Empty;
-            widthText = 0;
 
-            #endregion
-            try
+            bool isAbove = false;
+
+            foreach (char character in str)
             {
-                bool isAbove = false;
+                strFinal += character;
 
-                foreach (char character in str)
+                if (positionXStart  + (graphics.MeasureString(strFinal, font).Width) > (positionXEnd- (middlePosition/2)))
                 {
-                    strFinal += character;
-
-                    if (positionXStart + (graphics.MeasureString(strFinal, font).Width) > (positionXEnd - (middlePosition / 2)))
-                    {
-                        isAbove = true;
-                        break;
-                    }
+                    isAbove = true;
+                    break;
                 }
-
-                if (isAbove)
-                {
-                    strFinal = strFinal.Substring(0, strFinal.Length - 3);
-                    strFinal += "...";
-                }
-
-                widthText = graphics.MeasureString(strFinal, font).Width;
             }
-#if DEBUG
-            catch(Exception error)
-            {
-                Debug.WriteLine("Error to measure the string to draw: " + str +" | Exception: " + error.Message);
-#else
-            catch
-            {
-#endif
 
+            if (isAbove)
+            {
+                strFinal = strFinal.Substring(0, strFinal.Length - 3);
+                strFinal += "...";
             }
+
+            widthText = graphics.MeasureString(strFinal, font).Width;
             return strFinal;
         }
 

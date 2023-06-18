@@ -1125,8 +1125,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
         #endregion
 
-
-
         #region Peer Task Sync - Tasks Packet functions.
 
         /// <summary>
