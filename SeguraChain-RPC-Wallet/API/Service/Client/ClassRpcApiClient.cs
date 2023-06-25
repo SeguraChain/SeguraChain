@@ -92,7 +92,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
 
             try
             {
-                new TaskFactory().StartNew(async () =>
+                System.Threading.Tasks.Task.Factory.StartNew(async () =>
                 {
                     try
                     {

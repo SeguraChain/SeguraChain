@@ -920,24 +920,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                         ClassBlockObject blockObjectInformations = await ClassBlockchainStats.GetBlockInformationData(lastBlockHeight, _cancellationTokenServiceSync);
 
-                                        if (blockObjectInformations == null)
-                                        {
-                                            using (var result = await StartAskBlockObjectFromListPeerTarget(peerTargetList, new DisposableList<long>(false, 0, new List<long>() { lastBlockHeight }), false))
-                                            {
-                                                if (result?.Count == 1)
-                                                {
-                                                    if (result.GetList[0] != null)
-                                                    {
-                                                        if (await ClassBlockchainDatabase.BlockchainMemoryManagement.Add(lastBlockHeight, result.GetList[0], CacheBlockMemoryInsertEnumType.INSERT_IN_ACTIVE_MEMORY_OBJECT, _cancellationTokenServiceSync))
-                                                            blockObjectInformations = result.GetList[0];
-                                                        
-                                                    }
-                                                }
-                                            }
-                                            
-                                        }
-
-                                        if (blockObjectInformations?.BlockStatus == ClassBlockEnumStatus.LOCKED)
+                                        if (blockObjectInformations.BlockStatus == ClassBlockEnumStatus.LOCKED)
                                         {
                                             using (DisposableList<long> blockListToSync = new DisposableList<long>(false, 0, new List<long>() { lastBlockHeight }))
                                             {
@@ -1124,6 +1107,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         }
 
         #endregion
+
+
 
         #region Peer Task Sync - Tasks Packet functions.
 

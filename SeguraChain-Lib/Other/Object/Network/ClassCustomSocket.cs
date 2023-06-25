@@ -1,5 +1,4 @@
-﻿using Org.BouncyCastle.Bcpg;
-using SeguraChain_Lib.Utility;
+﻿using SeguraChain_Lib.Utility;
 using System;
 using System.Diagnostics;
 using System.Net;
@@ -42,25 +41,18 @@ namespace SeguraChain_Lib.Other.Object.Network
 
         }
 
-        public bool Connect(string ip, int port, int timeout)
+        public async Task<bool> ConnectAsync(string ip, int port)
         {
             try
             {
-                var result = _socket.BeginConnect(ip, port, null, null);
-
-                bool success = result.AsyncWaitHandle.WaitOne(timeout, true);
-
-                if (success)
-                {
-                    _networkStream = new NetworkStream(_socket);
-                    return true;
-                }
+                await _socket.ConnectAsync(ip, port);
+                _networkStream = new NetworkStream(_socket);
             }
             catch
             {
                 return false;
             }
-            return false;
+            return true;
         }
 
         public string GetIp
@@ -69,13 +61,6 @@ namespace SeguraChain_Lib.Other.Object.Network
             {
                 try
                 {
-                    if (_socket?.RemoteEndPoint == null)
-                    {
-                        // Is dead.
-                        Kill(SocketShutdown.Both);
-                        return string.Empty;
-                    }
-
                     return ((IPEndPoint)(_socket.RemoteEndPoint)).Address.ToString();
                 }
                 catch
@@ -123,8 +108,21 @@ namespace SeguraChain_Lib.Other.Object.Network
         {
             ReadPacketData readPacketData = new ReadPacketData();
 
+
+
             try
             {
+                if (!IsConnected())
+                    return readPacketData;
+                /*
+                while (_socket.Available == 0)
+                {
+                    if (cancellation.IsCancellationRequested || !IsConnected())
+                        return readPacketData;
+
+                    await Task.Delay(1);
+                }
+                */
                 readPacketData.Data = new byte[packetLength];
                 readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
             }

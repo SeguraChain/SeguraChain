@@ -8,7 +8,9 @@ using SeguraChain_Desktop_Wallet.Common;
 using SeguraChain_Desktop_Wallet.Components;
 using SeguraChain_Desktop_Wallet.Language.Enum;
 using SeguraChain_Desktop_Wallet.Language.Object;
+using SeguraChain_Desktop_Wallet.Settings.Enum;
 using SeguraChain_Lib.Blockchain.Transaction.Object;
+using SeguraChain_Lib.Utility;
 
 namespace SeguraChain_Desktop_Wallet.InternalForm.SendTransaction
 {
@@ -27,6 +29,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.SendTransaction
         public bool SendTransactionStatus;
         private bool _taskComplete;
         private bool _formClosed;
+        private long _timestampStart;
 
         /// <summary>
         /// Constructor.
@@ -54,16 +57,29 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.SendTransaction
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Executed once the form is loaded.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ClassWalletSendTransactionWaitRequestForm_Load(object sender, EventArgs e)
         {
             _walletSendTransactionWaitRequestFormLanguage = ClassDesktopWalletCommonData.LanguageDatabase.GetLanguageContentObject<ClassWalletSendTransactionWaitRequestFormLanguage>(ClassLanguageEnumType.LANGUAGE_TYPE_SEND_TRANSACTION_WAIT_REQUEST_FORM);
             labelSendTransactionWaitRequestText.Text = _walletSendTransactionWaitRequestFormLanguage.LABEL_SEND_TRANSACTION_WAIT_REQUEST_TEXT;
+            buttonExit.Text = _walletSendTransactionWaitRequestFormLanguage.BUTTON_SEND_TRANSACTION_WAIT_REQUEST_EXIT_TEXT;
+
+            buttonExit = ClassGraphicsUtility.AutoResizeControlFromText<Button>(buttonExit);
+            buttonExit = ClassGraphicsUtility.AutoSetLocationAndResizeControl<Button>(buttonExit, this, 50d, false);
+            buttonExit.Visible = false;
+
             SendAndWaitTransactionResponse();
         }
 
 
         private void SendAndWaitTransactionResponse()
         {
+            _timestampStart = ClassUtility.GetCurrentTimestampInMillisecond();
+
             try
             {
                 Task.Factory.StartNew(async () =>
@@ -79,15 +95,28 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.SendTransaction
                     _taskComplete = true;
 
                 }, _cancellation.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Ignored, catch the exception once the task is cancelled.
+            }
 
+            try
+            {
                 Task.Factory.StartNew(async () =>
                 {
-                    while(!_taskComplete)
+                    while (!_taskComplete)
                     {
                         if (_cancellation.IsCancellationRequested)
                             break;
 
-                        await Task.Delay(10, _cancellation.Token);
+                        if (!buttonExit.Visible && _timestampStart + ClassWalletDefaultSetting.DefaultAwaitInvokeDesktopWalletFormDelay <= ClassUtility.GetCurrentTimestampInMillisecond())
+                        {
+                            MethodInvoker showExit = () =>  buttonExit.Visible = true;
+                            BeginInvoke(showExit);
+                        }
+
+                        await Task.Delay(10);
                     }
 
                     _formClosed = true;
@@ -100,11 +129,15 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.SendTransaction
             }
             catch
             {
-                if (!_formClosed)
-                    Close();
+                // Ignored, catch the exception once the task is cancelled.
             }
         }
 
+        /// <summary>
+        /// Cancel the the task of sending a transaction
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ClassWalletSendTransactionWaitRequestForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             try
@@ -121,6 +154,29 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.SendTransaction
         private void ClassWalletSendTransactionWaitRequestForm_Paint(object sender, PaintEventArgs e)
         {
             ClassGraphicsUtility.DrawBorderOnControl(e.Graphics, Color.Ivory, Width, Height, 2.5f);
+        }
+
+        /// <summary>
+        /// Force to close the send transaction form.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void buttonExit_Click(object sender, EventArgs e)
+        {
+            _taskComplete = true;
+
+            if (!_formClosed)
+                Close();
+
+            try
+            {
+                if (!_cancellation.IsCancellationRequested)
+                    _cancellation.Cancel();
+            }
+            catch
+            {
+                // Ignored, catch in case of double cancellation.
+            }
         }
     }
 }

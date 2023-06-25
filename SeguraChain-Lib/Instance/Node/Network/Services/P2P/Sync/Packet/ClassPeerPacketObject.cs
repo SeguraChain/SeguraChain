@@ -40,7 +40,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
             {
                 try
                 {
-                   string[] splitPacketData = Convert.FromBase64String(packetData.GetStringFromByteArrayUtf8()).GetStringFromByteArrayUtf8().Split(new[] { "#" }, StringSplitOptions.RemoveEmptyEntries);
+                    string[] splitPacketData = packetData.GetStringFromByteArrayUtf8().Split(new[] { "#" }, StringSplitOptions.RemoveEmptyEntries);
 
 
                     if (int.TryParse(splitPacketData[0], out int packetOrder) &&
@@ -86,16 +86,17 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
         /// That's not constitute a fail of security at all.
         /// </summary>
         /// <returns></returns>
-        public string GetPacketData()
+        public byte[] GetPacketData()
         {
 
-           return Convert.ToBase64String(((int)PacketOrder + "#" +
+            string packetData = (int)PacketOrder + "#" +
                 (PacketContent.IsNullOrEmpty(false, out _) ? "empty" : PacketContent) + "#" +
                 (PacketHash.IsNullOrEmpty(false, out _) ? "empty" : ClassUtility.CompressHexString(PacketHash)) + "#" +
                 (PacketSignature.IsNullOrEmpty(false, out _) ? "empty" : PacketSignature) + "#" +
                 (PacketPeerUniqueId.IsNullOrEmpty(false, out _) ? "empty" : PacketPeerUniqueId) + "#" +
                 (PublicKey.IsNullOrEmpty(false, out _) ? "empty" : PublicKey) + "#" +
-                PeerLastTimestampSignatureWhitelist).GetByteArray());
+                PeerLastTimestampSignatureWhitelist;
+            return packetData.GetByteArray();
 
         }
 
@@ -146,7 +147,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
 
             if (packetData?.Length > 0)
             {
-                splitPacketData = Convert.FromBase64String(packetData.GetStringFromByteArrayUtf8()).GetStringFromByteArrayUtf8().Split(new[] { "#" }, StringSplitOptions.RemoveEmptyEntries);
+                splitPacketData = packetData.GetStringFromByteArrayUtf8().Split(new[] { "#" }, StringSplitOptions.RemoveEmptyEntries);
 
 
                 if (int.TryParse(splitPacketData[0], out int packetOrder) &&
@@ -178,16 +179,17 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
         /// That's not constitute a fail of security at all.
         /// </summary>
         /// <returns></returns>
-        public string GetPacketData()
+        public byte[] GetPacketData()
         {
 
-            return Convert.ToBase64String(((int)PacketOrder + "#" +
+            string packetData = (int)PacketOrder + "#" +
                 (PacketContent.IsNullOrEmpty(false, out _) ? "empty" : PacketContent) + "#" +
                 (PacketHash.IsNullOrEmpty(false, out _) ? "empty" : ClassUtility.CompressHexString(PacketHash)) + "#" +
                 (PacketSignature.IsNullOrEmpty(false, out _) ? "empty" : PacketSignature) + "#" +
                 (PacketPeerUniqueId.IsNullOrEmpty(false, out _) ? "empty" : PacketPeerUniqueId) + "#" +
                 (PublicKey.IsNullOrEmpty(false, out _) ? "empty" : PublicKey) + "#" +
-                PeerLastTimestampSignatureWhitelist).GetByteArray());
+                PeerLastTimestampSignatureWhitelist;
+            return packetData.GetByteArray();
 
         }
 

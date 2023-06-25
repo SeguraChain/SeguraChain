@@ -19,7 +19,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         /// <summary>
         /// Encryption/Decryption streams.
         /// </summary>
-        private RijndaelManaged _aesManaged;
+        private Aes _aesManaged;
         private ICryptoTransform _encryptCryptoTransform;
         private ICryptoTransform _decryptCryptoTransform;
         private SemaphoreSlim _semaphoreCryptoObject;
@@ -89,15 +89,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
                 _encryptCryptoTransform?.Dispose();
                 _decryptCryptoTransform?.Dispose();
 
-                _aesManaged = new RijndaelManaged()
-                {
-                    KeySize = ClassAes.EncryptionKeySize,
-                    BlockSize = ClassAes.EncryptionBlockSize,
-                    Key = key,
-                    IV = iv,
-                    Mode = CipherMode.CFB,
-                    Padding = PaddingMode.None
-                };
+
+                _aesManaged = Aes.Create("AesManaged");
+                _aesManaged.KeySize = ClassAes.EncryptionKeySize;
+                _aesManaged.BlockSize = ClassAes.EncryptionBlockSize;
+                _aesManaged.Key = key;
+                _aesManaged.IV = iv;
+                _aesManaged.Mode = CipherMode.CBC;
+                _aesManaged.Padding = PaddingMode.None;
+
+              
 
                 _encryptCryptoTransform = _aesManaged.CreateEncryptor(key, iv);
 

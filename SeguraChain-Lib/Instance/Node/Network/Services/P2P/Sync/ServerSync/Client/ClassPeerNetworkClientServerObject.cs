@@ -246,7 +246,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                             #region Handle packet content received, split the data.
 
-                            listPacketReceived.GetList = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, _cancellationTokenListenPeerPacket).GetList;
+                            ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, _cancellationTokenListenPeerPacket);
 
                             #endregion
 
@@ -261,11 +261,27 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                 if (listPacketReceived[index] == null || !listPacketReceived[index].Complete || listPacketReceived[index].Used)
                                     continue;
 
-                                byte[] base64Packet = listPacketReceived[index].Packet.GetByteArray();
+                                byte[] base64Packet = null;
+                                bool failed = !ClassUtility.CheckBase64String(listPacketReceived[index].Packet);
+
+                                if (!failed)
+                                {
+                                    try
+                                    {
+                                        base64Packet = Convert.FromBase64String(listPacketReceived[index].Packet);
+                                        failed = base64Packet == null || base64Packet.Length == 0;
+                                    }
+                                    catch
+                                    {
+                                        failed = true;
+                                    }
+                                }
 
                                 listPacketReceived[index].Used = true;
                                 listPacketReceived[index].Packet.Clear();
 
+                                if (failed)
+                                    continue;
 
                                 _onHandlePacketResponse = true;
 
@@ -1954,7 +1970,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                     packetSendObject.PacketSignature = await peerObject.GetClientCryptoStreamObject.DoSignatureProcess(packetSendObject.PacketHash, peerObject.PeerInternPrivateKey, _cancellationTokenListenPeerPacket);
 
 
-                return await _clientSocket.TrySendSplittedPacket((packetSendObject.GetPacketData() + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray(), _cancellationTokenListenPeerPacket, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
+                return await _clientSocket.TrySendSplittedPacket((Convert.ToBase64String(packetSendObject.GetPacketData()) + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray(), _cancellationTokenListenPeerPacket, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
 
             }
             catch

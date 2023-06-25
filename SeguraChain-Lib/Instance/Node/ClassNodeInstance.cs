@@ -326,9 +326,9 @@ namespace SeguraChain_Lib.Instance.Node
 
             ClassLog.WriteLine("Save Blockchain data..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-            if (ClassBlockchainDatabase.SaveBlockchainDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject).Result)
+            if (await ClassBlockchainDatabase.SaveBlockchainDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject))
             {
-                ClassBlockchainDatabase.CloseBlockchainDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject).Wait();
+                await ClassBlockchainDatabase.CloseBlockchainDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject);
                 ClassLog.WriteLine("Blockchain data saved.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
             }
             else

@@ -183,6 +183,8 @@ namespace SeguraChain_Desktop_Wallet.Language.Object
         public string BUTTON_MAIN_INTERFACE_SEARCH_TRANSACTION_HISTORY_TEXT = "Search";
 
         public string PANEL_TRANSACTION_HISTORY_ON_LOAD_TEXT = "On loading data of the transaction history, please wait a moment: ";
+        public string PANEL_TRANSACTION_HISTORY_NO_TRANSACTION_TEXT = "Your wallet currently don't have any transaction synced.";
+
 
         public string SAVEFILEDIALOG_TRANSACTION_HISTORY_EXPORT_TEXT = "CSV File (*.csv) | *.csv";
         public string MESSAGEBOX_TRANSACTION_HISTORY_EXPORT_TEXT = "Do you want to export only the current page?";
@@ -353,6 +355,7 @@ namespace SeguraChain_Desktop_Wallet.Language.Object
     public class ClassWalletSendTransactionWaitRequestFormLanguage
     {
         public string LABEL_SEND_TRANSACTION_WAIT_REQUEST_TEXT = "Broadcasting your transaction to peers, please wait a moment..";
+        public string BUTTON_SEND_TRANSACTION_WAIT_REQUEST_EXIT_TEXT = "Too long ? Click to close the form.";
     }
 
     /// <summary>

@@ -84,8 +84,8 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public static string WalletAddressDevPublicKey(long timestampSovereignUpdate) => SovereignUpdateGetter.GetLastDevWalletPublicKey(timestampSovereignUpdate);
         public static string WalletAddressDev(long timestampSovereignUpdate) => SovereignUpdateGetter.GetLastDevWalletAddress(timestampSovereignUpdate);
 
-		public const string DefaultWalletAddressDevPublicKey ="YHiADZRPpXQ9QKmsMph11N9vgswr7HpedfNZjda8KFVinEP2EbVBwa9PEkHUYxTZ2K1GkM4HsX6C3nu4cgiKb3JBGPoTJSrS3mgLJ9wLxRJuxkVbZfTwSvGr4vKvgXxmXmNrf8uq36hUhQkGCDFdujJSGwnHQu5X7Ne6bTXezmfZ7DD4J1VL8oLukbKMptkzfVmP2yQJwbHqyiTDMTNwrYEgjRA";
-		public const string DefaultWalletAddressDev ="5ztJBcUW37niRFfVuDuApyUMyNZxfPjaVEma1UDbZgdKC3vYozsAuj8WChxobVh3fCf6nGo6vjaNzzhSFVNx2Vpednx1VPaoro774AcdKuiNoz";
+		public const string DefaultWalletAddressDevPublicKey ="YNGBaKGER9cghtK18Tv6kL2ctSJs82C7EPLpZyiYJuTExkj3poEtjpD4KGZnAijKTTEbrLhU2oGoQqG7Yi6xeU9kAJk19GmpZV6Cx1JLy3PWSRs32aHa2JoEYA967RidQBgcY944hUNX165u3c3GMbWGU1zMPoeCGgZeym9Xg1JQZRq4QobqyNovc6z3pYUakEeTBkqWoZX942533cUgJqSkAPc";
+		public const string DefaultWalletAddressDev ="3qg74RjeJxMmGBma2TyDzY91PNfk5F7EWXeatHcGqXyRggfcmdTNXNDGLkgBegThCWufjd57w4uzgQc1pKxvva131eV3yQXUoZb7LBVt84jqNh";
 
         #endregion
 
@@ -105,8 +105,8 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int BlockDifficultyRangeCalculation = BlockExpectedPerDay / 3; // Use previous blocks for generate the new block difficulty.
         public const int BlockDifficultyPrecision = 100_000; // The precision put on the difficulty factor calculated.
         public const int GenesisBlockHeight = 1; // The genesis block height.
-		public static readonly BigInteger GenesisBlockAmount = 3_000_000 * CoinDecimal; // The genesis block amount reward has pre-mining.
-		public const string GenesisBlockFinalTransactionHash ="640F6E8C2740C4EBA4072DEA3C1EDB478716AF94F86A53DABF95E0665E57398BF1A0AF9AE25DF695480FE7377BE87CD474F32A66BF48F22B44596E073BF96976";
+		public static readonly BigInteger GenesisBlockAmount = 2_000_000 * CoinDecimal; // The genesis block amount reward has pre-mining.
+		public const string GenesisBlockFinalTransactionHash ="01C92369B97811E4A6EC7084F421120DD90124073B4F49B4189460894D5113D944FF3C6795EE44CF920F442FB7B02D9E67F1F34E2054296259051B7A7E3D731A";
         public const int GenesisBlockTransactionCount = 1; // The maximum of transaction inserted on the genesis block.
         public const int BlockAmountNetworkConfirmations = 2; // The minimum amount of network checks on blocks to do with peers, before to enable the task of confirmations on the block.
         public const int BlockAmountSlowNetworkConfirmations = 5; // This amount increment another amount of network checks, once this one is reach, the network counter increment and this one return back to 0.

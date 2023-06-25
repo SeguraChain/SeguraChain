@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.labelSendTransactionWaitRequestText = new System.Windows.Forms.Label();
+            this.buttonExit = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // labelSendTransactionWaitRequestText
@@ -43,12 +44,26 @@
             this.labelSendTransactionWaitRequestText.TabIndex = 0;
             this.labelSendTransactionWaitRequestText.Text = "LABEL_SEND_TRANSACTION_WAIT_REQUEST_TEXT";
             // 
+            // buttonExit
+            // 
+            this.buttonExit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(247)))), ((int)(((byte)(229)))), ((int)(((byte)(72)))));
+            this.buttonExit.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.buttonExit.Location = new System.Drawing.Point(148, 76);
+            this.buttonExit.Name = "buttonExit";
+            this.buttonExit.Size = new System.Drawing.Size(336, 33);
+            this.buttonExit.TabIndex = 1;
+            this.buttonExit.Text = "BUTTON_SEND_TRANSACTION_WAIT_REQUEST_EXIT_TEXT";
+            this.buttonExit.UseVisualStyleBackColor = false;
+            this.buttonExit.Visible = false;
+            this.buttonExit.Click += new System.EventHandler(this.buttonExit_Click);
+            // 
             // ClassWalletSendTransactionWaitRequestForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(70)))), ((int)(((byte)(90)))), ((int)(((byte)(120)))));
             this.ClientSize = new System.Drawing.Size(600, 117);
+            this.Controls.Add(this.buttonExit);
             this.Controls.Add(this.labelSendTransactionWaitRequestText);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -66,5 +81,6 @@
         #endregion
 
         private System.Windows.Forms.Label labelSendTransactionWaitRequestText;
+        private System.Windows.Forms.Button buttonExit;
     }
 }

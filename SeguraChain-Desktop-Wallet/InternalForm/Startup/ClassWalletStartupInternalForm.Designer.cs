@@ -40,6 +40,7 @@
             // 
             this.labelStartupDesktopWalletLoadingText.AutoSize = true;
             this.labelStartupDesktopWalletLoadingText.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.labelStartupDesktopWalletLoadingText.ForeColor = System.Drawing.Color.GhostWhite;
             this.labelStartupDesktopWalletLoadingText.Location = new System.Drawing.Point(196, 342);
             this.labelStartupDesktopWalletLoadingText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.labelStartupDesktopWalletLoadingText.Name = "labelStartupDesktopWalletLoadingText";
@@ -69,7 +70,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.GhostWhite;
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(55)))), ((int)(((byte)(64)))));
             this.ClientSize = new System.Drawing.Size(793, 438);
             this.ControlBox = false;
             this.Controls.Add(this.labelStartupDesktopWalletLoadingText);

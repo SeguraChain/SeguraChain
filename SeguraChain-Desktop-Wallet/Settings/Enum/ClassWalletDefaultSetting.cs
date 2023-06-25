@@ -21,13 +21,13 @@ namespace SeguraChain_Desktop_Wallet.Settings.Enum
         /// <summary>
         /// Interval of update used of the sync of wallets files opened.
         /// </summary>
-        public const int DefaultWalletUpdateSyncInterval = 1000;
-        public const int DefaultWalletUpdateSyncCacheInterval =  1000;
+        public const int DefaultWalletUpdateSyncInterval = 5 * 1000;
+        public const int DefaultWalletUpdateSyncCacheInterval = 5 * 1000;
 
         /// <summary>
         /// Interval of update to show latest blockchain network stats.
         /// </summary>
-        public const int DefaultTaskUpdateWalletBlockchainNetworkStatsInterval = 1000;
+        public const int DefaultTaskUpdateWalletBlockchainNetworkStatsInterval = 5 * 1000;
 
         /// <summary>
         /// Interval of update to list wallet(s) file(s) opened.
@@ -43,6 +43,11 @@ namespace SeguraChain_Desktop_Wallet.Settings.Enum
         /// Await delay on invoke action on the form of the desktop wallet.
         /// </summary>
         public const int DefaultAwaitInvokeDesktopWalletFormDelay = 10;
+
+        /// <summary>
+        /// Max delay wait transaction response.
+        /// </summary>
+        public const int DefaultWalletMaxDelayWaitTransactionResponse = 5 * 1000;
 
         #region Receive transaction colors and settings.
 
@@ -68,7 +73,6 @@ namespace SeguraChain_Desktop_Wallet.Settings.Enum
         public static readonly Color DefaultPictureBoxTransactionBorderColor = Color.FromArgb(222, 206, 64);
         public static readonly SolidBrush DefaultRecentTransactionSolidBrushColor = new SolidBrush(Color.Black);
         public static readonly SolidBrush DefaultRecentTransactionInvalidSolidBrushColor = new SolidBrush(Color.Red);
-
 
         #endregion
 

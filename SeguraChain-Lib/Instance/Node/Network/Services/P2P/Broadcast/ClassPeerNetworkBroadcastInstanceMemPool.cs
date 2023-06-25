@@ -493,7 +493,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                             _peerSocketClient?.Kill(SocketShutdown.Both);
                             _peerSocketClient = new ClassCustomSocket(new Socket(ClassUtility.GetAddressFamily(_peerIpTarget), SocketType.Stream, ProtocolType.Tcp), false);
 
-                            if (_peerSocketClient.Connect(_peerIpTarget, _peerPortTarget, _peerNetworkSettingObject.PeerMaxDelayToConnectToTarget * 1000))
+                            if (await _peerSocketClient.ConnectAsync(_peerIpTarget, _peerPortTarget))
                             {
                                 successConnect = true;
                                 break;
@@ -553,7 +553,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     PacketOrder = ClassPeerEnumPacketSend.ASK_MEM_POOL_BROADCAST_MODE,
                 };
 
-                if (!await TrySendPacketToPeer((packetSendObject.GetPacketData() + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray()))
+                if (!await TrySendPacketToPeer(packetSendObject.GetPacketData()))
                 {
                     IsAlive = false;
                     return false;
@@ -588,7 +588,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                     if (listPacketReceived.Count > 0 && containSeperator)
                                     {
 
-                                        ClassPeerPacketRecvObject peerPacketRecvObject = new ClassPeerPacketRecvObject(listPacketReceived[listPacketReceived.Count - 1].Packet.GetByteArray(), out bool status);
+                                        ClassPeerPacketRecvObject peerPacketRecvObject = new ClassPeerPacketRecvObject(Convert.FromBase64String(listPacketReceived[listPacketReceived.Count - 1].Packet), out bool status);
 
                                         listPacketReceived[listPacketReceived.Count - 1].Packet.Clear();
 
@@ -755,7 +755,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                 }),
                             };
 
-                            if (!await TrySendPacketToPeer((packetSendObject.GetPacketData() + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray()))
+                            if (!await TrySendPacketToPeer(packetSendObject.GetPacketData()))
                             {
                                 IsAlive = false;
                                 break;
@@ -813,7 +813,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                             packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(packetSendObject, _peerIpTarget, _peerUniqueIdTarget, true, _peerNetworkSettingObject, _peerCancellationToken);
 
-                            if (!await TrySendPacketToPeer((packetSendObject.GetPacketData() + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray()))
+                            if (!await TrySendPacketToPeer(packetSendObject.GetPacketData()))
                             {
                                 IsAlive = false;
                                 break;
@@ -891,7 +891,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                                                 packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction .BuildSignedPeerSendPacketObject(packetSendObject, _peerIpTarget, _peerUniqueIdTarget, true, _peerNetworkSettingObject, _peerCancellationToken);
 
-                                                if (!await TrySendPacketToPeer((packetSendObject.GetPacketData() + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray()))
+                                                if (!await TrySendPacketToPeer(packetSendObject.GetPacketData()))
                                                 {
                                                     IsAlive = false;
                                                     failed = true;
@@ -977,7 +977,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                                                 packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(packetSendObject, _peerIpTarget, _peerUniqueIdTarget, true, _peerNetworkSettingObject, _peerCancellationToken);
 
-                                                if (!await TrySendPacketToPeer((packetSendObject.GetPacketData() + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray()))
+                                                if (!await TrySendPacketToPeer(packetSendObject.GetPacketData()))
                                                 {
                                                     IsAlive = false;
                                                     break;
@@ -1109,8 +1109,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                         packetReceived = true;
 
                                         bool exceptionBase64 = false;
-                                        byte[] base64Packet = listPacketReceived[listPacketReceived.Count - 1].Packet.GetByteArray();
+                                        byte[] base64Packet = null;
 
+                                        try
+                                        {
+                                            base64Packet = Convert.FromBase64String(listPacketReceived[listPacketReceived.Count - 1].Packet);
+                                        }
+                                        catch
+                                        {
+                                            exceptionBase64 = true;
+                                        }
 
                                         listPacketReceived[listPacketReceived.Count - 1].Packet.Clear();
 
@@ -1223,7 +1231,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                 if (listPacketReceived[i].Complete && listPacketReceived[i].Packet.Length > 0)
                                                 {
                                                     bool exceptionBase64 = false;
-                                                    byte[] base64Data = listPacketReceived[i].Packet.GetByteArray();
+                                                    byte[] base64Data = null;
+
+                                                    try
+                                                    {
+                                                        base64Data = Convert.FromBase64String(listPacketReceived[i].Packet);
+                                                    }
+                                                    catch
+                                                    {
+                                                        exceptionBase64 = true;
+                                                    }
 
                                                     listPacketReceived[i].Packet.Clear();
 
@@ -1298,7 +1315,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                                         }
 
                                                                         // Send the confirmation of receive.
-                                                                        if (!await TrySendPacketToPeer((new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId,
+                                                                        if (!await TrySendPacketToPeer(new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId,
                                                                         ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerInternPublicKey,
                                                                         ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                                         {
@@ -1307,7 +1324,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                                             {
                                                                                 PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                                             })
-                                                                        }.GetPacketData() + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray()))
+                                                                        }.GetPacketData()))
                                                                         {
                                                                             IsAlive = false;
                                                                             endBroadcast = true;
@@ -1457,8 +1474,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                     if (containSeperator)
                                     {
                                         bool exceptionBase64 = false;
-                                        byte[] base64Data = listPacketReceived[listPacketReceived.Count - 1].Packet.GetByteArray();
+                                        byte[] base64Data = null;
 
+                                        try
+                                        {
+                                            base64Data = Convert.FromBase64String(listPacketReceived[listPacketReceived.Count - 1].Packet);
+                                        }
+                                        catch
+                                        {
+                                            exceptionBase64 = true;
+                                        }
 
                                         listPacketReceived[listPacketReceived.Count - 1].Packet.Clear();
 
