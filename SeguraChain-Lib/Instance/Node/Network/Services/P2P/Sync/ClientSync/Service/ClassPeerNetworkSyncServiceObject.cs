@@ -1610,44 +1610,50 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                             foreach (var blockHeight in listBlockHeightTarget.GetAll)
                             {
-
-                                if (!_listPeerNetworkInformationStats.ContainsKey(peerListTarget[i].PeerIpTarget))
-                                    break;
-
-                                if (!_listPeerNetworkInformationStats[peerListTarget[i].PeerIpTarget].ContainsKey(peerListTarget[i].PeerUniqueIdTarget))
-                                    break;
-
-
-                                if (_listPeerNetworkInformationStats[peerListTarget[i].PeerIpTarget][peerListTarget[i].PeerUniqueIdTarget].LastBlockHeightUnlocked < blockHeight)
-                                    break;
-
-                                CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token);
-
-                                Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>> result = await SendAskBlockData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeight, refuseLockedBlock, cancellationTokenSourceTaskSync);
-
-                                if (result == null || !result.Item1 || result.Item2 == null)
-                                    continue;
-
-                                if (result.Item2.ObjectReturned.BlockData.BlockHeight != blockHeight)
-                                    ClassPeerCheckManager.InputPeerClientInvalidPacket(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                                else
+                                try
                                 {
-                                    ClassBlockObject blockObject = result.Item2.ObjectReturned.BlockData;
+                                    if (!_listPeerNetworkInformationStats.ContainsKey(peerListTarget[i].PeerIpTarget))
+                                        break;
 
-                                    #region Ensure to clean the block object received.
+                                    if (!_listPeerNetworkInformationStats[peerListTarget[i].PeerIpTarget].ContainsKey(peerListTarget[i].PeerUniqueIdTarget))
+                                        break;
 
-                                    blockObject.BlockTransactionFullyConfirmed = false;
-                                    blockObject.BlockUnlockValid = false;
-                                    blockObject.BlockNetworkAmountConfirmations = 0;
-                                    blockObject.BlockSlowNetworkAmountConfirmations = 0;
-                                    blockObject.BlockLastHeightTransactionConfirmationDone = 0;
-                                    blockObject.BlockTotalTaskTransactionConfirmationDone = 0;
-                                    blockObject.BlockTransactionConfirmationCheckTaskDone = false;
-                                    blockObject?.BlockTransactions.Clear();
 
-                                    listBlockObjectsReceived[blockHeight].Add(i1, blockObject);
+                                    if (_listPeerNetworkInformationStats[peerListTarget[i].PeerIpTarget][peerListTarget[i].PeerUniqueIdTarget].LastBlockHeightUnlocked < blockHeight)
+                                        break;
 
-                                    #endregion
+                                    CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token);
+
+                                    Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>> result = await SendAskBlockData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeight, refuseLockedBlock, cancellationTokenSourceTaskSync);
+
+                                    if (result == null || !result.Item1 || result.Item2 == null)
+                                        continue;
+
+                                    if (result.Item2.ObjectReturned.BlockData.BlockHeight != blockHeight)
+                                        ClassPeerCheckManager.InputPeerClientInvalidPacket(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                                    else
+                                    {
+                                        ClassBlockObject blockObject = result.Item2.ObjectReturned.BlockData;
+
+                                        #region Ensure to clean the block object received.
+
+                                        blockObject.BlockTransactionFullyConfirmed = false;
+                                        blockObject.BlockUnlockValid = false;
+                                        blockObject.BlockNetworkAmountConfirmations = 0;
+                                        blockObject.BlockSlowNetworkAmountConfirmations = 0;
+                                        blockObject.BlockLastHeightTransactionConfirmationDone = 0;
+                                        blockObject.BlockTotalTaskTransactionConfirmationDone = 0;
+                                        blockObject.BlockTransactionConfirmationCheckTaskDone = false;
+                                        blockObject?.BlockTransactions.Clear();
+
+                                        listBlockObjectsReceived[blockHeight].Add(i1, blockObject);
+
+                                        #endregion
+                                    }
+                                }
+                                catch
+                                {
+                                    break;
                                 }
                             }
                         }

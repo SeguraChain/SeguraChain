@@ -117,7 +117,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                             await Task.Delay(1);
                         }
 
-                        await _tcpListenerPeerApi.AcceptSocketAsync().ContinueWith(async clientTask =>
+                        await _tcpListenerPeerApi.AcceptTcpClientAsync().ContinueWith(async clientTask =>
                         {
                             ClassCustomSocket clientApiTcp = null;
 

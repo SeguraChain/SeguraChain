@@ -1,4 +1,6 @@
-﻿using SeguraChain_Lib.Utility;
+﻿using SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Packet;
+using SeguraChain_Lib.Other.Object.List;
+using SeguraChain_Lib.Utility;
 using System;
 using System.Diagnostics;
 using System.Net;
@@ -13,7 +15,7 @@ namespace SeguraChain_Lib.Other.Object.Network
     /// </summary>
     public class ClassCustomSocket
     {
-        private Socket _socket;
+        private TcpClient _socket;
         private NetworkStream _networkStream;
 
 
@@ -23,7 +25,7 @@ namespace SeguraChain_Lib.Other.Object.Network
         /// Constructor.
         /// </summary>
         /// <param name="socket"></param>
-        public ClassCustomSocket(Socket socket, bool isServer)
+        public ClassCustomSocket(TcpClient socket, bool isServer)
         {
             _socket = socket;
 
@@ -31,7 +33,7 @@ namespace SeguraChain_Lib.Other.Object.Network
             {
                 try
                 {
-                    _networkStream = new NetworkStream(_socket);
+                    _networkStream = new NetworkStream(_socket.Client);
                 }
                 catch
                 {
@@ -46,7 +48,7 @@ namespace SeguraChain_Lib.Other.Object.Network
             try
             {
                 await _socket.ConnectAsync(ip, port);
-                _networkStream = new NetworkStream(_socket);
+                _networkStream = new NetworkStream(_socket.Client);
             }
             catch
             {
@@ -61,7 +63,7 @@ namespace SeguraChain_Lib.Other.Object.Network
             {
                 try
                 {
-                    return ((IPEndPoint)(_socket.RemoteEndPoint)).Address.ToString();
+                    return ((IPEndPoint)(_socket.Client.RemoteEndPoint)).Address.ToString();
                 }
                 catch
                 {
@@ -90,8 +92,6 @@ namespace SeguraChain_Lib.Other.Object.Network
 
         public async Task<bool> TrySendSplittedPacket(byte[] packetData, CancellationTokenSource cancellation, int packetPeerSplitSeperator)
         {
-            if (!IsConnected())
-                return false;
 
             try
             {
@@ -112,19 +112,25 @@ namespace SeguraChain_Lib.Other.Object.Network
 
             try
             {
-                if (!IsConnected())
-                    return readPacketData;
-                /*
-                while (_socket.Available == 0)
-                {
-                    if (cancellation.IsCancellationRequested || !IsConnected())
-                        return readPacketData;
 
-                    await Task.Delay(1);
+                using (DisposableList<byte> packetData = new DisposableList<byte>())
+                {
+                    readPacketData.Data = new byte[packetLength];
+                    readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
+
+                    if (readPacketData.Status)
+                    {
+                        foreach (var data in readPacketData.Data)
+                        {
+                            if ((char)data != '\0')
+                            {
+                                if (ClassUtility.CharIsABase64Character((char)data) || (char)data == ClassPeerPacketSetting.PacketPeerSplitSeperator)
+                                    packetData.Add(data);
+                            }
+                        }
+                        readPacketData.Data = packetData.GetList.ToArray();
+                    }
                 }
-                */
-                readPacketData.Data = new byte[packetLength];
-                readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
             }
             catch (Exception error)
             {
@@ -146,11 +152,8 @@ namespace SeguraChain_Lib.Other.Object.Network
 
             Closed = true;
 
-            if (IsConnected())
-            {
-                _socket?.Shutdown(shutdownType);
-                _socket?.Close();
-            }
+            _socket?.Client.Shutdown(shutdownType);
+            _socket?.Close();
         }
 
 

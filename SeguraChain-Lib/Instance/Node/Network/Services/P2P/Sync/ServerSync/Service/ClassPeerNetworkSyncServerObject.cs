@@ -107,7 +107,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 {
                     try
                     {
-                        ClassCustomSocket clientPeerTcp = new ClassCustomSocket(await _tcpListenerPeer.AcceptSocketAsync(), true);
+                        ClassCustomSocket clientPeerTcp = new ClassCustomSocket(await _tcpListenerPeer.AcceptTcpClientAsync(), true);
 
                         string clientIp = clientPeerTcp.GetIp;
 
@@ -240,7 +240,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     try
                     {
                         // Against flood.
-                        handlePeerClientStatus = await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.TryWaitAsync(cancellation);
+                        handlePeerClientStatus = await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.TryWaitAsync(_peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay, cancellation);
 
 
                         //Debug.WriteLine(handlePeerClientStatus + " | Random ID: "+ randomId+ " | Count: " + _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.Count);

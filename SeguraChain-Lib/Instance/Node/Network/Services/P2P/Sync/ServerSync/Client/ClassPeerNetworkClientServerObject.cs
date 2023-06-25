@@ -1962,7 +1962,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
 
                 if (encrypted)
-                    packetSendObject.PacketContent = Convert.ToBase64String(packetContentEncrypted);
+                    packetSendObject.PacketContent = ClassUtility.GetHexStringFromByteArray(packetContentEncrypted);
 
                 packetSendObject.PacketHash = ClassUtility.GenerateSha256FromString(packetSendObject.PacketContent);
 
@@ -2089,7 +2089,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 return null;
 
 
-            byte[] contentData = Convert.FromBase64String(content);
+            byte[] contentData = ClassUtility.GetByteArrayFromHexString(content);
 
             if (peerObject?.GetClientCryptoStreamObject != null)
                 return await peerObject.GetClientCryptoStreamObject.DecryptDataProcess(contentData, _cancellationTokenListenPeerPacket);

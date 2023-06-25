@@ -83,12 +83,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
             if (packetContent.IsNullOrEmpty(false, out _) || !ClassPeerDatabase.ContainsPeer(peerIp, peerUniqueId) || ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetInternCryptoStreamObject == null)
                 return false;
 
-            if (!ClassUtility.CheckBase64String(packetContent))
+            if (!ClassUtility.CheckHexStringFormat(packetContent))
                 return false;
 
             try
             {
-                packetDecrypted = ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetInternCryptoStreamObject.DecryptDataProcess(Convert.FromBase64String(packetContent), cancellation).Result;
+                packetDecrypted = ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetInternCryptoStreamObject.DecryptDataProcess(ClassUtility.GetByteArrayFromHexString(packetContent), cancellation).Result;
             }
             catch
             {

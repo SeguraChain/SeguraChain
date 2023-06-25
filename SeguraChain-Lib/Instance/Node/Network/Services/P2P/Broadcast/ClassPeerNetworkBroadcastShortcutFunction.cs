@@ -135,7 +135,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 }
 
 
-                sendObject.PacketContent = Convert.ToBase64String(packetContentEncrypted);
+                sendObject.PacketContent = ClassUtility.GetHexStringFromByteArray(packetContentEncrypted);
                 sendObject.PacketHash = ClassUtility.GenerateSha256FromString(sendObject.PacketContent + sendObject.PacketOrder);
 
                 if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].ContainsKey(peerUniqueId))
