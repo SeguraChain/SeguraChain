@@ -1464,11 +1464,16 @@ namespace SeguraChain_Desktop_Wallet
         /// </summary>
         private void LockWalletTabs()
         {
-            tabPageOverview.Enabled = false;
-            tabPageReceiveTransaction.Enabled = false;
-            tabPageSendTransaction.Enabled = false;
-            tabPageStoreNetwork.Enabled = false;
-            tabPageTransactionHistory.Enabled = false;
+            MethodInvoker invoke = () =>
+            {
+                tabPageOverview.Enabled = false;
+                tabPageReceiveTransaction.Enabled = false;
+                tabPageSendTransaction.Enabled = false;
+                tabPageStoreNetwork.Enabled = false;
+                tabPageTransactionHistory.Enabled = false;
+            };
+
+            BeginInvoke(invoke);
         }
 
         /// <summary>
@@ -1476,11 +1481,17 @@ namespace SeguraChain_Desktop_Wallet
         /// </summary>
         private void EnableWalletTabs()
         {
-            tabPageOverview.Enabled = true;
-            tabPageReceiveTransaction.Enabled = true;
-            tabPageSendTransaction.Enabled = true;
-            tabPageStoreNetwork.Enabled = true;
-            tabPageTransactionHistory.Enabled = true;
+            MethodInvoker invoke = () =>
+            {
+                tabPageOverview.Enabled = true;
+                tabPageReceiveTransaction.Enabled = true;
+                tabPageSendTransaction.Enabled = true;
+                tabPageStoreNetwork.Enabled = true;
+                tabPageTransactionHistory.Enabled = true;
+            };
+
+            BeginInvoke(invoke);
+            
         }
 
 

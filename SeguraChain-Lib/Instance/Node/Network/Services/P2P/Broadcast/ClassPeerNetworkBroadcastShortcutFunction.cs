@@ -13,6 +13,7 @@ using SeguraChain_Lib.Instance.Node.Setting.Object;
 using SeguraChain_Lib.Utility;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using BigInteger = Org.BouncyCastle.Math.BigInteger;
@@ -73,19 +74,28 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 return default(R);
 
 
-            byte[] packetTupleDecrypted = await ClassPeerDatabase.DictionaryPeerDataObject[peerIpTarget][peerUniqueIdTarget].GetInternCryptoStreamObject.DecryptDataProcess(Convert.FromBase64String(peerNetworkClientSyncObject.PeerPacketReceived.PacketContent), cancellation);
+            byte[] packetTupleDecrypted = await peerObject.GetInternCryptoStreamObject.DecryptDataProcess(ClassUtility.GetByteArrayFromHexString(peerNetworkClientSyncObject.PeerPacketReceived.PacketContent), cancellation);
+
             if (packetTupleDecrypted == null)
             {
-                // From keys directly, without the intern crypto stream object linked to the peer client.
-                if (ClassAes.DecryptionProcess(Convert.FromBase64String(peerNetworkClientSyncObject.PeerPacketReceived.PacketContent), ClassPeerDatabase.DictionaryPeerDataObject[peerIpTarget][peerUniqueIdTarget].PeerInternPacketEncryptionKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIpTarget][peerUniqueIdTarget].PeerInternPacketEncryptionKeyIv, out byte[] packetDecrypted))
-                    packetTupleDecrypted = packetDecrypted;
+#if DEBUG
+                Debug.WriteLine("Failed to decrypt packet data from " + peerIpTarget);
+#endif
+                return default(R);
             }
+
 
             if (packetTupleDecrypted == null)
                 return default(R);
 
-            if (!ClassUtility.TryDeserialize(packetTupleDecrypted.GetStringFromByteArrayAscii(), out R peerPacketReceived))
+
+            if (!ClassUtility.TryDeserialize(packetTupleDecrypted.GetStringFromByteArrayUtf8(), out R peerPacketReceived))
+            {
+#if DEBUG
+                Debug.WriteLine("Failed to deserialize packet content: " + packetTupleDecrypted.GetStringFromByteArrayUtf8());
+#endif
                 return default(R);
+            }
 
             if (EqualityComparer<R>.Default.Equals(peerPacketReceived, default(R)))
                 return default(R);

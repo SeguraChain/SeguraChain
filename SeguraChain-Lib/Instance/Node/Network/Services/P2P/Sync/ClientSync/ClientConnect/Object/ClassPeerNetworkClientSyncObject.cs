@@ -411,7 +411,20 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                                 PeerPacketReceivedStatus = peerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS;
 #if DEBUG
                                 if (!PeerPacketReceivedStatus)
-                                    Debug.WriteLine("Failed, the packet order expected is invalid: " + peerPacketReceived.PacketOrder + "/" + PacketResponseExpected);
+                                {
+                                    switch(PacketResponseExpected)
+                                    {
+                                        case ClassPeerEnumPacketResponse.SEND_BLOCK_DATA:
+                                        case ClassPeerEnumPacketResponse.SEND_BLOCK_TRANSACTION_DATA_BY_RANGE:
+                                            {
+                                                Debug.WriteLine("The peer " + PeerIpTarget + ":" + PeerPortTarget + " is not enough synced yet.");
+                                            }
+                                            break;
+                                        default:
+                                            Debug.WriteLine("Failed, the packet order expected is invalid: " + peerPacketReceived.PacketOrder + "/" + PacketResponseExpected);
+                                            break;
+                                    }
+                                }
 #endif
                             }
                             break;
