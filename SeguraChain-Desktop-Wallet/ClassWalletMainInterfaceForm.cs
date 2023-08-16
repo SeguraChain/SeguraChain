@@ -35,6 +35,7 @@ using SeguraChain_Lib.Blockchain.Wallet.Function;
 using SeguraChain_Lib.Utility;
 using SeguraChain_Desktop_Wallet.InternalForm.Import;
 using SeguraChain_Lib.Other.Object.List;
+using SeguraChain_Lib.TaskManager;
 
 namespace SeguraChain_Desktop_Wallet
 {
@@ -489,7 +490,7 @@ namespace SeguraChain_Desktop_Wallet
 
                     if (ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData.ContainsKey(walletFilename))
                     {
-                        Task.Factory.StartNew(async () =>
+                        TaskManager.InsertTask(async () =>
                         {
                             long lastBlockHeightUnlocked = await ClassDesktopWalletCommonData.WalletSyncSystem.GetLastBlockHeightUnlockedSynced(cancellation, true);
                             if (ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFilename].WalletLastBlockHeightSynced < lastBlockHeightUnlocked || ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFilename].WalletLastBlockHeightSynced > lastBlockHeightUnlocked || ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFilename].WalletEnableRescan)
@@ -502,7 +503,7 @@ namespace SeguraChain_Desktop_Wallet
 
                                 BeginInvoke(invoke);
                             }
-                        }).ConfigureAwait(false);
+                        }, 0, null);
                     }
 
                     invokeSwitch = () =>
@@ -1039,8 +1040,12 @@ namespace SeguraChain_Desktop_Wallet
                                     labelSendTransactionAvailableBalanceText.Text = _walletMainFormLanguageObject.LABEL_SEND_TRANSACTION_AVAILABLE_BALANCE_TEXT + _walletMainFormLanguageObject.TEXT_SPACE + ClassTransactionUtility.GetFormattedAmountFromBigInteger(walletAvailableBalanceBigInteger) + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinTickerName;
 
                                 }
-                                catch
+                                catch(Exception error)
                                 {
+#if DEBUG
+                                    Debug.WriteLine("Error the wallet balance for " + _currentWalletFilename + " cannot be updated. Exception: " + error.Message);
+
+#endif
                                     // Ignored.
                                 }
 
@@ -1062,6 +1067,11 @@ namespace SeguraChain_Desktop_Wallet
                                 {
                                     break;
                                 }
+
+#if DEBUG
+                                Debug.WriteLine("Wallet balance for "+_currentWalletFilename+" in pending to complete the update..");
+
+#endif
                             }
 
                             if (_cancellationTokenTaskUpdateWalletContentInformations.IsCancellationRequested)
@@ -1077,6 +1087,10 @@ namespace SeguraChain_Desktop_Wallet
                         {
                             Debug.WriteLine("Error on calculting the wallet balance of the wallet file: " + _currentWalletFilename + ". Exception: " + error.Message);
                         }
+#endif
+
+#if DEBUG
+                        Debug.WriteLine("Balance updated for: " + _currentWalletFilename);
 #endif
 
                         await Task.Delay(ClassWalletDefaultSetting.DefaultTaskUpdateWalletInformationsInterval);

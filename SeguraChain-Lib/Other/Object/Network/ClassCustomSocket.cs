@@ -63,7 +63,7 @@ namespace SeguraChain_Lib.Other.Object.Network
             {
                 try
                 {
-                    return ((IPEndPoint)(_socket.Client.RemoteEndPoint)).Address.ToString();
+                    return _socket.Client?.RemoteEndPoint != null ? ((IPEndPoint)(_socket.Client.RemoteEndPoint)).Address.ToString() : string.Empty;
                 }
                 catch
                 {
@@ -152,8 +152,16 @@ namespace SeguraChain_Lib.Other.Object.Network
 
             Closed = true;
 
-            _socket?.Client.Shutdown(shutdownType);
-            _socket?.Close();
+            try
+            {
+                _socket?.Client.Shutdown(shutdownType);
+                if (_socket.Connected)
+                    _socket?.Close();
+            }
+            catch
+            {
+                // Ignored, catch the exception once the task is cancelled.
+            }
         }
 
 

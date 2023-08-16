@@ -372,7 +372,7 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
             }
 
             // If every transactions are invalid, it's unecessary to try to update them.
-            return countConfirmedPassed == countValidPassed || (countValidPassed == 0 && countMemPoolPassed == 0);
+            return countValidPassed > 0 || countConfirmedPassed > 0 ? true : false;
         }
 
         /// <summary>

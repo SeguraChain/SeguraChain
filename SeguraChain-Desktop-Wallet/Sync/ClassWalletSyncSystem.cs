@@ -331,7 +331,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                             if (currentBlockTransaction.BlockTransaction.TransactionStatus && !currentBlockTransaction.IsMemPool)
                                             {
                                                 if (blockHeight + currentBlockTransaction.BlockTransaction.TransactionTotalConfirmation >= lastBlockHeightTransactionConfirmation)
-                                                    break;
+                                                    continue;
                                                 else
                                                 {
                                                     currentBlockTransaction.BlockTransaction.TransactionTotalConfirmation = (lastBlockHeightTransactionConfirmation - blockHeight) + 1;
