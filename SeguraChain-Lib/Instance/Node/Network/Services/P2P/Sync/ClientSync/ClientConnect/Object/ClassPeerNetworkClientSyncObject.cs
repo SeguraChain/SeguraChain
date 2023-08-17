@@ -349,8 +349,17 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                             #region Compile the packet.
 
-                            listPacketReceived = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, _peerCancellationTokenTaskListenPeerPacketResponse);
-
+                            try
+                            {
+                                listPacketReceived = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, _peerCancellationTokenTaskListenPeerPacketResponse);
+                            }
+                            catch
+                            {
+#if DEBUG
+                                Debug.WriteLine("Failed to compile packet data received from peer " + PeerIpTarget);
+#endif
+                                break;
+                            }
                             #endregion
 
                             int countCompleted = listPacketReceived.GetList.Count(x => x.Complete);

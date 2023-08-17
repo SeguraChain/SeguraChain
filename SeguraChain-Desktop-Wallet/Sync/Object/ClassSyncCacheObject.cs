@@ -236,7 +236,7 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
             await _semaphoreDictionaryAccess.TryWaitExecuteActionAsync(
             new Action(() =>
             {
-                foreach (long blockHeight in BlockHeightKeys.GetAll)
+                foreach (long blockHeight in BlockHeightKeys.GetList.ToArray())
                     _syncCacheDatabase[blockHeight].Clear();
 
                 _syncCacheDatabase.Clear();

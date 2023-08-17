@@ -97,7 +97,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 return default(R);
             }
 
-            if (EqualityComparer<R>.Default.Equals(peerPacketReceived, default(R)))
+            if (EqualityComparer<R>.Default.Equals(peerPacketReceived, default))
                 return default(R);
 
 
