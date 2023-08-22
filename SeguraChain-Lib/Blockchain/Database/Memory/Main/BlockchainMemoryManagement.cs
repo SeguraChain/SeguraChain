@@ -845,22 +845,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                     if (!found)
                     {
-                        if (!ContainsKey(lastBlockHeight))
+                        if (_dictionaryBlockObjectMemory[lastBlockHeight].Content != null)
                         {
-                            ClassBlockObject lastBlockObject = await GetBlockDataStrategy(lastBlockHeight, true, false, cancellation);
-                            if (lastBlockObject != null)
-                            {
-                                if (timestamp == lastBlockObject.TimestampCreate)
-                                    return lastBlockHeight;
-                            }
-                        }
-                        else
-                        {
-                            if (_dictionaryBlockObjectMemory[lastBlockHeight].Content != null)
-                            {
-                                if (timestamp == _dictionaryBlockObjectMemory[lastBlockHeight].Content.TimestampCreate)
-                                    return lastBlockHeight;
-                            }
+                            if (timestamp == _dictionaryBlockObjectMemory[lastBlockHeight].Content.TimestampCreate)
+                                return lastBlockHeight;
                         }
                     }
 
@@ -3270,9 +3258,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                 if (blockHeight > BlockchainSetting.GenesisBlockHeight)
                                                                 {
                                                                     if (_pauseMemoryManagement)
-                                                                        break;
-
-                                                                    if (!ContainsKey(blockHeight))
                                                                         break;
 
                                                                     if (_dictionaryBlockObjectMemory[blockHeight].Content != null)

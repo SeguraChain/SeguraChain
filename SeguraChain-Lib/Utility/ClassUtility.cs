@@ -1381,8 +1381,8 @@ namespace SeguraChain_Lib.Utility
 
                         //Array.Copy(packetBytesToSend, countPacketSendLength, dataBytes, 0, packetSize);
 
-                        await networkStream.WriteAsync(packetBytesToSend, countPacketSendLength, packetSize, cancellation.Token).ConfigureAwait(false);
-                        await networkStream.FlushAsync(cancellation.Token).ConfigureAwait(false);
+                        await networkStream.WriteAsync(packetBytesToSend, countPacketSendLength, packetSize, cancellation.Token);
+                        await networkStream.FlushAsync(cancellation.Token);
 
                         countPacketSendLength += packetSize;
 
@@ -1393,8 +1393,8 @@ namespace SeguraChain_Lib.Utility
                 }
                 else
                 {
-                    await networkStream.WriteAsync(packetBytesToSend, 0, packetBytesToSend.Length, cancellation.Token).ConfigureAwait(false);
-                    await networkStream.FlushAsync(cancellation.Token).ConfigureAwait(false);
+                    await networkStream.WriteAsync(packetBytesToSend, 0, packetBytesToSend.Length, cancellation.Token);
+                    await networkStream.FlushAsync(cancellation.Token);
                 }
             }
             catch
