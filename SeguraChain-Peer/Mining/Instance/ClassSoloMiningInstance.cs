@@ -27,7 +27,6 @@ namespace SeguraChain_Peer.Mining.Instance
         private string _apiServerOpenNatIp;
         private ClassPeerNetworkSettingObject _peerNetworkSettingObject;
         private ClassPeerFirewallSettingObject _peerFirewallSettingObject;
-        private SemaphoreSlim _semaphoreUnlockBlock;
 
         /// <summary>
         /// Wallet info.
@@ -89,7 +88,6 @@ namespace SeguraChain_Peer.Mining.Instance
             _apiServerOpenNatIp = apiServerOpenNatIp;
             _peerNetworkSettingObject = peerNetworkSettingObject;
             _peerFirewallSettingObject = peerFirewallSettingObject;
-            _semaphoreUnlockBlock = new SemaphoreSlim(1, 1);
         }
 
         #region Manage the mining instance.
@@ -510,38 +508,22 @@ namespace SeguraChain_Peer.Mining.Instance
                                         // Submit the share if this one reach the difficulty of the block or if this one is higher.
                                         if (pocShareObject.PoWaCShareDifficulty >= _currentBlockDifficulty)
                                         {
-                                            bool semaphoreUsed = false;
-                                            
-                                            try
+                                            ClassBlockEnumMiningShareVoteStatus unlockResult = await ClassBlockchainDatabase.UnlockCurrentBlockAsync(_currentBlockHeight, pocShareObject, false, _apiServerIp, _apiServerOpenNatIp, false, false, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenMiningTasks);
+                                         
+                                            switch (unlockResult)
                                             {
-                                                semaphoreUsed = await _semaphoreUnlockBlock.TryWaitAsync(_cancellationTokenMiningTasks);
-
-                                                if (semaphoreUsed)
-                                                {
-                                                    ClassBlockEnumMiningShareVoteStatus unlockResult = await ClassBlockchainDatabase.UnlockCurrentBlockAsync(_currentBlockHeight, pocShareObject, false, _apiServerIp, _apiServerOpenNatIp, false, false, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenMiningTasks);
-
-
-                                                    switch (unlockResult)
-                                                    {
-                                                        case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED:
-                                                            _totalUnlockShare[idThread]++;
-                                                            ClassPeerNetworkBroadcastFunction.BroadcastMiningShareAsync(_apiServerIp, _apiServerOpenNatIp, string.Empty, pocShareObject, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                                                            break;
-                                                        case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_NOCONSENSUS:
-                                                        case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND:
-                                                            _totalAlreadyShare[idThread]++;
-                                                            ClassPeerNetworkBroadcastFunction.BroadcastMiningShareAsync(_apiServerIp, _apiServerOpenNatIp, string.Empty, pocShareObject, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                                                            break;
-                                                        case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_REFUSED:
-                                                            _totalRefusedShare[idThread]++;
-                                                            break;
-                                                    }
-                                                }
-                                            }
-                                            finally
-                                            {
-                                                if (semaphoreUsed)
-                                                    _semaphoreUnlockBlock.Release();
+                                                case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED:
+                                                    _totalUnlockShare[idThread]++;
+                                                    ClassPeerNetworkBroadcastFunction.BroadcastMiningShareAsync(_apiServerIp, _apiServerOpenNatIp, string.Empty, pocShareObject, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                                                    break;
+                                                case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_NOCONSENSUS:
+                                                case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND:
+                                                    _totalAlreadyShare[idThread]++;
+                                                    ClassPeerNetworkBroadcastFunction .BroadcastMiningShareAsync(_apiServerIp, _apiServerOpenNatIp, string.Empty, pocShareObject, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                                                    break;
+                                                case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_REFUSED:
+                                                    _totalRefusedShare[idThread]++;
+                                                    break;
                                             }
                                         }
                                     }

@@ -312,14 +312,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         value.BlockHeight == BlockchainSetting.GenesisBlockHeight || !_blockchainDatabaseSetting.BlockchainCacheSetting.EnableCacheDatabase)
                         insertEnumTypeStatus = CacheBlockMemoryInsertEnumType.INSERT_IN_ACTIVE_MEMORY_OBJECT;
 
-
-                    if (value.BlockHeight > BlockchainSetting.GenesisBlockHeight)
-                    {
-                        if (!ContainsKey(value.BlockHeight - 1))
-                            return false;
-                    }
-                         
-
                     switch (insertEnumTypeStatus)
                     {
                         case CacheBlockMemoryInsertEnumType.INSERT_IN_ACTIVE_MEMORY_OBJECT:
@@ -853,22 +845,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                     if (!found)
                     {
-                        if (!ContainsKey(lastBlockHeight))
+                        if (_dictionaryBlockObjectMemory[lastBlockHeight].Content != null)
                         {
-                            ClassBlockObject lastBlockObject = await GetBlockDataStrategy(lastBlockHeight, true, false, cancellation);
-                            if (lastBlockObject != null)
-                            {
-                                if (timestamp == lastBlockObject.TimestampCreate)
-                                    return lastBlockHeight;
-                            }
-                        }
-                        else
-                        {
-                            if (_dictionaryBlockObjectMemory[lastBlockHeight].Content != null)
-                            {
-                                if (timestamp == _dictionaryBlockObjectMemory[lastBlockHeight].Content.TimestampCreate)
-                                    return lastBlockHeight;
-                            }
+                            if (timestamp == _dictionaryBlockObjectMemory[lastBlockHeight].Content.TimestampCreate)
+                                return lastBlockHeight;
                         }
                     }
 
@@ -1489,7 +1469,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                 long blockMinRange = blockRange[0];
                                                 long blockMaxRange = blockRange[blockRange.Count - 1];
 
-                                                using (DisposableSortedList<long, ClassBlockObject> blockDataListRetrievedRead = await GetBlockListFromBlockHeightRangeTargetFromMemoryDataCache(blockMinRange, blockMaxRange, true, true, cancellation))
+                                                using (DisposableSortedList<long, ClassBlockObject> blockDataListRetrievedRead = await GetBlockListFromBlockHeightRangeTargetFromMemoryDataCache(blockMinRange, blockMaxRange, false, true, cancellation))
                                                 {
                                                     if (blockDataListRetrievedRead.Count > 0)
                                                     {
@@ -1646,7 +1626,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                             {
                                                                 if (listBlockObjectUpdated.Count > 0)
                                                                 {
-                                                                    if (!await AddOrUpdateListBlockObjectOnMemoryDataCache(listBlockObjectUpdated.GetList.Values.ToList(), true, cancellation))
+                                                                    if (!await AddOrUpdateListBlockObjectOnMemoryDataCache(listBlockObjectUpdated.GetList.Values.ToList(), false, cancellation))
                                                                     {
 #if DEBUG
                                                                         Debug.WriteLine("Can't update block(s) updated on the cache system, cancel task of block transaction confirmation.");
@@ -3278,9 +3258,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                 if (blockHeight > BlockchainSetting.GenesisBlockHeight)
                                                                 {
                                                                     if (_pauseMemoryManagement)
-                                                                        break;
-
-                                                                    if (!ContainsKey(blockHeight))
                                                                         break;
 
                                                                     if (_dictionaryBlockObjectMemory[blockHeight].Content != null)

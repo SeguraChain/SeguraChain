@@ -709,16 +709,13 @@ namespace SeguraChain_Lib.Blockchain.MemPool.Database
                 {
                     foreach(long blockHeight in _dictionaryMemPoolTransactionObjects.Keys.ToArray())
                     {
-                        if (!_dictionaryMemPoolTransactionObjects.ContainsKey(blockHeight))
-                            continue;
-
                         try
                         {
                             countMemPoolTx += _dictionaryMemPoolTransactionObjects[blockHeight].Count;
                         }
                         catch
                         {
-                            continue;
+                            // Ignored.
                         }
                     }
                 }
