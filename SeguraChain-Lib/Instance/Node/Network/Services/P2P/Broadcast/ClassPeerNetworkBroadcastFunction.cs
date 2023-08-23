@@ -19,6 +19,7 @@ using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.Utility;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -237,11 +238,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                             ClassPeerPacketSendMiningShareVote peerPacketSendMiningShareVote = null;
 
-                            while (peerPacketSendMiningShareVote == null)
-                            {
-                                if (!ClassPeerCheckManager.CheckPeerClientStatus(peerIpTarget, peerUniqueIdTarget, false, peerNetworkSetting, peerFirewallSettingObject))
-                                    break;
 
+                            if (ClassPeerCheckManager.CheckPeerClientStatus(peerIpTarget, peerUniqueIdTarget, false, peerNetworkSetting, peerFirewallSettingObject))
+                            {
                                 peerPacketSendMiningShareVote = await ClassPeerNetworkBroadcastShortcutFunction.SendBroadcastPacket<ClassPeerPacketSendAskMiningShareVote, ClassPeerPacketSendMiningShareVote>(
                                                                                                         peerValuePair.Value.PeerNetworkClientSyncObject,
                                                                                                         ClassPeerEnumPacketSend.ASK_MINING_SHARE_VOTE,
@@ -251,14 +250,30 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                                                                             MiningPowShareObject = miningPowShareObject,
                                                                                                             PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
                                                                                                         }, peerIpTarget, peerUniqueIdTarget, peerNetworkSetting, ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE, new CancellationTokenSource());
-                                if (peerPacketSendMiningShareVote != null)
+
+                                while(peerPacketSendMiningShareVote == null)
                                 {
-                                    peerValuePair.Value.PeerNetworkClientSyncObject.Dispose();
-                                    break;
+                                    peerPacketSendMiningShareVote = await ClassPeerNetworkBroadcastShortcutFunction.SendBroadcastPacket<ClassPeerPacketSendAskMiningShareVote, ClassPeerPacketSendMiningShareVote>(
+                                                                        peerValuePair.Value.PeerNetworkClientSyncObject,
+                                                                        ClassPeerEnumPacketSend.ASK_MINING_SHARE_VOTE,
+                                                                        new ClassPeerPacketSendAskMiningShareVote()
+                                                                        {
+                                                                            BlockHeight = miningPowShareObject.BlockHeight,
+                                                                            MiningPowShareObject = miningPowShareObject,
+                                                                            PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond,
+                                                                        }, peerIpTarget, peerUniqueIdTarget, peerNetworkSetting, ClassPeerEnumPacketResponse.SEND_MINING_SHARE_VOTE, new CancellationTokenSource());
+
                                 }
 
-                                peerValuePair.Value.PeerNetworkClientSyncObject.DisconnectFromTarget();
+                                if (peerPacketSendMiningShareVote != null)
+                                    peerValuePair.Value.PeerNetworkClientSyncObject.Dispose();
+#if DEBUG
+                                else
+                                    Debug.WriteLine("Failed to spread mining share to " + peerIpTarget);
+#endif
                             }
+
+                            peerValuePair.Value.PeerNetworkClientSyncObject.DisconnectFromTarget();
 
                         }
                         catch

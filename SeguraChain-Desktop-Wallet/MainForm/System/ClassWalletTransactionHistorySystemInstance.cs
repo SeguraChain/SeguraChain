@@ -402,6 +402,9 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                         #endregion
 
 
+                                        if (!_dictionaryTransactionHistory.ContainsKey(walletFileOpened))
+                                            return false;
+
                                         if (doClean || exception)
                                         {
                                             _dictionaryTransactionHistory[walletFileOpened].ClearTransactionHistoryContent();
@@ -424,7 +427,6 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                     }
                                 }
                             }
-
                         }
                     }
                 }
