@@ -115,8 +115,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                                                                                                            _peerFirewallSettingObject));
                                                     if (!await RunPeerNetworkClientBroadcastMemPool(peerIpTarget, peerUniqueIdTarget, false))
                                                     {
-                                                        _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].StopTaskAndDisconnect();
-                                                        _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].Remove(peerUniqueIdTarget);
+                                                        if (!_listPeerNetworkClientBroadcastMemPoolReceiver.ContainsKey(peerIpTarget) ||
+                                                            !_listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].ContainsKey(peerUniqueIdTarget))
+                                                            continue;
+
+                                                            _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].StopTaskAndDisconnect();
+                                                            _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].Remove(peerUniqueIdTarget);
+                                                        
                                                     }
                                                     else
                                                         success = true;
@@ -307,33 +312,26 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 {
                     try
                     {
-                        if (_listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Count > 0)
-                        {
-                            foreach (string peerUniqueId in _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Keys.ToArray())
-                            {
-                                try
-                                {
-                                    _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp][peerUniqueId].StopTaskAndDisconnect();
-                                }
-                                catch
-                                {
-                                    // Ignored.
-                                }
-                            }
+                        if (_listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Count == 0)
+                            continue;
 
+                        foreach (string peerUniqueId in _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Keys.ToArray())
+                        {
                             try
                             {
-                                _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Clear();
+                                _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp][peerUniqueId].StopTaskAndDisconnect();
                             }
                             catch
                             {
-                                // Ignored.
+                                continue;
                             }
                         }
+
+                        _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Clear();
                     }
                     catch
                     {
-                        // Ignored.
+                        continue;
                     }
                 }
 
@@ -541,14 +539,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             /// <returns></returns>
             public async Task<bool> TryAskBroadcastMode()
             {
-                var peerObject = ClassPeerDatabase.GetPeerObject(_peerIpTarget, _peerUniqueIdTarget);
-
-                if (peerObject == null)
-                    return false;
 
                 ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId,
-                    peerObject.PeerInternPublicKey,
-                    peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                    ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerInternPublicKey,
+                    ClassPeerDatabase.DictionaryPeerDataObject[_peerIpTarget][_peerUniqueIdTarget].PeerClientLastTimestampPeerPacketSignatureWhitelist)
                 {
                     PacketOrder = ClassPeerEnumPacketSend.ASK_MEM_POOL_BROADCAST_MODE,
                 };

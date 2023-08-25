@@ -1674,6 +1674,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         {
                             foreach (int peerId in listBlockObjectsReceived[blockHeight].Keys)
                             {
+                                if (!listBlockObjectsReceived.ContainsKey(blockHeight) || !listBlockObjectsReceived[blockHeight].ContainsKey(peerId))
+                                    continue;
+
                                 string blockObjectHash = ClassUtility.GenerateSha256FromString(string.Concat("", ClassBlockUtility.BlockObjectToStringBlockData(listBlockObjectsReceived[blockHeight][peerId], false).ToList()));
 
                                 //bool insertStatus = false;

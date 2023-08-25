@@ -402,6 +402,9 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                         #endregion
 
 
+                                        if (!_dictionaryTransactionHistory.ContainsKey(walletFileOpened))
+                                            return false;
+
                                         if (doClean || exception)
                                         {
                                             _dictionaryTransactionHistory[walletFileOpened].ClearTransactionHistoryContent();
@@ -424,7 +427,6 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                     }
                                 }
                             }
-
                         }
                     }
                 }
@@ -1280,6 +1282,9 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         /// <returns></returns>
         private bool PaintTransactionObjectToTransactionHistory(string walletFileOpened, TransactionHistoryInformationObject transactionHistoryInformationObject, int totalShowedVirtually, ClassBlockTransaction blockTransaction, bool containTransactionData)
         {
+
+            if (!_dictionaryTransactionHistory.ContainsKey(walletFileOpened))
+                return false;
 
             int height = _dictionaryTransactionHistory[walletFileOpened].Height / ClassWalletDefaultSetting.DefaultWalletMaxTransactionInHistoryPerPage;
 
