@@ -309,8 +309,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             {
                 if (!_keepAlive)
                     DisconnectFromTarget();
-                else // Enable keep alive.
-                    TaskEnablePeerPacketKeepAlive();
+                /*else // Enable keep alive.
+                    TaskEnablePeerPacketKeepAlive();*/
             }
 
             return true;

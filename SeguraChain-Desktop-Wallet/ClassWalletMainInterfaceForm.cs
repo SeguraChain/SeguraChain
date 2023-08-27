@@ -195,6 +195,7 @@ namespace SeguraChain_Desktop_Wallet
             EnableTaskUpdateWalletFileListOpened();
             EnableTaskUpdateMenuStripWalletList();
             EnableTaskUpdateBlockchainNetworkStats();
+            UpdateRecentTransactionDraw();
             Refresh();
         }
 
@@ -1898,6 +1899,20 @@ namespace SeguraChain_Desktop_Wallet
 
         #region Recent transaction history panel events & functions.
 
+        /// <summary>
+        /// Update recent transaction draw.
+        /// </summary>
+        private void UpdateRecentTransactionDraw()
+        {
+            Task.Factory.StartNew(async () =>
+            {
+                while(true)
+                {
+                    panelInternalRecentTransactions.Refresh();
+                    await Task.Delay(1000);
+                }
+            }).ConfigureAwait(false);
+        }
 
         /// <summary>
         /// Draw recent transactions.
