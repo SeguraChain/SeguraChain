@@ -30,1232 +30,1222 @@ namespace SeguraChain_Desktop_Wallet
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ClassWalletMainInterfaceForm));
-            this.menuStripGeneralWallet = new System.Windows.Forms.MenuStrip();
-            this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.openWalletToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.closeWalletToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.createWalletToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.importWalletPrivateKeytoolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.rescanToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.languageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.comboBoxListWalletFile = new System.Windows.Forms.ComboBox();
-            this.labelWalletOpened = new System.Windows.Forms.Label();
-            this.labelMainInterfaceSyncProgress = new System.Windows.Forms.Label();
-            this.pictureBoxLogo = new System.Windows.Forms.PictureBox();
-            this.timerRefreshTransactionHistory = new System.Windows.Forms.Timer(this.components);
-            this.tabControlWallet = new System.Windows.Forms.TabControl();
-            this.tabPageOverview = new System.Windows.Forms.TabPage();
-            this.panelInternalNetworkStats = new SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel();
-            this.labelMainInterfaceNetworkStatsTotalCoinPendingText = new System.Windows.Forms.Label();
-            this.labelMainInterfaceNetworkStatsTotalCoinSpreadText = new System.Windows.Forms.Label();
-            this.labelMainInterfaceNetworkStatsTotalFeeCirculatingText = new System.Windows.Forms.Label();
-            this.labelMainInterfaceNetworkStatsTotalCoinCirculatingText = new System.Windows.Forms.Label();
-            this.labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText = new System.Windows.Forms.Label();
-            this.labelMainInterfaceNetworkStatsTotalTransactionConfirmedText = new System.Windows.Forms.Label();
-            this.labelMainInterfaceNetworkStatsTotalTransactionText = new System.Windows.Forms.Label();
-            this.labelMainInterfaceNetworkStatsTotalTransactionMemPoolText = new System.Windows.Forms.Label();
-            this.panelSyncInformationsSeperator = new SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel();
-            this.labelMainInterfaceNetworkStatsInfoSyncText = new System.Windows.Forms.Label();
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText = new System.Windows.Forms.Label();
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText = new System.Windows.Forms.Label();
-            this.labelMainInterfaceNetworkStatsCurrentHashrateText = new System.Windows.Forms.Label();
-            this.labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText = new System.Windows.Forms.Label();
-            this.labelMainInterfaceNetworkStatsCurrentDifficultyText = new System.Windows.Forms.Label();
-            this.labelMainInterfaceNetworkStatsTitleText = new System.Windows.Forms.Label();
-            this.panelRecentTransactions = new SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel();
-            this.panelInternalRecentTransactions = new SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel();
-            this.labelMainInterfaceRecentTransaction = new System.Windows.Forms.Label();
-            this.labelMainInterfaceTotalBalanceAmountText = new System.Windows.Forms.Label();
-            this.labelMainInterfacePendingBalanceAmountText = new System.Windows.Forms.Label();
-            this.labelMainInterfaceAvailableBalanceAmountText = new System.Windows.Forms.Label();
-            this.panelSeperatorBalanceLine = new SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel();
-            this.labelMainInterfaceCurrentBalanceText = new System.Windows.Forms.Label();
-            this.tabPageSendTransaction = new System.Windows.Forms.TabPage();
-            this.buttonSendTransactionDoProcess = new System.Windows.Forms.Button();
-            this.panelSendTransaction = new SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel();
-            this.panelSendTransactionDetails = new SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel();
-            this.labelSendTransactionAmountToSpend = new System.Windows.Forms.Label();
-            this.labelSendTransactionFeeSizeCost = new System.Windows.Forms.Label();
-            this.textBoxSendTransactionFeeCalculated = new System.Windows.Forms.TextBox();
-            this.textBoxSendTransactionFeeSizeCost = new System.Windows.Forms.TextBox();
-            this.labelSendTransactionFeeCalculated = new System.Windows.Forms.Label();
-            this.labelSendTransactionFeeConfirmationCost = new System.Windows.Forms.Label();
-            this.textBoxSendTransactionAmountToSpend = new System.Windows.Forms.TextBox();
-            this.textBoxSendTransactionFeeConfirmationCost = new System.Windows.Forms.TextBox();
-            this.textBoxSendTransactionTotalAmountSource = new System.Windows.Forms.TextBox();
-            this.labelSendTransactionTotalAmountSource = new System.Windows.Forms.Label();
-            this.textBoxSendTransactionConfirmationsCountTarget = new System.Windows.Forms.TextBox();
-            this.labelSendTransactionConfirmationTimeEstimated = new System.Windows.Forms.Label();
-            this.labelSendTransactionPaymentId = new System.Windows.Forms.Label();
-            this.textBoxSendTransactionPaymentId = new System.Windows.Forms.TextBox();
-            this.labelSendTransactionAvailableBalanceText = new System.Windows.Forms.Label();
-            this.buttonSendTransactionOpenContactList = new System.Windows.Forms.Button();
-            this.labelSendTransactionConfirmationCountTarget = new System.Windows.Forms.Label();
-            this.labelSendTransactionAmountSelected = new System.Windows.Forms.Label();
-            this.textBoxSendTransactionAmountSelected = new System.Windows.Forms.TextBox();
-            this.labelSendTransactionWalletAddressTarget = new System.Windows.Forms.Label();
-            this.textBoxSendTransactionWalletAddressTarget = new System.Windows.Forms.TextBox();
-            this.tabPageReceiveTransaction = new System.Windows.Forms.TabPage();
-            this.buttonSaveQrCodeReceiveTransactionWalletAddress = new System.Windows.Forms.Button();
-            this.buttonPrintQrCodeReceiveTransactionWalletAddress = new System.Windows.Forms.Button();
-            this.labelWalletReceiveTransactionQrCodeText = new System.Windows.Forms.Label();
-            this.panelQrCodeWalletAddress = new SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel();
-            this.tabPageTransactionHistory = new System.Windows.Forms.TabPage();
-            this.buttonMainInterfaceSearchTransactionHistory = new System.Windows.Forms.Button();
-            this.textBoxTransactionHistorySearch = new System.Windows.Forms.TextBox();
-            this.panelTransactionHistoryColumns = new SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel();
-            this.textBoxMainInterfaceMaxPageTransactionHistory = new System.Windows.Forms.TextBox();
-            this.textBoxMainInterfaceCurrentPageTransactionHistory = new System.Windows.Forms.TextBox();
-            this.buttonMainInterfaceNextPageTransactionHistory = new System.Windows.Forms.Button();
-            this.buttonMainInterfaceBackPageTransactionHistory = new System.Windows.Forms.Button();
-            this.buttonMainInterfaceExportTransactionHistory = new System.Windows.Forms.Button();
-            this.panelTransactionHistory = new SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel();
-            this.tabPageStoreNetwork = new System.Windows.Forms.TabPage();
-            this.labelWalletAddressReceiveTransactionTitle = new System.Windows.Forms.Label();
-            this.labelWalletAddressReceiveTransaction = new System.Windows.Forms.Label();
-            this.progressBarMainInterfaceSyncProgress = new SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomProgressBar();
-            this.menuStripGeneralWallet.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).BeginInit();
-            this.tabControlWallet.SuspendLayout();
-            this.tabPageOverview.SuspendLayout();
-            this.panelInternalNetworkStats.SuspendLayout();
-            this.panelRecentTransactions.SuspendLayout();
-            this.tabPageSendTransaction.SuspendLayout();
-            this.panelSendTransaction.SuspendLayout();
-            this.panelSendTransactionDetails.SuspendLayout();
-            this.tabPageReceiveTransaction.SuspendLayout();
-            this.tabPageTransactionHistory.SuspendLayout();
-            this.SuspendLayout();
+            menuStripGeneralWallet = new System.Windows.Forms.MenuStrip();
+            fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            openWalletToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            closeWalletToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            createWalletToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            importWalletPrivateKeytoolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            rescanToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            languageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            comboBoxListWalletFile = new System.Windows.Forms.ComboBox();
+            labelWalletOpened = new System.Windows.Forms.Label();
+            labelMainInterfaceSyncProgress = new System.Windows.Forms.Label();
+            pictureBoxLogo = new System.Windows.Forms.PictureBox();
+            timerRefreshTransactionHistory = new System.Windows.Forms.Timer(components);
+            tabControlWallet = new System.Windows.Forms.TabControl();
+            tabPageOverview = new System.Windows.Forms.TabPage();
+            panelInternalNetworkStats = new ClassCustomPanel();
+            labelMainInterfaceNetworkStatsTotalCoinPendingText = new System.Windows.Forms.Label();
+            labelMainInterfaceNetworkStatsTotalCoinSpreadText = new System.Windows.Forms.Label();
+            labelMainInterfaceNetworkStatsTotalFeeCirculatingText = new System.Windows.Forms.Label();
+            labelMainInterfaceNetworkStatsTotalCoinCirculatingText = new System.Windows.Forms.Label();
+            labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText = new System.Windows.Forms.Label();
+            labelMainInterfaceNetworkStatsTotalTransactionConfirmedText = new System.Windows.Forms.Label();
+            labelMainInterfaceNetworkStatsTotalTransactionText = new System.Windows.Forms.Label();
+            labelMainInterfaceNetworkStatsTotalTransactionMemPoolText = new System.Windows.Forms.Label();
+            panelSyncInformationsSeperator = new ClassCustomPanel();
+            labelMainInterfaceNetworkStatsInfoSyncText = new System.Windows.Forms.Label();
+            labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText = new System.Windows.Forms.Label();
+            labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText = new System.Windows.Forms.Label();
+            labelMainInterfaceNetworkStatsCurrentHashrateText = new System.Windows.Forms.Label();
+            labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText = new System.Windows.Forms.Label();
+            labelMainInterfaceNetworkStatsCurrentDifficultyText = new System.Windows.Forms.Label();
+            labelMainInterfaceNetworkStatsTitleText = new System.Windows.Forms.Label();
+            panelRecentTransactions = new ClassCustomPanel();
+            panelInternalRecentTransactions = new ClassCustomPanel();
+            labelMainInterfaceRecentTransaction = new System.Windows.Forms.Label();
+            labelMainInterfaceTotalBalanceAmountText = new System.Windows.Forms.Label();
+            labelMainInterfacePendingBalanceAmountText = new System.Windows.Forms.Label();
+            labelMainInterfaceAvailableBalanceAmountText = new System.Windows.Forms.Label();
+            panelSeperatorBalanceLine = new ClassCustomPanel();
+            labelMainInterfaceCurrentBalanceText = new System.Windows.Forms.Label();
+            tabPageSendTransaction = new System.Windows.Forms.TabPage();
+            buttonSendTransactionDoProcess = new System.Windows.Forms.Button();
+            panelSendTransaction = new ClassCustomPanel();
+            panelSendTransactionDetails = new ClassCustomPanel();
+            labelSendTransactionAmountToSpend = new System.Windows.Forms.Label();
+            labelSendTransactionFeeSizeCost = new System.Windows.Forms.Label();
+            textBoxSendTransactionFeeCalculated = new System.Windows.Forms.TextBox();
+            textBoxSendTransactionFeeSizeCost = new System.Windows.Forms.TextBox();
+            labelSendTransactionFeeCalculated = new System.Windows.Forms.Label();
+            labelSendTransactionFeeConfirmationCost = new System.Windows.Forms.Label();
+            textBoxSendTransactionAmountToSpend = new System.Windows.Forms.TextBox();
+            textBoxSendTransactionFeeConfirmationCost = new System.Windows.Forms.TextBox();
+            textBoxSendTransactionTotalAmountSource = new System.Windows.Forms.TextBox();
+            labelSendTransactionTotalAmountSource = new System.Windows.Forms.Label();
+            textBoxSendTransactionConfirmationsCountTarget = new System.Windows.Forms.TextBox();
+            labelSendTransactionConfirmationTimeEstimated = new System.Windows.Forms.Label();
+            labelSendTransactionPaymentId = new System.Windows.Forms.Label();
+            textBoxSendTransactionPaymentId = new System.Windows.Forms.TextBox();
+            labelSendTransactionAvailableBalanceText = new System.Windows.Forms.Label();
+            buttonSendTransactionOpenContactList = new System.Windows.Forms.Button();
+            labelSendTransactionConfirmationCountTarget = new System.Windows.Forms.Label();
+            labelSendTransactionAmountSelected = new System.Windows.Forms.Label();
+            textBoxSendTransactionAmountSelected = new System.Windows.Forms.TextBox();
+            labelSendTransactionWalletAddressTarget = new System.Windows.Forms.Label();
+            textBoxSendTransactionWalletAddressTarget = new System.Windows.Forms.TextBox();
+            tabPageReceiveTransaction = new System.Windows.Forms.TabPage();
+            buttonSaveQrCodeReceiveTransactionWalletAddress = new System.Windows.Forms.Button();
+            buttonPrintQrCodeReceiveTransactionWalletAddress = new System.Windows.Forms.Button();
+            labelWalletReceiveTransactionQrCodeText = new System.Windows.Forms.Label();
+            panelQrCodeWalletAddress = new ClassCustomPanel();
+            tabPageTransactionHistory = new System.Windows.Forms.TabPage();
+            buttonMainInterfaceSearchTransactionHistory = new System.Windows.Forms.Button();
+            textBoxTransactionHistorySearch = new System.Windows.Forms.TextBox();
+            panelTransactionHistoryColumns = new ClassCustomPanel();
+            textBoxMainInterfaceMaxPageTransactionHistory = new System.Windows.Forms.TextBox();
+            textBoxMainInterfaceCurrentPageTransactionHistory = new System.Windows.Forms.TextBox();
+            buttonMainInterfaceNextPageTransactionHistory = new System.Windows.Forms.Button();
+            buttonMainInterfaceBackPageTransactionHistory = new System.Windows.Forms.Button();
+            buttonMainInterfaceExportTransactionHistory = new System.Windows.Forms.Button();
+            panelTransactionHistory = new ClassCustomPanel();
+            tabPageStoreNetwork = new System.Windows.Forms.TabPage();
+            labelWalletAddressReceiveTransactionTitle = new System.Windows.Forms.Label();
+            labelWalletAddressReceiveTransaction = new System.Windows.Forms.Label();
+            progressBarMainInterfaceSyncProgress = new ClassCustomProgressBar();
+            menuStripGeneralWallet.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxLogo).BeginInit();
+            tabControlWallet.SuspendLayout();
+            tabPageOverview.SuspendLayout();
+            panelInternalNetworkStats.SuspendLayout();
+            panelRecentTransactions.SuspendLayout();
+            tabPageSendTransaction.SuspendLayout();
+            panelSendTransaction.SuspendLayout();
+            panelSendTransactionDetails.SuspendLayout();
+            tabPageReceiveTransaction.SuspendLayout();
+            tabPageTransactionHistory.SuspendLayout();
+            SuspendLayout();
             // 
             // menuStripGeneralWallet
             // 
-            this.menuStripGeneralWallet.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(67)))), ((int)(((byte)(83)))), ((int)(((byte)(105)))));
-            this.menuStripGeneralWallet.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.menuStripGeneralWallet.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem,
-            this.settingsToolStripMenuItem,
-            this.rescanToolStripMenuItem,
-            this.languageToolStripMenuItem});
-            this.menuStripGeneralWallet.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
-            this.menuStripGeneralWallet.Location = new System.Drawing.Point(0, 0);
-            this.menuStripGeneralWallet.MinimumSize = new System.Drawing.Size(1376, 0);
-            this.menuStripGeneralWallet.Name = "menuStripGeneralWallet";
-            this.menuStripGeneralWallet.Padding = new System.Windows.Forms.Padding(7, 2, 7, 2);
-            this.menuStripGeneralWallet.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-            this.menuStripGeneralWallet.Size = new System.Drawing.Size(1376, 24);
-            this.menuStripGeneralWallet.Stretch = false;
-            this.menuStripGeneralWallet.TabIndex = 0;
-            this.menuStripGeneralWallet.Text = "menuStripControl";
+            menuStripGeneralWallet.BackColor = System.Drawing.Color.FromArgb(67, 83, 105);
+            menuStripGeneralWallet.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            menuStripGeneralWallet.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileToolStripMenuItem, settingsToolStripMenuItem, rescanToolStripMenuItem, languageToolStripMenuItem });
+            menuStripGeneralWallet.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
+            menuStripGeneralWallet.Location = new System.Drawing.Point(0, 0);
+            menuStripGeneralWallet.MinimumSize = new System.Drawing.Size(1376, 0);
+            menuStripGeneralWallet.Name = "menuStripGeneralWallet";
+            menuStripGeneralWallet.Padding = new System.Windows.Forms.Padding(7, 2, 7, 2);
+            menuStripGeneralWallet.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
+            menuStripGeneralWallet.Size = new System.Drawing.Size(1376, 24);
+            menuStripGeneralWallet.Stretch = false;
+            menuStripGeneralWallet.TabIndex = 0;
+            menuStripGeneralWallet.Text = "menuStripControl";
             // 
             // fileToolStripMenuItem
             // 
-            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.openWalletToolStripMenuItem,
-            this.closeWalletToolStripMenuItem,
-            this.createWalletToolStripMenuItem,
-            this.importWalletPrivateKeytoolStripMenuItem,
-            this.exitToolStripMenuItem});
-            this.fileToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.fileToolStripMenuItem.ForeColor = System.Drawing.Color.Ivory;
-            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(74, 20);
-            this.fileToolStripMenuItem.Text = "FILE_TEXT";
+            fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { openWalletToolStripMenuItem, closeWalletToolStripMenuItem, createWalletToolStripMenuItem, importWalletPrivateKeytoolStripMenuItem, exitToolStripMenuItem });
+            fileToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            fileToolStripMenuItem.ForeColor = System.Drawing.Color.Ivory;
+            fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            fileToolStripMenuItem.Size = new System.Drawing.Size(74, 20);
+            fileToolStripMenuItem.Text = "FILE_TEXT";
             // 
             // openWalletToolStripMenuItem
             // 
-            this.openWalletToolStripMenuItem.Name = "openWalletToolStripMenuItem";
-            this.openWalletToolStripMenuItem.Size = new System.Drawing.Size(230, 22);
-            this.openWalletToolStripMenuItem.Text = "OPEN_WALLET_TEXT";
+            openWalletToolStripMenuItem.Name = "openWalletToolStripMenuItem";
+            openWalletToolStripMenuItem.Size = new System.Drawing.Size(230, 22);
+            openWalletToolStripMenuItem.Text = "OPEN_WALLET_TEXT";
             // 
             // closeWalletToolStripMenuItem
             // 
-            this.closeWalletToolStripMenuItem.Name = "closeWalletToolStripMenuItem";
-            this.closeWalletToolStripMenuItem.Size = new System.Drawing.Size(230, 22);
-            this.closeWalletToolStripMenuItem.Text = "CLOSE_WALLET_TEXT";
-            this.closeWalletToolStripMenuItem.Click += new System.EventHandler(this.closeWalletToolStripMenuItem_Click);
+            closeWalletToolStripMenuItem.Name = "closeWalletToolStripMenuItem";
+            closeWalletToolStripMenuItem.Size = new System.Drawing.Size(230, 22);
+            closeWalletToolStripMenuItem.Text = "CLOSE_WALLET_TEXT";
+            closeWalletToolStripMenuItem.Click += closeWalletToolStripMenuItem_Click;
             // 
             // createWalletToolStripMenuItem
             // 
-            this.createWalletToolStripMenuItem.Name = "createWalletToolStripMenuItem";
-            this.createWalletToolStripMenuItem.Size = new System.Drawing.Size(230, 22);
-            this.createWalletToolStripMenuItem.Text = "CREATE_WALLET_TEXT";
-            this.createWalletToolStripMenuItem.Click += new System.EventHandler(this.createWalletToolStripMenuItem_Click);
+            createWalletToolStripMenuItem.Name = "createWalletToolStripMenuItem";
+            createWalletToolStripMenuItem.Size = new System.Drawing.Size(230, 22);
+            createWalletToolStripMenuItem.Text = "CREATE_WALLET_TEXT";
+            createWalletToolStripMenuItem.Click += createWalletToolStripMenuItem_Click;
             // 
             // importWalletPrivateKeytoolStripMenuItem
             // 
-            this.importWalletPrivateKeytoolStripMenuItem.Name = "importWalletPrivateKeytoolStripMenuItem";
-            this.importWalletPrivateKeytoolStripMenuItem.Size = new System.Drawing.Size(230, 22);
-            this.importWalletPrivateKeytoolStripMenuItem.Text = "IMPORT_PRIVATE_KEY_TEXT";
-            this.importWalletPrivateKeytoolStripMenuItem.Click += new System.EventHandler(this.importWalletPrivateKeyToolStripMenuItem_Click);
+            importWalletPrivateKeytoolStripMenuItem.Name = "importWalletPrivateKeytoolStripMenuItem";
+            importWalletPrivateKeytoolStripMenuItem.Size = new System.Drawing.Size(230, 22);
+            importWalletPrivateKeytoolStripMenuItem.Text = "IMPORT_PRIVATE_KEY_TEXT";
+            importWalletPrivateKeytoolStripMenuItem.Click += importWalletPrivateKeyToolStripMenuItem_Click;
             // 
             // exitToolStripMenuItem
             // 
-            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(230, 22);
-            this.exitToolStripMenuItem.Text = "EXIT_TEXT";
-            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            exitToolStripMenuItem.Size = new System.Drawing.Size(230, 22);
+            exitToolStripMenuItem.Text = "EXIT_TEXT";
+            exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
             // 
             // settingsToolStripMenuItem
             // 
-            this.settingsToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.settingsToolStripMenuItem.ForeColor = System.Drawing.Color.Ivory;
-            this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(101, 20);
-            this.settingsToolStripMenuItem.Text = "SETTING_TEXT";
+            settingsToolStripMenuItem.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            settingsToolStripMenuItem.ForeColor = System.Drawing.Color.Ivory;
+            settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
+            settingsToolStripMenuItem.Size = new System.Drawing.Size(101, 20);
+            settingsToolStripMenuItem.Text = "SETTING_TEXT";
             // 
             // rescanToolStripMenuItem
             // 
-            this.rescanToolStripMenuItem.ForeColor = System.Drawing.Color.Ivory;
-            this.rescanToolStripMenuItem.Name = "rescanToolStripMenuItem";
-            this.rescanToolStripMenuItem.Size = new System.Drawing.Size(97, 20);
-            this.rescanToolStripMenuItem.Text = "RESCAN_TEXT";
-            this.rescanToolStripMenuItem.Click += new System.EventHandler(this.rescanToolStripMenuItem_Click);
+            rescanToolStripMenuItem.ForeColor = System.Drawing.Color.Ivory;
+            rescanToolStripMenuItem.Name = "rescanToolStripMenuItem";
+            rescanToolStripMenuItem.Size = new System.Drawing.Size(97, 20);
+            rescanToolStripMenuItem.Text = "RESCAN_TEXT";
+            rescanToolStripMenuItem.Click += rescanToolStripMenuItem_Click;
             // 
             // languageToolStripMenuItem
             // 
-            this.languageToolStripMenuItem.ForeColor = System.Drawing.Color.GhostWhite;
-            this.languageToolStripMenuItem.Name = "languageToolStripMenuItem";
-            this.languageToolStripMenuItem.Size = new System.Drawing.Size(116, 20);
-            this.languageToolStripMenuItem.Text = "LANGUAGE_TEXT";
+            languageToolStripMenuItem.ForeColor = System.Drawing.Color.GhostWhite;
+            languageToolStripMenuItem.Name = "languageToolStripMenuItem";
+            languageToolStripMenuItem.Size = new System.Drawing.Size(116, 20);
+            languageToolStripMenuItem.Text = "LANGUAGE_TEXT";
             // 
             // comboBoxListWalletFile
             // 
-            this.comboBoxListWalletFile.BackColor = System.Drawing.Color.White;
-            this.comboBoxListWalletFile.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.comboBoxListWalletFile.FormattingEnabled = true;
-            this.comboBoxListWalletFile.Location = new System.Drawing.Point(1234, 68);
-            this.comboBoxListWalletFile.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.comboBoxListWalletFile.Name = "comboBoxListWalletFile";
-            this.comboBoxListWalletFile.Size = new System.Drawing.Size(140, 23);
-            this.comboBoxListWalletFile.TabIndex = 2;
-            this.comboBoxListWalletFile.SelectedIndexChanged += new System.EventHandler(this.comboBoxListWalletFile_SelectedIndexChanged);
+            comboBoxListWalletFile.BackColor = System.Drawing.Color.White;
+            comboBoxListWalletFile.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            comboBoxListWalletFile.FormattingEnabled = true;
+            comboBoxListWalletFile.Location = new System.Drawing.Point(1234, 68);
+            comboBoxListWalletFile.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            comboBoxListWalletFile.Name = "comboBoxListWalletFile";
+            comboBoxListWalletFile.Size = new System.Drawing.Size(140, 23);
+            comboBoxListWalletFile.TabIndex = 2;
+            comboBoxListWalletFile.SelectedIndexChanged += comboBoxListWalletFile_SelectedIndexChanged;
             // 
             // labelWalletOpened
             // 
-            this.labelWalletOpened.AutoSize = true;
-            this.labelWalletOpened.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.labelWalletOpened.ForeColor = System.Drawing.Color.Ivory;
-            this.labelWalletOpened.Location = new System.Drawing.Point(1119, 50);
-            this.labelWalletOpened.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelWalletOpened.Name = "labelWalletOpened";
-            this.labelWalletOpened.Size = new System.Drawing.Size(254, 15);
-            this.labelWalletOpened.TabIndex = 3;
-            this.labelWalletOpened.Text = "LABEL_WALLET_OPENED_LIST_TEXT";
+            labelWalletOpened.AutoSize = true;
+            labelWalletOpened.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            labelWalletOpened.ForeColor = System.Drawing.Color.Ivory;
+            labelWalletOpened.Location = new System.Drawing.Point(1119, 50);
+            labelWalletOpened.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelWalletOpened.Name = "labelWalletOpened";
+            labelWalletOpened.Size = new System.Drawing.Size(254, 15);
+            labelWalletOpened.TabIndex = 3;
+            labelWalletOpened.Text = "LABEL_WALLET_OPENED_LIST_TEXT";
             // 
             // labelMainInterfaceSyncProgress
             // 
-            this.labelMainInterfaceSyncProgress.AutoSize = true;
-            this.labelMainInterfaceSyncProgress.BackColor = System.Drawing.Color.Transparent;
-            this.labelMainInterfaceSyncProgress.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfaceSyncProgress.ForeColor = System.Drawing.Color.Ivory;
-            this.labelMainInterfaceSyncProgress.Location = new System.Drawing.Point(516, 732);
-            this.labelMainInterfaceSyncProgress.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceSyncProgress.Name = "labelMainInterfaceSyncProgress";
-            this.labelMainInterfaceSyncProgress.Size = new System.Drawing.Size(302, 15);
-            this.labelMainInterfaceSyncProgress.TabIndex = 6;
-            this.labelMainInterfaceSyncProgress.Text = "LABEL_MAIN_INTERFACE_SYNC_PROGRESS";
+            labelMainInterfaceSyncProgress.AutoSize = true;
+            labelMainInterfaceSyncProgress.BackColor = System.Drawing.Color.Transparent;
+            labelMainInterfaceSyncProgress.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceSyncProgress.ForeColor = System.Drawing.Color.Ivory;
+            labelMainInterfaceSyncProgress.Location = new System.Drawing.Point(516, 732);
+            labelMainInterfaceSyncProgress.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceSyncProgress.Name = "labelMainInterfaceSyncProgress";
+            labelMainInterfaceSyncProgress.Size = new System.Drawing.Size(302, 15);
+            labelMainInterfaceSyncProgress.TabIndex = 6;
+            labelMainInterfaceSyncProgress.Text = "LABEL_MAIN_INTERFACE_SYNC_PROGRESS";
             // 
             // pictureBoxLogo
             // 
-            this.pictureBoxLogo.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBoxLogo.BackgroundImage = ((System.Drawing.Image)(resources.GetObject("pictureBoxLogo.BackgroundImage")));
-            this.pictureBoxLogo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.pictureBoxLogo.Location = new System.Drawing.Point(648, 29);
-            this.pictureBoxLogo.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.pictureBoxLogo.Name = "pictureBoxLogo";
-            this.pictureBoxLogo.Size = new System.Drawing.Size(82, 81);
-            this.pictureBoxLogo.TabIndex = 4;
-            this.pictureBoxLogo.TabStop = false;
+            pictureBoxLogo.BackColor = System.Drawing.Color.Transparent;
+            pictureBoxLogo.BackgroundImage = (System.Drawing.Image)resources.GetObject("pictureBoxLogo.BackgroundImage");
+            pictureBoxLogo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            pictureBoxLogo.Location = new System.Drawing.Point(630, 27);
+            pictureBoxLogo.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            pictureBoxLogo.Name = "pictureBoxLogo";
+            pictureBoxLogo.Size = new System.Drawing.Size(99, 83);
+            pictureBoxLogo.TabIndex = 4;
+            pictureBoxLogo.TabStop = false;
             // 
             // timerRefreshTransactionHistory
             // 
-            this.timerRefreshTransactionHistory.Enabled = true;
-            this.timerRefreshTransactionHistory.Interval = 10;
-            this.timerRefreshTransactionHistory.Tick += new System.EventHandler(this.timerRefreshTransactionHistory_Tick);
+            timerRefreshTransactionHistory.Enabled = true;
+            timerRefreshTransactionHistory.Interval = 10;
+            timerRefreshTransactionHistory.Tick += timerRefreshTransactionHistory_Tick;
             // 
             // tabControlWallet
             // 
-            this.tabControlWallet.Appearance = System.Windows.Forms.TabAppearance.FlatButtons;
-            this.tabControlWallet.Controls.Add(this.tabPageOverview);
-            this.tabControlWallet.Controls.Add(this.tabPageSendTransaction);
-            this.tabControlWallet.Controls.Add(this.tabPageReceiveTransaction);
-            this.tabControlWallet.Controls.Add(this.tabPageTransactionHistory);
-            this.tabControlWallet.Controls.Add(this.tabPageStoreNetwork);
-            this.tabControlWallet.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.tabControlWallet.ItemSize = new System.Drawing.Size(128, 30);
-            this.tabControlWallet.Location = new System.Drawing.Point(0, 145);
-            this.tabControlWallet.Margin = new System.Windows.Forms.Padding(0);
-            this.tabControlWallet.Name = "tabControlWallet";
-            this.tabControlWallet.Padding = new System.Drawing.Point(0, 0);
-            this.tabControlWallet.SelectedIndex = 0;
-            this.tabControlWallet.Size = new System.Drawing.Size(1377, 584);
-            this.tabControlWallet.TabIndex = 1;
+            tabControlWallet.Appearance = System.Windows.Forms.TabAppearance.FlatButtons;
+            tabControlWallet.Controls.Add(tabPageOverview);
+            tabControlWallet.Controls.Add(tabPageSendTransaction);
+            tabControlWallet.Controls.Add(tabPageReceiveTransaction);
+            tabControlWallet.Controls.Add(tabPageTransactionHistory);
+            tabControlWallet.Controls.Add(tabPageStoreNetwork);
+            tabControlWallet.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            tabControlWallet.ItemSize = new System.Drawing.Size(128, 30);
+            tabControlWallet.Location = new System.Drawing.Point(0, 145);
+            tabControlWallet.Margin = new System.Windows.Forms.Padding(0);
+            tabControlWallet.Name = "tabControlWallet";
+            tabControlWallet.Padding = new System.Drawing.Point(0, 0);
+            tabControlWallet.SelectedIndex = 0;
+            tabControlWallet.Size = new System.Drawing.Size(1377, 584);
+            tabControlWallet.TabIndex = 1;
             // 
             // tabPageOverview
             // 
-            this.tabPageOverview.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(77)))), ((int)(((byte)(104)))), ((int)(((byte)(145)))));
-            this.tabPageOverview.Controls.Add(this.panelInternalNetworkStats);
-            this.tabPageOverview.Controls.Add(this.panelRecentTransactions);
-            this.tabPageOverview.Controls.Add(this.labelMainInterfaceTotalBalanceAmountText);
-            this.tabPageOverview.Controls.Add(this.labelMainInterfacePendingBalanceAmountText);
-            this.tabPageOverview.Controls.Add(this.labelMainInterfaceAvailableBalanceAmountText);
-            this.tabPageOverview.Controls.Add(this.panelSeperatorBalanceLine);
-            this.tabPageOverview.Controls.Add(this.labelMainInterfaceCurrentBalanceText);
-            this.tabPageOverview.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.tabPageOverview.Location = new System.Drawing.Point(4, 34);
-            this.tabPageOverview.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.tabPageOverview.Name = "tabPageOverview";
-            this.tabPageOverview.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.tabPageOverview.Size = new System.Drawing.Size(1369, 546);
-            this.tabPageOverview.TabIndex = 0;
-            this.tabPageOverview.Text = "TABPAG_OVERVIEW_TEXT";
-            this.tabPageOverview.Paint += new System.Windows.Forms.PaintEventHandler(this.tabPageOverview_Paint);
+            tabPageOverview.BackColor = System.Drawing.Color.FromArgb(77, 104, 145);
+            tabPageOverview.Controls.Add(panelInternalNetworkStats);
+            tabPageOverview.Controls.Add(panelRecentTransactions);
+            tabPageOverview.Controls.Add(labelMainInterfaceTotalBalanceAmountText);
+            tabPageOverview.Controls.Add(labelMainInterfacePendingBalanceAmountText);
+            tabPageOverview.Controls.Add(labelMainInterfaceAvailableBalanceAmountText);
+            tabPageOverview.Controls.Add(panelSeperatorBalanceLine);
+            tabPageOverview.Controls.Add(labelMainInterfaceCurrentBalanceText);
+            tabPageOverview.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            tabPageOverview.Location = new System.Drawing.Point(4, 34);
+            tabPageOverview.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabPageOverview.Name = "tabPageOverview";
+            tabPageOverview.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabPageOverview.Size = new System.Drawing.Size(1369, 546);
+            tabPageOverview.TabIndex = 0;
+            tabPageOverview.Text = "TABPAG_OVERVIEW_TEXT";
+            tabPageOverview.Paint += tabPageOverview_Paint;
             // 
             // panelInternalNetworkStats
             // 
-            this.panelInternalNetworkStats.BackColor = System.Drawing.Color.AliceBlue;
-            this.panelInternalNetworkStats.BorderColor = System.Drawing.Color.DarkGray;
-            this.panelInternalNetworkStats.BorderSize = 1F;
-            this.panelInternalNetworkStats.Controls.Add(this.labelMainInterfaceNetworkStatsTotalCoinPendingText);
-            this.panelInternalNetworkStats.Controls.Add(this.labelMainInterfaceNetworkStatsTotalCoinSpreadText);
-            this.panelInternalNetworkStats.Controls.Add(this.labelMainInterfaceNetworkStatsTotalFeeCirculatingText);
-            this.panelInternalNetworkStats.Controls.Add(this.labelMainInterfaceNetworkStatsTotalCoinCirculatingText);
-            this.panelInternalNetworkStats.Controls.Add(this.labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText);
-            this.panelInternalNetworkStats.Controls.Add(this.labelMainInterfaceNetworkStatsTotalTransactionConfirmedText);
-            this.panelInternalNetworkStats.Controls.Add(this.labelMainInterfaceNetworkStatsTotalTransactionText);
-            this.panelInternalNetworkStats.Controls.Add(this.labelMainInterfaceNetworkStatsTotalTransactionMemPoolText);
-            this.panelInternalNetworkStats.Controls.Add(this.panelSyncInformationsSeperator);
-            this.panelInternalNetworkStats.Controls.Add(this.labelMainInterfaceNetworkStatsInfoSyncText);
-            this.panelInternalNetworkStats.Controls.Add(this.labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText);
-            this.panelInternalNetworkStats.Controls.Add(this.labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText);
-            this.panelInternalNetworkStats.Controls.Add(this.labelMainInterfaceNetworkStatsCurrentHashrateText);
-            this.panelInternalNetworkStats.Controls.Add(this.labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText);
-            this.panelInternalNetworkStats.Controls.Add(this.labelMainInterfaceNetworkStatsCurrentDifficultyText);
-            this.panelInternalNetworkStats.Controls.Add(this.labelMainInterfaceNetworkStatsTitleText);
-            this.panelInternalNetworkStats.Location = new System.Drawing.Point(9, 128);
-            this.panelInternalNetworkStats.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.panelInternalNetworkStats.Name = "panelInternalNetworkStats";
-            this.panelInternalNetworkStats.Radius = 10;
-            this.panelInternalNetworkStats.Size = new System.Drawing.Size(830, 402);
-            this.panelInternalNetworkStats.TabIndex = 11;
+            panelInternalNetworkStats.BackColor = System.Drawing.Color.AliceBlue;
+            panelInternalNetworkStats.BorderColor = System.Drawing.Color.DarkGray;
+            panelInternalNetworkStats.BorderSize = 1F;
+            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalCoinPendingText);
+            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalCoinSpreadText);
+            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalFeeCirculatingText);
+            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalCoinCirculatingText);
+            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText);
+            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalTransactionConfirmedText);
+            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalTransactionText);
+            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalTransactionMemPoolText);
+            panelInternalNetworkStats.Controls.Add(panelSyncInformationsSeperator);
+            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsInfoSyncText);
+            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText);
+            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText);
+            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsCurrentHashrateText);
+            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText);
+            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsCurrentDifficultyText);
+            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTitleText);
+            panelInternalNetworkStats.Location = new System.Drawing.Point(9, 128);
+            panelInternalNetworkStats.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            panelInternalNetworkStats.Name = "panelInternalNetworkStats";
+            panelInternalNetworkStats.Radius = 10;
+            panelInternalNetworkStats.Size = new System.Drawing.Size(830, 402);
+            panelInternalNetworkStats.TabIndex = 11;
             // 
             // labelMainInterfaceNetworkStatsTotalCoinPendingText
             // 
-            this.labelMainInterfaceNetworkStatsTotalCoinPendingText.AutoSize = true;
-            this.labelMainInterfaceNetworkStatsTotalCoinPendingText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfaceNetworkStatsTotalCoinPendingText.ForeColor = System.Drawing.Color.Black;
-            this.labelMainInterfaceNetworkStatsTotalCoinPendingText.Location = new System.Drawing.Point(5, 317);
-            this.labelMainInterfaceNetworkStatsTotalCoinPendingText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceNetworkStatsTotalCoinPendingText.Name = "labelMainInterfaceNetworkStatsTotalCoinPendingText";
-            this.labelMainInterfaceNetworkStatsTotalCoinPendingText.Size = new System.Drawing.Size(470, 16);
-            this.labelMainInterfaceNetworkStatsTotalCoinPendingText.TabIndex = 25;
-            this.labelMainInterfaceNetworkStatsTotalCoinPendingText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_COIN_PENDING_TEXT";
+            labelMainInterfaceNetworkStatsTotalCoinPendingText.AutoSize = true;
+            labelMainInterfaceNetworkStatsTotalCoinPendingText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceNetworkStatsTotalCoinPendingText.ForeColor = System.Drawing.Color.Black;
+            labelMainInterfaceNetworkStatsTotalCoinPendingText.Location = new System.Drawing.Point(5, 317);
+            labelMainInterfaceNetworkStatsTotalCoinPendingText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceNetworkStatsTotalCoinPendingText.Name = "labelMainInterfaceNetworkStatsTotalCoinPendingText";
+            labelMainInterfaceNetworkStatsTotalCoinPendingText.Size = new System.Drawing.Size(470, 16);
+            labelMainInterfaceNetworkStatsTotalCoinPendingText.TabIndex = 25;
+            labelMainInterfaceNetworkStatsTotalCoinPendingText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_COIN_PENDING_TEXT";
             // 
             // labelMainInterfaceNetworkStatsTotalCoinSpreadText
             // 
-            this.labelMainInterfaceNetworkStatsTotalCoinSpreadText.AutoSize = true;
-            this.labelMainInterfaceNetworkStatsTotalCoinSpreadText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfaceNetworkStatsTotalCoinSpreadText.ForeColor = System.Drawing.Color.Black;
-            this.labelMainInterfaceNetworkStatsTotalCoinSpreadText.Location = new System.Drawing.Point(5, 366);
-            this.labelMainInterfaceNetworkStatsTotalCoinSpreadText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceNetworkStatsTotalCoinSpreadText.Name = "labelMainInterfaceNetworkStatsTotalCoinSpreadText";
-            this.labelMainInterfaceNetworkStatsTotalCoinSpreadText.Size = new System.Drawing.Size(466, 16);
-            this.labelMainInterfaceNetworkStatsTotalCoinSpreadText.TabIndex = 24;
-            this.labelMainInterfaceNetworkStatsTotalCoinSpreadText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_COIN_SPREAD_TEXT";
+            labelMainInterfaceNetworkStatsTotalCoinSpreadText.AutoSize = true;
+            labelMainInterfaceNetworkStatsTotalCoinSpreadText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceNetworkStatsTotalCoinSpreadText.ForeColor = System.Drawing.Color.Black;
+            labelMainInterfaceNetworkStatsTotalCoinSpreadText.Location = new System.Drawing.Point(5, 366);
+            labelMainInterfaceNetworkStatsTotalCoinSpreadText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceNetworkStatsTotalCoinSpreadText.Name = "labelMainInterfaceNetworkStatsTotalCoinSpreadText";
+            labelMainInterfaceNetworkStatsTotalCoinSpreadText.Size = new System.Drawing.Size(466, 16);
+            labelMainInterfaceNetworkStatsTotalCoinSpreadText.TabIndex = 24;
+            labelMainInterfaceNetworkStatsTotalCoinSpreadText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_COIN_SPREAD_TEXT";
             // 
             // labelMainInterfaceNetworkStatsTotalFeeCirculatingText
             // 
-            this.labelMainInterfaceNetworkStatsTotalFeeCirculatingText.AutoSize = true;
-            this.labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfaceNetworkStatsTotalFeeCirculatingText.ForeColor = System.Drawing.Color.Black;
-            this.labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Location = new System.Drawing.Point(5, 342);
-            this.labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Name = "labelMainInterfaceNetworkStatsTotalFeeCirculatingText";
-            this.labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Size = new System.Drawing.Size(490, 16);
-            this.labelMainInterfaceNetworkStatsTotalFeeCirculatingText.TabIndex = 23;
-            this.labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_FEE_CIRCULATING_TEXT";
+            labelMainInterfaceNetworkStatsTotalFeeCirculatingText.AutoSize = true;
+            labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceNetworkStatsTotalFeeCirculatingText.ForeColor = System.Drawing.Color.Black;
+            labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Location = new System.Drawing.Point(5, 342);
+            labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Name = "labelMainInterfaceNetworkStatsTotalFeeCirculatingText";
+            labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Size = new System.Drawing.Size(490, 16);
+            labelMainInterfaceNetworkStatsTotalFeeCirculatingText.TabIndex = 23;
+            labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_FEE_CIRCULATING_TEXT";
             // 
             // labelMainInterfaceNetworkStatsTotalCoinCirculatingText
             // 
-            this.labelMainInterfaceNetworkStatsTotalCoinCirculatingText.AutoSize = true;
-            this.labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfaceNetworkStatsTotalCoinCirculatingText.ForeColor = System.Drawing.Color.Black;
-            this.labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Location = new System.Drawing.Point(5, 292);
-            this.labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Name = "labelMainInterfaceNetworkStatsTotalCoinCirculatingText";
-            this.labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Size = new System.Drawing.Size(495, 16);
-            this.labelMainInterfaceNetworkStatsTotalCoinCirculatingText.TabIndex = 22;
-            this.labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_COIN_CIRCULATING_TEXT";
+            labelMainInterfaceNetworkStatsTotalCoinCirculatingText.AutoSize = true;
+            labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceNetworkStatsTotalCoinCirculatingText.ForeColor = System.Drawing.Color.Black;
+            labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Location = new System.Drawing.Point(5, 292);
+            labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Name = "labelMainInterfaceNetworkStatsTotalCoinCirculatingText";
+            labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Size = new System.Drawing.Size(495, 16);
+            labelMainInterfaceNetworkStatsTotalCoinCirculatingText.TabIndex = 22;
+            labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_COIN_CIRCULATING_TEXT";
             // 
             // labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText
             // 
-            this.labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.AutoSize = true;
-            this.labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.ForeColor = System.Drawing.Color.Black;
-            this.labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Location = new System.Drawing.Point(5, 269);
-            this.labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Name = "labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText";
-            this.labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Size = new System.Drawing.Size(566, 16);
-            this.labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.TabIndex = 21;
-            this.labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_BLOCK_UNLOCKED_CHECKED_TEXT";
+            labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.AutoSize = true;
+            labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.ForeColor = System.Drawing.Color.Black;
+            labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Location = new System.Drawing.Point(5, 269);
+            labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Name = "labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText";
+            labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Size = new System.Drawing.Size(566, 16);
+            labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.TabIndex = 21;
+            labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_BLOCK_UNLOCKED_CHECKED_TEXT";
             // 
             // labelMainInterfaceNetworkStatsTotalTransactionConfirmedText
             // 
-            this.labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.AutoSize = true;
-            this.labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.ForeColor = System.Drawing.Color.Black;
-            this.labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Location = new System.Drawing.Point(5, 245);
-            this.labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Name = "labelMainInterfaceNetworkStatsTotalTransactionConfirmedText";
-            this.labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Size = new System.Drawing.Size(548, 16);
-            this.labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.TabIndex = 20;
-            this.labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_TRANSACTION_CONFIRMED_TEXT";
+            labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.AutoSize = true;
+            labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.ForeColor = System.Drawing.Color.Black;
+            labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Location = new System.Drawing.Point(5, 245);
+            labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Name = "labelMainInterfaceNetworkStatsTotalTransactionConfirmedText";
+            labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Size = new System.Drawing.Size(548, 16);
+            labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.TabIndex = 20;
+            labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_TRANSACTION_CONFIRMED_TEXT";
             // 
             // labelMainInterfaceNetworkStatsTotalTransactionText
             // 
-            this.labelMainInterfaceNetworkStatsTotalTransactionText.AutoSize = true;
-            this.labelMainInterfaceNetworkStatsTotalTransactionText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfaceNetworkStatsTotalTransactionText.ForeColor = System.Drawing.Color.Black;
-            this.labelMainInterfaceNetworkStatsTotalTransactionText.Location = new System.Drawing.Point(5, 220);
-            this.labelMainInterfaceNetworkStatsTotalTransactionText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceNetworkStatsTotalTransactionText.Name = "labelMainInterfaceNetworkStatsTotalTransactionText";
-            this.labelMainInterfaceNetworkStatsTotalTransactionText.Size = new System.Drawing.Size(464, 16);
-            this.labelMainInterfaceNetworkStatsTotalTransactionText.TabIndex = 19;
-            this.labelMainInterfaceNetworkStatsTotalTransactionText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_TRANSACTION_TEXT";
+            labelMainInterfaceNetworkStatsTotalTransactionText.AutoSize = true;
+            labelMainInterfaceNetworkStatsTotalTransactionText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceNetworkStatsTotalTransactionText.ForeColor = System.Drawing.Color.Black;
+            labelMainInterfaceNetworkStatsTotalTransactionText.Location = new System.Drawing.Point(5, 220);
+            labelMainInterfaceNetworkStatsTotalTransactionText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceNetworkStatsTotalTransactionText.Name = "labelMainInterfaceNetworkStatsTotalTransactionText";
+            labelMainInterfaceNetworkStatsTotalTransactionText.Size = new System.Drawing.Size(464, 16);
+            labelMainInterfaceNetworkStatsTotalTransactionText.TabIndex = 19;
+            labelMainInterfaceNetworkStatsTotalTransactionText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_TRANSACTION_TEXT";
             // 
             // labelMainInterfaceNetworkStatsTotalTransactionMemPoolText
             // 
-            this.labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.AutoSize = true;
-            this.labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.ForeColor = System.Drawing.Color.Black;
-            this.labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Location = new System.Drawing.Point(5, 197);
-            this.labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Name = "labelMainInterfaceNetworkStatsTotalTransactionMemPoolText";
-            this.labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Size = new System.Drawing.Size(538, 16);
-            this.labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.TabIndex = 18;
-            this.labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_TRANSACTION_MEMPOOL_TEXT";
+            labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.AutoSize = true;
+            labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.ForeColor = System.Drawing.Color.Black;
+            labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Location = new System.Drawing.Point(5, 197);
+            labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Name = "labelMainInterfaceNetworkStatsTotalTransactionMemPoolText";
+            labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Size = new System.Drawing.Size(538, 16);
+            labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.TabIndex = 18;
+            labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_TRANSACTION_MEMPOOL_TEXT";
             // 
             // panelSyncInformationsSeperator
             // 
-            this.panelSyncInformationsSeperator.BackColor = System.Drawing.Color.Black;
-            this.panelSyncInformationsSeperator.BorderColor = System.Drawing.Color.White;
-            this.panelSyncInformationsSeperator.BorderSize = 3F;
-            this.panelSyncInformationsSeperator.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.panelSyncInformationsSeperator.Location = new System.Drawing.Point(114, 162);
-            this.panelSyncInformationsSeperator.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.panelSyncInformationsSeperator.Name = "panelSyncInformationsSeperator";
-            this.panelSyncInformationsSeperator.Radius = 2;
-            this.panelSyncInformationsSeperator.Size = new System.Drawing.Size(583, 2);
-            this.panelSyncInformationsSeperator.TabIndex = 17;
+            panelSyncInformationsSeperator.BackColor = System.Drawing.Color.Black;
+            panelSyncInformationsSeperator.BorderColor = System.Drawing.Color.White;
+            panelSyncInformationsSeperator.BorderSize = 3F;
+            panelSyncInformationsSeperator.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            panelSyncInformationsSeperator.Location = new System.Drawing.Point(114, 162);
+            panelSyncInformationsSeperator.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            panelSyncInformationsSeperator.Name = "panelSyncInformationsSeperator";
+            panelSyncInformationsSeperator.Radius = 2;
+            panelSyncInformationsSeperator.Size = new System.Drawing.Size(583, 2);
+            panelSyncInformationsSeperator.TabIndex = 17;
             // 
             // labelMainInterfaceNetworkStatsInfoSyncText
             // 
-            this.labelMainInterfaceNetworkStatsInfoSyncText.AutoSize = true;
-            this.labelMainInterfaceNetworkStatsInfoSyncText.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfaceNetworkStatsInfoSyncText.ForeColor = System.Drawing.Color.Black;
-            this.labelMainInterfaceNetworkStatsInfoSyncText.Location = new System.Drawing.Point(124, 167);
-            this.labelMainInterfaceNetworkStatsInfoSyncText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceNetworkStatsInfoSyncText.Name = "labelMainInterfaceNetworkStatsInfoSyncText";
-            this.labelMainInterfaceNetworkStatsInfoSyncText.Size = new System.Drawing.Size(476, 18);
-            this.labelMainInterfaceNetworkStatsInfoSyncText.TabIndex = 16;
-            this.labelMainInterfaceNetworkStatsInfoSyncText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_INFO_SYNC_TEXT";
+            labelMainInterfaceNetworkStatsInfoSyncText.AutoSize = true;
+            labelMainInterfaceNetworkStatsInfoSyncText.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceNetworkStatsInfoSyncText.ForeColor = System.Drawing.Color.Black;
+            labelMainInterfaceNetworkStatsInfoSyncText.Location = new System.Drawing.Point(124, 167);
+            labelMainInterfaceNetworkStatsInfoSyncText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceNetworkStatsInfoSyncText.Name = "labelMainInterfaceNetworkStatsInfoSyncText";
+            labelMainInterfaceNetworkStatsInfoSyncText.Size = new System.Drawing.Size(476, 18);
+            labelMainInterfaceNetworkStatsInfoSyncText.TabIndex = 16;
+            labelMainInterfaceNetworkStatsInfoSyncText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_INFO_SYNC_TEXT";
             // 
             // labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText
             // 
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.AutoSize = true;
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.ForeColor = System.Drawing.Color.Black;
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Location = new System.Drawing.Point(5, 130);
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Name = "labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText";
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Size = new System.Drawing.Size(550, 16);
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.TabIndex = 15;
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_CURRENT_MINING_LUCK_PERCENT_TEXT";
+            labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.AutoSize = true;
+            labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.ForeColor = System.Drawing.Color.Black;
+            labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Location = new System.Drawing.Point(5, 130);
+            labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Name = "labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText";
+            labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Size = new System.Drawing.Size(550, 16);
+            labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.TabIndex = 15;
+            labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_CURRENT_MINING_LUCK_PERCENT_TEXT";
             // 
             // labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText
             // 
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.AutoSize = true;
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.ForeColor = System.Drawing.Color.Black;
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Location = new System.Drawing.Point(5, 107);
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Name = "labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText";
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Size = new System.Drawing.Size(537, 16);
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.TabIndex = 14;
-            this.labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_CURRENT_MINING_LUCK_STATUS_TEXT";
+            labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.AutoSize = true;
+            labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.ForeColor = System.Drawing.Color.Black;
+            labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Location = new System.Drawing.Point(5, 107);
+            labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Name = "labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText";
+            labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Size = new System.Drawing.Size(537, 16);
+            labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.TabIndex = 14;
+            labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_CURRENT_MINING_LUCK_STATUS_TEXT";
             // 
             // labelMainInterfaceNetworkStatsCurrentHashrateText
             // 
-            this.labelMainInterfaceNetworkStatsCurrentHashrateText.AutoSize = true;
-            this.labelMainInterfaceNetworkStatsCurrentHashrateText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfaceNetworkStatsCurrentHashrateText.ForeColor = System.Drawing.Color.Black;
-            this.labelMainInterfaceNetworkStatsCurrentHashrateText.Location = new System.Drawing.Point(5, 84);
-            this.labelMainInterfaceNetworkStatsCurrentHashrateText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceNetworkStatsCurrentHashrateText.Name = "labelMainInterfaceNetworkStatsCurrentHashrateText";
-            this.labelMainInterfaceNetworkStatsCurrentHashrateText.Size = new System.Drawing.Size(465, 16);
-            this.labelMainInterfaceNetworkStatsCurrentHashrateText.TabIndex = 13;
-            this.labelMainInterfaceNetworkStatsCurrentHashrateText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_CURRENT_HASHRATE_TEXT";
+            labelMainInterfaceNetworkStatsCurrentHashrateText.AutoSize = true;
+            labelMainInterfaceNetworkStatsCurrentHashrateText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceNetworkStatsCurrentHashrateText.ForeColor = System.Drawing.Color.Black;
+            labelMainInterfaceNetworkStatsCurrentHashrateText.Location = new System.Drawing.Point(5, 84);
+            labelMainInterfaceNetworkStatsCurrentHashrateText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceNetworkStatsCurrentHashrateText.Name = "labelMainInterfaceNetworkStatsCurrentHashrateText";
+            labelMainInterfaceNetworkStatsCurrentHashrateText.Size = new System.Drawing.Size(465, 16);
+            labelMainInterfaceNetworkStatsCurrentHashrateText.TabIndex = 13;
+            labelMainInterfaceNetworkStatsCurrentHashrateText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_CURRENT_HASHRATE_TEXT";
             // 
             // labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText
             // 
-            this.labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.AutoSize = true;
-            this.labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.ForeColor = System.Drawing.Color.Black;
-            this.labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Location = new System.Drawing.Point(5, 38);
-            this.labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Name = "labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText";
-            this.labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Size = new System.Drawing.Size(537, 16);
-            this.labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.TabIndex = 12;
-            this.labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_CURRENT_BLOCK_HEIGHT_SYNC_TEXT";
+            labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.AutoSize = true;
+            labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.ForeColor = System.Drawing.Color.Black;
+            labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Location = new System.Drawing.Point(5, 38);
+            labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Name = "labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText";
+            labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Size = new System.Drawing.Size(537, 16);
+            labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.TabIndex = 12;
+            labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_CURRENT_BLOCK_HEIGHT_SYNC_TEXT";
             // 
             // labelMainInterfaceNetworkStatsCurrentDifficultyText
             // 
-            this.labelMainInterfaceNetworkStatsCurrentDifficultyText.AutoSize = true;
-            this.labelMainInterfaceNetworkStatsCurrentDifficultyText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfaceNetworkStatsCurrentDifficultyText.ForeColor = System.Drawing.Color.Black;
-            this.labelMainInterfaceNetworkStatsCurrentDifficultyText.Location = new System.Drawing.Point(5, 61);
-            this.labelMainInterfaceNetworkStatsCurrentDifficultyText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceNetworkStatsCurrentDifficultyText.Name = "labelMainInterfaceNetworkStatsCurrentDifficultyText";
-            this.labelMainInterfaceNetworkStatsCurrentDifficultyText.Size = new System.Drawing.Size(467, 16);
-            this.labelMainInterfaceNetworkStatsCurrentDifficultyText.TabIndex = 11;
-            this.labelMainInterfaceNetworkStatsCurrentDifficultyText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_CURRENT_DIFFICULTY_TEXT";
+            labelMainInterfaceNetworkStatsCurrentDifficultyText.AutoSize = true;
+            labelMainInterfaceNetworkStatsCurrentDifficultyText.Font = new System.Drawing.Font("Arial", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceNetworkStatsCurrentDifficultyText.ForeColor = System.Drawing.Color.Black;
+            labelMainInterfaceNetworkStatsCurrentDifficultyText.Location = new System.Drawing.Point(5, 61);
+            labelMainInterfaceNetworkStatsCurrentDifficultyText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceNetworkStatsCurrentDifficultyText.Name = "labelMainInterfaceNetworkStatsCurrentDifficultyText";
+            labelMainInterfaceNetworkStatsCurrentDifficultyText.Size = new System.Drawing.Size(467, 16);
+            labelMainInterfaceNetworkStatsCurrentDifficultyText.TabIndex = 11;
+            labelMainInterfaceNetworkStatsCurrentDifficultyText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_CURRENT_DIFFICULTY_TEXT";
             // 
             // labelMainInterfaceNetworkStatsTitleText
             // 
-            this.labelMainInterfaceNetworkStatsTitleText.AutoSize = true;
-            this.labelMainInterfaceNetworkStatsTitleText.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfaceNetworkStatsTitleText.ForeColor = System.Drawing.Color.Black;
-            this.labelMainInterfaceNetworkStatsTitleText.Location = new System.Drawing.Point(149, 9);
-            this.labelMainInterfaceNetworkStatsTitleText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceNetworkStatsTitleText.Name = "labelMainInterfaceNetworkStatsTitleText";
-            this.labelMainInterfaceNetworkStatsTitleText.Size = new System.Drawing.Size(433, 18);
-            this.labelMainInterfaceNetworkStatsTitleText.TabIndex = 10;
-            this.labelMainInterfaceNetworkStatsTitleText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TITLE_TEXT";
+            labelMainInterfaceNetworkStatsTitleText.AutoSize = true;
+            labelMainInterfaceNetworkStatsTitleText.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceNetworkStatsTitleText.ForeColor = System.Drawing.Color.Black;
+            labelMainInterfaceNetworkStatsTitleText.Location = new System.Drawing.Point(149, 9);
+            labelMainInterfaceNetworkStatsTitleText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceNetworkStatsTitleText.Name = "labelMainInterfaceNetworkStatsTitleText";
+            labelMainInterfaceNetworkStatsTitleText.Size = new System.Drawing.Size(433, 18);
+            labelMainInterfaceNetworkStatsTitleText.TabIndex = 10;
+            labelMainInterfaceNetworkStatsTitleText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TITLE_TEXT";
             // 
             // panelRecentTransactions
             // 
-            this.panelRecentTransactions.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(216)))), ((int)(((byte)(227)))), ((int)(((byte)(240)))));
-            this.panelRecentTransactions.BorderColor = System.Drawing.Color.DarkGray;
-            this.panelRecentTransactions.BorderSize = 1F;
-            this.panelRecentTransactions.Controls.Add(this.panelInternalRecentTransactions);
-            this.panelRecentTransactions.Controls.Add(this.labelMainInterfaceRecentTransaction);
-            this.panelRecentTransactions.Location = new System.Drawing.Point(847, 23);
-            this.panelRecentTransactions.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.panelRecentTransactions.Name = "panelRecentTransactions";
-            this.panelRecentTransactions.Radius = 10;
-            this.panelRecentTransactions.Size = new System.Drawing.Size(511, 507);
-            this.panelRecentTransactions.TabIndex = 10;
-            this.panelRecentTransactions.Paint += new System.Windows.Forms.PaintEventHandler(this.panelRecentTransactions_Paint);
+            panelRecentTransactions.BackColor = System.Drawing.Color.FromArgb(216, 227, 240);
+            panelRecentTransactions.BorderColor = System.Drawing.Color.DarkGray;
+            panelRecentTransactions.BorderSize = 1F;
+            panelRecentTransactions.Controls.Add(panelInternalRecentTransactions);
+            panelRecentTransactions.Controls.Add(labelMainInterfaceRecentTransaction);
+            panelRecentTransactions.Location = new System.Drawing.Point(847, 23);
+            panelRecentTransactions.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            panelRecentTransactions.Name = "panelRecentTransactions";
+            panelRecentTransactions.Radius = 10;
+            panelRecentTransactions.Size = new System.Drawing.Size(511, 507);
+            panelRecentTransactions.TabIndex = 10;
+            panelRecentTransactions.Paint += panelRecentTransactions_Paint;
             // 
             // panelInternalRecentTransactions
             // 
-            this.panelInternalRecentTransactions.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(245)))), ((int)(((byte)(249)))), ((int)(((byte)(252)))));
-            this.panelInternalRecentTransactions.BorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(91)))), ((int)(((byte)(106)))), ((int)(((byte)(128)))));
-            this.panelInternalRecentTransactions.BorderSize = 2F;
-            this.panelInternalRecentTransactions.Location = new System.Drawing.Point(22, 85);
-            this.panelInternalRecentTransactions.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.panelInternalRecentTransactions.Name = "panelInternalRecentTransactions";
-            this.panelInternalRecentTransactions.Radius = 10;
-            this.panelInternalRecentTransactions.Size = new System.Drawing.Size(467, 375);
-            this.panelInternalRecentTransactions.TabIndex = 2;
-            this.panelInternalRecentTransactions.Click += new System.EventHandler(this.panelInternalRecentTransactions_Click);
-            this.panelInternalRecentTransactions.Paint += new System.Windows.Forms.PaintEventHandler(this.panelInternalRecentTransactions_Paint);
-            this.panelInternalRecentTransactions.MouseEnter += new System.EventHandler(this.panelInternalRecentTransactions_MouseEnter);
-            this.panelInternalRecentTransactions.MouseLeave += new System.EventHandler(this.panelInternalRecentTransactions_MouseLeave);
-            this.panelInternalRecentTransactions.MouseHover += new System.EventHandler(this.panelInternalRecentTransactions_MouseHover);
-            this.panelInternalRecentTransactions.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panelInternalRecentTransactions_MouseMove);
+            panelInternalRecentTransactions.BackColor = System.Drawing.Color.FromArgb(245, 249, 252);
+            panelInternalRecentTransactions.BorderColor = System.Drawing.Color.FromArgb(91, 106, 128);
+            panelInternalRecentTransactions.BorderSize = 2F;
+            panelInternalRecentTransactions.Location = new System.Drawing.Point(22, 85);
+            panelInternalRecentTransactions.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            panelInternalRecentTransactions.Name = "panelInternalRecentTransactions";
+            panelInternalRecentTransactions.Radius = 10;
+            panelInternalRecentTransactions.Size = new System.Drawing.Size(467, 375);
+            panelInternalRecentTransactions.TabIndex = 2;
+            panelInternalRecentTransactions.Click += panelInternalRecentTransactions_Click;
+            panelInternalRecentTransactions.Paint += panelInternalRecentTransactions_Paint;
+            panelInternalRecentTransactions.MouseEnter += panelInternalRecentTransactions_MouseEnter;
+            panelInternalRecentTransactions.MouseLeave += panelInternalRecentTransactions_MouseLeave;
+            panelInternalRecentTransactions.MouseHover += panelInternalRecentTransactions_MouseHover;
+            panelInternalRecentTransactions.MouseMove += panelInternalRecentTransactions_MouseMove;
             // 
             // labelMainInterfaceRecentTransaction
             // 
-            this.labelMainInterfaceRecentTransaction.AutoSize = true;
-            this.labelMainInterfaceRecentTransaction.ForeColor = System.Drawing.Color.Black;
-            this.labelMainInterfaceRecentTransaction.Location = new System.Drawing.Point(8, 10);
-            this.labelMainInterfaceRecentTransaction.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceRecentTransaction.Name = "labelMainInterfaceRecentTransaction";
-            this.labelMainInterfaceRecentTransaction.Size = new System.Drawing.Size(424, 16);
-            this.labelMainInterfaceRecentTransaction.TabIndex = 1;
-            this.labelMainInterfaceRecentTransaction.Text = "LABEL_MAIN_INTERFACE_RECENT_TRANSACTION_TEXT";
-            this.labelMainInterfaceRecentTransaction.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            labelMainInterfaceRecentTransaction.AutoSize = true;
+            labelMainInterfaceRecentTransaction.ForeColor = System.Drawing.Color.Black;
+            labelMainInterfaceRecentTransaction.Location = new System.Drawing.Point(8, 10);
+            labelMainInterfaceRecentTransaction.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceRecentTransaction.Name = "labelMainInterfaceRecentTransaction";
+            labelMainInterfaceRecentTransaction.Size = new System.Drawing.Size(424, 16);
+            labelMainInterfaceRecentTransaction.TabIndex = 1;
+            labelMainInterfaceRecentTransaction.Text = "LABEL_MAIN_INTERFACE_RECENT_TRANSACTION_TEXT";
+            labelMainInterfaceRecentTransaction.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // labelMainInterfaceTotalBalanceAmountText
             // 
-            this.labelMainInterfaceTotalBalanceAmountText.AutoSize = true;
-            this.labelMainInterfaceTotalBalanceAmountText.BackColor = System.Drawing.Color.Transparent;
-            this.labelMainInterfaceTotalBalanceAmountText.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfaceTotalBalanceAmountText.ForeColor = System.Drawing.Color.Ivory;
-            this.labelMainInterfaceTotalBalanceAmountText.Location = new System.Drawing.Point(27, 100);
-            this.labelMainInterfaceTotalBalanceAmountText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceTotalBalanceAmountText.Name = "labelMainInterfaceTotalBalanceAmountText";
-            this.labelMainInterfaceTotalBalanceAmountText.Size = new System.Drawing.Size(401, 15);
-            this.labelMainInterfaceTotalBalanceAmountText.TabIndex = 9;
-            this.labelMainInterfaceTotalBalanceAmountText.Text = "LABEL_MAIN_INTERFACE_TOTAL_BALANCE_AMOUNT_TEXT";
+            labelMainInterfaceTotalBalanceAmountText.AutoSize = true;
+            labelMainInterfaceTotalBalanceAmountText.BackColor = System.Drawing.Color.Transparent;
+            labelMainInterfaceTotalBalanceAmountText.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceTotalBalanceAmountText.ForeColor = System.Drawing.Color.Ivory;
+            labelMainInterfaceTotalBalanceAmountText.Location = new System.Drawing.Point(27, 100);
+            labelMainInterfaceTotalBalanceAmountText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceTotalBalanceAmountText.Name = "labelMainInterfaceTotalBalanceAmountText";
+            labelMainInterfaceTotalBalanceAmountText.Size = new System.Drawing.Size(401, 15);
+            labelMainInterfaceTotalBalanceAmountText.TabIndex = 9;
+            labelMainInterfaceTotalBalanceAmountText.Text = "LABEL_MAIN_INTERFACE_TOTAL_BALANCE_AMOUNT_TEXT";
             // 
             // labelMainInterfacePendingBalanceAmountText
             // 
-            this.labelMainInterfacePendingBalanceAmountText.AutoSize = true;
-            this.labelMainInterfacePendingBalanceAmountText.BackColor = System.Drawing.Color.Transparent;
-            this.labelMainInterfacePendingBalanceAmountText.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfacePendingBalanceAmountText.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(247)))), ((int)(((byte)(229)))), ((int)(((byte)(72)))));
-            this.labelMainInterfacePendingBalanceAmountText.Location = new System.Drawing.Point(27, 67);
-            this.labelMainInterfacePendingBalanceAmountText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfacePendingBalanceAmountText.Name = "labelMainInterfacePendingBalanceAmountText";
-            this.labelMainInterfacePendingBalanceAmountText.Size = new System.Drawing.Size(421, 15);
-            this.labelMainInterfacePendingBalanceAmountText.TabIndex = 8;
-            this.labelMainInterfacePendingBalanceAmountText.Text = "LABEL_MAIN_INTERFACE_PENDING_BALANCE_AMOUNT_TEXT";
+            labelMainInterfacePendingBalanceAmountText.AutoSize = true;
+            labelMainInterfacePendingBalanceAmountText.BackColor = System.Drawing.Color.Transparent;
+            labelMainInterfacePendingBalanceAmountText.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfacePendingBalanceAmountText.ForeColor = System.Drawing.Color.FromArgb(247, 229, 72);
+            labelMainInterfacePendingBalanceAmountText.Location = new System.Drawing.Point(27, 67);
+            labelMainInterfacePendingBalanceAmountText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfacePendingBalanceAmountText.Name = "labelMainInterfacePendingBalanceAmountText";
+            labelMainInterfacePendingBalanceAmountText.Size = new System.Drawing.Size(421, 15);
+            labelMainInterfacePendingBalanceAmountText.TabIndex = 8;
+            labelMainInterfacePendingBalanceAmountText.Text = "LABEL_MAIN_INTERFACE_PENDING_BALANCE_AMOUNT_TEXT";
             // 
             // labelMainInterfaceAvailableBalanceAmountText
             // 
-            this.labelMainInterfaceAvailableBalanceAmountText.AutoSize = true;
-            this.labelMainInterfaceAvailableBalanceAmountText.BackColor = System.Drawing.Color.Transparent;
-            this.labelMainInterfaceAvailableBalanceAmountText.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfaceAvailableBalanceAmountText.ForeColor = System.Drawing.Color.LimeGreen;
-            this.labelMainInterfaceAvailableBalanceAmountText.Location = new System.Drawing.Point(27, 40);
-            this.labelMainInterfaceAvailableBalanceAmountText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceAvailableBalanceAmountText.Name = "labelMainInterfaceAvailableBalanceAmountText";
-            this.labelMainInterfaceAvailableBalanceAmountText.Size = new System.Drawing.Size(429, 15);
-            this.labelMainInterfaceAvailableBalanceAmountText.TabIndex = 7;
-            this.labelMainInterfaceAvailableBalanceAmountText.Text = "LABEL_MAIN_INTERFACE_AVAILABLE_BALANCE_AMOUNT_TEXT";
+            labelMainInterfaceAvailableBalanceAmountText.AutoSize = true;
+            labelMainInterfaceAvailableBalanceAmountText.BackColor = System.Drawing.Color.Transparent;
+            labelMainInterfaceAvailableBalanceAmountText.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceAvailableBalanceAmountText.ForeColor = System.Drawing.Color.LimeGreen;
+            labelMainInterfaceAvailableBalanceAmountText.Location = new System.Drawing.Point(27, 40);
+            labelMainInterfaceAvailableBalanceAmountText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceAvailableBalanceAmountText.Name = "labelMainInterfaceAvailableBalanceAmountText";
+            labelMainInterfaceAvailableBalanceAmountText.Size = new System.Drawing.Size(429, 15);
+            labelMainInterfaceAvailableBalanceAmountText.TabIndex = 7;
+            labelMainInterfaceAvailableBalanceAmountText.Text = "LABEL_MAIN_INTERFACE_AVAILABLE_BALANCE_AMOUNT_TEXT";
             // 
             // panelSeperatorBalanceLine
             // 
-            this.panelSeperatorBalanceLine.BackColor = System.Drawing.Color.Black;
-            this.panelSeperatorBalanceLine.BorderColor = System.Drawing.Color.White;
-            this.panelSeperatorBalanceLine.BorderSize = 3F;
-            this.panelSeperatorBalanceLine.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.panelSeperatorBalanceLine.Location = new System.Drawing.Point(30, 90);
-            this.panelSeperatorBalanceLine.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.panelSeperatorBalanceLine.Name = "panelSeperatorBalanceLine";
-            this.panelSeperatorBalanceLine.Radius = 2;
-            this.panelSeperatorBalanceLine.Size = new System.Drawing.Size(279, 2);
-            this.panelSeperatorBalanceLine.TabIndex = 6;
+            panelSeperatorBalanceLine.BackColor = System.Drawing.Color.Black;
+            panelSeperatorBalanceLine.BorderColor = System.Drawing.Color.White;
+            panelSeperatorBalanceLine.BorderSize = 3F;
+            panelSeperatorBalanceLine.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            panelSeperatorBalanceLine.Location = new System.Drawing.Point(30, 90);
+            panelSeperatorBalanceLine.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            panelSeperatorBalanceLine.Name = "panelSeperatorBalanceLine";
+            panelSeperatorBalanceLine.Radius = 2;
+            panelSeperatorBalanceLine.Size = new System.Drawing.Size(279, 2);
+            panelSeperatorBalanceLine.TabIndex = 6;
             // 
             // labelMainInterfaceCurrentBalanceText
             // 
-            this.labelMainInterfaceCurrentBalanceText.AutoSize = true;
-            this.labelMainInterfaceCurrentBalanceText.BackColor = System.Drawing.Color.Transparent;
-            this.labelMainInterfaceCurrentBalanceText.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.labelMainInterfaceCurrentBalanceText.ForeColor = System.Drawing.Color.Ivory;
-            this.labelMainInterfaceCurrentBalanceText.Location = new System.Drawing.Point(27, 16);
-            this.labelMainInterfaceCurrentBalanceText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelMainInterfaceCurrentBalanceText.Name = "labelMainInterfaceCurrentBalanceText";
-            this.labelMainInterfaceCurrentBalanceText.Size = new System.Drawing.Size(397, 16);
-            this.labelMainInterfaceCurrentBalanceText.TabIndex = 4;
-            this.labelMainInterfaceCurrentBalanceText.Text = "LABEL_MAIN_INTERFACE_CURRENT_BALANCE_TEXT";
+            labelMainInterfaceCurrentBalanceText.AutoSize = true;
+            labelMainInterfaceCurrentBalanceText.BackColor = System.Drawing.Color.Transparent;
+            labelMainInterfaceCurrentBalanceText.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceCurrentBalanceText.ForeColor = System.Drawing.Color.Ivory;
+            labelMainInterfaceCurrentBalanceText.Location = new System.Drawing.Point(27, 16);
+            labelMainInterfaceCurrentBalanceText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceCurrentBalanceText.Name = "labelMainInterfaceCurrentBalanceText";
+            labelMainInterfaceCurrentBalanceText.Size = new System.Drawing.Size(397, 16);
+            labelMainInterfaceCurrentBalanceText.TabIndex = 4;
+            labelMainInterfaceCurrentBalanceText.Text = "LABEL_MAIN_INTERFACE_CURRENT_BALANCE_TEXT";
             // 
             // tabPageSendTransaction
             // 
-            this.tabPageSendTransaction.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(77)))), ((int)(((byte)(104)))), ((int)(((byte)(145)))));
-            this.tabPageSendTransaction.Controls.Add(this.buttonSendTransactionDoProcess);
-            this.tabPageSendTransaction.Controls.Add(this.panelSendTransaction);
-            this.tabPageSendTransaction.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.tabPageSendTransaction.Location = new System.Drawing.Point(4, 34);
-            this.tabPageSendTransaction.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.tabPageSendTransaction.Name = "tabPageSendTransaction";
-            this.tabPageSendTransaction.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.tabPageSendTransaction.Size = new System.Drawing.Size(1369, 546);
-            this.tabPageSendTransaction.TabIndex = 1;
-            this.tabPageSendTransaction.Text = "TABPAGE_SEND_TRANSACTION_TEXT";
-            this.tabPageSendTransaction.Paint += new System.Windows.Forms.PaintEventHandler(this.tabPageSendTransaction_Paint);
+            tabPageSendTransaction.BackColor = System.Drawing.Color.FromArgb(77, 104, 145);
+            tabPageSendTransaction.Controls.Add(buttonSendTransactionDoProcess);
+            tabPageSendTransaction.Controls.Add(panelSendTransaction);
+            tabPageSendTransaction.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            tabPageSendTransaction.Location = new System.Drawing.Point(4, 34);
+            tabPageSendTransaction.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabPageSendTransaction.Name = "tabPageSendTransaction";
+            tabPageSendTransaction.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabPageSendTransaction.Size = new System.Drawing.Size(1369, 546);
+            tabPageSendTransaction.TabIndex = 1;
+            tabPageSendTransaction.Text = "TABPAGE_SEND_TRANSACTION_TEXT";
+            tabPageSendTransaction.Paint += tabPageSendTransaction_Paint;
             // 
             // buttonSendTransactionDoProcess
             // 
-            this.buttonSendTransactionDoProcess.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(247)))), ((int)(((byte)(229)))), ((int)(((byte)(72)))));
-            this.buttonSendTransactionDoProcess.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.buttonSendTransactionDoProcess.ForeColor = System.Drawing.Color.Black;
-            this.buttonSendTransactionDoProcess.Location = new System.Drawing.Point(447, 497);
-            this.buttonSendTransactionDoProcess.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.buttonSendTransactionDoProcess.Name = "buttonSendTransactionDoProcess";
-            this.buttonSendTransactionDoProcess.Size = new System.Drawing.Size(483, 36);
-            this.buttonSendTransactionDoProcess.TabIndex = 5;
-            this.buttonSendTransactionDoProcess.Text = "BUTTON_SEND_TRANSACTION_DO_PROCESS_TEXT";
-            this.buttonSendTransactionDoProcess.UseVisualStyleBackColor = false;
-            this.buttonSendTransactionDoProcess.Click += new System.EventHandler(this.buttonSendTransactionDoProcess_Click);
+            buttonSendTransactionDoProcess.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
+            buttonSendTransactionDoProcess.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            buttonSendTransactionDoProcess.ForeColor = System.Drawing.Color.Black;
+            buttonSendTransactionDoProcess.Location = new System.Drawing.Point(447, 497);
+            buttonSendTransactionDoProcess.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            buttonSendTransactionDoProcess.Name = "buttonSendTransactionDoProcess";
+            buttonSendTransactionDoProcess.Size = new System.Drawing.Size(483, 36);
+            buttonSendTransactionDoProcess.TabIndex = 5;
+            buttonSendTransactionDoProcess.Text = "BUTTON_SEND_TRANSACTION_DO_PROCESS_TEXT";
+            buttonSendTransactionDoProcess.UseVisualStyleBackColor = false;
+            buttonSendTransactionDoProcess.Click += buttonSendTransactionDoProcess_Click;
             // 
             // panelSendTransaction
             // 
-            this.panelSendTransaction.BackColor = System.Drawing.Color.AliceBlue;
-            this.panelSendTransaction.BorderColor = System.Drawing.Color.Ivory;
-            this.panelSendTransaction.BorderSize = 2F;
-            this.panelSendTransaction.Controls.Add(this.panelSendTransactionDetails);
-            this.panelSendTransaction.Controls.Add(this.textBoxSendTransactionConfirmationsCountTarget);
-            this.panelSendTransaction.Controls.Add(this.labelSendTransactionConfirmationTimeEstimated);
-            this.panelSendTransaction.Controls.Add(this.labelSendTransactionPaymentId);
-            this.panelSendTransaction.Controls.Add(this.textBoxSendTransactionPaymentId);
-            this.panelSendTransaction.Controls.Add(this.labelSendTransactionAvailableBalanceText);
-            this.panelSendTransaction.Controls.Add(this.buttonSendTransactionOpenContactList);
-            this.panelSendTransaction.Controls.Add(this.labelSendTransactionConfirmationCountTarget);
-            this.panelSendTransaction.Controls.Add(this.labelSendTransactionAmountSelected);
-            this.panelSendTransaction.Controls.Add(this.textBoxSendTransactionAmountSelected);
-            this.panelSendTransaction.Controls.Add(this.labelSendTransactionWalletAddressTarget);
-            this.panelSendTransaction.Controls.Add(this.textBoxSendTransactionWalletAddressTarget);
-            this.panelSendTransaction.Location = new System.Drawing.Point(9, 15);
-            this.panelSendTransaction.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.panelSendTransaction.Name = "panelSendTransaction";
-            this.panelSendTransaction.Radius = 10;
-            this.panelSendTransaction.Size = new System.Drawing.Size(1349, 477);
-            this.panelSendTransaction.TabIndex = 0;
+            panelSendTransaction.BackColor = System.Drawing.Color.AliceBlue;
+            panelSendTransaction.BorderColor = System.Drawing.Color.Ivory;
+            panelSendTransaction.BorderSize = 2F;
+            panelSendTransaction.Controls.Add(panelSendTransactionDetails);
+            panelSendTransaction.Controls.Add(textBoxSendTransactionConfirmationsCountTarget);
+            panelSendTransaction.Controls.Add(labelSendTransactionConfirmationTimeEstimated);
+            panelSendTransaction.Controls.Add(labelSendTransactionPaymentId);
+            panelSendTransaction.Controls.Add(textBoxSendTransactionPaymentId);
+            panelSendTransaction.Controls.Add(labelSendTransactionAvailableBalanceText);
+            panelSendTransaction.Controls.Add(buttonSendTransactionOpenContactList);
+            panelSendTransaction.Controls.Add(labelSendTransactionConfirmationCountTarget);
+            panelSendTransaction.Controls.Add(labelSendTransactionAmountSelected);
+            panelSendTransaction.Controls.Add(textBoxSendTransactionAmountSelected);
+            panelSendTransaction.Controls.Add(labelSendTransactionWalletAddressTarget);
+            panelSendTransaction.Controls.Add(textBoxSendTransactionWalletAddressTarget);
+            panelSendTransaction.Location = new System.Drawing.Point(9, 15);
+            panelSendTransaction.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            panelSendTransaction.Name = "panelSendTransaction";
+            panelSendTransaction.Radius = 10;
+            panelSendTransaction.Size = new System.Drawing.Size(1349, 477);
+            panelSendTransaction.TabIndex = 0;
             // 
             // panelSendTransactionDetails
             // 
-            this.panelSendTransactionDetails.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(70)))), ((int)(((byte)(90)))), ((int)(((byte)(120)))));
-            this.panelSendTransactionDetails.BorderColor = System.Drawing.Color.Ivory;
-            this.panelSendTransactionDetails.BorderSize = 1F;
-            this.panelSendTransactionDetails.Controls.Add(this.labelSendTransactionAmountToSpend);
-            this.panelSendTransactionDetails.Controls.Add(this.labelSendTransactionFeeSizeCost);
-            this.panelSendTransactionDetails.Controls.Add(this.textBoxSendTransactionFeeCalculated);
-            this.panelSendTransactionDetails.Controls.Add(this.textBoxSendTransactionFeeSizeCost);
-            this.panelSendTransactionDetails.Controls.Add(this.labelSendTransactionFeeCalculated);
-            this.panelSendTransactionDetails.Controls.Add(this.labelSendTransactionFeeConfirmationCost);
-            this.panelSendTransactionDetails.Controls.Add(this.textBoxSendTransactionAmountToSpend);
-            this.panelSendTransactionDetails.Controls.Add(this.textBoxSendTransactionFeeConfirmationCost);
-            this.panelSendTransactionDetails.Controls.Add(this.textBoxSendTransactionTotalAmountSource);
-            this.panelSendTransactionDetails.Controls.Add(this.labelSendTransactionTotalAmountSource);
-            this.panelSendTransactionDetails.Location = new System.Drawing.Point(752, 102);
-            this.panelSendTransactionDetails.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.panelSendTransactionDetails.Name = "panelSendTransactionDetails";
-            this.panelSendTransactionDetails.Radius = 10;
-            this.panelSendTransactionDetails.Size = new System.Drawing.Size(593, 372);
-            this.panelSendTransactionDetails.TabIndex = 23;
-            this.panelSendTransactionDetails.Paint += new System.Windows.Forms.PaintEventHandler(this.panelSendTransactionDetails_Paint);
+            panelSendTransactionDetails.BackColor = System.Drawing.Color.FromArgb(70, 90, 120);
+            panelSendTransactionDetails.BorderColor = System.Drawing.Color.Ivory;
+            panelSendTransactionDetails.BorderSize = 1F;
+            panelSendTransactionDetails.Controls.Add(labelSendTransactionAmountToSpend);
+            panelSendTransactionDetails.Controls.Add(labelSendTransactionFeeSizeCost);
+            panelSendTransactionDetails.Controls.Add(textBoxSendTransactionFeeCalculated);
+            panelSendTransactionDetails.Controls.Add(textBoxSendTransactionFeeSizeCost);
+            panelSendTransactionDetails.Controls.Add(labelSendTransactionFeeCalculated);
+            panelSendTransactionDetails.Controls.Add(labelSendTransactionFeeConfirmationCost);
+            panelSendTransactionDetails.Controls.Add(textBoxSendTransactionAmountToSpend);
+            panelSendTransactionDetails.Controls.Add(textBoxSendTransactionFeeConfirmationCost);
+            panelSendTransactionDetails.Controls.Add(textBoxSendTransactionTotalAmountSource);
+            panelSendTransactionDetails.Controls.Add(labelSendTransactionTotalAmountSource);
+            panelSendTransactionDetails.Location = new System.Drawing.Point(752, 102);
+            panelSendTransactionDetails.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            panelSendTransactionDetails.Name = "panelSendTransactionDetails";
+            panelSendTransactionDetails.Radius = 10;
+            panelSendTransactionDetails.Size = new System.Drawing.Size(593, 372);
+            panelSendTransactionDetails.TabIndex = 23;
+            panelSendTransactionDetails.Paint += panelSendTransactionDetails_Paint;
             // 
             // labelSendTransactionAmountToSpend
             // 
-            this.labelSendTransactionAmountToSpend.AutoSize = true;
-            this.labelSendTransactionAmountToSpend.ForeColor = System.Drawing.Color.Ivory;
-            this.labelSendTransactionAmountToSpend.Location = new System.Drawing.Point(41, 27);
-            this.labelSendTransactionAmountToSpend.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelSendTransactionAmountToSpend.Name = "labelSendTransactionAmountToSpend";
-            this.labelSendTransactionAmountToSpend.Size = new System.Drawing.Size(428, 16);
-            this.labelSendTransactionAmountToSpend.TabIndex = 16;
-            this.labelSendTransactionAmountToSpend.Text = "LABEL_SEND_TRANSACTION_AMOUNT_TO_SPEND_TEXT";
+            labelSendTransactionAmountToSpend.AutoSize = true;
+            labelSendTransactionAmountToSpend.ForeColor = System.Drawing.Color.Ivory;
+            labelSendTransactionAmountToSpend.Location = new System.Drawing.Point(41, 27);
+            labelSendTransactionAmountToSpend.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelSendTransactionAmountToSpend.Name = "labelSendTransactionAmountToSpend";
+            labelSendTransactionAmountToSpend.Size = new System.Drawing.Size(428, 16);
+            labelSendTransactionAmountToSpend.TabIndex = 16;
+            labelSendTransactionAmountToSpend.Text = "LABEL_SEND_TRANSACTION_AMOUNT_TO_SPEND_TEXT";
             // 
             // labelSendTransactionFeeSizeCost
             // 
-            this.labelSendTransactionFeeSizeCost.AutoSize = true;
-            this.labelSendTransactionFeeSizeCost.ForeColor = System.Drawing.Color.Ivory;
-            this.labelSendTransactionFeeSizeCost.Location = new System.Drawing.Point(41, 163);
-            this.labelSendTransactionFeeSizeCost.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelSendTransactionFeeSizeCost.Name = "labelSendTransactionFeeSizeCost";
-            this.labelSendTransactionFeeSizeCost.Size = new System.Drawing.Size(393, 16);
-            this.labelSendTransactionFeeSizeCost.TabIndex = 22;
-            this.labelSendTransactionFeeSizeCost.Text = "LABEL_SEND_TRANSACTION_FEE_SIZE_COST_TEXT";
+            labelSendTransactionFeeSizeCost.AutoSize = true;
+            labelSendTransactionFeeSizeCost.ForeColor = System.Drawing.Color.Ivory;
+            labelSendTransactionFeeSizeCost.Location = new System.Drawing.Point(41, 163);
+            labelSendTransactionFeeSizeCost.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelSendTransactionFeeSizeCost.Name = "labelSendTransactionFeeSizeCost";
+            labelSendTransactionFeeSizeCost.Size = new System.Drawing.Size(393, 16);
+            labelSendTransactionFeeSizeCost.TabIndex = 22;
+            labelSendTransactionFeeSizeCost.Text = "LABEL_SEND_TRANSACTION_FEE_SIZE_COST_TEXT";
             // 
             // textBoxSendTransactionFeeCalculated
             // 
-            this.textBoxSendTransactionFeeCalculated.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.textBoxSendTransactionFeeCalculated.Location = new System.Drawing.Point(44, 317);
-            this.textBoxSendTransactionFeeCalculated.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.textBoxSendTransactionFeeCalculated.Multiline = true;
-            this.textBoxSendTransactionFeeCalculated.Name = "textBoxSendTransactionFeeCalculated";
-            this.textBoxSendTransactionFeeCalculated.ReadOnly = true;
-            this.textBoxSendTransactionFeeCalculated.Size = new System.Drawing.Size(474, 25);
-            this.textBoxSendTransactionFeeCalculated.TabIndex = 4;
+            textBoxSendTransactionFeeCalculated.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            textBoxSendTransactionFeeCalculated.Location = new System.Drawing.Point(44, 317);
+            textBoxSendTransactionFeeCalculated.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxSendTransactionFeeCalculated.Multiline = true;
+            textBoxSendTransactionFeeCalculated.Name = "textBoxSendTransactionFeeCalculated";
+            textBoxSendTransactionFeeCalculated.ReadOnly = true;
+            textBoxSendTransactionFeeCalculated.Size = new System.Drawing.Size(474, 25);
+            textBoxSendTransactionFeeCalculated.TabIndex = 4;
             // 
             // textBoxSendTransactionFeeSizeCost
             // 
-            this.textBoxSendTransactionFeeSizeCost.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.textBoxSendTransactionFeeSizeCost.Location = new System.Drawing.Point(44, 185);
-            this.textBoxSendTransactionFeeSizeCost.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.textBoxSendTransactionFeeSizeCost.Multiline = true;
-            this.textBoxSendTransactionFeeSizeCost.Name = "textBoxSendTransactionFeeSizeCost";
-            this.textBoxSendTransactionFeeSizeCost.ReadOnly = true;
-            this.textBoxSendTransactionFeeSizeCost.Size = new System.Drawing.Size(474, 25);
-            this.textBoxSendTransactionFeeSizeCost.TabIndex = 21;
+            textBoxSendTransactionFeeSizeCost.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            textBoxSendTransactionFeeSizeCost.Location = new System.Drawing.Point(44, 185);
+            textBoxSendTransactionFeeSizeCost.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxSendTransactionFeeSizeCost.Multiline = true;
+            textBoxSendTransactionFeeSizeCost.Name = "textBoxSendTransactionFeeSizeCost";
+            textBoxSendTransactionFeeSizeCost.ReadOnly = true;
+            textBoxSendTransactionFeeSizeCost.Size = new System.Drawing.Size(474, 25);
+            textBoxSendTransactionFeeSizeCost.TabIndex = 21;
             // 
             // labelSendTransactionFeeCalculated
             // 
-            this.labelSendTransactionFeeCalculated.AutoSize = true;
-            this.labelSendTransactionFeeCalculated.ForeColor = System.Drawing.Color.Ivory;
-            this.labelSendTransactionFeeCalculated.Location = new System.Drawing.Point(41, 295);
-            this.labelSendTransactionFeeCalculated.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelSendTransactionFeeCalculated.Name = "labelSendTransactionFeeCalculated";
-            this.labelSendTransactionFeeCalculated.Size = new System.Drawing.Size(409, 16);
-            this.labelSendTransactionFeeCalculated.TabIndex = 5;
-            this.labelSendTransactionFeeCalculated.Text = "LABEL_SEND_TRANSACTION_FEE_CALCULATED_TEXT";
+            labelSendTransactionFeeCalculated.AutoSize = true;
+            labelSendTransactionFeeCalculated.ForeColor = System.Drawing.Color.Ivory;
+            labelSendTransactionFeeCalculated.Location = new System.Drawing.Point(41, 295);
+            labelSendTransactionFeeCalculated.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelSendTransactionFeeCalculated.Name = "labelSendTransactionFeeCalculated";
+            labelSendTransactionFeeCalculated.Size = new System.Drawing.Size(409, 16);
+            labelSendTransactionFeeCalculated.TabIndex = 5;
+            labelSendTransactionFeeCalculated.Text = "LABEL_SEND_TRANSACTION_FEE_CALCULATED_TEXT";
             // 
             // labelSendTransactionFeeConfirmationCost
             // 
-            this.labelSendTransactionFeeConfirmationCost.AutoSize = true;
-            this.labelSendTransactionFeeConfirmationCost.ForeColor = System.Drawing.Color.Ivory;
-            this.labelSendTransactionFeeConfirmationCost.Location = new System.Drawing.Point(41, 228);
-            this.labelSendTransactionFeeConfirmationCost.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelSendTransactionFeeConfirmationCost.Name = "labelSendTransactionFeeConfirmationCost";
-            this.labelSendTransactionFeeConfirmationCost.Size = new System.Drawing.Size(474, 16);
-            this.labelSendTransactionFeeConfirmationCost.TabIndex = 20;
-            this.labelSendTransactionFeeConfirmationCost.Text = "LABEL_SEND_TRANSACTION_FEE_CONFIRMATION_COST_TEXT";
+            labelSendTransactionFeeConfirmationCost.AutoSize = true;
+            labelSendTransactionFeeConfirmationCost.ForeColor = System.Drawing.Color.Ivory;
+            labelSendTransactionFeeConfirmationCost.Location = new System.Drawing.Point(41, 228);
+            labelSendTransactionFeeConfirmationCost.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelSendTransactionFeeConfirmationCost.Name = "labelSendTransactionFeeConfirmationCost";
+            labelSendTransactionFeeConfirmationCost.Size = new System.Drawing.Size(474, 16);
+            labelSendTransactionFeeConfirmationCost.TabIndex = 20;
+            labelSendTransactionFeeConfirmationCost.Text = "LABEL_SEND_TRANSACTION_FEE_CONFIRMATION_COST_TEXT";
             // 
             // textBoxSendTransactionAmountToSpend
             // 
-            this.textBoxSendTransactionAmountToSpend.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.textBoxSendTransactionAmountToSpend.Location = new System.Drawing.Point(44, 48);
-            this.textBoxSendTransactionAmountToSpend.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.textBoxSendTransactionAmountToSpend.Multiline = true;
-            this.textBoxSendTransactionAmountToSpend.Name = "textBoxSendTransactionAmountToSpend";
-            this.textBoxSendTransactionAmountToSpend.ReadOnly = true;
-            this.textBoxSendTransactionAmountToSpend.Size = new System.Drawing.Size(474, 25);
-            this.textBoxSendTransactionAmountToSpend.TabIndex = 15;
+            textBoxSendTransactionAmountToSpend.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            textBoxSendTransactionAmountToSpend.Location = new System.Drawing.Point(44, 48);
+            textBoxSendTransactionAmountToSpend.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxSendTransactionAmountToSpend.Multiline = true;
+            textBoxSendTransactionAmountToSpend.Name = "textBoxSendTransactionAmountToSpend";
+            textBoxSendTransactionAmountToSpend.ReadOnly = true;
+            textBoxSendTransactionAmountToSpend.Size = new System.Drawing.Size(474, 25);
+            textBoxSendTransactionAmountToSpend.TabIndex = 15;
             // 
             // textBoxSendTransactionFeeConfirmationCost
             // 
-            this.textBoxSendTransactionFeeConfirmationCost.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.textBoxSendTransactionFeeConfirmationCost.Location = new System.Drawing.Point(44, 250);
-            this.textBoxSendTransactionFeeConfirmationCost.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.textBoxSendTransactionFeeConfirmationCost.Multiline = true;
-            this.textBoxSendTransactionFeeConfirmationCost.Name = "textBoxSendTransactionFeeConfirmationCost";
-            this.textBoxSendTransactionFeeConfirmationCost.ReadOnly = true;
-            this.textBoxSendTransactionFeeConfirmationCost.Size = new System.Drawing.Size(474, 25);
-            this.textBoxSendTransactionFeeConfirmationCost.TabIndex = 19;
+            textBoxSendTransactionFeeConfirmationCost.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            textBoxSendTransactionFeeConfirmationCost.Location = new System.Drawing.Point(44, 250);
+            textBoxSendTransactionFeeConfirmationCost.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxSendTransactionFeeConfirmationCost.Multiline = true;
+            textBoxSendTransactionFeeConfirmationCost.Name = "textBoxSendTransactionFeeConfirmationCost";
+            textBoxSendTransactionFeeConfirmationCost.ReadOnly = true;
+            textBoxSendTransactionFeeConfirmationCost.Size = new System.Drawing.Size(474, 25);
+            textBoxSendTransactionFeeConfirmationCost.TabIndex = 19;
             // 
             // textBoxSendTransactionTotalAmountSource
             // 
-            this.textBoxSendTransactionTotalAmountSource.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.textBoxSendTransactionTotalAmountSource.Location = new System.Drawing.Point(44, 118);
-            this.textBoxSendTransactionTotalAmountSource.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.textBoxSendTransactionTotalAmountSource.Multiline = true;
-            this.textBoxSendTransactionTotalAmountSource.Name = "textBoxSendTransactionTotalAmountSource";
-            this.textBoxSendTransactionTotalAmountSource.ReadOnly = true;
-            this.textBoxSendTransactionTotalAmountSource.Size = new System.Drawing.Size(474, 25);
-            this.textBoxSendTransactionTotalAmountSource.TabIndex = 17;
+            textBoxSendTransactionTotalAmountSource.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            textBoxSendTransactionTotalAmountSource.Location = new System.Drawing.Point(44, 118);
+            textBoxSendTransactionTotalAmountSource.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxSendTransactionTotalAmountSource.Multiline = true;
+            textBoxSendTransactionTotalAmountSource.Name = "textBoxSendTransactionTotalAmountSource";
+            textBoxSendTransactionTotalAmountSource.ReadOnly = true;
+            textBoxSendTransactionTotalAmountSource.Size = new System.Drawing.Size(474, 25);
+            textBoxSendTransactionTotalAmountSource.TabIndex = 17;
             // 
             // labelSendTransactionTotalAmountSource
             // 
-            this.labelSendTransactionTotalAmountSource.AutoSize = true;
-            this.labelSendTransactionTotalAmountSource.ForeColor = System.Drawing.Color.Ivory;
-            this.labelSendTransactionTotalAmountSource.Location = new System.Drawing.Point(41, 96);
-            this.labelSendTransactionTotalAmountSource.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelSendTransactionTotalAmountSource.Name = "labelSendTransactionTotalAmountSource";
-            this.labelSendTransactionTotalAmountSource.Size = new System.Drawing.Size(467, 16);
-            this.labelSendTransactionTotalAmountSource.TabIndex = 18;
-            this.labelSendTransactionTotalAmountSource.Text = "LABEL_SEND_TRANSACTION_TOTAL_AMOUNT_SOURCE_TEXT";
+            labelSendTransactionTotalAmountSource.AutoSize = true;
+            labelSendTransactionTotalAmountSource.ForeColor = System.Drawing.Color.Ivory;
+            labelSendTransactionTotalAmountSource.Location = new System.Drawing.Point(41, 96);
+            labelSendTransactionTotalAmountSource.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelSendTransactionTotalAmountSource.Name = "labelSendTransactionTotalAmountSource";
+            labelSendTransactionTotalAmountSource.Size = new System.Drawing.Size(467, 16);
+            labelSendTransactionTotalAmountSource.TabIndex = 18;
+            labelSendTransactionTotalAmountSource.Text = "LABEL_SEND_TRANSACTION_TOTAL_AMOUNT_SOURCE_TEXT";
             // 
             // textBoxSendTransactionConfirmationsCountTarget
             // 
-            this.textBoxSendTransactionConfirmationsCountTarget.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.textBoxSendTransactionConfirmationsCountTarget.Location = new System.Drawing.Point(19, 267);
-            this.textBoxSendTransactionConfirmationsCountTarget.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.textBoxSendTransactionConfirmationsCountTarget.Multiline = true;
-            this.textBoxSendTransactionConfirmationsCountTarget.Name = "textBoxSendTransactionConfirmationsCountTarget";
-            this.textBoxSendTransactionConfirmationsCountTarget.Size = new System.Drawing.Size(255, 25);
-            this.textBoxSendTransactionConfirmationsCountTarget.TabIndex = 14;
-            this.textBoxSendTransactionConfirmationsCountTarget.TextChanged += new System.EventHandler(this.textBoxSendTransactionConfirmationsCountTarget_TextChanged);
-            this.textBoxSendTransactionConfirmationsCountTarget.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxSendTransactionConfirmationsCountTarget_KeyDown);
+            textBoxSendTransactionConfirmationsCountTarget.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            textBoxSendTransactionConfirmationsCountTarget.Location = new System.Drawing.Point(19, 267);
+            textBoxSendTransactionConfirmationsCountTarget.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxSendTransactionConfirmationsCountTarget.Multiline = true;
+            textBoxSendTransactionConfirmationsCountTarget.Name = "textBoxSendTransactionConfirmationsCountTarget";
+            textBoxSendTransactionConfirmationsCountTarget.Size = new System.Drawing.Size(255, 25);
+            textBoxSendTransactionConfirmationsCountTarget.TabIndex = 14;
+            textBoxSendTransactionConfirmationsCountTarget.TextChanged += textBoxSendTransactionConfirmationsCountTarget_TextChanged;
+            textBoxSendTransactionConfirmationsCountTarget.KeyDown += textBoxSendTransactionConfirmationsCountTarget_KeyDown;
             // 
             // labelSendTransactionConfirmationTimeEstimated
             // 
-            this.labelSendTransactionConfirmationTimeEstimated.AutoSize = true;
-            this.labelSendTransactionConfirmationTimeEstimated.Location = new System.Drawing.Point(15, 301);
-            this.labelSendTransactionConfirmationTimeEstimated.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelSendTransactionConfirmationTimeEstimated.Name = "labelSendTransactionConfirmationTimeEstimated";
-            this.labelSendTransactionConfirmationTimeEstimated.Size = new System.Drawing.Size(527, 16);
-            this.labelSendTransactionConfirmationTimeEstimated.TabIndex = 13;
-            this.labelSendTransactionConfirmationTimeEstimated.Text = "LABEL_SEND_TRANSACTION_CONFIRMATION_TIME_ESTIMATED_TEXT";
+            labelSendTransactionConfirmationTimeEstimated.AutoSize = true;
+            labelSendTransactionConfirmationTimeEstimated.Location = new System.Drawing.Point(15, 301);
+            labelSendTransactionConfirmationTimeEstimated.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelSendTransactionConfirmationTimeEstimated.Name = "labelSendTransactionConfirmationTimeEstimated";
+            labelSendTransactionConfirmationTimeEstimated.Size = new System.Drawing.Size(527, 16);
+            labelSendTransactionConfirmationTimeEstimated.TabIndex = 13;
+            labelSendTransactionConfirmationTimeEstimated.Text = "LABEL_SEND_TRANSACTION_CONFIRMATION_TIME_ESTIMATED_TEXT";
             // 
             // labelSendTransactionPaymentId
             // 
-            this.labelSendTransactionPaymentId.AutoSize = true;
-            this.labelSendTransactionPaymentId.Location = new System.Drawing.Point(15, 363);
-            this.labelSendTransactionPaymentId.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelSendTransactionPaymentId.Name = "labelSendTransactionPaymentId";
-            this.labelSendTransactionPaymentId.Size = new System.Drawing.Size(370, 16);
-            this.labelSendTransactionPaymentId.TabIndex = 12;
-            this.labelSendTransactionPaymentId.Text = "LABEL_SEND_TRANSACTION_PAYMENT_ID_TEXT";
+            labelSendTransactionPaymentId.AutoSize = true;
+            labelSendTransactionPaymentId.Location = new System.Drawing.Point(15, 363);
+            labelSendTransactionPaymentId.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelSendTransactionPaymentId.Name = "labelSendTransactionPaymentId";
+            labelSendTransactionPaymentId.Size = new System.Drawing.Size(370, 16);
+            labelSendTransactionPaymentId.TabIndex = 12;
+            labelSendTransactionPaymentId.Text = "LABEL_SEND_TRANSACTION_PAYMENT_ID_TEXT";
             // 
             // textBoxSendTransactionPaymentId
             // 
-            this.textBoxSendTransactionPaymentId.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.textBoxSendTransactionPaymentId.Location = new System.Drawing.Point(19, 385);
-            this.textBoxSendTransactionPaymentId.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.textBoxSendTransactionPaymentId.Multiline = true;
-            this.textBoxSendTransactionPaymentId.Name = "textBoxSendTransactionPaymentId";
-            this.textBoxSendTransactionPaymentId.Size = new System.Drawing.Size(446, 25);
-            this.textBoxSendTransactionPaymentId.TabIndex = 11;
-            this.textBoxSendTransactionPaymentId.Text = "0";
-            this.textBoxSendTransactionPaymentId.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxSendTransactionPaymentId_KeyDown);
+            textBoxSendTransactionPaymentId.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            textBoxSendTransactionPaymentId.Location = new System.Drawing.Point(19, 385);
+            textBoxSendTransactionPaymentId.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxSendTransactionPaymentId.Multiline = true;
+            textBoxSendTransactionPaymentId.Name = "textBoxSendTransactionPaymentId";
+            textBoxSendTransactionPaymentId.Size = new System.Drawing.Size(446, 25);
+            textBoxSendTransactionPaymentId.TabIndex = 11;
+            textBoxSendTransactionPaymentId.Text = "0";
+            textBoxSendTransactionPaymentId.KeyDown += textBoxSendTransactionPaymentId_KeyDown;
             // 
             // labelSendTransactionAvailableBalanceText
             // 
-            this.labelSendTransactionAvailableBalanceText.AutoSize = true;
-            this.labelSendTransactionAvailableBalanceText.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.labelSendTransactionAvailableBalanceText.Location = new System.Drawing.Point(15, 13);
-            this.labelSendTransactionAvailableBalanceText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelSendTransactionAvailableBalanceText.Name = "labelSendTransactionAvailableBalanceText";
-            this.labelSendTransactionAvailableBalanceText.Size = new System.Drawing.Size(466, 18);
-            this.labelSendTransactionAvailableBalanceText.TabIndex = 1;
-            this.labelSendTransactionAvailableBalanceText.Text = "LABEL_SEND_TRANSACTION_AVAILABLE_BALANCE_TEXT";
+            labelSendTransactionAvailableBalanceText.AutoSize = true;
+            labelSendTransactionAvailableBalanceText.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            labelSendTransactionAvailableBalanceText.Location = new System.Drawing.Point(15, 13);
+            labelSendTransactionAvailableBalanceText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelSendTransactionAvailableBalanceText.Name = "labelSendTransactionAvailableBalanceText";
+            labelSendTransactionAvailableBalanceText.Size = new System.Drawing.Size(466, 18);
+            labelSendTransactionAvailableBalanceText.TabIndex = 1;
+            labelSendTransactionAvailableBalanceText.Text = "LABEL_SEND_TRANSACTION_AVAILABLE_BALANCE_TEXT";
             // 
             // buttonSendTransactionOpenContactList
             // 
-            this.buttonSendTransactionOpenContactList.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(247)))), ((int)(((byte)(229)))), ((int)(((byte)(72)))));
-            this.buttonSendTransactionOpenContactList.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.buttonSendTransactionOpenContactList.ForeColor = System.Drawing.Color.Black;
-            this.buttonSendTransactionOpenContactList.Location = new System.Drawing.Point(16, 102);
-            this.buttonSendTransactionOpenContactList.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.buttonSendTransactionOpenContactList.Name = "buttonSendTransactionOpenContactList";
-            this.buttonSendTransactionOpenContactList.Size = new System.Drawing.Size(558, 30);
-            this.buttonSendTransactionOpenContactList.TabIndex = 10;
-            this.buttonSendTransactionOpenContactList.Text = "BUTTON_SEND_TRANSACTION_OPEN_CONTACT_LIST_TEXT";
-            this.buttonSendTransactionOpenContactList.UseVisualStyleBackColor = false;
+            buttonSendTransactionOpenContactList.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
+            buttonSendTransactionOpenContactList.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            buttonSendTransactionOpenContactList.ForeColor = System.Drawing.Color.Black;
+            buttonSendTransactionOpenContactList.Location = new System.Drawing.Point(16, 102);
+            buttonSendTransactionOpenContactList.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            buttonSendTransactionOpenContactList.Name = "buttonSendTransactionOpenContactList";
+            buttonSendTransactionOpenContactList.Size = new System.Drawing.Size(558, 30);
+            buttonSendTransactionOpenContactList.TabIndex = 10;
+            buttonSendTransactionOpenContactList.Text = "BUTTON_SEND_TRANSACTION_OPEN_CONTACT_LIST_TEXT";
+            buttonSendTransactionOpenContactList.UseVisualStyleBackColor = false;
             // 
             // labelSendTransactionConfirmationCountTarget
             // 
-            this.labelSendTransactionConfirmationCountTarget.AutoSize = true;
-            this.labelSendTransactionConfirmationCountTarget.Location = new System.Drawing.Point(15, 245);
-            this.labelSendTransactionConfirmationCountTarget.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelSendTransactionConfirmationCountTarget.Name = "labelSendTransactionConfirmationCountTarget";
-            this.labelSendTransactionConfirmationCountTarget.Size = new System.Drawing.Size(519, 16);
-            this.labelSendTransactionConfirmationCountTarget.TabIndex = 7;
-            this.labelSendTransactionConfirmationCountTarget.Text = "LABEL_SEND_TRANSACTION_CONFIRMATION_COUNT_TARGET_TEXT";
+            labelSendTransactionConfirmationCountTarget.AutoSize = true;
+            labelSendTransactionConfirmationCountTarget.Location = new System.Drawing.Point(15, 245);
+            labelSendTransactionConfirmationCountTarget.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelSendTransactionConfirmationCountTarget.Name = "labelSendTransactionConfirmationCountTarget";
+            labelSendTransactionConfirmationCountTarget.Size = new System.Drawing.Size(519, 16);
+            labelSendTransactionConfirmationCountTarget.TabIndex = 7;
+            labelSendTransactionConfirmationCountTarget.Text = "LABEL_SEND_TRANSACTION_CONFIRMATION_COUNT_TARGET_TEXT";
             // 
             // labelSendTransactionAmountSelected
             // 
-            this.labelSendTransactionAmountSelected.AutoSize = true;
-            this.labelSendTransactionAmountSelected.Location = new System.Drawing.Point(13, 168);
-            this.labelSendTransactionAmountSelected.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelSendTransactionAmountSelected.Name = "labelSendTransactionAmountSelected";
-            this.labelSendTransactionAmountSelected.Size = new System.Drawing.Size(426, 16);
-            this.labelSendTransactionAmountSelected.TabIndex = 3;
-            this.labelSendTransactionAmountSelected.Text = "LABEL_SEND_TRANSACTION_AMOUNT_SELECTED_TEXT";
+            labelSendTransactionAmountSelected.AutoSize = true;
+            labelSendTransactionAmountSelected.Location = new System.Drawing.Point(13, 168);
+            labelSendTransactionAmountSelected.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelSendTransactionAmountSelected.Name = "labelSendTransactionAmountSelected";
+            labelSendTransactionAmountSelected.Size = new System.Drawing.Size(426, 16);
+            labelSendTransactionAmountSelected.TabIndex = 3;
+            labelSendTransactionAmountSelected.Text = "LABEL_SEND_TRANSACTION_AMOUNT_SELECTED_TEXT";
             // 
             // textBoxSendTransactionAmountSelected
             // 
-            this.textBoxSendTransactionAmountSelected.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.textBoxSendTransactionAmountSelected.Location = new System.Drawing.Point(16, 190);
-            this.textBoxSendTransactionAmountSelected.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.textBoxSendTransactionAmountSelected.Multiline = true;
-            this.textBoxSendTransactionAmountSelected.Name = "textBoxSendTransactionAmountSelected";
-            this.textBoxSendTransactionAmountSelected.Size = new System.Drawing.Size(446, 25);
-            this.textBoxSendTransactionAmountSelected.TabIndex = 2;
-            this.textBoxSendTransactionAmountSelected.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxSendTransactionAmountSelected_KeyDown);
-            this.textBoxSendTransactionAmountSelected.KeyUp += new System.Windows.Forms.KeyEventHandler(this.textBoxSendTransactionAmountSelected_KeyUp);
+            textBoxSendTransactionAmountSelected.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            textBoxSendTransactionAmountSelected.Location = new System.Drawing.Point(16, 190);
+            textBoxSendTransactionAmountSelected.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxSendTransactionAmountSelected.Multiline = true;
+            textBoxSendTransactionAmountSelected.Name = "textBoxSendTransactionAmountSelected";
+            textBoxSendTransactionAmountSelected.Size = new System.Drawing.Size(446, 25);
+            textBoxSendTransactionAmountSelected.TabIndex = 2;
+            textBoxSendTransactionAmountSelected.KeyDown += textBoxSendTransactionAmountSelected_KeyDown;
+            textBoxSendTransactionAmountSelected.KeyUp += textBoxSendTransactionAmountSelected_KeyUp;
             // 
             // labelSendTransactionWalletAddressTarget
             // 
-            this.labelSendTransactionWalletAddressTarget.AutoSize = true;
-            this.labelSendTransactionWalletAddressTarget.Location = new System.Drawing.Point(15, 47);
-            this.labelSendTransactionWalletAddressTarget.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelSendTransactionWalletAddressTarget.Name = "labelSendTransactionWalletAddressTarget";
-            this.labelSendTransactionWalletAddressTarget.Size = new System.Drawing.Size(485, 16);
-            this.labelSendTransactionWalletAddressTarget.TabIndex = 1;
-            this.labelSendTransactionWalletAddressTarget.Text = "LABEL_SEND_TRANSACTION_WALLET_ADDRESS_TARGET_TEXT";
+            labelSendTransactionWalletAddressTarget.AutoSize = true;
+            labelSendTransactionWalletAddressTarget.Location = new System.Drawing.Point(15, 47);
+            labelSendTransactionWalletAddressTarget.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelSendTransactionWalletAddressTarget.Name = "labelSendTransactionWalletAddressTarget";
+            labelSendTransactionWalletAddressTarget.Size = new System.Drawing.Size(485, 16);
+            labelSendTransactionWalletAddressTarget.TabIndex = 1;
+            labelSendTransactionWalletAddressTarget.Text = "LABEL_SEND_TRANSACTION_WALLET_ADDRESS_TARGET_TEXT";
             // 
             // textBoxSendTransactionWalletAddressTarget
             // 
-            this.textBoxSendTransactionWalletAddressTarget.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.textBoxSendTransactionWalletAddressTarget.Location = new System.Drawing.Point(16, 69);
-            this.textBoxSendTransactionWalletAddressTarget.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.textBoxSendTransactionWalletAddressTarget.Multiline = true;
-            this.textBoxSendTransactionWalletAddressTarget.Name = "textBoxSendTransactionWalletAddressTarget";
-            this.textBoxSendTransactionWalletAddressTarget.Size = new System.Drawing.Size(1328, 25);
-            this.textBoxSendTransactionWalletAddressTarget.TabIndex = 0;
-            this.textBoxSendTransactionWalletAddressTarget.TextChanged += new System.EventHandler(this.textBoxSendTransactionWalletAddressTarget_TextChanged);
-            this.textBoxSendTransactionWalletAddressTarget.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxSendTransactionWalletAddressTarget_KeyDown);
+            textBoxSendTransactionWalletAddressTarget.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            textBoxSendTransactionWalletAddressTarget.Location = new System.Drawing.Point(16, 69);
+            textBoxSendTransactionWalletAddressTarget.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxSendTransactionWalletAddressTarget.Multiline = true;
+            textBoxSendTransactionWalletAddressTarget.Name = "textBoxSendTransactionWalletAddressTarget";
+            textBoxSendTransactionWalletAddressTarget.Size = new System.Drawing.Size(1328, 25);
+            textBoxSendTransactionWalletAddressTarget.TabIndex = 0;
+            textBoxSendTransactionWalletAddressTarget.TextChanged += textBoxSendTransactionWalletAddressTarget_TextChanged;
+            textBoxSendTransactionWalletAddressTarget.KeyDown += textBoxSendTransactionWalletAddressTarget_KeyDown;
             // 
             // tabPageReceiveTransaction
             // 
-            this.tabPageReceiveTransaction.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(77)))), ((int)(((byte)(104)))), ((int)(((byte)(145)))));
-            this.tabPageReceiveTransaction.Controls.Add(this.buttonSaveQrCodeReceiveTransactionWalletAddress);
-            this.tabPageReceiveTransaction.Controls.Add(this.buttonPrintQrCodeReceiveTransactionWalletAddress);
-            this.tabPageReceiveTransaction.Controls.Add(this.labelWalletReceiveTransactionQrCodeText);
-            this.tabPageReceiveTransaction.Controls.Add(this.panelQrCodeWalletAddress);
-            this.tabPageReceiveTransaction.Location = new System.Drawing.Point(4, 34);
-            this.tabPageReceiveTransaction.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.tabPageReceiveTransaction.Name = "tabPageReceiveTransaction";
-            this.tabPageReceiveTransaction.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.tabPageReceiveTransaction.Size = new System.Drawing.Size(1369, 546);
-            this.tabPageReceiveTransaction.TabIndex = 4;
-            this.tabPageReceiveTransaction.Text = "TABPAGE_RECEIVE_TRANSACTION_TEXT";
+            tabPageReceiveTransaction.BackColor = System.Drawing.Color.FromArgb(77, 104, 145);
+            tabPageReceiveTransaction.Controls.Add(buttonSaveQrCodeReceiveTransactionWalletAddress);
+            tabPageReceiveTransaction.Controls.Add(buttonPrintQrCodeReceiveTransactionWalletAddress);
+            tabPageReceiveTransaction.Controls.Add(labelWalletReceiveTransactionQrCodeText);
+            tabPageReceiveTransaction.Controls.Add(panelQrCodeWalletAddress);
+            tabPageReceiveTransaction.Location = new System.Drawing.Point(4, 34);
+            tabPageReceiveTransaction.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabPageReceiveTransaction.Name = "tabPageReceiveTransaction";
+            tabPageReceiveTransaction.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabPageReceiveTransaction.Size = new System.Drawing.Size(1369, 546);
+            tabPageReceiveTransaction.TabIndex = 4;
+            tabPageReceiveTransaction.Text = "TABPAGE_RECEIVE_TRANSACTION_TEXT";
             // 
             // buttonSaveQrCodeReceiveTransactionWalletAddress
             // 
-            this.buttonSaveQrCodeReceiveTransactionWalletAddress.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(247)))), ((int)(((byte)(229)))), ((int)(((byte)(72)))));
-            this.buttonSaveQrCodeReceiveTransactionWalletAddress.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.buttonSaveQrCodeReceiveTransactionWalletAddress.ForeColor = System.Drawing.Color.Black;
-            this.buttonSaveQrCodeReceiveTransactionWalletAddress.Location = new System.Drawing.Point(453, 427);
-            this.buttonSaveQrCodeReceiveTransactionWalletAddress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.buttonSaveQrCodeReceiveTransactionWalletAddress.Name = "buttonSaveQrCodeReceiveTransactionWalletAddress";
-            this.buttonSaveQrCodeReceiveTransactionWalletAddress.Size = new System.Drawing.Size(475, 36);
-            this.buttonSaveQrCodeReceiveTransactionWalletAddress.TabIndex = 5;
-            this.buttonSaveQrCodeReceiveTransactionWalletAddress.Text = "BUTTON_MAIN_INTERFACE_SAVE_QR_CODE_TEXT";
-            this.buttonSaveQrCodeReceiveTransactionWalletAddress.UseVisualStyleBackColor = false;
-            this.buttonSaveQrCodeReceiveTransactionWalletAddress.Click += new System.EventHandler(this.buttonSaveQrCodeReceiveTransactionWalletAddress_Click);
+            buttonSaveQrCodeReceiveTransactionWalletAddress.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
+            buttonSaveQrCodeReceiveTransactionWalletAddress.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            buttonSaveQrCodeReceiveTransactionWalletAddress.ForeColor = System.Drawing.Color.Black;
+            buttonSaveQrCodeReceiveTransactionWalletAddress.Location = new System.Drawing.Point(453, 427);
+            buttonSaveQrCodeReceiveTransactionWalletAddress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            buttonSaveQrCodeReceiveTransactionWalletAddress.Name = "buttonSaveQrCodeReceiveTransactionWalletAddress";
+            buttonSaveQrCodeReceiveTransactionWalletAddress.Size = new System.Drawing.Size(475, 36);
+            buttonSaveQrCodeReceiveTransactionWalletAddress.TabIndex = 5;
+            buttonSaveQrCodeReceiveTransactionWalletAddress.Text = "BUTTON_MAIN_INTERFACE_SAVE_QR_CODE_TEXT";
+            buttonSaveQrCodeReceiveTransactionWalletAddress.UseVisualStyleBackColor = false;
+            buttonSaveQrCodeReceiveTransactionWalletAddress.Click += buttonSaveQrCodeReceiveTransactionWalletAddress_Click;
             // 
             // buttonPrintQrCodeReceiveTransactionWalletAddress
             // 
-            this.buttonPrintQrCodeReceiveTransactionWalletAddress.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(247)))), ((int)(((byte)(229)))), ((int)(((byte)(72)))));
-            this.buttonPrintQrCodeReceiveTransactionWalletAddress.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.buttonPrintQrCodeReceiveTransactionWalletAddress.ForeColor = System.Drawing.Color.Black;
-            this.buttonPrintQrCodeReceiveTransactionWalletAddress.Location = new System.Drawing.Point(453, 473);
-            this.buttonPrintQrCodeReceiveTransactionWalletAddress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.buttonPrintQrCodeReceiveTransactionWalletAddress.Name = "buttonPrintQrCodeReceiveTransactionWalletAddress";
-            this.buttonPrintQrCodeReceiveTransactionWalletAddress.Size = new System.Drawing.Size(475, 36);
-            this.buttonPrintQrCodeReceiveTransactionWalletAddress.TabIndex = 4;
-            this.buttonPrintQrCodeReceiveTransactionWalletAddress.Text = "BUTTON_MAIN_INTERFACE_PRINT_QR_CODE_TEXT";
-            this.buttonPrintQrCodeReceiveTransactionWalletAddress.UseVisualStyleBackColor = false;
-            this.buttonPrintQrCodeReceiveTransactionWalletAddress.Click += new System.EventHandler(this.buttonPrintQrCodeReceiveTransactionWalletAddress_Click);
+            buttonPrintQrCodeReceiveTransactionWalletAddress.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
+            buttonPrintQrCodeReceiveTransactionWalletAddress.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            buttonPrintQrCodeReceiveTransactionWalletAddress.ForeColor = System.Drawing.Color.Black;
+            buttonPrintQrCodeReceiveTransactionWalletAddress.Location = new System.Drawing.Point(453, 473);
+            buttonPrintQrCodeReceiveTransactionWalletAddress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            buttonPrintQrCodeReceiveTransactionWalletAddress.Name = "buttonPrintQrCodeReceiveTransactionWalletAddress";
+            buttonPrintQrCodeReceiveTransactionWalletAddress.Size = new System.Drawing.Size(475, 36);
+            buttonPrintQrCodeReceiveTransactionWalletAddress.TabIndex = 4;
+            buttonPrintQrCodeReceiveTransactionWalletAddress.Text = "BUTTON_MAIN_INTERFACE_PRINT_QR_CODE_TEXT";
+            buttonPrintQrCodeReceiveTransactionWalletAddress.UseVisualStyleBackColor = false;
+            buttonPrintQrCodeReceiveTransactionWalletAddress.Click += buttonPrintQrCodeReceiveTransactionWalletAddress_Click;
             // 
             // labelWalletReceiveTransactionQrCodeText
             // 
-            this.labelWalletReceiveTransactionQrCodeText.AutoSize = true;
-            this.labelWalletReceiveTransactionQrCodeText.ForeColor = System.Drawing.Color.Ivory;
-            this.labelWalletReceiveTransactionQrCodeText.Location = new System.Drawing.Point(455, 36);
-            this.labelWalletReceiveTransactionQrCodeText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelWalletReceiveTransactionQrCodeText.Name = "labelWalletReceiveTransactionQrCodeText";
-            this.labelWalletReceiveTransactionQrCodeText.Size = new System.Drawing.Size(441, 16);
-            this.labelWalletReceiveTransactionQrCodeText.TabIndex = 3;
-            this.labelWalletReceiveTransactionQrCodeText.Text = "LABEL_MAIN_INTERFACE_QR_CODE_RECEIVE_TITLE_TEXT";
+            labelWalletReceiveTransactionQrCodeText.AutoSize = true;
+            labelWalletReceiveTransactionQrCodeText.ForeColor = System.Drawing.Color.Ivory;
+            labelWalletReceiveTransactionQrCodeText.Location = new System.Drawing.Point(455, 36);
+            labelWalletReceiveTransactionQrCodeText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelWalletReceiveTransactionQrCodeText.Name = "labelWalletReceiveTransactionQrCodeText";
+            labelWalletReceiveTransactionQrCodeText.Size = new System.Drawing.Size(441, 16);
+            labelWalletReceiveTransactionQrCodeText.TabIndex = 3;
+            labelWalletReceiveTransactionQrCodeText.Text = "LABEL_MAIN_INTERFACE_QR_CODE_RECEIVE_TITLE_TEXT";
             // 
             // panelQrCodeWalletAddress
             // 
-            this.panelQrCodeWalletAddress.BackColor = System.Drawing.Color.White;
-            this.panelQrCodeWalletAddress.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            this.panelQrCodeWalletAddress.BorderColor = System.Drawing.Color.Ivory;
-            this.panelQrCodeWalletAddress.BorderSize = 1F;
-            this.panelQrCodeWalletAddress.Location = new System.Drawing.Point(512, 74);
-            this.panelQrCodeWalletAddress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.panelQrCodeWalletAddress.Name = "panelQrCodeWalletAddress";
-            this.panelQrCodeWalletAddress.Radius = 30;
-            this.panelQrCodeWalletAddress.Size = new System.Drawing.Size(350, 346);
-            this.panelQrCodeWalletAddress.TabIndex = 0;
+            panelQrCodeWalletAddress.BackColor = System.Drawing.Color.White;
+            panelQrCodeWalletAddress.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            panelQrCodeWalletAddress.BorderColor = System.Drawing.Color.Ivory;
+            panelQrCodeWalletAddress.BorderSize = 1F;
+            panelQrCodeWalletAddress.Location = new System.Drawing.Point(512, 74);
+            panelQrCodeWalletAddress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            panelQrCodeWalletAddress.Name = "panelQrCodeWalletAddress";
+            panelQrCodeWalletAddress.Radius = 30;
+            panelQrCodeWalletAddress.Size = new System.Drawing.Size(350, 346);
+            panelQrCodeWalletAddress.TabIndex = 0;
             // 
             // tabPageTransactionHistory
             // 
-            this.tabPageTransactionHistory.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(77)))), ((int)(((byte)(104)))), ((int)(((byte)(145)))));
-            this.tabPageTransactionHistory.Controls.Add(this.buttonMainInterfaceSearchTransactionHistory);
-            this.tabPageTransactionHistory.Controls.Add(this.textBoxTransactionHistorySearch);
-            this.tabPageTransactionHistory.Controls.Add(this.panelTransactionHistoryColumns);
-            this.tabPageTransactionHistory.Controls.Add(this.textBoxMainInterfaceMaxPageTransactionHistory);
-            this.tabPageTransactionHistory.Controls.Add(this.textBoxMainInterfaceCurrentPageTransactionHistory);
-            this.tabPageTransactionHistory.Controls.Add(this.buttonMainInterfaceNextPageTransactionHistory);
-            this.tabPageTransactionHistory.Controls.Add(this.buttonMainInterfaceBackPageTransactionHistory);
-            this.tabPageTransactionHistory.Controls.Add(this.buttonMainInterfaceExportTransactionHistory);
-            this.tabPageTransactionHistory.Controls.Add(this.panelTransactionHistory);
-            this.tabPageTransactionHistory.Location = new System.Drawing.Point(4, 34);
-            this.tabPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.tabPageTransactionHistory.Name = "tabPageTransactionHistory";
-            this.tabPageTransactionHistory.Size = new System.Drawing.Size(1369, 546);
-            this.tabPageTransactionHistory.TabIndex = 2;
-            this.tabPageTransactionHistory.Text = "TABPAGE_TRANSACTION_HISTORY_TEXT";
-            this.tabPageTransactionHistory.Paint += new System.Windows.Forms.PaintEventHandler(this.tabPageTransactionHistory_Paint);
+            tabPageTransactionHistory.BackColor = System.Drawing.Color.FromArgb(77, 104, 145);
+            tabPageTransactionHistory.Controls.Add(buttonMainInterfaceSearchTransactionHistory);
+            tabPageTransactionHistory.Controls.Add(textBoxTransactionHistorySearch);
+            tabPageTransactionHistory.Controls.Add(panelTransactionHistoryColumns);
+            tabPageTransactionHistory.Controls.Add(textBoxMainInterfaceMaxPageTransactionHistory);
+            tabPageTransactionHistory.Controls.Add(textBoxMainInterfaceCurrentPageTransactionHistory);
+            tabPageTransactionHistory.Controls.Add(buttonMainInterfaceNextPageTransactionHistory);
+            tabPageTransactionHistory.Controls.Add(buttonMainInterfaceBackPageTransactionHistory);
+            tabPageTransactionHistory.Controls.Add(buttonMainInterfaceExportTransactionHistory);
+            tabPageTransactionHistory.Controls.Add(panelTransactionHistory);
+            tabPageTransactionHistory.Location = new System.Drawing.Point(4, 34);
+            tabPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabPageTransactionHistory.Name = "tabPageTransactionHistory";
+            tabPageTransactionHistory.Size = new System.Drawing.Size(1369, 546);
+            tabPageTransactionHistory.TabIndex = 2;
+            tabPageTransactionHistory.Text = "TABPAGE_TRANSACTION_HISTORY_TEXT";
+            tabPageTransactionHistory.Paint += tabPageTransactionHistory_Paint;
             // 
             // buttonMainInterfaceSearchTransactionHistory
             // 
-            this.buttonMainInterfaceSearchTransactionHistory.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(247)))), ((int)(((byte)(229)))), ((int)(((byte)(72)))));
-            this.buttonMainInterfaceSearchTransactionHistory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.buttonMainInterfaceSearchTransactionHistory.ForeColor = System.Drawing.Color.Black;
-            this.buttonMainInterfaceSearchTransactionHistory.Location = new System.Drawing.Point(930, 508);
-            this.buttonMainInterfaceSearchTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.buttonMainInterfaceSearchTransactionHistory.Name = "buttonMainInterfaceSearchTransactionHistory";
-            this.buttonMainInterfaceSearchTransactionHistory.Size = new System.Drawing.Size(177, 25);
-            this.buttonMainInterfaceSearchTransactionHistory.TabIndex = 13;
-            this.buttonMainInterfaceSearchTransactionHistory.Text = "BUTTON_MAIN_INTERFACE_SEARCH_TRANSACTION_HISTORY_TEXT";
-            this.buttonMainInterfaceSearchTransactionHistory.UseVisualStyleBackColor = false;
-            this.buttonMainInterfaceSearchTransactionHistory.Click += new System.EventHandler(this.buttonMainInterfaceSearchTransactionHistory_Click);
+            buttonMainInterfaceSearchTransactionHistory.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
+            buttonMainInterfaceSearchTransactionHistory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            buttonMainInterfaceSearchTransactionHistory.ForeColor = System.Drawing.Color.Black;
+            buttonMainInterfaceSearchTransactionHistory.Location = new System.Drawing.Point(930, 508);
+            buttonMainInterfaceSearchTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            buttonMainInterfaceSearchTransactionHistory.Name = "buttonMainInterfaceSearchTransactionHistory";
+            buttonMainInterfaceSearchTransactionHistory.Size = new System.Drawing.Size(177, 25);
+            buttonMainInterfaceSearchTransactionHistory.TabIndex = 13;
+            buttonMainInterfaceSearchTransactionHistory.Text = "BUTTON_MAIN_INTERFACE_SEARCH_TRANSACTION_HISTORY_TEXT";
+            buttonMainInterfaceSearchTransactionHistory.UseVisualStyleBackColor = false;
+            buttonMainInterfaceSearchTransactionHistory.Click += buttonMainInterfaceSearchTransactionHistory_Click;
             // 
             // textBoxTransactionHistorySearch
             // 
-            this.textBoxTransactionHistorySearch.Location = new System.Drawing.Point(600, 510);
-            this.textBoxTransactionHistorySearch.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.textBoxTransactionHistorySearch.Name = "textBoxTransactionHistorySearch";
-            this.textBoxTransactionHistorySearch.Size = new System.Drawing.Size(318, 22);
-            this.textBoxTransactionHistorySearch.TabIndex = 12;
-            this.textBoxTransactionHistorySearch.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxTransactionHistorySearch_KeyDown);
+            textBoxTransactionHistorySearch.Location = new System.Drawing.Point(600, 510);
+            textBoxTransactionHistorySearch.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxTransactionHistorySearch.Name = "textBoxTransactionHistorySearch";
+            textBoxTransactionHistorySearch.Size = new System.Drawing.Size(318, 22);
+            textBoxTransactionHistorySearch.TabIndex = 12;
+            textBoxTransactionHistorySearch.KeyDown += textBoxTransactionHistorySearch_KeyDown;
             // 
             // panelTransactionHistoryColumns
             // 
-            this.panelTransactionHistoryColumns.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(70)))), ((int)(((byte)(90)))), ((int)(((byte)(120)))));
-            this.panelTransactionHistoryColumns.BorderColor = System.Drawing.Color.Transparent;
-            this.panelTransactionHistoryColumns.BorderSize = 1F;
-            this.panelTransactionHistoryColumns.Location = new System.Drawing.Point(13, 1);
-            this.panelTransactionHistoryColumns.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.panelTransactionHistoryColumns.Name = "panelTransactionHistoryColumns";
-            this.panelTransactionHistoryColumns.Radius = 10;
-            this.panelTransactionHistoryColumns.Size = new System.Drawing.Size(1342, 52);
-            this.panelTransactionHistoryColumns.TabIndex = 11;
-            this.panelTransactionHistoryColumns.Click += new System.EventHandler(this.panelMainInterfaceTransactionHistoryColumns_Click);
-            this.panelTransactionHistoryColumns.Paint += new System.Windows.Forms.PaintEventHandler(this.panelMainInterfaceTransactionHistoryColumns_Paint);
+            panelTransactionHistoryColumns.BackColor = System.Drawing.Color.FromArgb(70, 90, 120);
+            panelTransactionHistoryColumns.BorderColor = System.Drawing.Color.Transparent;
+            panelTransactionHistoryColumns.BorderSize = 1F;
+            panelTransactionHistoryColumns.Location = new System.Drawing.Point(13, 1);
+            panelTransactionHistoryColumns.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            panelTransactionHistoryColumns.Name = "panelTransactionHistoryColumns";
+            panelTransactionHistoryColumns.Radius = 10;
+            panelTransactionHistoryColumns.Size = new System.Drawing.Size(1342, 52);
+            panelTransactionHistoryColumns.TabIndex = 11;
+            panelTransactionHistoryColumns.Click += panelMainInterfaceTransactionHistoryColumns_Click;
+            panelTransactionHistoryColumns.Paint += panelMainInterfaceTransactionHistoryColumns_Paint;
             // 
             // textBoxMainInterfaceMaxPageTransactionHistory
             // 
-            this.textBoxMainInterfaceMaxPageTransactionHistory.Location = new System.Drawing.Point(482, 510);
-            this.textBoxMainInterfaceMaxPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.textBoxMainInterfaceMaxPageTransactionHistory.Name = "textBoxMainInterfaceMaxPageTransactionHistory";
-            this.textBoxMainInterfaceMaxPageTransactionHistory.ReadOnly = true;
-            this.textBoxMainInterfaceMaxPageTransactionHistory.Size = new System.Drawing.Size(92, 22);
-            this.textBoxMainInterfaceMaxPageTransactionHistory.TabIndex = 10;
+            textBoxMainInterfaceMaxPageTransactionHistory.Location = new System.Drawing.Point(482, 510);
+            textBoxMainInterfaceMaxPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxMainInterfaceMaxPageTransactionHistory.Name = "textBoxMainInterfaceMaxPageTransactionHistory";
+            textBoxMainInterfaceMaxPageTransactionHistory.ReadOnly = true;
+            textBoxMainInterfaceMaxPageTransactionHistory.Size = new System.Drawing.Size(92, 22);
+            textBoxMainInterfaceMaxPageTransactionHistory.TabIndex = 10;
             // 
             // textBoxMainInterfaceCurrentPageTransactionHistory
             // 
-            this.textBoxMainInterfaceCurrentPageTransactionHistory.Location = new System.Drawing.Point(382, 510);
-            this.textBoxMainInterfaceCurrentPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.textBoxMainInterfaceCurrentPageTransactionHistory.Name = "textBoxMainInterfaceCurrentPageTransactionHistory";
-            this.textBoxMainInterfaceCurrentPageTransactionHistory.Size = new System.Drawing.Size(92, 22);
-            this.textBoxMainInterfaceCurrentPageTransactionHistory.TabIndex = 9;
-            this.textBoxMainInterfaceCurrentPageTransactionHistory.KeyDown += new System.Windows.Forms.KeyEventHandler(this.textBoxMainInterfaceCurrentPageTransactionHistory_KeyDown);
+            textBoxMainInterfaceCurrentPageTransactionHistory.Location = new System.Drawing.Point(382, 510);
+            textBoxMainInterfaceCurrentPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxMainInterfaceCurrentPageTransactionHistory.Name = "textBoxMainInterfaceCurrentPageTransactionHistory";
+            textBoxMainInterfaceCurrentPageTransactionHistory.Size = new System.Drawing.Size(92, 22);
+            textBoxMainInterfaceCurrentPageTransactionHistory.TabIndex = 9;
+            textBoxMainInterfaceCurrentPageTransactionHistory.KeyDown += textBoxMainInterfaceCurrentPageTransactionHistory_KeyDown;
             // 
             // buttonMainInterfaceNextPageTransactionHistory
             // 
-            this.buttonMainInterfaceNextPageTransactionHistory.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(247)))), ((int)(((byte)(229)))), ((int)(((byte)(72)))));
-            this.buttonMainInterfaceNextPageTransactionHistory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.buttonMainInterfaceNextPageTransactionHistory.ForeColor = System.Drawing.Color.Black;
-            this.buttonMainInterfaceNextPageTransactionHistory.Location = new System.Drawing.Point(197, 509);
-            this.buttonMainInterfaceNextPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.buttonMainInterfaceNextPageTransactionHistory.Name = "buttonMainInterfaceNextPageTransactionHistory";
-            this.buttonMainInterfaceNextPageTransactionHistory.Size = new System.Drawing.Size(177, 28);
-            this.buttonMainInterfaceNextPageTransactionHistory.TabIndex = 8;
-            this.buttonMainInterfaceNextPageTransactionHistory.Text = "BUTTON_MAIN_INTERFACE_NEXT_PAGE_TRANSACTION_HISTORY_TEXT";
-            this.buttonMainInterfaceNextPageTransactionHistory.UseVisualStyleBackColor = false;
-            this.buttonMainInterfaceNextPageTransactionHistory.Click += new System.EventHandler(this.buttonMainInterfaceNextPageTransactionHistory_Click);
+            buttonMainInterfaceNextPageTransactionHistory.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
+            buttonMainInterfaceNextPageTransactionHistory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            buttonMainInterfaceNextPageTransactionHistory.ForeColor = System.Drawing.Color.Black;
+            buttonMainInterfaceNextPageTransactionHistory.Location = new System.Drawing.Point(197, 509);
+            buttonMainInterfaceNextPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            buttonMainInterfaceNextPageTransactionHistory.Name = "buttonMainInterfaceNextPageTransactionHistory";
+            buttonMainInterfaceNextPageTransactionHistory.Size = new System.Drawing.Size(177, 28);
+            buttonMainInterfaceNextPageTransactionHistory.TabIndex = 8;
+            buttonMainInterfaceNextPageTransactionHistory.Text = "BUTTON_MAIN_INTERFACE_NEXT_PAGE_TRANSACTION_HISTORY_TEXT";
+            buttonMainInterfaceNextPageTransactionHistory.UseVisualStyleBackColor = false;
+            buttonMainInterfaceNextPageTransactionHistory.Click += buttonMainInterfaceNextPageTransactionHistory_Click;
             // 
             // buttonMainInterfaceBackPageTransactionHistory
             // 
-            this.buttonMainInterfaceBackPageTransactionHistory.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(247)))), ((int)(((byte)(229)))), ((int)(((byte)(72)))));
-            this.buttonMainInterfaceBackPageTransactionHistory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.buttonMainInterfaceBackPageTransactionHistory.ForeColor = System.Drawing.Color.Black;
-            this.buttonMainInterfaceBackPageTransactionHistory.Location = new System.Drawing.Point(13, 509);
-            this.buttonMainInterfaceBackPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.buttonMainInterfaceBackPageTransactionHistory.Name = "buttonMainInterfaceBackPageTransactionHistory";
-            this.buttonMainInterfaceBackPageTransactionHistory.Size = new System.Drawing.Size(177, 28);
-            this.buttonMainInterfaceBackPageTransactionHistory.TabIndex = 7;
-            this.buttonMainInterfaceBackPageTransactionHistory.Text = "BUTTON_MAIN_INTERFACE_BACK_PAGE_TRANSACTION_HISTORY_TEXT";
-            this.buttonMainInterfaceBackPageTransactionHistory.UseVisualStyleBackColor = false;
-            this.buttonMainInterfaceBackPageTransactionHistory.Click += new System.EventHandler(this.buttonMainInterfaceBackPageTransactionHistory_Click);
+            buttonMainInterfaceBackPageTransactionHistory.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
+            buttonMainInterfaceBackPageTransactionHistory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            buttonMainInterfaceBackPageTransactionHistory.ForeColor = System.Drawing.Color.Black;
+            buttonMainInterfaceBackPageTransactionHistory.Location = new System.Drawing.Point(13, 509);
+            buttonMainInterfaceBackPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            buttonMainInterfaceBackPageTransactionHistory.Name = "buttonMainInterfaceBackPageTransactionHistory";
+            buttonMainInterfaceBackPageTransactionHistory.Size = new System.Drawing.Size(177, 28);
+            buttonMainInterfaceBackPageTransactionHistory.TabIndex = 7;
+            buttonMainInterfaceBackPageTransactionHistory.Text = "BUTTON_MAIN_INTERFACE_BACK_PAGE_TRANSACTION_HISTORY_TEXT";
+            buttonMainInterfaceBackPageTransactionHistory.UseVisualStyleBackColor = false;
+            buttonMainInterfaceBackPageTransactionHistory.Click += buttonMainInterfaceBackPageTransactionHistory_Click;
             // 
             // buttonMainInterfaceExportTransactionHistory
             // 
-            this.buttonMainInterfaceExportTransactionHistory.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(247)))), ((int)(((byte)(229)))), ((int)(((byte)(72)))));
-            this.buttonMainInterfaceExportTransactionHistory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.buttonMainInterfaceExportTransactionHistory.ForeColor = System.Drawing.Color.Black;
-            this.buttonMainInterfaceExportTransactionHistory.Location = new System.Drawing.Point(1177, 509);
-            this.buttonMainInterfaceExportTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.buttonMainInterfaceExportTransactionHistory.Name = "buttonMainInterfaceExportTransactionHistory";
-            this.buttonMainInterfaceExportTransactionHistory.Size = new System.Drawing.Size(177, 28);
-            this.buttonMainInterfaceExportTransactionHistory.TabIndex = 5;
-            this.buttonMainInterfaceExportTransactionHistory.Text = "BUTTON_MAIN_INTERFACE_EXPORT_TRANSACTION_HISTORY_TEXT";
-            this.buttonMainInterfaceExportTransactionHistory.UseVisualStyleBackColor = false;
-            this.buttonMainInterfaceExportTransactionHistory.Click += new System.EventHandler(this.buttonMainInterfaceExportTransactionHistory_Click);
+            buttonMainInterfaceExportTransactionHistory.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
+            buttonMainInterfaceExportTransactionHistory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            buttonMainInterfaceExportTransactionHistory.ForeColor = System.Drawing.Color.Black;
+            buttonMainInterfaceExportTransactionHistory.Location = new System.Drawing.Point(1177, 509);
+            buttonMainInterfaceExportTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            buttonMainInterfaceExportTransactionHistory.Name = "buttonMainInterfaceExportTransactionHistory";
+            buttonMainInterfaceExportTransactionHistory.Size = new System.Drawing.Size(177, 28);
+            buttonMainInterfaceExportTransactionHistory.TabIndex = 5;
+            buttonMainInterfaceExportTransactionHistory.Text = "BUTTON_MAIN_INTERFACE_EXPORT_TRANSACTION_HISTORY_TEXT";
+            buttonMainInterfaceExportTransactionHistory.UseVisualStyleBackColor = false;
+            buttonMainInterfaceExportTransactionHistory.Click += buttonMainInterfaceExportTransactionHistory_Click;
             // 
             // panelTransactionHistory
             // 
-            this.panelTransactionHistory.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(70)))), ((int)(((byte)(90)))), ((int)(((byte)(120)))));
-            this.panelTransactionHistory.BorderColor = System.Drawing.Color.Transparent;
-            this.panelTransactionHistory.BorderSize = 1F;
-            this.panelTransactionHistory.Location = new System.Drawing.Point(13, 54);
-            this.panelTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.panelTransactionHistory.Name = "panelTransactionHistory";
-            this.panelTransactionHistory.Radius = 10;
-            this.panelTransactionHistory.Size = new System.Drawing.Size(1342, 450);
-            this.panelTransactionHistory.TabIndex = 6;
-            this.panelTransactionHistory.Click += new System.EventHandler(this.panelTransactionHistory_Click);
-            this.panelTransactionHistory.Paint += new System.Windows.Forms.PaintEventHandler(this.panelTransactionHistory_Paint);
-            this.panelTransactionHistory.DoubleClick += new System.EventHandler(this.panelTransactionHistory_DoubleClick);
-            this.panelTransactionHistory.MouseLeave += new System.EventHandler(this.panelTransactionHistory_MouseLeave);
-            this.panelTransactionHistory.MouseMove += new System.Windows.Forms.MouseEventHandler(this.panelTransactionHistory_MouseMove);
+            panelTransactionHistory.BackColor = System.Drawing.Color.FromArgb(70, 90, 120);
+            panelTransactionHistory.BorderColor = System.Drawing.Color.Transparent;
+            panelTransactionHistory.BorderSize = 1F;
+            panelTransactionHistory.Location = new System.Drawing.Point(13, 54);
+            panelTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            panelTransactionHistory.Name = "panelTransactionHistory";
+            panelTransactionHistory.Radius = 10;
+            panelTransactionHistory.Size = new System.Drawing.Size(1342, 450);
+            panelTransactionHistory.TabIndex = 6;
+            panelTransactionHistory.Click += panelTransactionHistory_Click;
+            panelTransactionHistory.Paint += panelTransactionHistory_Paint;
+            panelTransactionHistory.DoubleClick += panelTransactionHistory_DoubleClick;
+            panelTransactionHistory.MouseLeave += panelTransactionHistory_MouseLeave;
+            panelTransactionHistory.MouseMove += panelTransactionHistory_MouseMove;
             // 
             // tabPageStoreNetwork
             // 
-            this.tabPageStoreNetwork.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(77)))), ((int)(((byte)(104)))), ((int)(((byte)(145)))));
-            this.tabPageStoreNetwork.Location = new System.Drawing.Point(4, 34);
-            this.tabPageStoreNetwork.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.tabPageStoreNetwork.Name = "tabPageStoreNetwork";
-            this.tabPageStoreNetwork.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.tabPageStoreNetwork.Size = new System.Drawing.Size(1369, 546);
-            this.tabPageStoreNetwork.TabIndex = 3;
-            this.tabPageStoreNetwork.Text = "TABPAGE_STORE_NETWORK_TEXT";
+            tabPageStoreNetwork.BackColor = System.Drawing.Color.FromArgb(77, 104, 145);
+            tabPageStoreNetwork.Location = new System.Drawing.Point(4, 34);
+            tabPageStoreNetwork.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabPageStoreNetwork.Name = "tabPageStoreNetwork";
+            tabPageStoreNetwork.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabPageStoreNetwork.Size = new System.Drawing.Size(1369, 546);
+            tabPageStoreNetwork.TabIndex = 3;
+            tabPageStoreNetwork.Text = "TABPAGE_STORE_NETWORK_TEXT";
             // 
             // labelWalletAddressReceiveTransactionTitle
             // 
-            this.labelWalletAddressReceiveTransactionTitle.AutoSize = true;
-            this.labelWalletAddressReceiveTransactionTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.labelWalletAddressReceiveTransactionTitle.ForeColor = System.Drawing.Color.Ivory;
-            this.labelWalletAddressReceiveTransactionTitle.Location = new System.Drawing.Point(477, 113);
-            this.labelWalletAddressReceiveTransactionTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelWalletAddressReceiveTransactionTitle.Name = "labelWalletAddressReceiveTransactionTitle";
-            this.labelWalletAddressReceiveTransactionTitle.Size = new System.Drawing.Size(423, 13);
-            this.labelWalletAddressReceiveTransactionTitle.TabIndex = 1;
-            this.labelWalletAddressReceiveTransactionTitle.Text = "LABEL_MAIN_INTERFACE_WALLET_ADDRESS_RECEIVE_TITLE_TEXT";
+            labelWalletAddressReceiveTransactionTitle.AutoSize = true;
+            labelWalletAddressReceiveTransactionTitle.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            labelWalletAddressReceiveTransactionTitle.ForeColor = System.Drawing.Color.Ivory;
+            labelWalletAddressReceiveTransactionTitle.Location = new System.Drawing.Point(477, 113);
+            labelWalletAddressReceiveTransactionTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelWalletAddressReceiveTransactionTitle.Name = "labelWalletAddressReceiveTransactionTitle";
+            labelWalletAddressReceiveTransactionTitle.Size = new System.Drawing.Size(423, 13);
+            labelWalletAddressReceiveTransactionTitle.TabIndex = 1;
+            labelWalletAddressReceiveTransactionTitle.Text = "LABEL_MAIN_INTERFACE_WALLET_ADDRESS_RECEIVE_TITLE_TEXT";
             // 
             // labelWalletAddressReceiveTransaction
             // 
-            this.labelWalletAddressReceiveTransaction.AutoSize = true;
-            this.labelWalletAddressReceiveTransaction.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.labelWalletAddressReceiveTransaction.ForeColor = System.Drawing.Color.Ivory;
-            this.labelWalletAddressReceiveTransaction.Location = new System.Drawing.Point(574, 126);
-            this.labelWalletAddressReceiveTransaction.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.labelWalletAddressReceiveTransaction.Name = "labelWalletAddressReceiveTransaction";
-            this.labelWalletAddressReceiveTransaction.Size = new System.Drawing.Size(199, 15);
-            this.labelWalletAddressReceiveTransaction.TabIndex = 2;
-            this.labelWalletAddressReceiveTransaction.Text = "WALLET_ADDRESS_RECEIVE";
-            this.labelWalletAddressReceiveTransaction.Click += new System.EventHandler(this.labelWalletAddressReceiveTransaction_Click);
+            labelWalletAddressReceiveTransaction.AutoSize = true;
+            labelWalletAddressReceiveTransaction.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            labelWalletAddressReceiveTransaction.ForeColor = System.Drawing.Color.Ivory;
+            labelWalletAddressReceiveTransaction.Location = new System.Drawing.Point(574, 126);
+            labelWalletAddressReceiveTransaction.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelWalletAddressReceiveTransaction.Name = "labelWalletAddressReceiveTransaction";
+            labelWalletAddressReceiveTransaction.Size = new System.Drawing.Size(199, 15);
+            labelWalletAddressReceiveTransaction.TabIndex = 2;
+            labelWalletAddressReceiveTransaction.Text = "WALLET_ADDRESS_RECEIVE";
+            labelWalletAddressReceiveTransaction.Click += labelWalletAddressReceiveTransaction_Click;
             // 
             // progressBarMainInterfaceSyncProgress
             // 
-            this.progressBarMainInterfaceSyncProgress.BackColor = System.Drawing.Color.GhostWhite;
-            this.progressBarMainInterfaceSyncProgress.ForeColor = System.Drawing.Color.Black;
-            this.progressBarMainInterfaceSyncProgress.Location = new System.Drawing.Point(492, 751);
-            this.progressBarMainInterfaceSyncProgress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.progressBarMainInterfaceSyncProgress.Maximum = 10000;
-            this.progressBarMainInterfaceSyncProgress.Name = "progressBarMainInterfaceSyncProgress";
-            this.progressBarMainInterfaceSyncProgress.Size = new System.Drawing.Size(408, 23);
-            this.progressBarMainInterfaceSyncProgress.Step = 1;
-            this.progressBarMainInterfaceSyncProgress.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
-            this.progressBarMainInterfaceSyncProgress.TabIndex = 5;
+            progressBarMainInterfaceSyncProgress.BackColor = System.Drawing.Color.GhostWhite;
+            progressBarMainInterfaceSyncProgress.ForeColor = System.Drawing.Color.Black;
+            progressBarMainInterfaceSyncProgress.Location = new System.Drawing.Point(492, 751);
+            progressBarMainInterfaceSyncProgress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            progressBarMainInterfaceSyncProgress.Maximum = 10000;
+            progressBarMainInterfaceSyncProgress.Name = "progressBarMainInterfaceSyncProgress";
+            progressBarMainInterfaceSyncProgress.Size = new System.Drawing.Size(408, 23);
+            progressBarMainInterfaceSyncProgress.Step = 1;
+            progressBarMainInterfaceSyncProgress.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            progressBarMainInterfaceSyncProgress.TabIndex = 5;
             // 
             // ClassWalletMainInterfaceForm
             // 
-            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(49)))), ((int)(((byte)(55)))), ((int)(((byte)(64)))));
-            this.ClientSize = new System.Drawing.Size(1377, 781);
-            this.Controls.Add(this.labelMainInterfaceSyncProgress);
-            this.Controls.Add(this.progressBarMainInterfaceSyncProgress);
-            this.Controls.Add(this.pictureBoxLogo);
-            this.Controls.Add(this.labelWalletAddressReceiveTransaction);
-            this.Controls.Add(this.labelWalletAddressReceiveTransactionTitle);
-            this.Controls.Add(this.labelWalletOpened);
-            this.Controls.Add(this.comboBoxListWalletFile);
-            this.Controls.Add(this.tabControlWallet);
-            this.Controls.Add(this.menuStripGeneralWallet);
-            this.DoubleBuffered = true;
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
-            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MainMenuStrip = this.menuStripGeneralWallet;
-            this.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.MaximizeBox = false;
-            this.Name = "ClassWalletMainInterfaceForm";
-            this.Padding = new System.Windows.Forms.Padding(0, 0, 6, 0);
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "FORM_TITLE_MAIN_INTERFACE_TEXT";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ClassWalletMainInterfaceForm_FormClosing);
-            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.ClassWalletMainInterfaceForm_FormClosed);
-            this.Load += new System.EventHandler(this.ClassWalletMainInterfaceForm_Load);
-            this.Paint += new System.Windows.Forms.PaintEventHandler(this.ClassWalletMainInterfaceForm_Paint);
-            this.menuStripGeneralWallet.ResumeLayout(false);
-            this.menuStripGeneralWallet.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxLogo)).EndInit();
-            this.tabControlWallet.ResumeLayout(false);
-            this.tabPageOverview.ResumeLayout(false);
-            this.tabPageOverview.PerformLayout();
-            this.panelInternalNetworkStats.ResumeLayout(false);
-            this.panelInternalNetworkStats.PerformLayout();
-            this.panelRecentTransactions.ResumeLayout(false);
-            this.panelRecentTransactions.PerformLayout();
-            this.tabPageSendTransaction.ResumeLayout(false);
-            this.panelSendTransaction.ResumeLayout(false);
-            this.panelSendTransaction.PerformLayout();
-            this.panelSendTransactionDetails.ResumeLayout(false);
-            this.panelSendTransactionDetails.PerformLayout();
-            this.tabPageReceiveTransaction.ResumeLayout(false);
-            this.tabPageReceiveTransaction.PerformLayout();
-            this.tabPageTransactionHistory.ResumeLayout(false);
-            this.tabPageTransactionHistory.PerformLayout();
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            BackColor = System.Drawing.Color.FromArgb(49, 55, 64);
+            ClientSize = new System.Drawing.Size(1377, 781);
+            Controls.Add(labelMainInterfaceSyncProgress);
+            Controls.Add(progressBarMainInterfaceSyncProgress);
+            Controls.Add(pictureBoxLogo);
+            Controls.Add(labelWalletAddressReceiveTransaction);
+            Controls.Add(labelWalletAddressReceiveTransactionTitle);
+            Controls.Add(labelWalletOpened);
+            Controls.Add(comboBoxListWalletFile);
+            Controls.Add(tabControlWallet);
+            Controls.Add(menuStripGeneralWallet);
+            DoubleBuffered = true;
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
+            Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+            MainMenuStrip = menuStripGeneralWallet;
+            Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            MaximizeBox = false;
+            Name = "ClassWalletMainInterfaceForm";
+            Padding = new System.Windows.Forms.Padding(0, 0, 6, 0);
+            StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            Text = "FORM_TITLE_MAIN_INTERFACE_TEXT";
+            FormClosing += ClassWalletMainInterfaceForm_FormClosing;
+            FormClosed += ClassWalletMainInterfaceForm_FormClosed;
+            Load += ClassWalletMainInterfaceForm_Load;
+            Paint += ClassWalletMainInterfaceForm_Paint;
+            menuStripGeneralWallet.ResumeLayout(false);
+            menuStripGeneralWallet.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxLogo).EndInit();
+            tabControlWallet.ResumeLayout(false);
+            tabPageOverview.ResumeLayout(false);
+            tabPageOverview.PerformLayout();
+            panelInternalNetworkStats.ResumeLayout(false);
+            panelInternalNetworkStats.PerformLayout();
+            panelRecentTransactions.ResumeLayout(false);
+            panelRecentTransactions.PerformLayout();
+            tabPageSendTransaction.ResumeLayout(false);
+            panelSendTransaction.ResumeLayout(false);
+            panelSendTransaction.PerformLayout();
+            panelSendTransactionDetails.ResumeLayout(false);
+            panelSendTransactionDetails.PerformLayout();
+            tabPageReceiveTransaction.ResumeLayout(false);
+            tabPageReceiveTransaction.PerformLayout();
+            tabPageTransactionHistory.ResumeLayout(false);
+            tabPageTransactionHistory.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
         }
 
-#endregion
+        #endregion
 
         private System.Windows.Forms.MenuStrip menuStripGeneralWallet;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;

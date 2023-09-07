@@ -663,6 +663,74 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                         }
                         break;
+                    case ClassPeerEnumPacketSend.ASK_BLOCK_DATA_BY_RANGE:
+                        {
+                            ClassPeerPacketSendAskBlockDataByRange packetSendAskBlockDataByRange = await DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskBlockDataByRange>(packetSendObject, peerObject);
+
+                            if (packetSendAskBlockDataByRange == null)
+                                return ClassPeerNetworkClientServerHandlePacketEnumStatus.DECRYPT_PACKET_CONTENT_FAILED;
+
+                            if (!ClassUtility.CheckPacketTimestamp(packetSendAskBlockDataByRange.PacketTimestamp, _peerNetworkSettingObject.PeerMaxTimestampDelayPacket, _peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
+                                return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET_TIMESTAMP;
+
+                            bool containRange = true;
+
+                            for(long i = packetSendAskBlockDataByRange.BlockHeightStart; i < packetSendAskBlockDataByRange.BlockHeightEnd; i++)
+                            {
+                                if (!ClassBlockchainStats.ContainsBlockHeight(i))
+                                {
+                                    containRange = false;
+                                    break;
+                                }
+                            }
+
+                            if (!containRange)
+                            {
+                                await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                {
+                                    PacketOrder = ClassPeerEnumPacketResponse.NOT_YET_SYNCED,
+                                    PacketContent = string.Empty,
+                                }, peerObject, false);
+                            }
+                            else
+                            {
+
+                                ClassPeerPacketSendBlockDataRange packetSendBlockDataRange = new ClassPeerPacketSendBlockDataRange()
+                                {
+                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
+                                };
+
+                                for (long i = packetSendAskBlockDataByRange.BlockHeightStart; i < packetSendAskBlockDataByRange.BlockHeightEnd; i++)
+                                {
+
+                                    ClassBlockObject blockObject = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(i, true, false, _cancellationTokenListenPeerPacket);
+
+                                    if (blockObject != null)
+                                        packetSendBlockDataRange.ListBlockObject.Add(blockObject);
+                                    else
+                                        return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
+
+
+                                    SignPacketWithNumericPrivateKey(packetSendBlockDataRange, out string hashNumeric, out string signatureNumeric);
+
+                                    packetSendBlockDataRange.PacketNumericHash = hashNumeric;
+                                    packetSendBlockDataRange.PacketNumericSignature = signatureNumeric;
+
+                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                    {
+                                        PacketOrder = ClassPeerEnumPacketResponse.SEND_BLOCK_DATA_BY_RANGE,
+                                        PacketContent = ClassUtility.SerializeData(packetSendBlockDataRange)
+                                    }, peerObject, true))
+                                    {
+                                        ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
+
+                                        return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
+                                    }
+
+                                }
+                            }
+                        }
+                        break;
                     case ClassPeerEnumPacketSend.ASK_BLOCK_DATA:
                         {
                             ClassPeerPacketSendAskBlockData packetSendAskBlockData = await DecryptDeserializePacketContentPeer<ClassPeerPacketSendAskBlockData>(packetSendObject, peerObject);
@@ -675,35 +743,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                             if (ClassBlockchainStats.ContainsBlockHeight(packetSendAskBlockData.BlockHeight))
                             {
-                                ClassBlockObject blockObject = await ClassBlockchainStats.GetBlockInformationData(packetSendAskBlockData.BlockHeight, _cancellationTokenListenPeerPacket);
+                                ClassBlockObject blockObject = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(packetSendAskBlockData.BlockHeight, true, false, _cancellationTokenListenPeerPacket);
 
                                 if (blockObject != null)
                                 {
-                                    blockObject.DeepCloneBlockObject(false, out ClassBlockObject blockObjectCopy);
-                                    blockObjectCopy.BlockTransactionFullyConfirmed = false;
-                                    blockObjectCopy.BlockUnlockValid = false;
-                                    blockObjectCopy.BlockNetworkAmountConfirmations = 0;
-                                    blockObjectCopy.BlockSlowNetworkAmountConfirmations = 0;
-                                    blockObjectCopy.BlockLastHeightTransactionConfirmationDone = 0;
-                                    blockObjectCopy.BlockTotalTaskTransactionConfirmationDone = 0;
-                                    blockObjectCopy.BlockTransactionConfirmationCheckTaskDone = false;
-                                    blockObjectCopy.BlockTotalTaskTransactionConfirmationDone = 0;
-                                    blockObjectCopy.BlockTransactionCountInSync = blockObject.TotalTransaction;
-                                    blockObjectCopy.TotalCoinConfirmed = 0;
-                                    blockObjectCopy.TotalCoinPending = 0;
-                                    blockObjectCopy.TotalFee = 0;
-                                    blockObjectCopy.TotalTransactionConfirmed = 0;
-                                    blockObjectCopy.TotalTransaction = blockObject.TotalTransaction;
 
                                     ClassPeerPacketSendBlockData packetSendBlockData = new ClassPeerPacketSendBlockData()
                                     {
-                                        BlockData = blockObjectCopy,
+                                        BlockData = blockObject,
                                         PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                     };
-
-                                    if (blockObject.BlockHeight > BlockchainSetting.GenesisBlockHeight && blockObject.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
-                                        packetSendBlockData.BlockData.TimestampFound = blockObject.BlockMiningPowShareUnlockObject.Timestamp;
-
 
                                     SignPacketWithNumericPrivateKey(packetSendBlockData, out string hashNumeric, out string signatureNumeric);
 
@@ -901,7 +950,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                             {
                                                 #region Generate the list of transaction asked by range.
 
-                                                SortedDictionary<string, ClassTransactionObject> transactionListRangeToSend = new SortedDictionary<string, ClassTransactionObject>();
+                                                Dictionary<string, ClassTransactionObject> transactionListRangeToSend = new Dictionary<string, ClassTransactionObject>();
 
                                                 foreach (var transactionPair in transactionList.GetList.Skip(packetSendAskBlockTransactionDataByRange.TransactionIdStartRange).Take(packetSendAskBlockTransactionDataByRange.TransactionIdEndRange - packetSendAskBlockTransactionDataByRange.TransactionIdStartRange))
                                                     transactionListRangeToSend.Add(transactionPair.Key, transactionPair.Value.TransactionObject);

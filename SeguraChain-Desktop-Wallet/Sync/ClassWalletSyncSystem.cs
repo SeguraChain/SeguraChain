@@ -1142,6 +1142,9 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                                     if (cancellation.IsCancellationRequested)
                                                         break;
 
+                                                    if (transactionPair.Value.TransactionObject == null)
+                                                        continue;
+
                                                     if (transactionPair.Value.TransactionObject.WalletAddressReceiver == walletAddress || transactionPair.Value.TransactionObject.WalletAddressSender == walletAddress)
                                                     {
                                                         if (!ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletTransactionList.ContainsKey(blockHeight))

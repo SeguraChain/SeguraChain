@@ -809,7 +809,7 @@ namespace SeguraChain_Desktop_Wallet
 
                                     if (duplicatedFound)
                                         break;
-                                    
+
                                 }
                             }
 
@@ -1041,7 +1041,7 @@ namespace SeguraChain_Desktop_Wallet
                                     labelSendTransactionAvailableBalanceText.Text = _walletMainFormLanguageObject.LABEL_SEND_TRANSACTION_AVAILABLE_BALANCE_TEXT + _walletMainFormLanguageObject.TEXT_SPACE + ClassTransactionUtility.GetFormattedAmountFromBigInteger(walletAvailableBalanceBigInteger) + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinTickerName;
 
                                 }
-                                catch(Exception error)
+                                catch (Exception error)
                                 {
 #if DEBUG
                                     Debug.WriteLine("Error the wallet balance for " + _currentWalletFilename + " cannot be updated. Exception: " + error.Message);
@@ -1070,7 +1070,7 @@ namespace SeguraChain_Desktop_Wallet
                                 }
 
 #if DEBUG
-                                Debug.WriteLine("Wallet balance for "+_currentWalletFilename+" in pending to complete the update..");
+                                Debug.WriteLine("Wallet balance for " + _currentWalletFilename + " in pending to complete the update..");
 
 #endif
                             }
@@ -1492,7 +1492,7 @@ namespace SeguraChain_Desktop_Wallet
             };
 
             BeginInvoke(invoke);
-            
+
         }
 
 
@@ -1516,12 +1516,12 @@ namespace SeguraChain_Desktop_Wallet
             {
                 if (_walletTransactionHistorySystemInstance != null)
                 {
-  
+
                     try
                     {
                         if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
                         {
-                           long countTransaction = _walletTransactionHistorySystemInstance.GetTransactionHistoryCountOfWalletFileOpened(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations);
+                            long countTransaction = _walletTransactionHistorySystemInstance.GetTransactionHistoryCountOfWalletFileOpened(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations);
 
                             if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out double percentProgress))
                             {
@@ -1541,7 +1541,7 @@ namespace SeguraChain_Desktop_Wallet
 
                             }
                             else
-                                _walletTransactionHistorySystemInstance.PaintTransactionLoadingAnimationToTransactionHistory(_currentWalletFilename, 
+                                _walletTransactionHistorySystemInstance.PaintTransactionLoadingAnimationToTransactionHistory(_currentWalletFilename,
                                     countTransaction > 0 ? _walletMainFormLanguageObject.PANEL_TRANSACTION_HISTORY_ON_LOAD_TEXT : _walletMainFormLanguageObject.PANEL_TRANSACTION_HISTORY_NO_TRANSACTION_TEXT, percentProgress, e.Graphics, panelTransactionHistory, countTransaction == 0);
                         }
                         else
@@ -1906,7 +1906,7 @@ namespace SeguraChain_Desktop_Wallet
         {
             Task.Factory.StartNew(async () =>
             {
-                while(true)
+                while (true)
                 {
                     panelInternalRecentTransactions.Refresh();
                     await Task.Delay(1000);
@@ -1956,7 +1956,7 @@ namespace SeguraChain_Desktop_Wallet
             }
             catch
             {
-                e.Graphics.Clear(ClassWalletDefaultSetting.DefaultRecentTransactionBackColor);
+               // e.Graphics.Clear(ClassWalletDefaultSetting.DefaultRecentTransactionBackColor);
             }
         }
 
@@ -2181,10 +2181,10 @@ namespace SeguraChain_Desktop_Wallet
                     UpdateTransactionConfirmationTimeEstimated();
                     try
                     {
-                        Task.Factory.StartNew(async () => 
+                        Task.Factory.StartNew(async () =>
                         {
                             await UpdateTransactionFeeCostEstimated();
-                        },_cancellationTokenTaskUpdateWalletContentInformations.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+                        }, _cancellationTokenTaskUpdateWalletContentInformations.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
                     }
                     catch
                     {
@@ -2225,7 +2225,7 @@ namespace SeguraChain_Desktop_Wallet
 
                     if (int.TryParse(textBoxSendTransactionConfirmationsCountTarget.Text, out int totalConfirmationsTarget))
                     {
-                         invoke = () => textBoxSendTransactionConfirmationsCountTarget.ForeColor = Color.Black;
+                        invoke = () => textBoxSendTransactionConfirmationsCountTarget.ForeColor = Color.Black;
                         BeginInvoke(invoke);
 
                         if (totalConfirmationsTarget >= BlockchainSetting.TransactionMandatoryMinBlockTransactionConfirmations && totalConfirmationsTarget <= BlockchainSetting.TransactionMandatoryMaxBlockTransactionConfirmations)

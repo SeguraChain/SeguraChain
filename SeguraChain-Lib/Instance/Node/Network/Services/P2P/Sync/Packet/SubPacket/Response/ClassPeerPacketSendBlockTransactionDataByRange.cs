@@ -6,7 +6,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet.SubPack
     public class ClassPeerPacketSendBlockTransactionDataByRange
     {
         public long BlockHeight;
-        public SortedDictionary<string, ClassTransactionObject> ListTransactionObject;
+        public Dictionary<string, ClassTransactionObject> ListTransactionObject;
         public long PacketTimestamp;
         public string PacketNumericHash;
         public string PacketNumericSignature;

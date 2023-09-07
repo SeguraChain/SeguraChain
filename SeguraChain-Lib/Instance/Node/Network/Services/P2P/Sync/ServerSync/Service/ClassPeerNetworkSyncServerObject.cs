@@ -246,7 +246,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                         //Debug.WriteLine(handlePeerClientStatus + " | Random ID: "+ randomId+ " | Count: " + _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.Count);
                         //_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
 
-
                         
                         if (handlePeerClientStatus)
                              _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
@@ -255,6 +254,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                             _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].Dispose();
                             return ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT;
                         }
+                        
                     }
                     finally
                     {

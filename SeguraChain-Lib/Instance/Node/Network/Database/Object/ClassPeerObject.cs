@@ -29,6 +29,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         public bool PeerIsPublic;
         public string PeerNumericPublicKey; // Used by peer with the seed node rank.
         public long PeerTimestampSignatureWhitelist; // Used to know when it's necessary to sign a packet.
+        public long PeerClientLastBlockHeight;
 
         #endregion
 

@@ -621,7 +621,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         /// <returns></returns>
         public async Task<ClassBlockObject> GetBlockInformationDataStrategy(long blockHeight, CancellationTokenSource cancellation)
         {
-            return blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight ? await GetBlockMirrorObject(blockHeight, cancellation) : null;
+            return blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight ? await GetBlockMirrorObject(blockHeight, cancellation) : await GetBlockDataStrategy(blockHeight, true, false, cancellation);
         }
 
         /// <summary>
@@ -3082,7 +3082,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                 else
                                     listTxFromCacheOrMemory = new DisposableList<ClassBlockTransaction>(false, 0, (await GetTransactionListFromBlockHeightTargetFromMemoryDataCache(blockHeight, false, cancellation))?.GetList.Values.ToArray());
 
-                                foreach (ClassBlockTransaction blockTransaction in listTxFromCacheOrMemory.GetList.OrderBy(x => x.TransactionObject.TimestampSend))
+                                foreach (ClassBlockTransaction blockTransaction in listTxFromCacheOrMemory.GetList.FindAll(x => x.TransactionObject != null).OrderBy(x => x.TransactionObject.TimestampSend))
                                 {
                                     if (cancellation.IsCancellationRequested)
                                         break;

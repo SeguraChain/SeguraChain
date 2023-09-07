@@ -946,203 +946,205 @@ namespace SeguraChain_Test_Tool
 
                         string finalTransactionHash = ClassBlockUtility.GetFinalTransactionHashList(new List<string>() { blockTransaction.TransactionHash }, string.Empty);
 
-                        string blockHash = ClassBlockUtility.GenerateBlockHash(blockHeight, blockDifficulty, 1, finalTransactionHash, BlockchainSetting.WalletAddressDev(0));
-
-                        if (ClassBlockchainDatabase.BlockchainMemoryManagement.Add(blockHeight, new ClassBlockObject(blockHeight, blockDifficulty, blockHash, timestampCreate, ClassUtility.GetCurrentTimestampInSecond(), ClassBlockEnumStatus.UNLOCKED, false, false), CacheBlockMemoryInsertEnumType.INSERT_IN_ACTIVE_MEMORY_OBJECT, new CancellationTokenSource()).Result)
+                        if (ClassBlockUtility.GenerateBlockHash(blockHeight, blockDifficulty, 1, finalTransactionHash, BlockchainSetting.WalletAddressDev(0), out string blockHash))
                         {
-                            ClassBlockchainDatabase.BlockchainMemoryManagement[blockHeight, null].BlockTransactions.Add(blockTransaction.TransactionHash, new ClassBlockTransaction(0, blockTransaction)
+
+                            if (ClassBlockchainDatabase.BlockchainMemoryManagement.Add(blockHeight, new ClassBlockObject(blockHeight, blockDifficulty, blockHash, timestampCreate, ClassUtility.GetCurrentTimestampInSecond(), ClassBlockEnumStatus.UNLOCKED, true, false) { BlockNetworkAmountConfirmations = BlockchainSetting.BlockAmountNetworkConfirmations, BlockUnlockValid = true}, CacheBlockMemoryInsertEnumType.INSERT_IN_ACTIVE_MEMORY_OBJECT, new CancellationTokenSource()).Result)
                             {
-                                IndexInsert = 0,
-                                TransactionBlockHeightInsert = blockHeight,
-                                TransactionBlockHeightTarget = blockTransaction.BlockHeightTransactionConfirmationTarget,
-                                TransactionStatus = true,
-                                TransactionObject = blockTransaction,
-                            });
-
-                            ClassBlockchainDatabase.BlockchainMemoryManagement[blockHeight, null].BlockUnlockValid = false;
-                            ClassBlockchainDatabase.BlockchainMemoryManagement[blockHeight, null].BlockFinalHashTransaction = finalTransactionHash;
-
-                            ClassLog.SimpleWriteLine("Genesis block generated.", ConsoleColor.Green);
-                            ClassLog.SimpleWriteLine("Sign default mining setting object..", ConsoleColor.Yellow);
-
-                            ClassMiningPoWaCSettingObject miningPoWaCSettingObject = BlockchainSetting.DefaultMiningPocSettingObject;
-
-                            long miningSettingObjectTimestampSign = ClassUtility.GetCurrentTimestampInSecond();
-                            miningPoWaCSettingObject.MiningSettingTimestamp = miningSettingObjectTimestampSign;
-                            miningPoWaCSettingObject.MiningSettingContentHash = null;
-                            miningPoWaCSettingObject.MiningSettingContentHashSignature = null;
-                            miningPoWaCSettingObject.MiningSettingContentDevPublicKey = publicKey;
-
-                            string miningPoWacSettingObjectContentHash = ClassUtility.GenerateSha3512FromString(ClassUtility.SerializeData(miningPoWaCSettingObject));
-                            string miningPoWacSettingObjectContentSignature = ClassWalletUtility.WalletGenerateSignature(privateKey, miningPoWacSettingObjectContentHash);
-
-
-                            List<string> blockchainData = new List<string>();
-
-                            string line;
-                            using (StreamReader reader = new StreamReader(blockchainSettingFilePath))
-                            {
-                                while ((line = reader.ReadLine()) != null)
-                                    blockchainData.Add(line);
-                            }
-
-                            using (StreamWriter writer = new StreamWriter(blockchainSettingFilePath))
-                            {
-                                foreach (string blockchainLine in blockchainData)
+                                ClassBlockchainDatabase.BlockchainMemoryManagement[blockHeight, null].BlockTransactions.Add(blockTransaction.TransactionHash, new ClassBlockTransaction(0, blockTransaction)
                                 {
+                                    IndexInsert = 0,
+                                    TransactionBlockHeightInsert = blockHeight,
+                                    TransactionBlockHeightTarget = blockTransaction.BlockHeightTransactionConfirmationTarget,
+                                    TransactionStatus = true,
+                                    TransactionObject = blockTransaction,
+                                });
+
+                                ClassBlockchainDatabase.BlockchainMemoryManagement[blockHeight, null].BlockUnlockValid = false;
+                                ClassBlockchainDatabase.BlockchainMemoryManagement[blockHeight, null].BlockFinalHashTransaction = finalTransactionHash;
+
+                                ClassLog.SimpleWriteLine("Genesis block generated.", ConsoleColor.Green);
+                                ClassLog.SimpleWriteLine("Sign default mining setting object..", ConsoleColor.Yellow);
+
+                                ClassMiningPoWaCSettingObject miningPoWaCSettingObject = BlockchainSetting.DefaultMiningPocSettingObject;
+
+                                long miningSettingObjectTimestampSign = ClassUtility.GetCurrentTimestampInSecond();
+                                miningPoWaCSettingObject.MiningSettingTimestamp = miningSettingObjectTimestampSign;
+                                miningPoWaCSettingObject.MiningSettingContentHash = null;
+                                miningPoWaCSettingObject.MiningSettingContentHashSignature = null;
+                                miningPoWaCSettingObject.MiningSettingContentDevPublicKey = publicKey;
+
+                                string miningPoWacSettingObjectContentHash = ClassUtility.GenerateSha3512FromString(ClassUtility.SerializeData(miningPoWaCSettingObject));
+                                string miningPoWacSettingObjectContentSignature = ClassWalletUtility.WalletGenerateSignature(privateKey, miningPoWacSettingObjectContentHash);
 
 
-                                    #region Transaction Hash of the Genesis block amount (signed by the wallet private key of the developer).
+                                List<string> blockchainData = new List<string>();
 
-                                    // Starting point.
-                                    if (blockchainLine.Contains("GenesisBlockFinalTransactionHash"))
-                                        writer.WriteLine("\t\tpublic const string GenesisBlockFinalTransactionHash =\"" + finalTransactionHash + "\";");
+                                string line;
+                                using (StreamReader reader = new StreamReader(blockchainSettingFilePath))
+                                {
+                                    while ((line = reader.ReadLine()) != null)
+                                        blockchainData.Add(line);
+                                }
 
-                                    #endregion
-
-                                    #region Cryptocurrency name.
-                                    else if (blockchainLine.Contains("public const string CoinName ="))
-                                        writer.WriteLine("\t\tpublic const string CoinName = \"" + coinName + "\";");
-                                    #endregion
-
-
-                                    #region Cryptocurrency ticker name.
-                                    else if (blockchainLine.Contains("public const string CoinTickerName ="))
-                                        writer.WriteLine("\t\tpublic const string CoinTickerName = \"" + coinTicker + "\";");
-                                    #endregion
-                                    #region Default wallet public key dev.
-
-                                    else if (blockchainLine.Contains("DefaultWalletAddressDevPublicKey"))
-                                        writer.WriteLine("\t\tpublic const string DefaultWalletAddressDevPublicKey =\"" + publicKey + "\";");
-
-                                    #endregion
-                                    #region Default wallet address dev.
-
-                                    else if (blockchainLine.Contains("DefaultWalletAddressDev"))
-                                        writer.WriteLine("\t\tpublic const string DefaultWalletAddressDev =\"" + walletAddress + "\";");
-
-                                    #endregion
-
-                                    #region Default nodes. (Scalled by other future public nodes (port opened) connected to default).
-
-
-                                    else if (blockchainLine.Contains("new Dictionary<string, int>()"))
+                                using (StreamWriter writer = new StreamWriter(blockchainSettingFilePath))
+                                {
+                                    foreach (string blockchainLine in blockchainData)
                                     {
-                                        ClassLog.SimpleWriteLine("Starting the peers (nodes) default listing: ");
-                                        ClassLog.SimpleWriteLine("[Note] - You can insert more default peers on the BlockchainSetting.cs", ConsoleColor.Red);
 
 
-                                        while (true)
+                                        #region Transaction Hash of the Genesis block amount (signed by the wallet private key of the developer).
+
+                                        // Starting point.
+                                        if (blockchainLine.Contains("GenesisBlockFinalTransactionHash"))
+                                            writer.WriteLine("\t\tpublic const string GenesisBlockFinalTransactionHash =\"" + finalTransactionHash + "\";");
+
+                                        #endregion
+
+                                        #region Cryptocurrency name.
+                                        else if (blockchainLine.Contains("public const string CoinName ="))
+                                            writer.WriteLine("\t\tpublic const string CoinName = \"" + coinName + "\";");
+                                        #endregion
+
+
+                                        #region Cryptocurrency ticker name.
+                                        else if (blockchainLine.Contains("public const string CoinTickerName ="))
+                                            writer.WriteLine("\t\tpublic const string CoinTickerName = \"" + coinTicker + "\";");
+                                        #endregion
+                                        #region Default wallet public key dev.
+
+                                        else if (blockchainLine.Contains("DefaultWalletAddressDevPublicKey"))
+                                            writer.WriteLine("\t\tpublic const string DefaultWalletAddressDevPublicKey =\"" + publicKey + "\";");
+
+                                        #endregion
+                                        #region Default wallet address dev.
+
+                                        else if (blockchainLine.Contains("DefaultWalletAddressDev"))
+                                            writer.WriteLine("\t\tpublic const string DefaultWalletAddressDev =\"" + walletAddress + "\";");
+
+                                        #endregion
+
+                                        #region Default nodes. (Scalled by other future public nodes (port opened) connected to default).
+
+
+                                        else if (blockchainLine.Contains("new Dictionary<string, int>()"))
                                         {
-                                            Console.WriteLine("Please write a default peer IP: ");
+                                            ClassLog.SimpleWriteLine("Starting the peers (nodes) default listing: ");
+                                            ClassLog.SimpleWriteLine("[Note] - You can insert more default peers on the BlockchainSetting.cs", ConsoleColor.Red);
 
-                                            string peerIp = Console.ReadLine();
-
-                                            Console.WriteLine("Please write the default peer port: ");
-                                            int peerPort;
 
                                             while (true)
                                             {
-                                                if (!int.TryParse(Console.ReadLine(), out peerPort))
-                                                    Console.WriteLine("Input of the peer port is invalid, please try again:");
-                                                else if (peerPort < BlockchainSetting.PeerMinPort || peerPort > BlockchainSetting.PeerMaxPort)
-                                                    Console.WriteLine("The peer port is lower or above the range: [" + BlockchainSetting.PeerMinPort + "|" + BlockchainSetting.PeerMaxPort + "]");
-                                                else
+                                                Console.WriteLine("Please write a default peer IP: ");
+
+                                                string peerIp = Console.ReadLine();
+
+                                                Console.WriteLine("Please write the default peer port: ");
+                                                int peerPort;
+
+                                                while (true)
+                                                {
+                                                    if (!int.TryParse(Console.ReadLine(), out peerPort))
+                                                        Console.WriteLine("Input of the peer port is invalid, please try again:");
+                                                    else if (peerPort < BlockchainSetting.PeerMinPort || peerPort > BlockchainSetting.PeerMaxPort)
+                                                        Console.WriteLine("The peer port is lower or above the range: [" + BlockchainSetting.PeerMinPort + "|" + BlockchainSetting.PeerMaxPort + "]");
+                                                    else
+                                                        break;
+                                                }
+
+                                                Console.WriteLine("Insert a peer unique id (not mandatory), press enter to leave it empty:");
+                                                string peerUniqueId = Console.ReadLine();
+
+                                                string result = peerUniqueId.IsNullOrEmpty(false, out _) ?
+                                                    "\"D0BFF4A56F062828939E40E6DFD8A5EF58E28A10CB69E9E281C90802632D0345618CB5DA20736C2BAAC458A1EB5239F012621847B40F76C0CD10EA05CC4FD184\"" : "\"" + peerUniqueId + "\"";
+
+                                                // Key (IP) | Dictionary (unique id | port).
+                                                writer.WriteLine("\t\t\t{ \"" + peerIp + "\", new Dictionary<string, int>() { { " + result + ", " + peerPort + "} }},");
+
+                                                ClassLog.SimpleWriteLine("Do you have complete the listing of your default peers (nodes)", ConsoleColor.Yellow);
+
+                                                ClassLog.SimpleWriteLine("write \"exit\" to complete", ConsoleColor.DarkYellow);
+
+                                                if (Console.ReadLine() == "exit")
                                                     break;
+
+                                                Console.WriteLine("Continue the insert into 5 seconds.");
+                                                Thread.Sleep(5 * 1000);
                                             }
-
-                                            Console.WriteLine("Insert a peer unique id (not mandatory), press enter to leave it empty:");
-                                            string peerUniqueId = Console.ReadLine();
-
-                                            string result = peerUniqueId.IsNullOrEmpty(false, out _) ?
-                                                "\"D0BFF4A56F062828939E40E6DFD8A5EF58E28A10CB69E9E281C90802632D0345618CB5DA20736C2BAAC458A1EB5239F012621847B40F76C0CD10EA05CC4FD184\"" : "\"" + peerUniqueId + "\"";
-
-                                            // Key (IP) | Dictionary (unique id | port).
-                                            writer.WriteLine("\t\t\t{ \"" + peerIp + "\", new Dictionary<string, int>() { { " + result + ", " + peerPort + "} }},");
-
-                                            ClassLog.SimpleWriteLine("Do you have complete the listing of your default peers (nodes)", ConsoleColor.Yellow);
-
-                                            ClassLog.SimpleWriteLine("write \"exit\" to complete", ConsoleColor.DarkYellow);
-
-                                            if (Console.ReadLine() == "exit")
-                                                break;
-
-                                            Console.WriteLine("Continue the insert into 5 seconds.");
-                                            Thread.Sleep(5 * 1000);
                                         }
+
+                                        #endregion
+
+                                        #region Decimal amount.
+
+                                        else if (blockchainLine.Contains("public const long CoinDecimal"))
+                                            writer.WriteLine("\t\tpublic const long CoinDecimal = " + DoBigNumberSeparator(decimalAmount) + ";");
+
+                                        #endregion
+
+                                        else if (blockchainLine.Contains("public static readonly BigInteger MaxSupply"))
+                                            writer.WriteLine("\t\tpublic static readonly BigInteger MaxSupply = " + DoBigNumberSeparator(maxSupplyAmount) + " * CoinDecimal;");
+
+                                        #region Genesis block amount.
+
+                                        else if (blockchainLine.Contains("public static readonly BigInteger GenesisBlockAmount"))
+                                            writer.WriteLine("\t\tpublic static readonly BigInteger GenesisBlockAmount = " + DoBigNumberSeparator(genesisBlockAmount) + " * CoinDecimal; // The genesis block amount reward has pre-mining.");
+
+                                        #endregion
+
+                                        #region Block reward.
+
+                                        else if (blockchainLine.Contains("public static readonly BigInteger BlockRewardStatic"))
+                                            writer.WriteLine("\t\tpublic static readonly BigInteger BlockRewardStatic = " + DoBigNumberSeparator(blockReward) + " * CoinDecimal;");
+
+                                        #endregion
+
+                                        #region Blockchain database setting.
+
+                                        else if (blockchainLine.Contains("public const bool BlockchainDefaultEnableCompressingDatabase"))
+                                            writer.WriteLine("\t\tpublic const bool BlockchainDefaultEnableCompressingDatabase = " + useCompressedMode.ToString().ToLower() + ";");
+
+                                        else if (blockchainLine.Contains("public const bool BlockchainDefaultDataFormatIsJson"))
+                                            writer.WriteLine("\t\tpublic const bool BlockchainDefaultDataFormatIsJson = " + useJson.ToString().ToLower() + ";");
+
+                                        #endregion
+                                        else
+                                            writer.WriteLine(blockchainLine);
                                     }
-
-                                    #endregion
-
-                                    #region Decimal amount.
-
-                                    else if (blockchainLine.Contains("public const long CoinDecimal"))
-                                        writer.WriteLine("\t\tpublic const long CoinDecimal = " + DoBigNumberSeparator(decimalAmount) + ";");
-
-                                    #endregion
-
-                                    else if (blockchainLine.Contains("public static readonly BigInteger MaxSupply"))
-                                        writer.WriteLine("\t\tpublic static readonly BigInteger MaxSupply = " + DoBigNumberSeparator(maxSupplyAmount) + " * CoinDecimal;");
-
-                                    #region Genesis block amount.
-
-                                    else if (blockchainLine.Contains("public static readonly BigInteger GenesisBlockAmount"))
-                                        writer.WriteLine("\t\tpublic static readonly BigInteger GenesisBlockAmount = " + DoBigNumberSeparator(genesisBlockAmount) + " * CoinDecimal; // The genesis block amount reward has pre-mining.");
-
-                                    #endregion
-
-                                    #region Block reward.
-
-                                    else if (blockchainLine.Contains("public static readonly BigInteger BlockRewardStatic"))
-                                        writer.WriteLine("\t\tpublic static readonly BigInteger BlockRewardStatic = " + DoBigNumberSeparator(blockReward) + " * CoinDecimal;");
-
-                                    #endregion
-
-                                    #region Blockchain database setting.
-
-                                    else if (blockchainLine.Contains("public const bool BlockchainDefaultEnableCompressingDatabase"))
-                                        writer.WriteLine("\t\tpublic const bool BlockchainDefaultEnableCompressingDatabase = " + useCompressedMode.ToString().ToLower() + ";");
-
-                                    else if (blockchainLine.Contains("public const bool BlockchainDefaultDataFormatIsJson"))
-                                        writer.WriteLine("\t\tpublic const bool BlockchainDefaultDataFormatIsJson = " + useJson.ToString().ToLower() + ";");
-
-                                    #endregion
-                                    else
-                                        writer.WriteLine(blockchainLine);
                                 }
-                            }
 
 
 
-                            List<string> miningSettingContent = new List<string>();
+                                List<string> miningSettingContent = new List<string>();
 
-                            line = string.Empty;
-                            using (StreamReader reader = new StreamReader(miningSettingFilePath))
-                            {
-                                while ((line = reader.ReadLine()) != null)
-                                    miningSettingContent.Add(line);
-                            }
-
-                            using (StreamWriter writer = new StreamWriter(miningSettingFilePath))
-                            {
-                                foreach (string miningLine in miningSettingContent)
+                                line = string.Empty;
+                                using (StreamReader reader = new StreamReader(miningSettingFilePath))
                                 {
-                                    if (miningLine.Contains("MiningSettingTimestamp ="))
-                                        writer.WriteLine("\t\t\tMiningSettingTimestamp = " + miningSettingObjectTimestampSign + ";");
-                                    else if (miningLine.Contains("MiningSettingContentHash ="))
-                                        writer.WriteLine("\t\t\tMiningSettingContentHash = \"" + miningPoWacSettingObjectContentHash + "\";");
-                                    else if (miningLine.Contains("MiningSettingContentHashSignature ="))
-                                        writer.WriteLine("\t\t\tMiningSettingContentHashSignature = \"" + miningPoWacSettingObjectContentSignature + "\";");
-                                    else if (miningLine.Contains("MiningSettingContentDevPublicKey ="))
-                                        writer.WriteLine("\t\t\tMiningSettingContentDevPublicKey = \"" + publicKey + "\";");
-                                    else
-                                        writer.WriteLine(miningLine);
+                                    while ((line = reader.ReadLine()) != null)
+                                        miningSettingContent.Add(line);
                                 }
+
+                                using (StreamWriter writer = new StreamWriter(miningSettingFilePath))
+                                {
+                                    foreach (string miningLine in miningSettingContent)
+                                    {
+                                        if (miningLine.Contains("MiningSettingTimestamp ="))
+                                            writer.WriteLine("\t\t\tMiningSettingTimestamp = " + miningSettingObjectTimestampSign + ";");
+                                        else if (miningLine.Contains("MiningSettingContentHash ="))
+                                            writer.WriteLine("\t\t\tMiningSettingContentHash = \"" + miningPoWacSettingObjectContentHash + "\";");
+                                        else if (miningLine.Contains("MiningSettingContentHashSignature ="))
+                                            writer.WriteLine("\t\t\tMiningSettingContentHashSignature = \"" + miningPoWacSettingObjectContentSignature + "\";");
+                                        else if (miningLine.Contains("MiningSettingContentDevPublicKey ="))
+                                            writer.WriteLine("\t\t\tMiningSettingContentDevPublicKey = \"" + publicKey + "\";");
+                                        else
+                                            writer.WriteLine(miningLine);
+                                    }
+                                }
+
+                                Console.WriteLine("Genesis block generated, blockchain setting and mining setting are updated.");
+                                ClassLog.SimpleWriteLine("[Note] You need to rebuild the source code and copy the Blockchain folder to the node build folder.", ConsoleColor.Red);
+
                             }
-
-                            Console.WriteLine("Genesis block generated, blockchain setting and mining setting are updated.");
-                            ClassLog.SimpleWriteLine("[Note] You need to rebuild the source code and copy the Blockchain folder to the node build folder.", ConsoleColor.Red);
-
                         }
                     }
                     else

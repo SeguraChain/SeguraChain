@@ -154,7 +154,7 @@ namespace SeguraChain_Lib.Other.Object.Network
 
             try
             {
-                _socket?.Client.Shutdown(shutdownType);
+                _socket?.Client?.Shutdown(shutdownType);
                 _socket?.Close();
             }
             catch

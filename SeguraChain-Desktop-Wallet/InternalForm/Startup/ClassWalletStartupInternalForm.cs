@@ -23,8 +23,8 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Startup
         {
             InitializeComponent();
 
-            if(!ClassDesktopWalletCommonData.InitializeLanguageDatabaseForStartupForm())
-                Close(); 
+            if (!ClassDesktopWalletCommonData.InitializeLanguageDatabaseForStartupForm())
+                Close();
         }
 
         /// <summary>

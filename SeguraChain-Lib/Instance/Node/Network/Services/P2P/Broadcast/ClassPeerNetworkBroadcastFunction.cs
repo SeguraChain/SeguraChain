@@ -41,7 +41,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
         /// <param name="peerFirewallSettingObject"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        public static Dictionary<int, ClassPeerTargetObject> GetRandomListPeerTargetAlive(string peerServerIp, string peerOpenNatServerIp, string peerToExcept, Dictionary<int, ClassPeerTargetObject> previousListPeerSelected, ClassPeerNetworkSettingObject peerNetworkSetting, ClassPeerFirewallSettingObject peerFirewallSettingObject, CancellationTokenSource cancellation)
+        public static Dictionary<int, ClassPeerTargetObject> GetRandomListPeerTargetAlive(string peerServerIp,
+            string peerOpenNatServerIp, string peerToExcept, Dictionary<int, ClassPeerTargetObject> previousListPeerSelected, ClassPeerNetworkSettingObject peerNetworkSetting, ClassPeerFirewallSettingObject peerFirewallSettingObject, CancellationTokenSource cancellation)
         {
             if (previousListPeerSelected == null)
                 previousListPeerSelected = new Dictionary<int, ClassPeerTargetObject>();
@@ -82,34 +83,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         }
                         previousListPeerSelected.Remove(peerIndex);
                     }
-                    else
-                    {
-                        try
-                        {
-                            if (previousListPeerSelected[peerIndex].PeerNetworkClientSyncObject != null)
-                            {
-                                if (!previousListPeerSelected[peerIndex].PeerNetworkClientSyncObject.PeerConnectStatus)
-                                {
-                                    try
-                                    {
-                                        previousListPeerSelected[peerIndex].PeerNetworkClientSyncObject.DisconnectFromTarget();
-                                        previousListPeerSelected[peerIndex].PeerNetworkClientSyncObject.Dispose();
-                                    }
-                                    catch
-                                    {
-                                        // Ignored.
-                                    }
-                                    previousListPeerSelected.Remove(peerIndex);
-                                }
-
-                            }
-                        }
-                        catch
-                        {
-                            // Ignored.
-                        }
-                    }
-
                 }
             }
 
@@ -202,6 +175,51 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         indexPeer++;
                     }
                 }
+            }
+
+            return newListSelected;
+        }
+
+        /// <summary>
+        /// Return the last peer synced alive.
+        /// </summary>
+        /// <param name="peerServerIp"></param>
+        /// <param name="peerOpenNatServerIp"></param>
+        /// <param name="peerToExcept"></param>
+        /// <returns></returns>
+        public static Dictionary<int, ClassPeerTargetObject> GetLastPeerTargetSynced(long lastBlockHeight, string peerServerIp, string peerOpenNatServerIp, string peerToExcept, ClassPeerNetworkSettingObject peerNetworkSetting, ClassPeerFirewallSettingObject peerFirewallSettingObject, CancellationTokenSource cancellation)
+        {
+            Dictionary<int, ClassPeerTargetObject> newListSelected = new Dictionary<int, ClassPeerTargetObject>();
+
+            string peerIpSelected = string.Empty;
+            string peerUniqueIdSelected = string.Empty;
+            long peerLastBlockHeight = 0;
+
+            foreach(string peerIp in ClassPeerDatabase.DictionaryPeerDataObject.Keys)
+            {
+                if (peerIp == peerServerIp || peerIp == peerOpenNatServerIp || peerIp == peerToExcept)
+                    continue;
+
+                foreach(string peerUniqueId in ClassPeerDatabase.DictionaryPeerDataObject[peerIp].Keys)
+                {
+                    if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus != ClassPeerEnumStatus.PEER_ALIVE)
+                        continue;
+
+                    if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastBlockHeight > peerLastBlockHeight && ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastBlockHeight >= lastBlockHeight)
+                    {
+                        peerIpSelected = peerIp;
+                        peerUniqueIdSelected = peerUniqueId;
+                        peerLastBlockHeight = ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastBlockHeight;
+                    }
+                }
+            }
+
+            if (peerLastBlockHeight > 0)
+            {
+                newListSelected.Add(0, new ClassPeerTargetObject()
+                {
+                    PeerNetworkClientSyncObject = new ClassPeerNetworkClientSyncObject(peerIpSelected, ClassPeerDatabase.DictionaryPeerDataObject[peerIpSelected][peerUniqueIdSelected].PeerPort, peerUniqueIdSelected, peerNetworkSetting, peerFirewallSettingObject)
+                });
             }
 
             return newListSelected;

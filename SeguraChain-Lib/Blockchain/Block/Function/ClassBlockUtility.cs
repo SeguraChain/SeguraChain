@@ -35,20 +35,27 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
         /// <param name="blockFinalTransactionHash"></param>
         /// <param name="previousWalletAddressWinner"></param>
         /// <returns>Block Hash HEX = [block height hash * block difficulty * block count transaction]</returns>
-        public static string GenerateBlockHash(long blockHeight, BigInteger blockDifficulty, int blockCountTransaction, string blockFinalTransactionHash, string previousWalletAddressWinner)
+        public static bool GenerateBlockHash(long blockHeight, BigInteger blockDifficulty, int blockCountTransaction, string blockFinalTransactionHash, string previousWalletAddressWinner, out string blockHash)
         {
+            blockHash = null;
             byte[] blockHeightBytes = new byte[BlockchainSetting.BlockHeightByteArrayLengthOnBlockHash];
             byte[] blockDifficultyBytes = new byte[BlockchainSetting.BlockDifficultyByteArrayLengthOnBlockHash];
             byte[] blockCountTransactionBytes = new byte[BlockchainSetting.BlockCountTransactionByteArrayLengthOnBlockHash];
             byte[] blockFinalTransactionHashBytes = new byte[BlockchainSetting.BlockFinalTransactionHashByteArrayLengthOnBlockHash];
             byte[] previousWalletAddressWinnerBytes = new byte[BlockchainSetting.WalletAddressByteArrayLength];
 
+
+            byte[] walletAddressDecoded = ClassBase58.DecodeWithCheckSum(previousWalletAddressWinner, true);
+
+            if (walletAddressDecoded == null)
+                return false;
+
             // Copy informations.
             Array.Copy(BitConverter.GetBytes(blockHeight), 0, blockHeightBytes, 0, blockHeightBytes.Length);
             Array.Copy(BitConverter.GetBytes((double)blockDifficulty), 0, blockDifficultyBytes, 0, blockDifficultyBytes.Length);
             Array.Copy(BitConverter.GetBytes(blockCountTransaction), 0, blockCountTransactionBytes, 0, blockCountTransactionBytes.Length);
             Array.Copy(ClassUtility.GetByteArrayFromHexString(blockFinalTransactionHash), 0, blockFinalTransactionHashBytes, 0, blockFinalTransactionHashBytes.Length);
-            Array.Copy(ClassBase58.DecodeWithCheckSum(previousWalletAddressWinner, true), 0, previousWalletAddressWinnerBytes, 0, previousWalletAddressWinnerBytes.Length);
+            Array.Copy(walletAddressDecoded, 0, previousWalletAddressWinnerBytes, 0, previousWalletAddressWinnerBytes.Length);
 
             byte[] blockHashBytes = new byte[BlockchainSetting.BlockHashByteArraySize];
 
@@ -59,7 +66,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
             Array.Copy(blockFinalTransactionHashBytes, 0, blockHashBytes, blockHeightBytes.Length + blockDifficultyBytes.Length + blockCountTransactionBytes.Length, blockFinalTransactionHashBytes.Length);
             Array.Copy(previousWalletAddressWinnerBytes, 0, blockHashBytes, blockHeightBytes.Length + blockDifficultyBytes.Length + blockCountTransactionBytes.Length + blockFinalTransactionHashBytes.Length, previousWalletAddressWinnerBytes.Length);
 
-            string blockHash = ClassUtility.GetHexStringFromByteArray(blockHashBytes).ToLower();
+            blockHash = ClassUtility.GetHexStringFromByteArray(blockHashBytes).ToLower();
 
             // Clear.
             Array.Resize(ref blockHashBytes, 0);
@@ -68,7 +75,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
             Array.Resize(ref blockFinalTransactionHashBytes, 0);
             Array.Resize(ref previousWalletAddressWinnerBytes, 0);
 
-            return blockHash;
+            return true;
         }
 
         /// <summary>
@@ -252,7 +259,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
 
                     foreach (ClassBlockObject blockObject in await ClassBlockchainDatabase.BlockchainMemoryManagement.GetListBlockInformationDataFromListBlockHeightStrategy(listBlockHeight, cancellation))
                     {
-                        if (blockObject != null)
+                        if (blockObject != null && blockObject?.BlockStatus == ClassBlockEnumStatus.UNLOCKED && blockObject?.TimestampFound > 0)
                         {
                             if (blockObject.BlockHeight >= BlockchainSetting.GenesisBlockHeight)
                             {
