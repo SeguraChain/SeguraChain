@@ -51,6 +51,26 @@ namespace SeguraChain_Lib.Blockchain.Transaction.Object
         public string TransactionHashBlockReward;
 
         #endregion
+
+
+        /// <summary>
+        /// Constructor. Default values.
+        /// </summary>
+        public ClassTransactionObject()
+        {
+            WalletAddressReceiver = string.Empty;
+            WalletPublicKeyReceiver = string.Empty;
+            TransactionSignatureReceiver = string.Empty;
+            TransactionBigSignatureReceiver = string.Empty;
+            TransactionBigSignatureSender = string.Empty;
+            BlockHash = string.Empty;
+            TransactionHashBlockReward = string.Empty;
+            WalletAddressSender = string.Empty;
+            WalletPublicKeySender = string.Empty;
+            TransactionSignatureSender = string.Empty; // Signature of the sender encoded into Base64 String.
+            TransactionBigSignatureSender = string.Empty; // Big signature of the sender encoded into Base64 String.
+            TransactionHash = string.Empty;
+        }
     }
 
 }

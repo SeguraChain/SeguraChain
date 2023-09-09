@@ -376,7 +376,24 @@ namespace SeguraChain_Lib.TaskManager
                     }
                 }
                 else
-                    _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
+                {
+                    bool isLocked = false;
+                    try
+                    {
+                        isLocked = Monitor.TryEnter(_taskCollection);
+
+                        if (isLocked)
+                            _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
+                    }
+                    finally
+                    {
+                        if (isLocked)
+                        {
+                            Monitor.PulseAll(_taskCollection);
+                            Monitor.Exit(_taskCollection);
+                        }
+                    }
+                }
             }
         }
 

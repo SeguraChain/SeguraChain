@@ -763,7 +763,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                     if (blockObject != null)
                     {
-                        if (blockObject.BlockStatus == ClassBlockEnumStatus.UNLOCKED || blockObject.BlockStatus == ClassBlockEnumStatus.LOCKED && blockObject.BlockHeight < lastBlockHeight)
+                        if (blockObject.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
                         {
                             if (!blockObject.IsConfirmedByNetwork)
                                 blockNetworkUnconfirmedList.Add(blockHeight);
