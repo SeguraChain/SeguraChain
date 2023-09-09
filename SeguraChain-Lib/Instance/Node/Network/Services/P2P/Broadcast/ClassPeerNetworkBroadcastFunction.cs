@@ -205,7 +205,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus != ClassPeerEnumStatus.PEER_ALIVE)
                         continue;
 
-                    if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastBlockHeight > peerLastBlockHeight && ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastBlockHeight >= lastBlockHeight)
+                    if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastBlockHeight > peerLastBlockHeight && 
+                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastBlockHeight > lastBlockHeight)
                     {
                         peerIpSelected = peerIp;
                         peerUniqueIdSelected = peerUniqueId;

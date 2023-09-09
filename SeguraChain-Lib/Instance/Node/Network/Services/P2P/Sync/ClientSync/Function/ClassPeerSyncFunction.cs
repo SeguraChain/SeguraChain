@@ -996,6 +996,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
             {
                 foreach (string peerUniqueId in _listPeerNetworkInformationStats[peerIp].Keys.ToArray())
                 {
+                    if (!_listPeerNetworkInformationStats[peerIp].ContainsKey(peerUniqueId))
+                        continue;
+
                     if (lastBlockHeightNetwork < _listPeerNetworkInformationStats[peerIp][peerUniqueId].LastBlockHeightUnlocked)
                         lastBlockHeightNetwork = _listPeerNetworkInformationStats[peerIp][peerUniqueId].LastBlockHeightUnlocked;
                 }

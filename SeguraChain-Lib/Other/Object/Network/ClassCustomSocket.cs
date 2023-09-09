@@ -63,7 +63,7 @@ namespace SeguraChain_Lib.Other.Object.Network
             {
                 try
                 {
-                    return _socket.Client?.RemoteEndPoint != null ? ((IPEndPoint)(_socket.Client.RemoteEndPoint)).Address.ToString() : string.Empty;
+                    return _socket?.Client?.RemoteEndPoint != null ? ((IPEndPoint)(_socket.Client.RemoteEndPoint)).Address.ToString() : string.Empty;
                 }
                 catch
                 {

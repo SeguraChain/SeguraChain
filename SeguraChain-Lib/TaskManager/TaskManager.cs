@@ -139,7 +139,7 @@ namespace SeguraChain_Lib.TaskManager
 
                                         try
                                         {
-                                            _taskCollection.RemoveAll(x => x.Id == taskId);
+                                            _taskCollection.RemoveAll(x => x != null && x.Id == taskId);
                                             cleaned = true;
 
                                             _listTaskIdCompleted.Remove(taskId);

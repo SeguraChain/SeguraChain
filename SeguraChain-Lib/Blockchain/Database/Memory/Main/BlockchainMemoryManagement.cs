@@ -763,7 +763,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                     if (blockObject != null)
                     {
-                        if (blockObject.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
+                        if (blockObject.BlockStatus == ClassBlockEnumStatus.UNLOCKED || blockObject.BlockStatus == ClassBlockEnumStatus.LOCKED && blockObject.BlockHeight < lastBlockHeight)
                         {
                             if (!blockObject.IsConfirmedByNetwork)
                                 blockNetworkUnconfirmedList.Add(blockHeight);
@@ -1512,7 +1512,14 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                                !blockObject.IsConfirmedByNetwork;
 
                                                                     if (canceled)
+                                                                    {
+#if DEBUG
+                                                                        Debug.WriteLine("Failed to update block transaction(s) confirmation(s) on the block height: " + blockObject.BlockHeight + ", the condition failed.");
+#endif
+                                                                        ClassLog.WriteLine("Failed to update block transaction(s) confirmation(s) on the block height: " + blockObject.BlockHeight + ", the condition failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_TRANSACTION_CONFIRMATION, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+
                                                                         break;
+                                                                    }
 
                                                                     if (blockObject.IsConfirmedByNetwork)
                                                                     {

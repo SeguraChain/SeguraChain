@@ -393,16 +393,20 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
                     {
                         if (previousBlockObjectInformation.BlockStatus != ClassBlockEnumStatus.LOCKED)
                         {
+                            /*
                             if (previousBlockObjectInformation.BlockFinalHashTransaction != blockTemplateObject.BlockPreviousFinalTransactionHash)
                                 return false;
-
+                            */
+                            /*
                             if (previousBlockObjectInformation.TimestampFound != blockObject.TimestampCreate)
                                 return false;
+                            */
                         }
 
                         if (refuseLockedBlock)
                         {
-                            if (blockObject.BlockMiningPowShareUnlockObject == null)
+                            if (blockObject.BlockMiningPowShareUnlockObject == null ||
+                                blockObject.BlockStatus == ClassBlockEnumStatus.LOCKED)
                                 return false;
                         }
 
@@ -418,12 +422,13 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
                             if (previousBlockObjectInformation.BlockWalletAddressWinner != blockTemplateObject.BlockPreviousWalletAddressWinner)
                                 return false;
 
-
+                            
                             if (await GenerateNextBlockDifficulty(previousBlockHeight, previousBlockObjectInformation.TimestampCreate, previousBlockObjectInformation.TimestampFound, previousBlockObjectInformation.BlockDifficulty, cancellation)
                                 != blockObject.BlockDifficulty)
                             {
                                 return false;
                             }
+                            
 
                         }
                     }

@@ -458,9 +458,10 @@ namespace SeguraChain_Lib.Log
                                     }
                                 }
                             }
-                            catch
+                            catch(Exception error)
                             {
-                                // Ignored.
+                                if (error is ArgumentOutOfRangeException)
+                                    _logListOnCollect[logLevelType].Clear();
                             }
                         }
                         finally

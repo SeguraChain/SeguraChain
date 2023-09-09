@@ -191,6 +191,9 @@ namespace SeguraChain_Desktop_Wallet.Components
             #endregion
             try
             {
+                if (graphics == null)
+                    return strFinal;
+
                 bool isAbove = false;
 
                 foreach (char character in str)
