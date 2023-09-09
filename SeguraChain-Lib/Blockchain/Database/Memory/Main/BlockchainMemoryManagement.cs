@@ -2073,8 +2073,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         foreach (var amountHashSourceObject in blockTransactionToCheck.TransactionObject.AmountTransactionSource)
                         {
 
-                            
-
+                           
                             long blockHeightSource = ClassTransactionUtility.GetBlockHeightFromTransactionHash(amountHashSourceObject.Key);
 
                             if (blockHeightSource < BlockchainSetting.GenesisBlockHeight || blockHeightSource > GetLastBlockHeight)
@@ -2151,16 +2150,11 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             {
                                 foreach (long blockHeightSource in listBlockTransactionSpendOriginal.GetList.Keys)
                                 {
-                                    
+                                    if (!listBlockObjectUpdated.ContainsKey(blockHeightSource))
+                                        continue;
 
-                                    if (listBlockObjectUpdated.ContainsKey(blockHeightSource))
-                                    {
-                                        foreach (ClassBlockTransaction blockTransaction in listBlockTransactionSpendOriginal[blockHeightSource])
-                                        {
-                                            
-                                            listBlockObjectUpdated[blockHeightSource].BlockTransactions[blockTransaction.TransactionObject.TransactionHash] = blockTransaction;
-                                        }
-                                    }
+                                    foreach (ClassBlockTransaction blockTransaction in listBlockTransactionSpendOriginal[blockHeightSource])
+                                        listBlockObjectUpdated[blockHeightSource].BlockTransactions[blockTransaction.TransactionObject.TransactionHash] = blockTransaction;
                                 }
                             }
 
@@ -2171,16 +2165,11 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         {
                             foreach (long blockHeightSource in listBlockTransactionSpendUpdated.GetList.Keys)
                             {
-                                
+                                if (!listBlockObjectUpdated.ContainsKey(blockHeightSource))
+                                    continue;
 
-                                if (listBlockObjectUpdated.ContainsKey(blockHeightSource))
-                                {
-                                    foreach (ClassBlockTransaction blockTransaction in listBlockTransactionSpendUpdated[blockHeightSource])
-                                    {
-                                        
-                                        listBlockObjectUpdated[blockHeightSource].BlockTransactions[blockTransaction.TransactionObject.TransactionHash] = blockTransaction;
-                                    }
-                                }
+                                foreach (ClassBlockTransaction blockTransaction in listBlockTransactionSpendUpdated[blockHeightSource])
+                                    listBlockObjectUpdated[blockHeightSource].BlockTransactions[blockTransaction.TransactionObject.TransactionHash] = blockTransaction;
                             }
 
                             return true;

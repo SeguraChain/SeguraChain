@@ -109,7 +109,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
 		public const string GenesisBlockFinalTransactionHash ="3EEF0FA80B78B0C905DEBF02A9E77566B9474E0072B29B72C76514CE8AB4F31C8B371E9514AF0679308113AF673C91DA69A78E54F6176866ABB3F512C01B2467";
         public const int GenesisBlockTransactionCount = 1; // The maximum of transaction inserted on the genesis block.
         public const int BlockAmountNetworkConfirmations = 2; // The minimum amount of network checks on blocks to do with peers, before to enable the task of confirmations on the block.
-        public const int BlockAmountSlowNetworkConfirmations = 5; // This amount increment another amount of network checks, once this one is reach, the network counter increment and this one return back to 0.
+        public const int BlockAmountSlowNetworkConfirmations = 2; // This amount increment another amount of network checks, once this one is reach, the network counter increment and this one return back to 0.
         public const int BlockMiningUnlockShareTimestampMaxDelay = BlockTime; // The maximum of time allowed on a mining share timestamp received. The broadcasting of this one need to be enough fast to reach the majority of nodes.
         public const int BlockSyncAmountNetworkConfirmationsCheckpointPassed = 10; // If the block synced height is below the latest block height unlocked, the block synced network confirmations is automatically filled.
 

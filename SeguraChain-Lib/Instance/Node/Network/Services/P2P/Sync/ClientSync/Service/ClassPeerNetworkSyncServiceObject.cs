@@ -132,7 +132,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
             StartTaskSyncCheckBlockAndTx();
 
             // Check the last block height with other peers to see if this one has been mined.
-            StartTaskSyncCheckLastBlock();
+           // StartTaskSyncCheckLastBlock();
 
             // Sync last network informations from other peers.
             StartTaskSyncNetworkInformations();
@@ -737,7 +737,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                         int totalBlockChecked = 0;
 
-                                        using (DisposableList<long> listBlockMissed = ClassBlockchainStats.GetListBlockMissing(lastBlockHeight, false, false, _cancellationTokenServiceSync, _peerNetworkSettingObject.PeerMaxRangeBlockToSyncPerRequest))
+                                        using (DisposableList<long> listBlockMissed = ClassBlockchainStats.GetListBlockMissing(lastBlockHeight, false, true, _cancellationTokenServiceSync, _peerNetworkSettingObject.PeerMaxRangeBlockToSyncPerRequest))
                                         {
                                             if (listBlockMissed.Count == 0)
                                             {
@@ -752,7 +752,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                         foreach (long blockHeightToCheck in listBlockNetworkUnconfirmed.GetAll)
                                                         {
 
-                                                            ClassBlockObject blockObjectInformationsToCheck = await ClassBlockchainStats.GetBlockInformationData(blockHeightToCheck, CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource(_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000).Token));
+                                                            ClassBlockObject blockObjectInformationsToCheck = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(blockHeightToCheck, true, false, CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource(_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000).Token));
 
                                                             if (blockObjectInformationsToCheck == null)
                                                             {
@@ -787,16 +787,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                                                                     if (result[blockHeightToCheck]?.BlockStatus == ClassBlockEnumStatus.UNLOCKED && result[blockHeightToCheck]?.BlockHeight == blockHeightToCheck)
                                                                                     {
-                                                                                        using (DisposableDictionary<string, string> listWalletAndPublicKeys = new DisposableDictionary<string, string>())
-                                                                                        {
-                                                                                            if (!await SyncBlockDataTransaction(lastBlockHeightUnlocked, result[blockHeightToCheck], peerTargetList.GetList, listWalletAndPublicKeys, _cancellationTokenServiceSync))
-                                                                                            {
-                                                                                                ClassLog.WriteLine("Sync of transaction(s) from the block height: " + result[blockHeightToCheck].BlockHeight + " failed, the amount of tx's to sync from a unlocked block cannot be equal of 0. Cancel sync and retry again.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                                                                                                break;
-                                                                                            }
-                                                                                            else
-                                                                                                await FixMiningBlockLocked(blockHeightToCheck, lastBlockHeightUnlocked, lastBlockHeight, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenServiceSync);
-                                                                                        }
+
+                                                                                        await FixMiningBlockLocked(blockHeightToCheck, lastBlockHeightUnlocked, lastBlockHeight, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenServiceSync);
 
                                                                                         ClassLog.WriteLine("The block height: " + blockHeightToCheck + " retrieved from peers, is fixed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
                                                                                     }
@@ -819,7 +811,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                                     break;
                                                                 case ClassPeerNetworkSyncServiceEnumCheckBlockDataUnlockedResult.VALID_BLOCK:
                                                                     {
-                                                                        ClassBlockObject blockObjectToCheck = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(blockHeightToCheck, false, true, _cancellationTokenServiceSync);
+                                                                        ClassBlockObject blockObjectToCheck = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(blockHeightToCheck, true, true, _cancellationTokenServiceSync);
 
                                                                         if (blockObjectToCheck == null)
                                                                             cancelCheck = true;
@@ -885,8 +877,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                     }
                                                 }
                                             }
-                                            else
+                                            /*else
                                                 ClassLog.WriteLine("Increment block check network confirmations canceled. Their is " + listBlockMissed.Count + " block(s) missed to sync.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Cyan);
+                                        */
                                         }
 
 
@@ -2346,9 +2339,58 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                         result.Item2.ObjectReturned.BlockData.BlockDifficulty == blockObject.BlockDifficulty &&
                                                         result.Item2.ObjectReturned.BlockData.BlockFinalHashTransaction == blockObject.BlockFinalHashTransaction &&
                                                         comparedShares &&
-                                                        result.Item2.ObjectReturned.BlockData.BlockWalletAddressWinner == blockObject.BlockWalletAddressWinner)
+                                                        result.Item2.ObjectReturned.BlockData.BlockWalletAddressWinner == blockObject.BlockWalletAddressWinner &&
+                                                        result.Item2.ObjectReturned.BlockData.BlockTransactions.Count == blockObject.BlockTransactions.Count)
                                                     {
-                                                        isEqual = true;
+                                                        bool success = true;
+
+                                                        foreach (string transactionHash in blockObject.BlockTransactions.Keys)
+                                                        {
+                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.Amount != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.Amount ||
+                                                            blockObject.BlockTransactions[transactionHash].TransactionObject.BlockHash != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.BlockHash ||
+                                                            blockObject.BlockTransactions[transactionHash].TransactionObject.BlockHeightTransaction != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.BlockHeightTransaction ||
+                                                            blockObject.BlockTransactions[transactionHash].TransactionObject.BlockHeightTransactionConfirmationTarget != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.BlockHeightTransactionConfirmationTarget ||
+                                                            blockObject.BlockTransactions[transactionHash].TransactionObject.Fee != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.Fee ||
+                                                            blockObject.BlockTransactions[transactionHash].TransactionObject.PaymentId != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.PaymentId ||
+                                                            blockObject.BlockTransactions[transactionHash].TransactionObject.TimestampBlockHeightCreateSend != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.TimestampBlockHeightCreateSend ||
+                                                            blockObject.BlockTransactions[transactionHash].TransactionObject.TimestampSend != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.TimestampSend ||
+                                                            blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionBigSignatureReceiver != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.TransactionBigSignatureReceiver ||
+                                                            blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionBigSignatureSender != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.TransactionBigSignatureSender ||
+                                                            blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionHash != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.TransactionHash ||
+                                                            blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionHashBlockReward != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.TransactionHashBlockReward ||
+                                                            blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionSignatureReceiver != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.TransactionSignatureReceiver ||
+                                                            blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionSignatureSender != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.TransactionSignatureSender ||
+                                                            blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionType != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.TransactionType ||
+                                                            blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionVersion != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.TransactionVersion ||
+                                                            blockObject.BlockTransactions[transactionHash].TransactionObject.WalletAddressReceiver != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.WalletAddressReceiver ||
+                                                            blockObject.BlockTransactions[transactionHash].TransactionObject.WalletAddressSender != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.WalletAddressSender ||
+                                                            blockObject.BlockTransactions[transactionHash].TransactionObject.WalletPublicKeyReceiver != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.WalletPublicKeyReceiver ||
+                                                            blockObject.BlockTransactions[transactionHash].TransactionObject.WalletPublicKeySender != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.WalletPublicKeySender)
+                                                            {
+                                                                success = false;
+                                                                break;
+                                                            }    
+
+                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.AmountTransactionSource == null &&
+                                                                 result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.AmountTransactionSource == null)
+                                                                continue;
+
+                                                            foreach (string amountKey in blockObject.BlockTransactions[transactionHash].TransactionObject.AmountTransactionSource.Keys)
+                                                            {
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.AmountTransactionSource[amountKey] != result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionObject.AmountTransactionSource[amountKey])
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                            }
+
+                                                            if (!success)
+                                                                break;
+
+                                                        }
+
+                                                        if (success)
+                                                            isEqual = true;
                                                     }
 #if DEBUG
                                                     else
@@ -2362,7 +2404,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                                         Environment.NewLine + "Block Difficulty: " + result.Item2.ObjectReturned.BlockData.BlockDifficulty +
                                                                         Environment.NewLine + "Block final transaction hash: " + result.Item2.ObjectReturned.BlockData.BlockFinalHashTransaction +
                                                                         Environment.NewLine + "Block Mining pow share: " + ClassUtility.SerializeData(result.Item2.ObjectReturned.BlockData.BlockMiningPowShareUnlockObject) +
-                                                                        Environment.NewLine + "Block wallet address winner: " + result.Item2.ObjectReturned.BlockData.BlockWalletAddressWinner);
+                                                                        Environment.NewLine + "Block wallet address winner: " + result.Item2.ObjectReturned.BlockData.BlockWalletAddressWinner +
+                                                                        Environment.NewLine + "Block Transaction Count: " + result.Item2.ObjectReturned.BlockData.BlockTransactions.Count);
 
                                                         Debug.WriteLine("Internal: Height: " + blockObject.BlockHeight +
                                                                         Environment.NewLine + "Hash: " + blockObject.BlockHash +
@@ -2372,7 +2415,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                                         Environment.NewLine + "Block Difficulty: " + blockObject.BlockDifficulty +
                                                                         Environment.NewLine + "Block final transaction hash: " + blockObject.BlockFinalHashTransaction +
                                                                         Environment.NewLine + "Block Mining pow share: " + ClassUtility.SerializeData(blockObject.BlockMiningPowShareUnlockObject) +
-                                                                        Environment.NewLine + "Block wallet address winner: " + blockObject.BlockWalletAddressWinner);
+                                                                        Environment.NewLine + "Block wallet address winner: " + blockObject.BlockWalletAddressWinner +
+                                                                        Environment.NewLine + "Block Transaction Count: " + blockObject.BlockTransactions.Count);
                                                     }
 #endif
 
