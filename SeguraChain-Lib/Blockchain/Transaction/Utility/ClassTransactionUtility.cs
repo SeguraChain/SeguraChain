@@ -209,7 +209,7 @@ namespace SeguraChain_Lib.Blockchain.Transaction.Utility
         {
             byte[] blockHeightTransactionBytes = new byte[sizeof(long)];
 
-            Array.Copy(ClassUtility.GetByteArrayFromHexString(transactionHash), 0, blockHeightTransactionBytes, 0, sizeof(long));
+            Array.Copy(ClassUtility.GetByteArrayFromHexString(transactionHash), 0, blockHeightTransactionBytes, 0, blockHeightTransactionBytes.Length);
 
             return BitConverter.ToInt64(blockHeightTransactionBytes, 0);
         }

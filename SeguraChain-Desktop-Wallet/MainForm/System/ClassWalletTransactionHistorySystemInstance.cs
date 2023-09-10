@@ -284,7 +284,9 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                         {
                                             try
                                             {
-                                                _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.Clear(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryBackgroundColorOnClear);
+                                                if (_dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory != null)
+                                                    _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.Clear(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryBackgroundColorOnClear);
+
                                                 _dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListedShowed.Clear();
                                                 _dictionaryTransactionHistory[walletFileOpened].TotalTransactionShowed = 0;
 

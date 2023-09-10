@@ -2102,6 +2102,15 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             if (blockTransaction == null)
                                 blockTransaction = (await GetBlockTransactionFromSpecificTransactionHashAndHeight(transactionHash, blockHeightSource, false, false, cancellation))?.Clone();
 
+                            if (blockTransaction == null)
+                            {
+                                ClassBlockObject blockObject = await GetBlockDataStrategy(blockHeightSource, true, false, cancellation);
+                                if (blockObject == null || blockObject.BlockTransactions == null || !blockObject.BlockTransactions.ContainsKey(transactionHash))
+                                    return false;
+
+                                blockTransaction = blockObject.BlockTransactions[transactionHash].Clone();
+                            }
+
                             if (blockTransaction?.TransactionObject != null)
                             {
                                 if (blockTransaction.TransactionObject.WalletAddressReceiver == blockTransactionToCheck.TransactionObject.WalletAddressSender)
@@ -2563,7 +2572,14 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         blockTransaction = await GetBlockTransactionFromSpecificTransactionHashAndHeight(transactionHash, blockHeightSource, false, false, cancellation);
 
                     if (blockTransaction == null)
-                        return ClassTransactionEnumStatus.INVALID_TRANSACTION_SOURCE_LIST;
+                    {
+                        ClassBlockObject blockObject = await GetBlockDataStrategy(blockHeightSource, true, false, cancellation);
+
+                        if (blockObject == null || blockObject.BlockTransactions == null || !blockObject.BlockTransactions.ContainsKey(transactionHash))
+                            return ClassTransactionEnumStatus.INVALID_TRANSACTION_SOURCE_LIST;
+
+                        blockTransaction = blockObject.BlockTransactions[transactionHash].Clone();
+                    }
 
                     if (blockTransaction.TransactionObject == null)
                         return ClassTransactionEnumStatus.INVALID_TRANSACTION_SOURCE_LIST;
