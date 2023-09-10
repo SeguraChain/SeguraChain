@@ -538,7 +538,8 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     ObjectIndexed = true,
                     CacheUpdated = false
                 });
-
+                foreach (var blockTransaction in blockObject.BlockTransactions.Values)
+                    await UpdateBlockTransactionCache(blockTransaction, cancellation);
                 return true;
             }
             else
@@ -551,6 +552,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     _dictionaryBlockObjectMemory[blockObject.BlockHeight].CacheUpdated = false;
                     _dictionaryBlockObjectMemory[blockObject.BlockHeight].ObjectCacheType = CacheBlockMemoryEnumState.IN_ACTIVE_MEMORY;
                     AddOrUpdateBlockMirrorObject(blockObject);
+
+                    foreach (var blockTransaction in blockObject.BlockTransactions.Values)
+                        await UpdateBlockTransactionCache(blockTransaction, cancellation);
+
                     return true;
                 }
             }
@@ -560,7 +565,13 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                 blockObject.BlockHeight > BlockchainSetting.GenesisBlockHeight)
             {
                 if (blockObject.BlockHeight > BlockchainSetting.GenesisBlockHeight)
-                    return await AddOrUpdateMemoryDataToCache(blockObject, keepAlive, cancellation);
+                {
+                    if (await AddOrUpdateMemoryDataToCache(blockObject, keepAlive, cancellation))
+                    {
+                        foreach (var blockTransaction in blockObject.BlockTransactions.Values)
+                            await UpdateBlockTransactionCache(blockTransaction, cancellation);
+                    }
+                }
             }
 
             return false;
