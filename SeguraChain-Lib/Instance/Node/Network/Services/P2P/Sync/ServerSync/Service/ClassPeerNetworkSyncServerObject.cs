@@ -224,11 +224,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 long randomId = await GeneratePeerUniqueIdAsync(clientIp, _cancellationTokenSourcePeerServer, timestampEnd);
 
                 if (randomId == -1)
-                    return ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION;
+                    return ClassPeerNetworkServerHandleConnectionEnum.BAD_RANDOM_ID;
 
                 if (!_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.TryAdd(randomId,
                     new ClassPeerNetworkClientServerObject(clientPeerTcp, _cancellationTokenSourcePeerServer, clientIp, peerIpOpenNatServer, _peerNetworkSettingObject, _firewallSettingObject)))
-                    return ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION;
+                    return ClassPeerNetworkServerHandleConnectionEnum.INSERT_CLIENT_EXCEPTION;
 
 
                 #endregion
@@ -255,8 +255,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                 }
 
             }
-            catch
+            catch(Exception error)
             {
+                ClassLog.WriteLine("Cannot handle incoming connection from: " + clientIp + " | Exception: "+error.Message, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+
                 return ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION;
             }
             return ClassPeerNetworkServerHandleConnectionEnum.VALID_HANDLE;

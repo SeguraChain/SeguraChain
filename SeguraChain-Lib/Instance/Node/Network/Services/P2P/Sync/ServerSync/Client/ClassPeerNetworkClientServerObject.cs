@@ -673,6 +673,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                             if (!ClassUtility.CheckPacketTimestamp(packetSendAskBlockDataByRange.PacketTimestamp, _peerNetworkSettingObject.PeerMaxTimestampDelayPacket, _peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET_TIMESTAMP;
 
+                            if (packetSendAskBlockDataByRange.BlockHeightStart > packetSendAskBlockDataByRange.BlockHeightEnd)
+                                return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
+
                             bool containRange = true;
 
                             for(long i = packetSendAskBlockDataByRange.BlockHeightStart; i < packetSendAskBlockDataByRange.BlockHeightEnd; i++)
@@ -709,24 +712,22 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                         packetSendBlockDataRange.ListBlockObject.Add(blockObject);
                                     else
                                         return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
+                                }
 
+                                SignPacketWithNumericPrivateKey(packetSendBlockDataRange, out string hashNumeric, out string signatureNumeric);
 
-                                    SignPacketWithNumericPrivateKey(packetSendBlockDataRange, out string hashNumeric, out string signatureNumeric);
+                                packetSendBlockDataRange.PacketNumericHash = hashNumeric;
+                                packetSendBlockDataRange.PacketNumericSignature = signatureNumeric;
 
-                                    packetSendBlockDataRange.PacketNumericHash = hashNumeric;
-                                    packetSendBlockDataRange.PacketNumericSignature = signatureNumeric;
+                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                {
+                                    PacketOrder = ClassPeerEnumPacketResponse.SEND_BLOCK_DATA_BY_RANGE,
+                                    PacketContent = ClassUtility.SerializeData(packetSendBlockDataRange)
+                                }, peerObject, true))
+                                {
+                                    ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
 
-                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
-                                    {
-                                        PacketOrder = ClassPeerEnumPacketResponse.SEND_BLOCK_DATA_BY_RANGE,
-                                        PacketContent = ClassUtility.SerializeData(packetSendBlockDataRange)
-                                    }, peerObject, true))
-                                    {
-                                        ClassLog.WriteLine("Packet response to send to peer: " + _peerClientIp + " failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
-
-                                        return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
-                                    }
-
+                                    return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
                                 }
                             }
                         }
