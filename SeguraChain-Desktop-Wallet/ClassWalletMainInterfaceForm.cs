@@ -1055,6 +1055,8 @@ namespace SeguraChain_Desktop_Wallet
 
                             BeginInvoke(invoke);
 
+                            long timespend = 0;
+
                             while (!complete)
                             {
                                 if (_cancellationTokenTaskUpdateWalletContentInformations.IsCancellationRequested)
@@ -1069,6 +1071,11 @@ namespace SeguraChain_Desktop_Wallet
                                     break;
                                 }
 
+                                timespend += ClassWalletDefaultSetting.DefaultAwaitInvokeDesktopWalletFormDelay;
+
+
+                                if (timespend >= ClassWalletDefaultSetting.DefaultAwaitInvokeDesktopWalletFormDelayCancel)
+                                    break;
 #if DEBUG
                                 Debug.WriteLine("Wallet balance for " + _currentWalletFilename + " in pending to complete the update..");
 

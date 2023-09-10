@@ -527,6 +527,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         /// <returns></returns>
         public async Task<bool> InsertOrUpdateBlockObjectToCache(ClassBlockObject blockObject, bool keepAlive, CancellationTokenSource cancellation)
         {
+            blockObject.BlockLastChangeTimestamp = ClassUtility.GetCurrentTimestampInSecond();
 
             if (!ContainsKey(blockObject.BlockHeight))
             {
@@ -549,7 +550,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     _dictionaryBlockObjectMemory[blockObject.BlockHeight].Content = blockObject;
                     _dictionaryBlockObjectMemory[blockObject.BlockHeight].CacheUpdated = false;
                     _dictionaryBlockObjectMemory[blockObject.BlockHeight].ObjectCacheType = CacheBlockMemoryEnumState.IN_ACTIVE_MEMORY;
-
+                    AddOrUpdateBlockMirrorObject(blockObject);
                     return true;
                 }
             }

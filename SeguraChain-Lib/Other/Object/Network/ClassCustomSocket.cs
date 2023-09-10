@@ -48,6 +48,10 @@ namespace SeguraChain_Lib.Other.Object.Network
             try
             {
                 await _socket.ConnectAsync(ip, port);
+                
+                if (_socket == null || _socket.Client == null)
+                    return false;
+
                 _networkStream = new NetworkStream(_socket.Client);
             }
             catch

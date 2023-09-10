@@ -45,6 +45,11 @@ namespace SeguraChain_Desktop_Wallet.Settings.Enum
         public const int DefaultAwaitInvokeDesktopWalletFormDelay = 10;
 
         /// <summary>
+        /// Max time to await an action invoked on the form of the Desktop Wallet.
+        /// </summary>
+        public const int DefaultAwaitInvokeDesktopWalletFormDelayCancel = 5 * 1000;
+
+        /// <summary>
         /// Max delay wait transaction response.
         /// </summary>
         public const int DefaultWalletMaxDelayWaitTransactionResponse = 5 * 1000;
