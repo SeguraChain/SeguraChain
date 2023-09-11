@@ -324,6 +324,8 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                             break;
                                         }
 
+
+                                        
                                         ClassSyncCacheBlockTransactionObject currentBlockTransaction = DatabaseSyncCache[walletAddress].GetSyncBlockTransactionCached(blockHeight, transactionHash);
 
                                         if (currentBlockTransaction != null)
@@ -340,6 +342,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                                 }
                                             }
                                         }
+                                        
                                     }
                                 }
 
@@ -1051,7 +1054,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                 long lastBlockHeight = ClassBlockchainStats.GetLastBlockHeight();
 
 
-                long blockHeightStart = ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletLastBlockHeightSynced;
+                long blockHeightStart = 0;
 
                 bool cancelled = false;
 
@@ -1168,6 +1171,8 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                                                 break;
                                                             }
                                                         }
+                                                        else
+                                                            await InsertOrUpdateBlockTransactionToSyncCache(walletAddress, transactionPair.Value, false, true, cancellation);
 
                                                         if (ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletMemPoolTransactionList.Contains(transactionPair.Key))
                                                         {
