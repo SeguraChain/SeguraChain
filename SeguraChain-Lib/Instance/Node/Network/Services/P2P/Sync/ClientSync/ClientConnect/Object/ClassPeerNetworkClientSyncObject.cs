@@ -373,6 +373,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                             break;
                         };
 
+                        if (peerPacketReceived == null)
+                            break;
+
                         PeerPacketTypeReceived = peerPacketReceived.PacketOrder;
 
                         if (peerPacketReceived.PacketOrder == PacketResponseExpected)
