@@ -918,8 +918,6 @@ namespace SeguraChain_Desktop_Wallet
                         {
                             long totalMemPoolTransaction = await ClassDesktopWalletCommonData.WalletSyncSystem.GetTotalMemPoolTransactionFromSyncAsync(_cancellationTokenTaskUpdateWalletContentInformations, true);
 
-                            bool complete = false;
-
                             MethodInvoker invoke = () =>
                             {
                                 try
@@ -959,22 +957,9 @@ namespace SeguraChain_Desktop_Wallet
                                 labelMainInterfaceNetworkStatsTotalCoinPendingText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_COIN_PENDING_TEXT + blockchainNetworkStatsObject.TotalCoinPendingFormatted + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinTickerName;
                                 labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_FEE_CIRCULATING_TEXT + blockchainNetworkStatsObject.TotalCoinFeeFormatted + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinTickerName;
                                 labelMainInterfaceNetworkStatsTotalCoinSpreadText.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_COIN_SPREAD_TEXT + blockchainNetworkStatsObject.TotalCoinsSpreadFormatted + _walletMainFormLanguageObject.TEXT_SPACE + BlockchainSetting.CoinTickerName;
-                                complete = true;
                             };
 
                             BeginInvoke(invoke);
-
-                            while (!complete)
-                            {
-                                try
-                                {
-                                    await Task.Delay(ClassWalletDefaultSetting.DefaultAwaitInvokeDesktopWalletFormDelay, _cancellationTokenTaskUpdateWalletListOpened.Token);
-                                }
-                                catch
-                                {
-                                    break;
-                                }
-                            }
                         }
 
 
