@@ -88,15 +88,17 @@ namespace SeguraChain_Lib.Other.Object.List
                         }
                     }
                 }
+
+                GetList?.Clear();
+
+                GetList?.TrimExcess();
             }
             catch
             {
                 // Ignored.
             }
 
-            GetList?.Clear();
 
-            GetList?.TrimExcess();
         }
 
         public ICollection<KeyValuePair<V, T>> GetAll => GetList;

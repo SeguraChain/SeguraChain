@@ -430,46 +430,46 @@ namespace SeguraChain_Desktop_Wallet.Sync.Object
         /// <returns></returns>
         public async Task<DisposableDictionary<long, List<string>>> GetListOfAllBlockTransactionHash(CancellationTokenSource cancellation)
         {
-            using (DisposableDictionary<long, List<string>> listBlockTransactionHash = new DisposableDictionary<long, List<string>>())
+            DisposableDictionary<long, List<string>> listBlockTransactionHash = new DisposableDictionary<long, List<string>>();
+
+            bool semaphoreUsed = false;
+
+            try
             {
-                bool semaphoreUsed = false;
 
-                try
+                semaphoreUsed = await _semaphoreDictionaryAccess.TryWaitAsync(cancellation);
+
+                if (!semaphoreUsed)
+                    return listBlockTransactionHash;
+
+                using (DisposableList<long> listBlockHeights = BlockHeightKeys)
                 {
-                    
-                    semaphoreUsed = await _semaphoreDictionaryAccess.TryWaitAsync(cancellation);
-
-                    if (!semaphoreUsed)
-                        return listBlockTransactionHash;
-
-                    using (DisposableList<long> listBlockHeights = BlockHeightKeys)
+                    foreach (long blockHeight in listBlockHeights.GetList)
                     {
-                        foreach (long blockHeight in listBlockHeights.GetList)
+                        foreach (string transactionHash in _syncCacheDatabase[blockHeight].Keys.ToArray())
                         {
-                            foreach (string transactionHash in _syncCacheDatabase[blockHeight].Keys.ToArray())
+                            if (cancellation.IsCancellationRequested)
+                                break;
+
+                            if (!_syncCacheDatabase[blockHeight][transactionHash].IsMemPool)
                             {
-                                if (cancellation.IsCancellationRequested)
-                                    break;
+                                if (!listBlockTransactionHash.ContainsKey(blockHeight))
+                                    listBlockTransactionHash.Add(blockHeight, new List<string>());
 
-                                if (!_syncCacheDatabase[blockHeight][transactionHash].IsMemPool)
-                                {
-                                    if (!listBlockTransactionHash.ContainsKey(blockHeight))
-                                        listBlockTransactionHash.Add(blockHeight, new List<string>());
-
-                                    listBlockTransactionHash[blockHeight].Add(transactionHash);
-                                }
+                                listBlockTransactionHash[blockHeight].Add(transactionHash);
                             }
                         }
                     }
                 }
-                finally
-                {
-                    if (semaphoreUsed)
-                        _semaphoreDictionaryAccess.Release();
-                }
-
-                return listBlockTransactionHash;
             }
+            finally
+            {
+                if (semaphoreUsed)
+                    _semaphoreDictionaryAccess.Release();
+            }
+
+            return listBlockTransactionHash;
+
         }
 
         /// <summary>

@@ -2354,43 +2354,43 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 {
                                     if (result.Item2?.ObjectReturned?.BlockData != null)
                                     {
-                                        ClassBlockObject blockDataReceived = result.Item2.ObjectReturned.BlockData.DirectCloneBlockObject();
-
-                                        if (blockDataReceived == null) // Sync memory failed.
-                                            break;
-
-                                        if (blockDataReceived.BlockHeight != blockHeightTarget)
-                                            ClassPeerCheckManager.InputPeerClientInvalidPacket(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                                        else
+                                        try
                                         {
-                                            bool peerRanked = false;
-                                            if (_peerNetworkSettingObject.PeerEnableSovereignPeerVote)
-                                            {
-                                                if (CheckIfPeerIsRanked(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, result.Item2.ObjectReturned, result.Item2.PacketNumericHash, result.Item2.PacketNumericSignature, _cancellationTokenServiceSync, out string numericPublicKeyOut))
-                                                    peerRanked = !listOfRankedPeerPublicKeySaved.ContainsKey(numericPublicKeyOut) ? listOfRankedPeerPublicKeySaved.TryAdd(numericPublicKeyOut, 0) : false;
-                                            }
+                                            ClassBlockObject blockDataReceived = result.Item2.ObjectReturned.BlockData.DirectCloneBlockObject();
 
-                                            bool comparedShares = false;
+                                            if (blockDataReceived == null) // Sync memory failed.
+                                                break;
 
-                                            if (blockObject.BlockHeight == BlockchainSetting.GenesisBlockHeight)
-                                            {
-                                                if (blockDataReceived?.BlockMiningPowShareUnlockObject == null && blockObject.BlockMiningPowShareUnlockObject == null)
-                                                    comparedShares = true;
-                                            }
+                                            if (blockDataReceived.BlockHeight != blockHeightTarget)
+                                                ClassPeerCheckManager.InputPeerClientInvalidPacket(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
                                             else
-                                                comparedShares = ClassMiningPoWaCUtility.ComparePoWaCShare(blockDataReceived.BlockMiningPowShareUnlockObject, blockObject.BlockMiningPowShareUnlockObject);
-
-                                            if (!comparedShares)
                                             {
-                                                if (blockDataReceived.BlockStatus == ClassBlockEnumStatus.LOCKED && blockObject.BlockStatus == ClassBlockEnumStatus.LOCKED
-                                                    && blockDataReceived.BlockMiningPowShareUnlockObject == null && blockObject.BlockMiningPowShareUnlockObject == null)
-                                                    comparedShares = true;
-                                            }
+                                                bool peerRanked = false;
+                                                if (_peerNetworkSettingObject.PeerEnableSovereignPeerVote)
+                                                {
+                                                    if (CheckIfPeerIsRanked(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, result.Item2.ObjectReturned, result.Item2.PacketNumericHash, result.Item2.PacketNumericSignature, _cancellationTokenServiceSync, out string numericPublicKeyOut))
+                                                        peerRanked = !listOfRankedPeerPublicKeySaved.ContainsKey(numericPublicKeyOut) ? listOfRankedPeerPublicKeySaved.TryAdd(numericPublicKeyOut, 0) : false;
+                                                }
 
-                                            bool isEqual = false;
+                                                bool comparedShares = false;
 
-                                            try
-                                            {
+                                                if (blockObject.BlockHeight == BlockchainSetting.GenesisBlockHeight)
+                                                {
+                                                    if (blockDataReceived?.BlockMiningPowShareUnlockObject == null && blockObject.BlockMiningPowShareUnlockObject == null)
+                                                        comparedShares = true;
+                                                }
+                                                else
+                                                    comparedShares = ClassMiningPoWaCUtility.ComparePoWaCShare(blockDataReceived.BlockMiningPowShareUnlockObject, blockObject.BlockMiningPowShareUnlockObject);
+
+                                                if (!comparedShares)
+                                                {
+                                                    if (blockDataReceived.BlockStatus == ClassBlockEnumStatus.LOCKED && blockObject.BlockStatus == ClassBlockEnumStatus.LOCKED
+                                                        && blockDataReceived.BlockMiningPowShareUnlockObject == null && blockObject.BlockMiningPowShareUnlockObject == null)
+                                                        comparedShares = true;
+                                                }
+
+                                                bool isEqual = false;
+
                                                 if (blockDataReceived.BlockHeight == blockObject.BlockHeight &&
                                                     blockDataReceived.BlockHash == blockObject.BlockHash &&
                                                     blockDataReceived.TimestampFound == blockObject.TimestampFound &&
@@ -2572,29 +2572,30 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
 
                                                 totalResponseOk++;
-                                            }
-                                            catch
-                                            {
-                                                // Ignored, the block data is empty.
-                                            }
 
 
-                                            if (peerRanked)
-                                            {
-                                                if (isEqual)
-                                                    listCheckBlockDataSeedVote[true]++;
+                                                if (peerRanked)
+                                                {
+                                                    if (isEqual)
+                                                        listCheckBlockDataSeedVote[true]++;
+                                                    else
+                                                        listCheckBlockDataSeedVote[false]++;
+                                                }
                                                 else
-                                                    listCheckBlockDataSeedVote[false]++;
-                                            }
-                                            else
-                                            {
-                                                if (isEqual)
-                                                    listCheckBlockDataNormVote[true]++;
-                                                else
-                                                    listCheckBlockDataNormVote[false]++;
+                                                {
+                                                    if (isEqual)
+                                                        listCheckBlockDataNormVote[true]++;
+                                                    else
+                                                        listCheckBlockDataNormVote[false]++;
+                                                }
                                             }
                                         }
-
+                                        catch (Exception error)
+                                        {
+                                            ClassLog.WriteLine("Failed to sync block data: " + blockHeightTarget + " from peer. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                                            totalTaskDone++;
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -2603,11 +2604,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
 
                         }
-
-                        while (totalTaskDone < totalTaskToDo)
-                            await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
-
-
 
                         try
                         {

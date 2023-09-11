@@ -1395,57 +1395,59 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
             try
             {
-
-                _ioDataStructureFileLockStream.Position = _lastIoCacheFileLength;
-
-                long position = _lastIoCacheFileLength;
-
-                long dataLength = 0;
-
-                bool cancelled = false;
-
-                foreach (string ioDataLine in BlockObjectToIoStringData(blockObject, _blockchainDatabaseSetting, cancellation))
+                if (blockObject != null)
                 {
-                    if (cancellation != null)
+                    _ioDataStructureFileLockStream.Position = _lastIoCacheFileLength;
+
+                    long position = _lastIoCacheFileLength;
+
+                    long dataLength = 0;
+
+                    bool cancelled = false;
+
+                    foreach (string ioDataLine in BlockObjectToIoStringData(blockObject, _blockchainDatabaseSetting, cancellation))
                     {
-                        if (cancellation.IsCancellationRequested)
+                        if (cancellation != null)
+                        {
+                            if (cancellation.IsCancellationRequested)
+                            {
+                                cancelled = true;
+                                break;
+                            }
+                        }
+
+                        var writeResult = WriteByBlock(_ioDataUtf8Encoding.GetBytes(ioDataLine), cancellation, _ioDataStructureFileLockStream);
+
+                        if (writeResult.Item1)
+                            dataLength += writeResult.Item2;
+                        else
                         {
                             cancelled = true;
                             break;
                         }
                     }
 
-                    var writeResult = WriteByBlock(_ioDataUtf8Encoding.GetBytes(ioDataLine), cancellation, _ioDataStructureFileLockStream);
-
-                    if (writeResult.Item1)
-                        dataLength += writeResult.Item2;
-                    else
+                    if (!cancelled)
                     {
-                        cancelled = true;
-                        break;
+                        _ioDataStructureFileLockStream.WriteByte((byte)'\r');
+                        _ioDataStructureFileLockStream.WriteByte((byte)'\n');
+
+                        if (!_ioStructureObjectsDictionary[blockObject.BlockHeight].IsWritten)
+                            _totalIoCacheFileSize += dataLength;
+                        else
+                        {
+                            _totalIoCacheFileSize -= _ioStructureObjectsDictionary[blockObject.BlockHeight].IoDataSizeOnFile;
+                            _totalIoCacheFileSize += dataLength;
+                        }
+
+                        _ioStructureObjectsDictionary[blockObject.BlockHeight].IsWritten = true;
+                        _ioStructureObjectsDictionary[blockObject.BlockHeight].IoDataSizeOnFile = dataLength;
+                        _ioStructureObjectsDictionary[blockObject.BlockHeight].IoDataPosition = position;
+                        _lastIoCacheTotalFileSizeWritten += dataLength;
+
+                        _lastIoCacheFileLength = position + dataLength + 2;
+                        success = true;
                     }
-                }
-
-                if (!cancelled)
-                {
-                    _ioDataStructureFileLockStream.WriteByte((byte)'\r');
-                    _ioDataStructureFileLockStream.WriteByte((byte)'\n');
-
-                    if (!_ioStructureObjectsDictionary[blockObject.BlockHeight].IsWritten)
-                        _totalIoCacheFileSize += dataLength;
-                    else
-                    {
-                        _totalIoCacheFileSize -= _ioStructureObjectsDictionary[blockObject.BlockHeight].IoDataSizeOnFile;
-                        _totalIoCacheFileSize += dataLength;
-                    }
-
-                    _ioStructureObjectsDictionary[blockObject.BlockHeight].IsWritten = true;
-                    _ioStructureObjectsDictionary[blockObject.BlockHeight].IoDataSizeOnFile = dataLength;
-                    _ioStructureObjectsDictionary[blockObject.BlockHeight].IoDataPosition = position;
-                    _lastIoCacheTotalFileSizeWritten += dataLength;
-
-                    _lastIoCacheFileLength = position + dataLength + 2;
-                    success = true;
                 }
 
                 _ioOnWriteData = false;

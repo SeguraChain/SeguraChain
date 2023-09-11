@@ -66,23 +66,6 @@ namespace SeguraChain_Lib.TaskManager
 
             SetThreadPoolValue(peerNetworkSettingObject);
 
-            #region Auto run task stored.
-
-            /*
-            InsertTask(new Action(async () =>
-            {
-
-
-                while (TaskManagerEnabled)
-                {
-                    RunTask();
-                    await Task.Delay(1);
-                }
-
-            }), 0, _cancelTaskManager, null, true);
-            */
-            #endregion
-
             #region Auto clean up dead tasks.
 
             InsertTask(new Action(async () =>
@@ -91,7 +74,7 @@ namespace SeguraChain_Lib.TaskManager
                 while (TaskManagerEnabled)
                 {
                     ManageTask(false);
-                    await Task.Delay(1);
+                    await Task.Delay(1000);
                 }
 
             }), 0, _cancelTaskManager);
@@ -200,42 +183,102 @@ namespace SeguraChain_Lib.TaskManager
         }
 
         /// <summary>
-        /// Run every task registered into the task manager.
+        /// Manage every tasks stored into the TaskManager.
         /// </summary>
         /// <returns></returns>
-        private static void RunTask()
+        private static void ManageTask(bool force)
         {
             bool isLocked = false;
-
             try
             {
                 isLocked = Monitor.TryEnter(_taskCollection);
 
                 if (isLocked)
                 {
-                    int count = _taskCollection.Count;
-                    for (int i = 0; i < count; i++)
+                    for (int i = 0; i < _taskCollection.Count; i++)
                     {
+
+                        if (_taskCollection[i] == null || _taskCollection[i].Task == null || _taskCollection[i].Disposed || !_taskCollection[i].Started)
+                            continue;
+
+
 
                         try
                         {
-                            if (_taskCollection[i] == null || _taskCollection[i].Started)
-                                continue;
+                            bool doDispose = false;
 
-                            if (_taskCollection[i].Disposed ||
-                                (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond))
+                            if (!force)
                             {
-                                _taskCollection[i].Started = true;
-                                continue;
-                            }
-                            _taskCollection[i].Run();
+                                if (_taskCollection[i].Task != null && (_taskCollection[i].Task.IsCanceled ||
+#if NET5_0_OR_GREATER
+                                        _taskCollection[i].Task.IsCompletedSuccessfully ||
+#endif
 
+                                    _taskCollection[i].Task.IsFaulted))
+                                    doDispose = true;
+
+                                if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond)
+                                    doDispose = true;
+
+                                try
+                                {
+                                    if (_taskCollection[i].Cancellation != null)
+                                    {
+                                        if (_taskCollection[i].Cancellation.IsCancellationRequested)
+                                            doDispose = true;
+                                    }
+                                }
+                                catch
+                                {
+                                    // Ignored.
+                                }
+
+                                if (!doDispose)
+                                    continue;
+                            }
+
+                            _taskCollection[i].Disposed = true;
+                            _taskCollection[i].Socket?.Kill(SocketShutdown.Both);
+
+                            try
+                            {
+                                if (_taskCollection[i].Cancellation != null)
+                                {
+                                    if (!_taskCollection[i].Cancellation.IsCancellationRequested)
+                                        _taskCollection[i].Cancellation.Cancel();
+                                }
+                            }
+                            catch
+                            {
+                                // Ignored.
+                            }
+
+
+                            try
+                            {
+
+
+                                if (_taskCollection[i].Task != null && (_taskCollection[i].Task.IsCanceled ||
+#if NET5_0_OR_GREATER
+                                        _taskCollection[i].Task.IsCompletedSuccessfully
+#else
+                                        _taskCollection[i].Task.IsCompleted
+#endif
+                                        ||
+                                    _taskCollection[i].Task.IsFaulted))
+                                    _taskCollection[i].Task?.Dispose();
+
+                            }
+                            catch
+                            {
+                                // Ignored, the task dispose can failed.
+                            }
+
+                            _listTaskIdCompleted.Add(_taskCollection[i].Id);
                         }
-                        catch
+                        catch (Exception error)
                         {
-                            // If the amount change..
-                            if (i > _taskCollection.Count || count > _taskCollection.Count)
-                                break;
+                            ClassLog.WriteLine("Error on cleaning the task ID: " + i + " | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_TASK_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
                         }
                     }
                 }
@@ -245,108 +288,8 @@ namespace SeguraChain_Lib.TaskManager
                 if (isLocked)
                     Monitor.Exit(_taskCollection);
             }
-                
-            
         }
 
-        /// <summary>
-        /// Manage every tasks stored into the TaskManager.
-        /// </summary>
-        /// <returns></returns>
-        private static void ManageTask(bool force)
-        {
-
-            for (int i = 0; i < _taskCollection.Count; i++)
-            {
-
-                if (_taskCollection[i] == null || _taskCollection[i].Task == null || _taskCollection[i].Disposed || !_taskCollection[i].Started)
-                    continue;
-
-
-
-                try
-                {
-                    bool doDispose = false;
-
-                    if (!force)
-                    {
-                        if (_taskCollection[i].Task != null && (_taskCollection[i].Task.IsCanceled ||
-#if NET5_0_OR_GREATER
-                                _taskCollection[i].Task.IsCompletedSuccessfully ||
-#endif
-
-                            _taskCollection[i].Task.IsFaulted))
-                            doDispose = true;
-
-                        if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond)
-                            doDispose = true;
-
-                        try
-                        {
-                            if (_taskCollection[i].Cancellation != null)
-                            {
-                                if (_taskCollection[i].Cancellation.IsCancellationRequested)
-                                    doDispose = true;
-                            }
-                        }
-                        catch
-                        {
-                            // Ignored.
-                        }
-
-                        if (!doDispose)
-                            continue;
-                    }
-
-                    _taskCollection[i].Disposed = true;
-                    _taskCollection[i].Socket?.Kill(SocketShutdown.Both);
-
-                    try
-                    {
-                        if (_taskCollection[i].Cancellation != null)
-                        {
-                            if (!_taskCollection[i].Cancellation.IsCancellationRequested)
-                                _taskCollection[i].Cancellation.Cancel();
-                        }
-                    }
-                    catch
-                    {
-                        // Ignored.
-                    }
-
-
-                    try
-                    {
-
-
-                        if (_taskCollection[i].Task != null && (_taskCollection[i].Task.IsCanceled ||
-#if NET5_0_OR_GREATER
-                                _taskCollection[i].Task.IsCompletedSuccessfully
-#else
-                                        _taskCollection[i].Task.IsCompleted
-#endif
-                                ||
-                            _taskCollection[i].Task.IsFaulted))
-                            _taskCollection[i].Task?.Dispose();
-
-                    }
-                    catch
-                    {
-                        // Ignored, the task dispose can failed.
-                    }
-
-                    _listTaskIdCompleted.Add(_taskCollection[i].Id);
-                }
-                catch (Exception error)
-                {
-                    ClassLog.WriteLine("Error on cleaning the task ID: " + i + " | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_TASK_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
-                }
-
-
-
-
-            }
-        }
         /// <summary>
         /// Insert task to manager.
         /// </summary>
@@ -362,7 +305,9 @@ namespace SeguraChain_Lib.TaskManager
 
                 long end = timestampEnd - CurrentTimestampMillisecond;
 
-                CancellationTokenSource cancellationTask;
+                CancellationTokenSource cancellationTask = null;
+
+                bool exception = false;
 
                 try
                 {
@@ -375,43 +320,46 @@ namespace SeguraChain_Lib.TaskManager
                 }
                 catch
                 {
-                    return;
+                    exception = true;
                 }
 
-                if (useFactory)
+                if (!exception)
                 {
-                    try
+                    if (useFactory)
                     {
-                        Task.Factory.StartNew(action, cancellationTask.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
-                    }
-                    catch
-                    {
-                        // Ignored, catch the exception once the task is cancelled.
-                    }
-                }
-                else
-                {
-                    bool isLocked = false;
-                    try
-                    {
-                        isLocked = Monitor.TryEnter(_taskCollection);
-
-                        if (isLocked)
+                        try
                         {
-                            _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
-                            if (!_taskCollection[_taskCollection.Count - 1].Started)
-                            {
-                                _taskCollection[_taskCollection.Count - 1].Started = true;
-                                _taskCollection[_taskCollection.Count - 1].Run();
-                            }
+                            Task.Factory.StartNew(action, cancellationTask.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+                        }
+                        catch
+                        {
+                            // Ignored, catch the exception once the task is cancelled.
                         }
                     }
-                    finally
+                    else
                     {
-                        if (isLocked)
+                        bool isLocked = false;
+                        try
                         {
-                            Monitor.PulseAll(_taskCollection);
-                            Monitor.Exit(_taskCollection);
+                            isLocked = Monitor.TryEnter(_taskCollection);
+
+                            if (isLocked)
+                            {
+                                _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
+                                if (!_taskCollection[_taskCollection.Count - 1].Started)
+                                {
+                                    _taskCollection[_taskCollection.Count - 1].Started = true;
+                                    _taskCollection[_taskCollection.Count - 1].Run();
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            if (isLocked)
+                            {
+                                Monitor.PulseAll(_taskCollection);
+                                Monitor.Exit(_taskCollection);
+                            }
                         }
                     }
                 }
