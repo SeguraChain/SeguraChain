@@ -196,47 +196,15 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
 
                 if (_dictionaryCacheIoIndexObject.Count > 0)
                 {
-                    string[] ioFileNameArray = _dictionaryCacheIoIndexObject.Keys.ToArray();
-                    int totalTaskToDo = ioFileNameArray.Length;
-                    int totalTaskDone = 0;
-                    CancellationTokenSource cancellation = new CancellationTokenSource();
-
-                    foreach (string ioFileName in ioFileNameArray)
+                    foreach (string ioFileName in _dictionaryCacheIoIndexObject.Keys.ToArray())
                     {
-                        if (_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask && ioFileNameArray.Length > 1)
-                        {
-                            TaskManager.TaskManager.InsertTask(new Action(() =>
-                            {
-                                try
-                                {
-                                    string ioFilePath = _blockchainDatabaseSetting.GetBlockchainCacheDirectoryPath + ioFileName;
-                                    _dictionaryCacheIoIndexObject[ioFileName].CloseLockStream();
-                                    _dictionaryCacheIoIndexObject.Remove(ioFilePath);
-                                    File.Delete(ioFilePath);
-                                }
-                                catch
-                                {
-                                    // The task has been cancelled or the file stream is locked, closed.
-                                }
-                                totalTaskDone++;
-                            }), 0, cancellation);
-                        }
-                        else
-                        {
-                            string ioFilePath = _blockchainDatabaseSetting.GetBlockchainCacheDirectoryPath + ioFileName;
-                            _dictionaryCacheIoIndexObject[ioFileName].CloseLockStream();
-                            _dictionaryCacheIoIndexObject.Remove(ioFilePath);
-                            File.Delete(ioFilePath);
-                        }
-                    }
 
-                    if (_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask && ioFileNameArray.Length > 1)
-                    {
-                        while (totalTaskToDo > totalTaskDone)
-                            await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskParallelTaskWaitDelay);
-                    }
+                        string ioFilePath = _blockchainDatabaseSetting.GetBlockchainCacheDirectoryPath + ioFileName;
+                        _dictionaryCacheIoIndexObject[ioFileName].CloseLockStream();
+                        _dictionaryCacheIoIndexObject.Remove(ioFilePath);
+                        File.Delete(ioFilePath);
 
-                    cancellation.Cancel();
+                    }
 
                     try
                     {

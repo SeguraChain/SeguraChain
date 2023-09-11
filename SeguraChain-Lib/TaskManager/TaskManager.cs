@@ -68,7 +68,7 @@ namespace SeguraChain_Lib.TaskManager
 
             #region Auto run task stored.
 
-            
+            /*
             InsertTask(new Action(async () =>
             {
 
@@ -80,7 +80,7 @@ namespace SeguraChain_Lib.TaskManager
                 }
 
             }), 0, _cancelTaskManager, null, true);
-
+            */
             #endregion
 
             #region Auto clean up dead tasks.
@@ -205,32 +205,45 @@ namespace SeguraChain_Lib.TaskManager
         /// <returns></returns>
         private static void RunTask()
         {
-        
+            bool isLocked = false;
 
-                    int count = _taskCollection.Count;
-            for (int i = 0; i < count; i++)
+            try
             {
+                isLocked = Monitor.TryEnter(_taskCollection);
 
-                try
+                if (isLocked)
                 {
-                    if (_taskCollection[i] == null || _taskCollection[i].Started)
-                        continue;
-
-                    if (_taskCollection[i].Disposed ||
-                        (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond))
+                    int count = _taskCollection.Count;
+                    for (int i = 0; i < count; i++)
                     {
-                        _taskCollection[i].Started = true;
-                        continue;
-                    }
-                    _taskCollection[i].Run();
 
+                        try
+                        {
+                            if (_taskCollection[i] == null || _taskCollection[i].Started)
+                                continue;
+
+                            if (_taskCollection[i].Disposed ||
+                                (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond))
+                            {
+                                _taskCollection[i].Started = true;
+                                continue;
+                            }
+                            _taskCollection[i].Run();
+
+                        }
+                        catch
+                        {
+                            // If the amount change..
+                            if (i > _taskCollection.Count || count > _taskCollection.Count)
+                                break;
+                        }
+                    }
                 }
-                catch
-                {
-                    // If the amount change..
-                    if (i > _taskCollection.Count || count > _taskCollection.Count)
-                        break;
-                }
+            }
+            finally
+            {
+                if (isLocked)
+                    Monitor.Exit(_taskCollection);
             }
                 
             
@@ -384,7 +397,14 @@ namespace SeguraChain_Lib.TaskManager
                         isLocked = Monitor.TryEnter(_taskCollection);
 
                         if (isLocked)
+                        {
                             _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
+                            if (!_taskCollection[_taskCollection.Count - 1].Started)
+                            {
+                                _taskCollection[_taskCollection.Count - 1].Started = true;
+                                _taskCollection[_taskCollection.Count - 1].Run();
+                            }
+                        }
                     }
                     finally
                     {
