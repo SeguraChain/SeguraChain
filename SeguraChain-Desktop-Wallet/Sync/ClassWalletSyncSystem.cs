@@ -334,7 +334,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                                     continue;
                                                 else
                                                 {
-                                                    currentBlockTransaction.BlockTransaction.TransactionTotalConfirmation = (lastBlockHeightTransactionConfirmation - blockHeight) + 1;
+                                                    //currentBlockTransaction.BlockTransaction.TransactionTotalConfirmation = (lastBlockHeightTransactionConfirmation - blockHeight) + 1;
                                                     DatabaseSyncCache[walletAddress].UpdateBlockTransaction(currentBlockTransaction.BlockTransaction, false);
                                                     totalTxUpdated++;
                                                 }
