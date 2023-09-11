@@ -356,10 +356,7 @@ namespace SeguraChain_Lib.TaskManager
                         finally
                         {
                             if (isLocked)
-                            {
-                                Monitor.PulseAll(_taskCollection);
                                 Monitor.Exit(_taskCollection);
-                            }
                         }
                     }
                 }

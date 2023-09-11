@@ -3088,7 +3088,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                 else
                                     listTxFromCacheOrMemory = new DisposableList<ClassBlockTransaction>(false, 0, (await GetTransactionListFromBlockHeightTargetFromMemoryDataCache(blockHeight, false, cancellation))?.GetList.Values.ToArray());
 
-                                foreach (ClassBlockTransaction blockTransaction in listTxFromCacheOrMemory.GetList.FindAll(x => x.TransactionObject != null).OrderBy(x => x.TransactionObject.TimestampSend))
+                                foreach (ClassBlockTransaction blockTransaction in listTxFromCacheOrMemory.GetList.FindAll(x => x != null && x.TransactionObject != null).OrderBy(x => x.TransactionObject.TimestampSend))
                                 {
                                     if (cancellation.IsCancellationRequested)
                                         break;
