@@ -1550,11 +1550,18 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                                 if (transactionStatus == ClassTransactionEnumStatus.VALID_TRANSACTION)
                                                 {
-                                                    if (!alreadyExist)
-                                                        ClassMemPoolDatabase.InsertTxToMemPool(transactionObject);
+                                                     var walletBalance = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetWalletBalanceFromTransaction(transactionObject.WalletAddressSender, blockHeightSend, false, false, false, true, null, _cancellationTokenListenPeerPacket);
 
-                                                    if (transactionObject.BlockHeightTransactionConfirmationTarget <= ClassBlockchainStats.GetLastBlockHeight())
-                                                        listTransactionToBroadcast.Add(transactionObject);
+                                                    if (walletBalance.WalletBalance < transactionObject.Amount)
+                                                        transactionStatus = ClassTransactionEnumStatus.NOT_ENOUGHT_AMOUNT;
+                                                    else
+                                                    {
+                                                        if (!alreadyExist)
+                                                            ClassMemPoolDatabase.InsertTxToMemPool(transactionObject);
+
+                                                        if (transactionObject.BlockHeightTransactionConfirmationTarget <= ClassBlockchainStats.GetLastBlockHeight())
+                                                            listTransactionToBroadcast.Add(transactionObject);
+                                                    }
                                                 }
                                             }
                                         }
