@@ -230,52 +230,29 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
             var peerCancellationTokenDoConnection = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationTokenMain.Token, new CancellationTokenSource(_peerNetworkSetting.PeerMaxDelayToConnectToTarget * 1000).Token);
 
-            TaskManager.TaskManager.InsertTask(new Action(async () =>
+            while (!successConnect && timestampEnd > TaskManager.TaskManager.CurrentTimestampMillisecond)
             {
-                while (!successConnect && timestampEnd > TaskManager.TaskManager.CurrentTimestampMillisecond)
+                try
                 {
-                    try
-                    {
-                        if (peerCancellationTokenDoConnection.IsCancellationRequested)
-                            break;
+                    if (peerCancellationTokenDoConnection.IsCancellationRequested)
+                        break;
 
-                        _peerSocketClient?.Kill(SocketShutdown.Both);
-                        
-                        _peerSocketClient = new ClassCustomSocket(new TcpClient(ClassUtility.GetAddressFamily(PeerIpTarget)), false);
+                    _peerSocketClient?.Kill(SocketShutdown.Both);
 
-                        if (await _peerSocketClient.ConnectAsync(PeerIpTarget, PeerPortTarget))
-                            successConnect = _peerSocketClient.IsConnected();
-                        else _peerSocketClient?.Kill(SocketShutdown.Both);
+                    _peerSocketClient = new ClassCustomSocket(new TcpClient(ClassUtility.GetAddressFamily(PeerIpTarget)), false);
 
-                    }
-                    catch
-                    {
-                        // Ignored, catch the exception once the attempt to connect to a peer failed.
-                    }
+                    if (await _peerSocketClient.ConnectAsync(PeerIpTarget, PeerPortTarget))
+                        successConnect = _peerSocketClient.IsConnected();
+                    else _peerSocketClient?.Kill(SocketShutdown.Both);
 
-
-                    await Task.Delay(10);
+                }
+                catch
+                {
+                    // Ignored, catch the exception once the attempt to connect to a peer failed.
                 }
 
 
-            }), timestampEnd, peerCancellationTokenDoConnection);
-
-
-            while (!successConnect)
-            {
-                if (timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond ||
-                    peerCancellationTokenDoConnection.IsCancellationRequested )
-                    break;
-
                 await Task.Delay(10);
-
-            }
-
-            if (timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond || peerCancellationTokenDoConnection.IsCancellationRequested && !successConnect)
-            {
-#if DEBUG
-                Debug.WriteLine("timeout to connect.");
-#endif
             }
 
             return successConnect;
