@@ -132,10 +132,10 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Object
             PeerMaxRangeTransactionToSyncPerRequest = BlockchainSetting.PeerMaxRangeTransactionToSyncPerRequest;
             PeerEnableSyncTransactionByRange = BlockchainSetting.PeerEnableSyncTransactionByRange;
             PeerEnableSovereignPeerVote = BlockchainSetting.PeerEnableSovereignPeerVote;
-            PeerMinThreadsPool = ClassUtility.GetMaxAvailableProcessorCount() * ClassUtility.GetMaxAvailableProcessorCount();
-            PeerMinThreadsPoolCompletionPort = PeerMinThreadsPool * ClassUtility.GetMaxAvailableProcessorCount();
-            PeerMaxThreadsPool = PeerMinThreadsPool * ClassUtility.GetMaxAvailableProcessorCount();
-            PeerMaxThreadsPoolCompletionPort = PeerMinThreadsPoolCompletionPort  * ClassUtility.GetMaxAvailableProcessorCount();
+            PeerMinThreadsPool = 32;
+            PeerMinThreadsPoolCompletionPort = 64;
+            PeerMaxThreadsPool = 32;
+            PeerMaxThreadsPoolCompletionPort = 64;
             PeerMaxTaskIncomingConnection = BlockchainSetting.PeerMaxTaskIncomingConnection;
 
             // API Part.

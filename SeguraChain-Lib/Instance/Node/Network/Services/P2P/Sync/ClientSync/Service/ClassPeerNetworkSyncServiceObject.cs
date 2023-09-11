@@ -458,7 +458,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                             }
 
-                            ClearPeerTargetList(peerTargetList, true);
+                            ClearPeerTargetList(peerTargetList, false);
                         }
 
 
@@ -502,7 +502,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 ClassLog.WriteLine("Total sovereign update(s) received: " + await StartAskSovereignUpdateListFromListPeerTarget(peerTargetList), ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
 
 
-                            ClearPeerTargetList(peerTargetList, true);
+                            ClearPeerTargetList(peerTargetList, false);
                         }
                     }
                     catch (Exception error)
@@ -1164,7 +1164,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                     ClassLog.WriteLine("Current network informations not received. Retry the sync later..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                             }
 
-                            ClearPeerTargetList(peerTargetList, true);
+                            ClearPeerTargetList(peerTargetList, false);
                         }
 
                     }
