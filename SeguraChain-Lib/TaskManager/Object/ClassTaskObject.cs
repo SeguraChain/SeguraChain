@@ -34,9 +34,10 @@ namespace SeguraChain_Lib.TaskManager.Object
         /// </summary>
         public void Run()
         {
-            Started = true;
+            Task = new Task(_action, Cancellation.Token);
+            Task.Start();
 
-            Task = Task.Run(_action, Cancellation.Token);
+            Started = true;
         }
     }
 }

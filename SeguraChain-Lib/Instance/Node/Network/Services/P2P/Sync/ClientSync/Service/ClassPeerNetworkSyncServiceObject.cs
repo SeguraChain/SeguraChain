@@ -952,7 +952,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                 }
 
-                                ClearPeerTargetList(peerTargetList.GetList, true);
+                                ClearPeerTargetList(peerTargetList.GetList, false);
                             }
                         }
                         catch (Exception error)
@@ -1652,6 +1652,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 foreach (var blockHeight in listBlockHeightTarget.GetAll)
                     listBlockObjectsReceived.TryAdd(blockHeight, new Dictionary<int, ClassBlockObject>());
 
+
+                long blockHeightStart = listBlockHeightTarget.GetList.First();
+                long blockHeightEnd = listBlockHeightTarget.GetList.Last();
+
+
                 foreach (int i in peerListTarget.Keys)
                 {
                     if (peerListTarget[i] == null)
@@ -1666,19 +1671,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         continue;
                     }
 
-                    if (!_listPeerNetworkInformationStats.ContainsKey(peerListTarget[i].PeerIpTarget))
-                    {
-                        totalTaskDone++;
-                        continue;
-                    }
-
-                    long blockHeightStart = listBlockHeightTarget.GetList.First();
-                    long blockHeightEnd = listBlockHeightTarget.GetList.Last();
-
                     int i1 = i;
 
-                    //if (blockHeightEnd - blockHeightStart == 0)
-                    //{
+
+                    TaskManager.TaskManager.InsertTask(new Action(async () =>
+                    {
+
+                        //if (blockHeightEnd - blockHeightStart == 0)
+                        //{
                         foreach (long blockHeight in listBlockHeightTarget.GetList)
                         {
                             if (blockHeight < BlockchainSetting.GenesisBlockHeight)
@@ -1721,44 +1721,44 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                             listBlockObjectsReceived[result.Item2.ObjectReturned.BlockData.BlockHeight].Add(i1, result.Item2.ObjectReturned.BlockData);
 
                         }
-                    //}
+                        //}
 
-                    /*else
-                    {
-                        Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockDataRange>> result = await SendAskBlockDataByRange(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeightStart, blockHeightEnd, refuseLockedBlock, CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token));
-
-                        if (result != null && result.Item1 && result.Item2 != null)
+                        /*else
                         {
-                            foreach (ClassBlockObject blockObject in result.Item2.ObjectReturned.ListBlockObject)
+                            Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockDataRange>> result = await SendAskBlockDataByRange(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeightStart, blockHeightEnd, refuseLockedBlock, CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token));
+
+                            if (result != null && result.Item1 && result.Item2 != null)
                             {
-                                #region Ensure to clean the block object received.
-
-                                if (listBlockObjectsReceived.ContainsKey(blockObject.BlockHeight))
+                                foreach (ClassBlockObject blockObject in result.Item2.ObjectReturned.ListBlockObject)
                                 {
-                                    blockObject.BlockTransactionFullyConfirmed = false;
-                                    blockObject.BlockUnlockValid = false;
-                                    blockObject.BlockNetworkAmountConfirmations = 0;
-                                    blockObject.BlockSlowNetworkAmountConfirmations = 0;
-                                    blockObject.BlockLastHeightTransactionConfirmationDone = 0;
-                                    blockObject.BlockTotalTaskTransactionConfirmationDone = 0;
-                                    blockObject.BlockTransactionConfirmationCheckTaskDone = false;
+                                    #region Ensure to clean the block object received.
 
-                                    foreach (var transactionHash in blockObject.BlockTransactions.Keys)
+                                    if (listBlockObjectsReceived.ContainsKey(blockObject.BlockHeight))
                                     {
-                                        blockObject.BlockTransactions[transactionHash].TransactionTotalConfirmation = 0;
-                                        blockObject.BlockTransactions[transactionHash].TransactionInvalidStatus = ClassTransactionEnumStatus.VALID_TRANSACTION;
+                                        blockObject.BlockTransactionFullyConfirmed = false;
+                                        blockObject.BlockUnlockValid = false;
+                                        blockObject.BlockNetworkAmountConfirmations = 0;
+                                        blockObject.BlockSlowNetworkAmountConfirmations = 0;
+                                        blockObject.BlockLastHeightTransactionConfirmationDone = 0;
+                                        blockObject.BlockTotalTaskTransactionConfirmationDone = 0;
+                                        blockObject.BlockTransactionConfirmationCheckTaskDone = false;
+
+                                        foreach (var transactionHash in blockObject.BlockTransactions.Keys)
+                                        {
+                                            blockObject.BlockTransactions[transactionHash].TransactionTotalConfirmation = 0;
+                                            blockObject.BlockTransactions[transactionHash].TransactionInvalidStatus = ClassTransactionEnumStatus.VALID_TRANSACTION;
+                                        }
+
+
+                                        listBlockObjectsReceived[blockObject.BlockHeight].Add(i1, blockObject);
                                     }
-
-
-                                    listBlockObjectsReceived[blockObject.BlockHeight].Add(i1, blockObject);
+                                    #endregion
                                 }
-                                #endregion
                             }
-                        }
-                    }*/
+                        }*/
 
-                    totalTaskDone++;
-
+                        totalTaskDone++;
+                    }), 0, null);
                 }
 
                 while (totalTaskDone < totalTaskToDo)
@@ -2315,266 +2315,266 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                             }
 
 
-                            var i1 = i;
-
-                            var result = await SendAskBlockData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeightTarget, true, CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token));
-
-                            if (result != null)
+                            TaskManager.TaskManager.InsertTask(new Action(async () =>
                             {
-                                if (result.Item1)
+                                var i1 = i;
+
+                                var result = await SendAskBlockData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeightTarget, true, CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token));
+
+                                if (result != null)
                                 {
-                                    if (result.Item2?.ObjectReturned?.BlockData != null)
+                                    if (result.Item1)
                                     {
-                                        try
+                                        if (result.Item2?.ObjectReturned?.BlockData != null)
                                         {
-                                            ClassBlockObject blockDataReceived = result.Item2.ObjectReturned.BlockData;
-
-                                            if (blockDataReceived == null) // Sync memory failed.
-                                                break;
-
-                                            if (blockDataReceived.BlockHeight != blockHeightTarget)
-                                                ClassPeerCheckManager.InputPeerClientInvalidPacket(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
-                                            else
+                                            try
                                             {
-                                                bool peerRanked = false;
-                                                if (_peerNetworkSettingObject.PeerEnableSovereignPeerVote)
-                                                {
-                                                    if (CheckIfPeerIsRanked(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, result.Item2.ObjectReturned, result.Item2.PacketNumericHash, result.Item2.PacketNumericSignature, _cancellationTokenServiceSync, out string numericPublicKeyOut))
-                                                        peerRanked = !listOfRankedPeerPublicKeySaved.ContainsKey(numericPublicKeyOut) ? listOfRankedPeerPublicKeySaved.TryAdd(numericPublicKeyOut, 0) : false;
-                                                }
+                                                ClassBlockObject blockDataReceived = result.Item2.ObjectReturned.BlockData;
 
-                                                bool comparedShares = false;
-
-                                                if (blockObject.BlockHeight == BlockchainSetting.GenesisBlockHeight)
-                                                {
-                                                    if (blockDataReceived?.BlockMiningPowShareUnlockObject == null && blockObject.BlockMiningPowShareUnlockObject == null)
-                                                        comparedShares = true;
-                                                }
+                                                if (blockDataReceived.BlockHeight != blockHeightTarget)
+                                                    ClassPeerCheckManager.InputPeerClientInvalidPacket(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
                                                 else
-                                                    comparedShares = ClassMiningPoWaCUtility.ComparePoWaCShare(blockDataReceived.BlockMiningPowShareUnlockObject, blockObject.BlockMiningPowShareUnlockObject);
-
-                                                if (!comparedShares)
                                                 {
-                                                    if (blockDataReceived.BlockStatus == ClassBlockEnumStatus.LOCKED && blockObject.BlockStatus == ClassBlockEnumStatus.LOCKED
-                                                        && blockDataReceived.BlockMiningPowShareUnlockObject == null && blockObject.BlockMiningPowShareUnlockObject == null)
-                                                        comparedShares = true;
-                                                }
-
-                                                bool isEqual = false;
-
-                                                if (blockDataReceived.BlockHeight == blockObject.BlockHeight &&
-                                                    blockDataReceived.BlockHash == blockObject.BlockHash &&
-                                                    blockDataReceived.TimestampFound == blockObject.TimestampFound &&
-                                                    blockDataReceived.TimestampCreate == blockObject.TimestampCreate &&
-                                                    blockDataReceived.BlockStatus == blockObject.BlockStatus &&
-                                                    blockDataReceived.BlockDifficulty == blockObject.BlockDifficulty &&
-                                                    blockDataReceived.BlockFinalHashTransaction == blockObject.BlockFinalHashTransaction &&
-                                                    comparedShares &&
-                                                    blockDataReceived.BlockWalletAddressWinner == blockObject.BlockWalletAddressWinner)
-                                                {
-                                                    if (blockDataReceived.BlockTransactions.Count == blockObject.BlockTransactions.Count)
+                                                    bool peerRanked = false;
+                                                    if (_peerNetworkSettingObject.PeerEnableSovereignPeerVote)
                                                     {
-                                                        bool success = true;
+                                                        if (CheckIfPeerIsRanked(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, result.Item2.ObjectReturned, result.Item2.PacketNumericHash, result.Item2.PacketNumericSignature, _cancellationTokenServiceSync, out string numericPublicKeyOut))
+                                                            peerRanked = !listOfRankedPeerPublicKeySaved.ContainsKey(numericPublicKeyOut) ? listOfRankedPeerPublicKeySaved.TryAdd(numericPublicKeyOut, 0) : false;
+                                                    }
 
-                                                        foreach (string transactionHash in blockObject.BlockTransactions.Keys.ToArray())
+                                                    bool comparedShares = false;
+
+                                                    if (blockObject.BlockHeight == BlockchainSetting.GenesisBlockHeight)
+                                                    {
+                                                        if (blockDataReceived?.BlockMiningPowShareUnlockObject == null && blockObject.BlockMiningPowShareUnlockObject == null)
+                                                            comparedShares = true;
+                                                    }
+                                                    else
+                                                        comparedShares = ClassMiningPoWaCUtility.ComparePoWaCShare(blockDataReceived.BlockMiningPowShareUnlockObject, blockObject.BlockMiningPowShareUnlockObject);
+
+                                                    if (!comparedShares)
+                                                    {
+                                                        if (blockDataReceived.BlockStatus == ClassBlockEnumStatus.LOCKED && blockObject.BlockStatus == ClassBlockEnumStatus.LOCKED
+                                                            && blockDataReceived.BlockMiningPowShareUnlockObject == null && blockObject.BlockMiningPowShareUnlockObject == null)
+                                                            comparedShares = true;
+                                                    }
+
+                                                    bool isEqual = false;
+
+                                                    if (blockDataReceived.BlockHeight == blockObject.BlockHeight &&
+                                                        blockDataReceived.BlockHash == blockObject.BlockHash &&
+                                                        blockDataReceived.TimestampFound == blockObject.TimestampFound &&
+                                                        blockDataReceived.TimestampCreate == blockObject.TimestampCreate &&
+                                                        blockDataReceived.BlockStatus == blockObject.BlockStatus &&
+                                                        blockDataReceived.BlockDifficulty == blockObject.BlockDifficulty &&
+                                                        blockDataReceived.BlockFinalHashTransaction == blockObject.BlockFinalHashTransaction &&
+                                                        comparedShares &&
+                                                        blockDataReceived.BlockWalletAddressWinner == blockObject.BlockWalletAddressWinner)
+                                                    {
+                                                        if (blockDataReceived.BlockTransactions.Count == blockObject.BlockTransactions.Count)
                                                         {
-                                                            if (blockObject.BlockTransactions[transactionHash] == null)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
+                                                            bool success = true;
 
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.Amount != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.Amount)
+                                                            foreach (string transactionHash in blockObject.BlockTransactions.Keys.ToArray())
                                                             {
-                                                                success = false;
-                                                                break;
-                                                            }
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.BlockHash != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.BlockHash)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.BlockHeightTransaction != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.BlockHeightTransaction)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.BlockHeightTransactionConfirmationTarget != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.BlockHeightTransactionConfirmationTarget)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.Fee != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.Fee)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.PaymentId != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.PaymentId)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.TimestampBlockHeightCreateSend != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TimestampBlockHeightCreateSend)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.TimestampSend != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TimestampSend)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionBigSignatureReceiver != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TransactionBigSignatureReceiver)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionBigSignatureSender != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TransactionBigSignatureSender)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionHash != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TransactionHash)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionHashBlockReward != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TransactionHashBlockReward)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionSignatureReceiver != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TransactionSignatureReceiver)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionSignatureSender != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TransactionSignatureSender)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionType != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TransactionType)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionVersion != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TransactionVersion)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.WalletAddressReceiver != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.WalletAddressReceiver)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.WalletAddressSender != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.WalletAddressSender)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.WalletPublicKeyReceiver != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.WalletPublicKeyReceiver)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.WalletPublicKeySender != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.WalletPublicKeySender)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.AmountTransactionSource == null &&
-                                                                 blockDataReceived.BlockTransactions[transactionHash].TransactionObject.AmountTransactionSource == null)
-                                                                continue;
-
-                                                            if (blockObject.BlockTransactions[transactionHash].TransactionObject.AmountTransactionSource.Count != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.AmountTransactionSource.Count)
-                                                            {
-                                                                success = false;
-                                                                break;
-                                                            }
-
-                                                            foreach (string amountKey in blockObject.BlockTransactions[transactionHash].TransactionObject.AmountTransactionSource.Keys)
-                                                            {
-                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.AmountTransactionSource[amountKey].Amount != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.AmountTransactionSource[amountKey].Amount)
+                                                                if (blockObject.BlockTransactions[transactionHash] == null)
                                                                 {
                                                                     success = false;
                                                                     break;
                                                                 }
+
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.Amount != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.Amount)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.BlockHash != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.BlockHash)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.BlockHeightTransaction != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.BlockHeightTransaction)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.BlockHeightTransactionConfirmationTarget != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.BlockHeightTransactionConfirmationTarget)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.Fee != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.Fee)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.PaymentId != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.PaymentId)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.TimestampBlockHeightCreateSend != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TimestampBlockHeightCreateSend)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.TimestampSend != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TimestampSend)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionBigSignatureReceiver != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TransactionBigSignatureReceiver)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionBigSignatureSender != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TransactionBigSignatureSender)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionHash != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TransactionHash)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionHashBlockReward != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TransactionHashBlockReward)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionSignatureReceiver != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TransactionSignatureReceiver)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionSignatureSender != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TransactionSignatureSender)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionType != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TransactionType)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.TransactionVersion != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.TransactionVersion)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.WalletAddressReceiver != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.WalletAddressReceiver)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.WalletAddressSender != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.WalletAddressSender)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.WalletPublicKeyReceiver != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.WalletPublicKeyReceiver)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.WalletPublicKeySender != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.WalletPublicKeySender)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.AmountTransactionSource == null &&
+                                                                     blockDataReceived.BlockTransactions[transactionHash].TransactionObject.AmountTransactionSource == null)
+                                                                    continue;
+
+                                                                if (blockObject.BlockTransactions[transactionHash].TransactionObject.AmountTransactionSource.Count != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.AmountTransactionSource.Count)
+                                                                {
+                                                                    success = false;
+                                                                    break;
+                                                                }
+
+                                                                foreach (string amountKey in blockObject.BlockTransactions[transactionHash].TransactionObject.AmountTransactionSource.Keys)
+                                                                {
+                                                                    if (blockObject.BlockTransactions[transactionHash].TransactionObject.AmountTransactionSource[amountKey].Amount != blockDataReceived.BlockTransactions[transactionHash].TransactionObject.AmountTransactionSource[amountKey].Amount)
+                                                                    {
+                                                                        success = false;
+                                                                        break;
+                                                                    }
+                                                                }
+
+                                                                if (!success)
+                                                                    break;
                                                             }
 
-                                                            if (!success)
-                                                                break;
+
+                                                            if (success)
+                                                                isEqual = true;
                                                         }
-
-
-                                                        if (success)
-                                                            isEqual = true;
                                                     }
-                                                }
 #if DEBUG
-                                                else
-                                                {
-                                                    Debug.WriteLine("Block height: " + blockObject.BlockHeight + " is invalid for peer: " + peerListTarget[i1].PeerIpTarget);
-                                                    Debug.WriteLine("External: Height: " + blockDataReceived.BlockHeight +
-                                                                    Environment.NewLine + "Hash: " + blockDataReceived.BlockHash +
-                                                                    Environment.NewLine + "Timestamp create: " + blockDataReceived.TimestampCreate +
-                                                                    Environment.NewLine + "Timestamp found: " + blockDataReceived.TimestampFound +
-                                                                    Environment.NewLine + "Block status: " + blockDataReceived.BlockStatus +
-                                                                    Environment.NewLine + "Block Difficulty: " + blockDataReceived.BlockDifficulty +
-                                                                    Environment.NewLine + "Block final transaction hash: " + blockDataReceived.BlockFinalHashTransaction +
-                                                                    Environment.NewLine + "Block Mining pow share: " + ClassUtility.SerializeData(blockDataReceived.BlockMiningPowShareUnlockObject) +
-                                                                    Environment.NewLine + "Block wallet address winner: " + blockDataReceived.BlockWalletAddressWinner +
-                                                                    Environment.NewLine + "Block Transaction Count: " + blockDataReceived.BlockTransactions.Count);
+                                                    else
+                                                    {
+                                                        Debug.WriteLine("Block height: " + blockObject.BlockHeight + " is invalid for peer: " + peerListTarget[i1].PeerIpTarget);
+                                                        Debug.WriteLine("External: Height: " + blockDataReceived.BlockHeight +
+                                                                        Environment.NewLine + "Hash: " + blockDataReceived.BlockHash +
+                                                                        Environment.NewLine + "Timestamp create: " + blockDataReceived.TimestampCreate +
+                                                                        Environment.NewLine + "Timestamp found: " + blockDataReceived.TimestampFound +
+                                                                        Environment.NewLine + "Block status: " + blockDataReceived.BlockStatus +
+                                                                        Environment.NewLine + "Block Difficulty: " + blockDataReceived.BlockDifficulty +
+                                                                        Environment.NewLine + "Block final transaction hash: " + blockDataReceived.BlockFinalHashTransaction +
+                                                                        Environment.NewLine + "Block Mining pow share: " + ClassUtility.SerializeData(blockDataReceived.BlockMiningPowShareUnlockObject) +
+                                                                        Environment.NewLine + "Block wallet address winner: " + blockDataReceived.BlockWalletAddressWinner +
+                                                                        Environment.NewLine + "Block Transaction Count: " + blockDataReceived.BlockTransactions.Count);
 
-                                                    Debug.WriteLine("Internal: Height: " + blockObject.BlockHeight +
-                                                                    Environment.NewLine + "Hash: " + blockObject.BlockHash +
-                                                                    Environment.NewLine + "Timestamp create: " + blockObject.TimestampCreate +
-                                                                    Environment.NewLine + "Timestamp found: " + blockObject.TimestampFound +
-                                                                    Environment.NewLine + "Block status: " + blockObject.BlockStatus +
-                                                                    Environment.NewLine + "Block Difficulty: " + blockObject.BlockDifficulty +
-                                                                    Environment.NewLine + "Block final transaction hash: " + blockObject.BlockFinalHashTransaction +
-                                                                    Environment.NewLine + "Block Mining pow share: " + ClassUtility.SerializeData(blockObject.BlockMiningPowShareUnlockObject) +
-                                                                    Environment.NewLine + "Block wallet address winner: " + blockObject.BlockWalletAddressWinner +
-                                                                    Environment.NewLine + "Block Transaction Count: " + blockObject.BlockTransactions.Count);
-                                                }
+                                                        Debug.WriteLine("Internal: Height: " + blockObject.BlockHeight +
+                                                                        Environment.NewLine + "Hash: " + blockObject.BlockHash +
+                                                                        Environment.NewLine + "Timestamp create: " + blockObject.TimestampCreate +
+                                                                        Environment.NewLine + "Timestamp found: " + blockObject.TimestampFound +
+                                                                        Environment.NewLine + "Block status: " + blockObject.BlockStatus +
+                                                                        Environment.NewLine + "Block Difficulty: " + blockObject.BlockDifficulty +
+                                                                        Environment.NewLine + "Block final transaction hash: " + blockObject.BlockFinalHashTransaction +
+                                                                        Environment.NewLine + "Block Mining pow share: " + ClassUtility.SerializeData(blockObject.BlockMiningPowShareUnlockObject) +
+                                                                        Environment.NewLine + "Block wallet address winner: " + blockObject.BlockWalletAddressWinner +
+                                                                        Environment.NewLine + "Block Transaction Count: " + blockObject.BlockTransactions.Count);
+                                                    }
 #endif
 
 
-                                                totalResponseOk++;
+                                                    totalResponseOk++;
 
 
-                                                if (peerRanked)
-                                                {
-                                                    if (isEqual)
-                                                        listCheckBlockDataSeedVote[true]++;
+                                                    if (peerRanked)
+                                                    {
+                                                        if (isEqual)
+                                                            listCheckBlockDataSeedVote[true]++;
+                                                        else
+                                                            listCheckBlockDataSeedVote[false]++;
+                                                    }
                                                     else
-                                                        listCheckBlockDataSeedVote[false]++;
-                                                }
-                                                else
-                                                {
-                                                    if (isEqual)
-                                                        listCheckBlockDataNormVote[true]++;
-                                                    else
-                                                        listCheckBlockDataNormVote[false]++;
+                                                    {
+                                                        if (isEqual)
+                                                            listCheckBlockDataNormVote[true]++;
+                                                        else
+                                                            listCheckBlockDataNormVote[false]++;
+                                                    }
                                                 }
                                             }
-                                        }
-                                        catch (Exception error)
-                                        {
-                                            ClassLog.WriteLine("Failed to sync block data: " + blockHeightTarget + " from peer. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
-                                            totalTaskDone++;
-                                            break;
+                                            catch (Exception error)
+                                            {
+                                                ClassLog.WriteLine("Failed to sync block data: " + blockHeightTarget + " from peer. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                                            }
                                         }
                                     }
                                 }
-                            }
 
-                            totalTaskDone++;
+                                totalTaskDone++;
 
-
+                            }), 0, null);
                         }
+
+                        while(totalTaskDone < totalTaskToDo)
+                            await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
 
                         try
                         {

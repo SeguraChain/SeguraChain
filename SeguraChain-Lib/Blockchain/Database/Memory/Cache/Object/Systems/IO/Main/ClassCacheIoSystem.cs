@@ -141,36 +141,9 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         {
             if (_dictionaryCacheIoIndexObject.Count > 0)
             {
-                string[] ioFileNameArray = _dictionaryCacheIoIndexObject.Keys.ToArray();
-                int totalTaskToDo = ioFileNameArray.Length;
-                int totalTaskDone = 0;
 
-                foreach (string ioFileName in ioFileNameArray)
-                {
-                    if (_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask)
-                    {
-                        TaskManager.TaskManager.InsertTask(new Action(async () =>
-                        {
-                            try
-                            {
-                                await _dictionaryCacheIoIndexObject[ioFileName].PurgeIoBlockDataMemory(true, cancellation, 0, false);
-                            }
-                            catch
-                            {
-                                // The task has been cancelled.
-                            }
-                            totalTaskDone++;
-                        }), 0, cancellation);
-                    }
-                    else
+                foreach (string ioFileName in _dictionaryCacheIoIndexObject.Keys.ToArray())
                         await _dictionaryCacheIoIndexObject[ioFileName].PurgeIoBlockDataMemory(false, cancellation, 0, false);
-                }
-
-                if (_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask)
-                {
-                    while (totalTaskToDo > totalTaskDone && !cancellation.IsCancellationRequested)
-                        await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskParallelTaskWaitDelay);
-                }
 
                 long totalIoCacheMemoryUsage = GetIoCacheSystemMemoryConsumption(cancellation, out int totalBlockKeepAlive);
 
