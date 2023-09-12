@@ -242,7 +242,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                     _peerSocketClient = new ClassCustomSocket(new TcpClient(ClassUtility.GetAddressFamily(PeerIpTarget)), false);
 
                     if (await _peerSocketClient.ConnectAsync(PeerIpTarget, PeerPortTarget))
-                        successConnect = _peerSocketClient.IsConnected();
+                        successConnect = true;
                     else _peerSocketClient?.Kill(SocketShutdown.Both);
 
                 }

@@ -33,7 +33,7 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
 #endif
         private const int ManageApiFirewallInterval = 2 * 1000;
         private const int CleanUpApiDeadConnectionInterval = 10 * 1000;
-        private const int CleanUpPeerDeadConnectionInterval = 10 * 1000;
+        private const int CleanUpPeerDeadConnectionInterval = 60 * 1000;
         private const int UpdateBlockTransactionConfirmationInterval = 1 * 1000;
         private const int UpdateNodeInternalStats = 1 * 1000;
         private const int UpdateBlockchainStatsInterval = 1 * 1000;

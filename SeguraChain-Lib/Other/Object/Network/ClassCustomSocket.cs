@@ -121,24 +121,13 @@ namespace SeguraChain_Lib.Other.Object.Network
                 {
                     readPacketData.Data = new byte[packetLength];
                     readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
-
-                    if (readPacketData.Status)
-                    {
-                        foreach (var data in readPacketData.Data)
-                        {
-                            if ((char)data != '\0')
-                            {
-                                if (ClassUtility.CharIsABase64Character((char)data) || (char)data == ClassPeerPacketSetting.PacketPeerSplitSeperator)
-                                    packetData.Add(data);
-                            }
-                        }
-                        readPacketData.Data = packetData.GetList.ToArray();
-                    }
                 }
             }
             catch (Exception error)
             {
+#if DEBUG
                 Debug.WriteLine("Reading packet exception from " + GetIp + " | Exception: " + error.Message);
+#endif
             }
             return readPacketData;
         }
