@@ -154,9 +154,9 @@ namespace SeguraChain_Lib.Blockchain.Stats.Function
         /// <param name="cancellation"></param>
         /// <param name="maxRange"></param>
         /// <returns></returns>
-        public static DisposableList<long> GetListBlockMissing(long blockHeightTarget, bool enableMaxRange, bool ignoreLockedBlocks, CancellationTokenSource cancellation, int maxRange)
+        public static async Task<DisposableList<long>> GetListBlockMissing(long blockHeightTarget, bool enableMaxRange, bool ignoreLockedBlocks, CancellationTokenSource cancellation, int maxRange)
         {
-            return ClassBlockchainDatabase.BlockchainMemoryManagement.GetListBlockMissing(blockHeightTarget, enableMaxRange, ignoreLockedBlocks, cancellation, maxRange);
+            return await ClassBlockchainDatabase.BlockchainMemoryManagement.GetListBlockMissing(blockHeightTarget, enableMaxRange, ignoreLockedBlocks, cancellation, maxRange);
         }
 
         /// <summary>

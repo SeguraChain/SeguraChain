@@ -198,7 +198,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Object.Structure
                 /*if (ClassBlockUtility.StringToBlockObject(ClassBlockUtility.SplitBlockObject(this), out blockObjectCopy) && retrieveTx)
                     blockObjectCopy.BlockTransactions = new SortedList<string, ClassBlockTransaction>(_blockTransactions.ToDictionary(x => x.Key, x => x.Value));*/
 
-                if (_blockTransactions != null)
+                if (BlockTransactions != null)
                 {
                     blockObjectCopy = new ClassBlockObject(BlockHeight, BlockDifficulty, BlockHash, TimestampCreate, TimestampFound, BlockStatus, BlockUnlockValid, BlockTransactionConfirmationCheckTaskDone)
                     {
@@ -230,8 +230,8 @@ namespace SeguraChain_Lib.Blockchain.Block.Object.Structure
                         BlockCloned = true,
                     };
 
-                    blockObjectCopy.BlockTransactions = retrieveTx ? new SortedList<string, ClassBlockTransaction>(_blockTransactions.ToDictionary(x => x.Key.DeepCopy(), x => x.Value.Clone())) : new SortedList<string, ClassBlockTransaction>();
-                    blockObjectCopy.TotalTransaction = retrieveTx ? blockObjectCopy.BlockTransactions.Count : (_blockTransactions != null ? _blockTransactions.Count : 0);
+                    blockObjectCopy.BlockTransactions = retrieveTx ? new SortedList<string, ClassBlockTransaction>(BlockTransactions.ToDictionary(x => x.Key.DeepCopy(), x => x.Value.Clone())) : new SortedList<string, ClassBlockTransaction>();
+                    blockObjectCopy.TotalTransaction = retrieveTx ? blockObjectCopy.BlockTransactions.Count : (BlockTransactions != null ? BlockTransactions.Count : 0);
                 }
             }
 #if DEBUG

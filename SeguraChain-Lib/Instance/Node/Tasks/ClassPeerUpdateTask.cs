@@ -329,7 +329,7 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
                         {
                             bool blockMissing = false;
 
-                            using (DisposableList<long> listBlockMissing = ClassBlockchainStats.GetListBlockMissing(ClassBlockchainStats.GetLastBlockHeight(), false, true, _cancellationTokenSourceUpdateTask, 0))
+                            using (DisposableList<long> listBlockMissing = await ClassBlockchainStats.GetListBlockMissing(ClassBlockchainStats.GetLastBlockHeight(), false, true, _cancellationTokenSourceUpdateTask, 0))
                             {
                                 if (listBlockMissing.Count > 0)
                                 {

@@ -1118,7 +1118,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         /// <param name="cancellation"></param>
         /// <param name="maxRange"></param>
         /// <returns></returns>
-        public DisposableList<long> GetListBlockMissing(long blockHeightTarget, bool enableMaxRange, bool ignoreLockedBlocks, CancellationTokenSource cancellation, int maxRange)
+        public async Task<DisposableList<long>> GetListBlockMissing(long blockHeightTarget, bool enableMaxRange, bool ignoreLockedBlocks, CancellationTokenSource cancellation, int maxRange)
         {
             DisposableList<long> blockMiss = new DisposableList<long>();
 
@@ -1150,15 +1150,12 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                 if (found || ignoreLockedBlocks || !ContainsKey(blockHeightExpected))
                     continue;
 
-                if (_dictionaryBlockObjectMemory[blockHeightExpected].Content != null)
+                ClassBlockObject blockObject = await GetBlockMirrorObject(blockHeightExpected, cancellation);
+                if (blockObject.BlockStatus == ClassBlockEnumStatus.LOCKED)
                 {
-                    if (_dictionaryBlockObjectMemory[blockHeightExpected].Content.BlockStatus == ClassBlockEnumStatus.LOCKED)
-                    {
-                        blockMiss.Add(blockHeightExpected);
-                        countBlockListed++;
-                    }
+                    blockMiss.Add(blockHeightExpected);
+                    countBlockListed++;
                 }
-            
             }
 
             return blockMiss;
@@ -1647,6 +1644,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                             {
                                                                 if (listBlockObjectUpdated.Count > 0)
                                                                 {
+#if DEBUG
+                                                                    Stopwatch stopwatch = new Stopwatch();
+                                                                    stopwatch.Start();
+#endif
                                                                     if (!await AddOrUpdateListBlockObjectOnMemoryDataCache(listBlockObjectUpdated.GetList.Values.ToList(), true, cancellation))
                                                                     {
 #if DEBUG
@@ -1655,6 +1656,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                         ClassLog.WriteLine("Can't update block(s) updated on the cache system, cancel task of block transaction confirmation.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_TRANSACTION_CONFIRMATION, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
                                                                         canceled = true;
                                                                     }
+#if DEBUG
+                                                                    stopwatch.Stop();
+                                                                    Debug.WriteLine("Timespend to insert: " + listBlockObjectUpdated.Count + " | Total tx: " + listBlockObjectUpdated.GetList.Values.Sum(x => x.TotalTransaction) + " | "+stopwatch.ElapsedMilliseconds+" ms.");
+#endif
                                                                 }
                                                             }
                                                         }
