@@ -715,11 +715,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                         return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
                                 }
 
-                                SignPacketWithNumericPrivateKey(packetSendBlockDataRange, out string hashNumeric, out string signatureNumeric);
-
-                                packetSendBlockDataRange.PacketNumericHash = hashNumeric;
-                                packetSendBlockDataRange.PacketNumericSignature = signatureNumeric;
-
                                 if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                 {
                                     PacketOrder = ClassPeerEnumPacketResponse.SEND_BLOCK_DATA_BY_RANGE,
@@ -755,11 +750,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                         BlockData = blockObject,
                                         PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                     };
-
-                                    SignPacketWithNumericPrivateKey(packetSendBlockData, out string hashNumeric, out string signatureNumeric);
-
-                                    packetSendBlockData.PacketNumericHash = hashNumeric;
-                                    packetSendBlockData.PacketNumericSignature = signatureNumeric;
 
                                     if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                     {
@@ -817,12 +807,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                         BlockHash = blockObject.BlockHash,
                                         PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                     };
-
-
-                                    SignPacketWithNumericPrivateKey(packetSendBlockHeightInformation, out string hashNumeric, out string signatureNumeric);
-
-                                    packetSendBlockHeightInformation.PacketNumericHash = hashNumeric;
-                                    packetSendBlockHeightInformation.PacketNumericSignature = signatureNumeric;
 
                                     if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                     {
@@ -883,11 +867,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                 TransactionObject = transactionList.GetList.ElementAt(packetSendAskBlockTransactionData.TransactionId).Value.TransactionObject,
                                                 PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                             };
-
-                                            SignPacketWithNumericPrivateKey(packetSendBlockTransactionData, out string hashNumeric, out string signatureNumeric);
-
-                                            packetSendBlockTransactionData.PacketNumericHash = hashNumeric;
-                                            packetSendBlockTransactionData.PacketNumericSignature = signatureNumeric;
 
                                             if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                             {
@@ -966,10 +945,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                                     PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                                 };
 
-                                                SignPacketWithNumericPrivateKey(packetSendBlockTransactionData, out string hashNumeric, out string signatureNumeric);
-
-                                                packetSendBlockTransactionData.PacketNumericHash = hashNumeric;
-                                                packetSendBlockTransactionData.PacketNumericSignature = signatureNumeric;
 
                                                 bool sendError = false;
 
