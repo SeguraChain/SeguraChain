@@ -301,7 +301,7 @@ namespace SeguraChain_Lib.TaskManager
         {
             if (TaskManagerEnabled)
             {
-                useFactory = true;
+                //useFactory = true;
 
                 long end = timestampEnd - CurrentTimestampMillisecond;
 
