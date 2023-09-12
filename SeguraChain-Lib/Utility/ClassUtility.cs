@@ -631,9 +631,6 @@ namespace SeguraChain_Lib.Utility
             }
             catch
             {
-#if DEBUG
-                Debug.WriteLine("Failed to parse: " + contentTrimmed);
-#endif
             }
 
             if (isNull)

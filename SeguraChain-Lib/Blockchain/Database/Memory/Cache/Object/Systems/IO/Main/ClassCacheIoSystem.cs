@@ -404,7 +404,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                 {
                                     try
                                     {
-                                        if (!cancel)
+                                        if (!cancel && listBlockObject.ContainsKey(ioFileName))
                                             result = await _dictionaryCacheIoIndexObject[ioFileName].PushOrUpdateListIoBlockData(listBlockObject[ioFileName], keepAlive, cancellation);
 
                                     }
