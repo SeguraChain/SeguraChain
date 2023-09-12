@@ -345,20 +345,8 @@ namespace SeguraChain_Lib.TaskManager
                         bool isLocked = false;
                         try
                         {
-                            isLocked = Monitor.TryEnter(_taskCollection, 1000);
+                            isLocked = Monitor.TryEnter(_taskCollection);
 
-                            while(!isLocked)
-                            {
-#if DEBUG
-                                Debug.WriteLine("Failed to lock taskCollection");
-#endif
-                                if (cancellationTask.IsCancellationRequested)
-                                    break;
-
-                                isLocked = Monitor.TryEnter(_taskCollection, 1000);
-
-                                Thread.Sleep(1);
-                            }
                             if (isLocked)
                             {
                                 _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
