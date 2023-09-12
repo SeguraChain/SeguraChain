@@ -49,42 +49,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
             Dictionary<int, ClassPeerTargetObject> newListSelected = new Dictionary<int, ClassPeerTargetObject>();
 
-            if (previousListPeerSelected.Count > 0)
-            {
-                foreach (int peerIndex in previousListPeerSelected.Keys.ToArray())
-                {
-                    if (cancellation.IsCancellationRequested)
-                        break;
-                    bool removePeerConnection = false;
-                    string peerIp = previousListPeerSelected[peerIndex].PeerIpTarget;
-                    if (peerIp != peerToExcept && peerIp != peerServerIp && peerIp != peerOpenNatServerIp)
-                    {
-                        string peerUniqueId = previousListPeerSelected[peerIndex].PeerUniqueIdTarget;
-
-                        if (!ClassPeerCheckManager.CheckPeerClientStatus(peerIp, peerUniqueId, false, peerNetworkSetting, peerFirewallSettingObject))
-                            removePeerConnection = true;
-                    }
-                    else
-                        removePeerConnection = true;
-
-                    if (removePeerConnection)
-                    {
-                        try
-                        {
-                            if (previousListPeerSelected[peerIndex].PeerNetworkClientSyncObject != null)
-                            {
-                                previousListPeerSelected[peerIndex].PeerNetworkClientSyncObject.DisconnectFromTarget();
-                                previousListPeerSelected[peerIndex].PeerNetworkClientSyncObject.Dispose();
-                            }
-                        }
-                        catch
-                        {
-                            // Ignored.
-                        }
-                        previousListPeerSelected.Remove(peerIndex);
-                    }
-                }
-            }
 
             if (ClassPeerDatabase.DictionaryPeerDataObject.Count > 0)
             {

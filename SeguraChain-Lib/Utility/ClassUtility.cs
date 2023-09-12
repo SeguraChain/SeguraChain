@@ -1326,14 +1326,7 @@ namespace SeguraChain_Lib.Utility
         /// <returns></returns>
         public static string GetStringFromByteArrayUtf8(this byte[] content)
         {
-            string result = string.Empty;
-
-            for (int i = 0; i < content.Length; i++)
-            {
-                if (i < content.Length)
-                    result += (char)content[i];
-            }
-            return result;
+            return content != null && content?.Length > 0 ? new UTF8Encoding().GetString(content) : null;
         }
 
         /// <summary>

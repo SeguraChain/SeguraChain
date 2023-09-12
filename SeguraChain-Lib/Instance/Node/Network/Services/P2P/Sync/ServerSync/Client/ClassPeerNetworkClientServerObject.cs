@@ -2074,23 +2074,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             packetSendObject.ClearPacketData();
 #endif
             if (decryptedPacketContent == null)
-            {
-#if DEBUG
-                Debug.WriteLine("Failed to decrypt the packet content: " + System.Enum.GetName(typeof(ClassPeerEnumPacketSend), packetSendObject.PacketOrder));
-#endif
                  return default;
-            }
-
+           
 
             string jsonContent = decryptedPacketContent.GetStringFromByteArrayUtf8();
 
             if (!ClassUtility.TryDeserialize(jsonContent, out T result) || result == null)
-            {
-#if DEBUG
-                Debug.WriteLine("Failed to deserialize the packet content: " + jsonContent);
-#endif
                 return default;
-            }
 
 #if DEBUG
             // Clean up after.
