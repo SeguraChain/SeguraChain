@@ -186,7 +186,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int PeerDelayDeleteDeadPeer = 600;
         public const int PeerMinPort = 1;
         public const int PeerMaxPort = 65_535;
-        public const int PeerMaxNodeConnectionPerIp = 1000;
+        public const int PeerMaxNodeConnectionPerIp = 1024;
         public const int PeerMaxSemaphoreConnectAwaitDelay = 5_000;
         public const int PeerMaxRangeBlockToSyncPerRequest = 5; // Amount of blocks to sync per range.
         public const int PeerMaxRangeTransactionToSyncPerRequest = 5; // Amount of transactions to sync per range.

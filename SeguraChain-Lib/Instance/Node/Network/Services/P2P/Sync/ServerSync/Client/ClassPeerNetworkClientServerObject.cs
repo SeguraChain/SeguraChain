@@ -223,6 +223,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
         /// <returns></returns>
         public void HandlePeerClient()
         {
+
             ClientPeerLastPacketReceived = TaskManager.TaskManager.CurrentTimestampMillisecond + _peerNetworkSettingObject.PeerServerPacketDelay;
 
             // Launch a task for check the peer connection.

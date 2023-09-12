@@ -458,7 +458,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                             }
 
-                            ClearPeerTargetList(peerTargetList, true);
+                            ClearPeerTargetList(peerTargetList, false);
                         }
 
 
@@ -502,7 +502,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 ClassLog.WriteLine("Total sovereign update(s) received: " + await StartAskSovereignUpdateListFromListPeerTarget(peerTargetList), ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
 
 
-                            ClearPeerTargetList(peerTargetList, true);
+                            ClearPeerTargetList(peerTargetList, false);
                         }
                     }
                     catch (Exception error)
@@ -660,26 +660,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                             ClassLog.WriteLine("The block height: " + blockObject.BlockHeight + " data updated successfully, continue to sync.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
                                                         }
 
-
-                                                        /*
-                                                        using (DisposableDictionary<string, string> listWalletAndPublicKeys = new DisposableDictionary<string, string>())
-                                                        {
-                                                            using (CancellationTokenSource cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource(_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000).Token))
-                                                            {
-                                                                if (!await SyncBlockDataTransaction(lastBlockHeightNetworkUnlocked, blockObject, peerTargetList, listWalletAndPublicKeys, cancellation))
-                                                                {
-                                                                    ClassLog.WriteLine("Failed to sync block transaction(s) from the block height: " + blockObject.BlockHeight, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                                                                    break;
-                                                                }
-                                                                else
-                                                                {
-                                                                    if (index == syncBlockResult.Count - 1)
-                                                                        await ClassBlockchainDatabase.GenerateNewMiningBlockObject(blockObject.BlockHeight, blockObject.BlockHeight + 1, blockObject.TimestampFound, blockObject.BlockWalletAddressWinner, false, false, _cancellationTokenServiceSync);
-                                                                }
-                                                            }
-                                                        }
-                                                        */
-
                                                     }
                                                     else
                                                     {
@@ -699,51 +679,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                 forceDisconnect = true;
                                                 ClassLog.WriteLine("Can't sync " + blockListToSync.Count + " block(s), retry again later.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                                             }
-                                            /*
-                                            #region Resync the last block height if necessary, to unlock the sync progress from the node majority.
-
-                                            ClassBlockObject blockObjectInformationsToCheck = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockInformationDataStrategy(lastBlockHeightUnlocked, _cancellationTokenServiceSync);
-
-                                            if (blockObjectInformationsToCheck != null)
-                                            {
-                                                switch (await StartCheckBlockDataUnlockedFromListPeerTarget(peerTargetList, blockObjectInformationsToCheck.BlockHeight, blockObjectInformationsToCheck))
-                                                {
-                                                    case ClassPeerNetworkSyncServiceEnumCheckBlockDataUnlockedResult.INVALID_BLOCK:
-                                                    case ClassPeerNetworkSyncServiceEnumCheckBlockDataUnlockedResult.NO_CONSENSUS_FOUND:
-                                                        {
-                                                            using (DisposableList<long> blockListToCorrect = new DisposableList<long>(false, 0, new List<long>() { blockObjectInformationsToCheck.BlockHeight }))
-                                                            {
-                                                                using (var syncBlockFixResult = await StartAskBlockObjectFromListPeerTarget(peerTargetList, blockListToCorrect, true))
-                                                                {
-
-                                                                    if (syncBlockFixResult.Count > 0)
-                                                                    {
-                                                                        ClassLog.WriteLine("The block height: " + lastBlockHeight + " seems to be retrieve from peers, sync transactions..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
-                                                                        if (syncBlockFixResult[blockObjectInformationsToCheck.BlockHeight]?.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
-                                                                        {
-
-                                                                            await FixMiningBlockLocked(lastBlockHeight, lastBlockHeightUnlocked, lastBlockHeight, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenServiceSync);
-
-                                                                            ClassLog.WriteLine("The block height: " + lastBlockHeight + " retrieved from peers, is fixed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            ClassLog.WriteLine("Sync of transaction(s) from the block height: " + syncBlockFixResult[0].BlockHeight + " failed. The block is not unlocked. Cancel sync and retry again.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                                                                        }
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        ClassLog.WriteLine("Can't sync again transactions for the block height: " + lastBlockHeight + " cancel the task of checking blocks.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                        break;
-                                                }
-                                            }
-
-                                            #endregion
-                                        }*/
                                         }
                                     }
                                 }
@@ -952,7 +887,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                 }
 
-                                ClearPeerTargetList(peerTargetList.GetList, true);
+                                ClearPeerTargetList(peerTargetList.GetList, false);
                             }
                         }
                         catch (Exception error)
@@ -1168,7 +1103,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                     ClassLog.WriteLine("Current network informations not received. Retry the sync later..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                             }
 
-                            ClearPeerTargetList(peerTargetList, true);
+                            ClearPeerTargetList(peerTargetList, false);
                         }
 
                     }

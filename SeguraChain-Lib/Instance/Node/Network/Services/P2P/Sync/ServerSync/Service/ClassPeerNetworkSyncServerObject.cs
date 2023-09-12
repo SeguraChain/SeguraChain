@@ -113,6 +113,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
                         TaskManager.TaskManager.InsertTask(new Action(async () =>
                         {
+                            ClassLog.WriteLine("Handle incoming connection from: " + clientIp, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
+
                             var handleResult = await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer);
 
                             switch (handleResult)
@@ -137,7 +139,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                     }
                                     break;
                             }
-                        }), 0, _cancellationTokenSourcePeerServer);
+                        }), 0, _cancellationTokenSourcePeerServer, null, true);
                     }
                     catch
                     {
