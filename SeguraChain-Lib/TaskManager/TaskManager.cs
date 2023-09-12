@@ -107,7 +107,9 @@ namespace SeguraChain_Lib.TaskManager
                     {
                         bool isLocked = false;
                         bool cleaned = false;
-
+#if DEBUG
+                        long count = 0;
+#endif
                         try
                         {
                             isLocked = Monitor.TryEnter(_taskCollection);
@@ -126,6 +128,9 @@ namespace SeguraChain_Lib.TaskManager
                                             cleaned = true;
 
                                             _listTaskIdCompleted.Remove(taskId);
+#if DEBUG
+                                            count++;
+#endif
                                         }
                                         catch
                                         {
@@ -154,13 +159,12 @@ namespace SeguraChain_Lib.TaskManager
                         finally
                         {
                             if (isLocked)
-                            {
-                                if (cleaned)
-                                    Monitor.PulseAll(_taskCollection);
-
                                 Monitor.Exit(_taskCollection);
-                            }
                         }
+
+#if DEBUG
+                        Debug.WriteLine("Total dead task cleaned: " + count);
+#endif
                     }
 
 

@@ -332,7 +332,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                 useSemaphore = await _ioSemaphoreAccess.TryWaitAsync(cancellationIoCache);
 
                 if (useSemaphore)
-                    blockObject = await CallGetRetrieveDataAccess(blockHeight, keepAlive, false, clone, cancellationIoCache);
+                   return await CallGetRetrieveDataAccess(blockHeight, keepAlive, false, clone, cancellationIoCache);
             }
             finally
             {
@@ -1329,10 +1329,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                             {
                                 byte[] blockData = new byte[sizeByBlockToRead];
 
-                                if (cancellation == null)
-                                    await ioFileStream.ReadAsync(blockData, 0, blockData.Length);
-                                else
-                                    await ioFileStream.ReadAsync(blockData, 0, blockData.Length, cancellation.Token);
+                                ioFileStream.Read(blockData, 0, blockData.Length);
 
                                 listData.Add(blockData);
 
@@ -1346,10 +1343,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                                 {
                                     byte[] blockData = new byte[rest];
 
-                                    if (cancellation == null)
-                                        await ioFileStream.ReadAsync(blockData, 0, blockData.Length);
-                                    else
-                                        await ioFileStream.ReadAsync(blockData, 0, blockData.Length, cancellation.Token);
+                                    ioFileStream.Read(blockData, 0, blockData.Length);
 
                                     listData.Add(blockData);
 

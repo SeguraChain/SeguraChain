@@ -956,8 +956,8 @@ namespace SeguraChain_Lib.Blockchain.Database
                                                                                                                  {
                                                                                                                      BlockchainMemoryManagement[blockHeight, cancellation].TimestampFound = miningPowShareObject.Timestamp;
                                                                                                                      BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject = miningPowShareObject;
-                                                                                                                     BlockchainMemoryManagement[blockHeight, cancellation].BlockUnlockValid = true;
-                                                                                                                    BlockchainMemoryManagement[blockHeight, cancellation].BlockNetworkAmountConfirmations = BlockchainSetting.BlockAmountNetworkConfirmations;
+                                                                                                                     BlockchainMemoryManagement[blockHeight, cancellation].BlockUnlockValid = false;
+                                                                                                                    BlockchainMemoryManagement[blockHeight, cancellation].BlockNetworkAmountConfirmations = 0;
                                                                                                                      BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus = ClassBlockEnumStatus.UNLOCKED;
                                                                                                                      BlockchainMemoryManagement[blockHeight, cancellation].BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
@@ -1053,8 +1053,8 @@ namespace SeguraChain_Lib.Blockchain.Database
 
                                                                                                      BlockchainMemoryManagement[blockHeight, cancellation].TimestampFound = miningPowShareObject.Timestamp;
                                                                                                      BlockchainMemoryManagement[blockHeight, cancellation].BlockMiningPowShareUnlockObject = miningPowShareObject;
-                                                                                                     BlockchainMemoryManagement[blockHeight, cancellation].BlockUnlockValid = true;
-                                                                                                     BlockchainMemoryManagement[blockHeight, cancellation].BlockNetworkAmountConfirmations = BlockchainSetting.BlockAmountNetworkConfirmations;
+                                                                                                     BlockchainMemoryManagement[blockHeight, cancellation].BlockUnlockValid = false;
+                                                                                                     BlockchainMemoryManagement[blockHeight, cancellation].BlockNetworkAmountConfirmations = 0;
                                                                                                      BlockchainMemoryManagement[blockHeight, cancellation].BlockStatus = ClassBlockEnumStatus.UNLOCKED;
                                                                                                      BlockchainMemoryManagement[blockHeight, cancellation].BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 

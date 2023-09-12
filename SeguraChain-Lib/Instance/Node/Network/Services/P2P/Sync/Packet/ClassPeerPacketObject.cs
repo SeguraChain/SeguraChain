@@ -145,31 +145,40 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
             status = false;
             string[] splitPacketData = null;
 
-            if (packetData?.Length > 0)
+            try
             {
-                splitPacketData = packetData.GetStringFromByteArrayUtf8().Split(new[] { "#" }, StringSplitOptions.RemoveEmptyEntries);
-
-
-                if (int.TryParse(splitPacketData[0], out int packetOrder) &&
-                    long.TryParse(splitPacketData[6], out long peerLastTimestampSignatureWhitelist))
+                if (packetData?.Length > 0)
                 {
-                    PacketOrder = (ClassPeerEnumPacketResponse)packetOrder;
-                    PacketContent = splitPacketData[1];
-                    PacketHash = splitPacketData[2] != "empty" ? ClassUtility.DecompressHexString(splitPacketData[2]) : string.Empty;
-                    PacketSignature = splitPacketData[3];
-                    PacketPeerUniqueId = splitPacketData[4];
-                    PublicKey = splitPacketData[5];
-                    PeerLastTimestampSignatureWhitelist = peerLastTimestampSignatureWhitelist;
-                    status = true;
+                    splitPacketData = packetData.GetStringFromByteArrayUtf8().Split(new[] { "#" }, StringSplitOptions.RemoveEmptyEntries);
+
+
+                    if (int.TryParse(splitPacketData[0], out int packetOrder) &&
+                        long.TryParse(splitPacketData[6], out long peerLastTimestampSignatureWhitelist))
+                    {
+                        PacketOrder = (ClassPeerEnumPacketResponse)packetOrder;
+                        PacketContent = splitPacketData[1];
+                        PacketHash = splitPacketData[2] != "empty" ? ClassUtility.DecompressHexString(splitPacketData[2]) : string.Empty;
+                        PacketSignature = splitPacketData[3];
+                        PacketPeerUniqueId = splitPacketData[4];
+                        PublicKey = splitPacketData[5];
+                        PeerLastTimestampSignatureWhitelist = peerLastTimestampSignatureWhitelist;
+                        status = true;
+                    }
+
+
                 }
 
-
-            }
-
 #if DEBUG
-            if (!status)
-                Debug.WriteLine("Invalid recv packet format, length: " + splitPacketData != null ? splitPacketData.Length : 0);
+                if (!status)
+                    Debug.WriteLine("Invalid recv packet format, length: " + splitPacketData != null ? splitPacketData.Length : 0);
 #endif
+            }
+            catch(Exception error)
+            {
+#if DEBUG
+                Debug.WriteLine("Can't compile the packet data received. Exception: " + error.Message);
+#endif
+            }
 
         }
 
