@@ -4296,7 +4296,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                 {
                     case CacheEnumName.IO_CACHE:
                         {
-                            using (DisposableSortedList<long, ClassBlockObject> listBlockObject = await GetBlockListFromBlockHeightRangeTargetFromMemoryDataCache(blockHeightStart, blockHeightEnd, false, false, cancellation))
+                            using (DisposableSortedList<long, ClassBlockObject> listBlockObject = await GetBlockListFromBlockHeightRangeTargetFromMemoryDataCache(blockHeightStart, blockHeightEnd, true, true, cancellation))
                             {
                                 foreach (var block in listBlockObject.GetList)
                                 {

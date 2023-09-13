@@ -1526,18 +1526,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                                 if (transactionStatus == ClassTransactionEnumStatus.VALID_TRANSACTION)
                                                 {
-                                                     var walletBalance = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetWalletBalanceFromTransaction(transactionObject.WalletAddressSender, blockHeightSend, false, false, false, true, null, _cancellationTokenListenPeerPacket);
 
-                                                    if (walletBalance.WalletBalance < transactionObject.Amount)
-                                                        transactionStatus = ClassTransactionEnumStatus.NOT_ENOUGHT_AMOUNT;
-                                                    else
-                                                    {
-                                                        if (!alreadyExist)
-                                                            ClassMemPoolDatabase.InsertTxToMemPool(transactionObject);
+                                                    if (!alreadyExist)
+                                                        ClassMemPoolDatabase.InsertTxToMemPool(transactionObject);
 
-                                                        if (transactionObject.BlockHeightTransactionConfirmationTarget <= ClassBlockchainStats.GetLastBlockHeight())
-                                                            listTransactionToBroadcast.Add(transactionObject);
-                                                    }
+                                                    if (transactionObject.BlockHeightTransactionConfirmationTarget > ClassBlockchainStats.GetLastBlockHeight())
+                                                        listTransactionToBroadcast.Add(transactionObject);
+
                                                 }
                                             }
                                         }
