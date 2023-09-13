@@ -248,7 +248,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     await Task.Delay(1000);
                 }
 
-            }), 0, _cancellation, null);
+            }), 0, _cancellation, null).Wait();
 
         }
 
@@ -482,7 +482,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                 long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayToConnectToTarget * 1000);
 
-                TaskManager.TaskManager.InsertTask(new Action(async () =>
+                await TaskManager.TaskManager.InsertTask(new Action(async () =>
                 {
                     while (!successConnect)
                     {
@@ -491,7 +491,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                             _peerSocketClient?.Kill(SocketShutdown.Both);
                             _peerSocketClient = new ClassCustomSocket(new TcpClient(ClassUtility.GetAddressFamily(_peerIpTarget)), false);
 
-                            if (await _peerSocketClient.ConnectAsync(_peerIpTarget, _peerPortTarget))
+                            if (_peerSocketClient.Connect(_peerIpTarget, _peerPortTarget))
                             {
                                 successConnect = true;
                                 break;
@@ -560,7 +560,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 CancellationTokenSource cancellationReceiveBroadcastResponsePacket = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationToken.Token);
 
 
-                TaskManager.TaskManager.InsertTask(new Action(async () =>
+                await TaskManager.TaskManager.InsertTask(new Action(async () =>
                 {
 
                     try
@@ -764,7 +764,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         }
                     }
 
-                }), 0, _peerCancellationToken, _peerSocketClient);
+                }), 0, _peerCancellationToken, _peerSocketClient).Wait();
             }
 
             /// <summary>
@@ -924,7 +924,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     }
 
 
-                }), 0, _peerCancellationToken, _peerSocketClient);
+                }), 0, _peerCancellationToken, _peerSocketClient).Wait();
             }
 
             /// <summary>
@@ -1021,7 +1021,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     }
 
 
-                }), 0, _peerCancellationToken, _peerSocketClient);
+                }), 0, _peerCancellationToken, _peerSocketClient).Wait();
             }
 
             /// <summary>
@@ -1054,7 +1054,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         }
                     }
 
-                }), 0, _peerCheckConnectionCancellationToken, _peerSocketClient);
+                }), 0, _peerCheckConnectionCancellationToken, _peerSocketClient).Wait();
 
             }
 
@@ -1079,7 +1079,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 CancellationTokenSource cancellationReceiveBlockListPacket = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationToken.Token);
 
 
-                TaskManager.TaskManager.InsertTask(new Action(async () =>
+                await TaskManager.TaskManager.InsertTask(new Action(async () =>
                 {
                     bool containSeperator = false;
 
@@ -1196,7 +1196,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         CancellationTokenSource cancellationReceiveTransactionPacket = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationToken.Token);
 
 
-                        TaskManager.TaskManager.InsertTask(new Action(async () =>
+                        await TaskManager.TaskManager.InsertTask(new Action(async () =>
                         {
 
                             try
@@ -1428,7 +1428,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 CancellationTokenSource cancellationReceiveMemPoolTransactionVote = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationToken.Token);
 
 
-                TaskManager.TaskManager.InsertTask(new Action(async () =>
+                await TaskManager.TaskManager.InsertTask(new Action(async () =>
                 {
                     try
                     {

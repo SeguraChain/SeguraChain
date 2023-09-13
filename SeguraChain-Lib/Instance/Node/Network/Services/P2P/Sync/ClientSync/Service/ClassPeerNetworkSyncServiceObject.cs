@@ -273,7 +273,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                 var copyPeer = new Tuple<string, string>(peerListToInitialize[i].Item1, peerListToInitialize[i].Item2);
 
-                                TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                await TaskManager.TaskManager.InsertTask(new Action(async () =>
                                 {
                                     try
                                     {
@@ -376,7 +376,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         {
 
                             var i1 = i;
-                            TaskManager.TaskManager.InsertTask(new Action(async () =>
+                            await TaskManager.TaskManager.InsertTask(new Action(async () =>
                             {
 
                                 try
@@ -477,7 +477,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                 }
 
-            }), 0, _cancellationTokenServiceSync, null, true);
+            }), 0, _cancellationTokenServiceSync, null).Wait();
 
         }
 
@@ -516,7 +516,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                 }
 
-            }), 0, _cancellationTokenServiceSync, null, true);
+            }), 0, _cancellationTokenServiceSync, null).Wait();
 
         }
 
@@ -704,7 +704,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 }
 
-            }), 0, _cancellationTokenServiceSync, null, true);
+            }), 0, _cancellationTokenServiceSync, null).Wait();
 
         }
 
@@ -896,7 +896,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     }
                 }
 
-            }), 0, _cancellationTokenServiceSync, null, true);
+            }), 0, _cancellationTokenServiceSync, null).Wait();
 
         }
 
@@ -1036,7 +1036,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 }
 
-            }), 0, _cancellationTokenServiceSync, null);
+            }), 0, _cancellationTokenServiceSync, null).Wait();
 
         }
 
@@ -1099,7 +1099,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 else
                                     ClassLog.WriteLine("Current network informations not received. Retry the sync later..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                             }
-
+                            else
+                            {
+                                Debug.WriteLine("Not enough peer to get network information");
+                            }
                             ClearPeerTargetList(peerTargetList, false);
                         }
 
@@ -1112,7 +1115,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                 }
 
-            }), 0, _cancellationTokenServiceSync, null, true);
+            }), 0, _cancellationTokenServiceSync, null).Wait();
 
         }
 
@@ -1145,7 +1148,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 var i1 = i;
 
 
-                TaskManager.TaskManager.InsertTask(new Action(async () =>
+                await TaskManager.TaskManager.InsertTask(new Action(async () =>
                 {
                     try
                     {
@@ -1215,7 +1218,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         continue;
                     }
 
-                    TaskManager.TaskManager.InsertTask(new Action(async () =>
+                    await TaskManager.TaskManager.InsertTask(new Action(async () =>
                     {
                         try
                         {
@@ -1264,7 +1267,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                     foreach (int i in peerListTarget.Keys)
                     {
-                        TaskManager.TaskManager.InsertTask(new Action(async () =>
+                        await TaskManager.TaskManager.InsertTask(new Action(async () =>
                         {
 
                             foreach (var sovereignUpdateHash in hashSetSovereignUpdateHash.GetList)
@@ -1331,7 +1334,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                             foreach (int i in peerListTarget.Keys)
                             {
                                 var i1 = i;
-                                TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                await TaskManager.TaskManager.InsertTask(new Action(async () =>
                                 {
                                     try
                                     {
@@ -1574,7 +1577,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     int i1 = i;
 
 
-                    TaskManager.TaskManager.InsertTask(new Action(async () =>
+                    await TaskManager.TaskManager.InsertTask(new Action(async () =>
                     {
 
                         //if (blockHeightEnd - blockHeightStart == 0)
@@ -1784,7 +1787,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                 var i1 = i;
 
-                                TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                await TaskManager.TaskManager.InsertTask(new Action(async () =>
                                 {
 
 
@@ -1962,7 +1965,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                             foreach (int i in peerListTarget.Keys)
                             {
-                                TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                await TaskManager.TaskManager.InsertTask(new Action(async () =>
                                 {
 
                                     try
@@ -2140,7 +2143,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                         foreach (int i in peerListTarget.Keys)
                         {
-                            TaskManager.TaskManager.InsertTask(new Action(async () =>
+                            await TaskManager.TaskManager.InsertTask(new Action(async () =>
                             {
                                 var i1 = i;
 

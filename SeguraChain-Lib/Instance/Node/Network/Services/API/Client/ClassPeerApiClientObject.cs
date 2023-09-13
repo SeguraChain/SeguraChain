@@ -112,7 +112,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
         {
 
 
-            TaskManager.TaskManager.InsertTask(new Action(async () => await CheckApiClientConnection()), 0, _cancellationTokenApiClientCheck, _clientSocket);
+           await TaskManager.TaskManager.InsertTask(new Action(async () => await CheckApiClientConnection()), 0, _cancellationTokenApiClientCheck, _clientSocket);
        
 
             try

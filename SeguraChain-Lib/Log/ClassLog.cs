@@ -470,7 +470,7 @@ namespace SeguraChain_Lib.Log
                                 Monitor.Exit(_logListOnCollect[logLevelType]);
                         }
 
-                    }, 0, null, null);
+                    }, 0, null, null).Wait();
                 }
             }
         }

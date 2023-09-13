@@ -43,13 +43,15 @@ namespace SeguraChain_Lib.Other.Object.Network
 
         }
 
-        public async Task<bool> ConnectAsync(string ip, int port)
+        public bool Connect(string ip, int port)
         {
             try
             {
-                await _socket.ConnectAsync(ip, port);
-                
-                if (_socket == null || _socket.Client == null)
+                var result = _socket.BeginConnect(ip, port, null, null);
+
+                var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(1));
+
+                if (_socket == null || _socket.Client == null || !success)
                     return false;
 
                 _networkStream = new NetworkStream(_socket.Client);
@@ -121,6 +123,20 @@ namespace SeguraChain_Lib.Other.Object.Network
                 {
                     readPacketData.Data = new byte[packetLength];
                     readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
+
+                    using(DisposableList<byte> listOfData = new DisposableList<byte>())
+                    {
+                        foreach(byte data in readPacketData.Data)
+                        {
+                            if ((char)data == '\0')
+                                continue;
+
+                            if (ClassUtility.CharIsABase64Character((char)data) || ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
+                                listOfData.Add(data);
+                        }
+
+                        readPacketData.Data = listOfData.GetList.ToArray();
+                    }
                 }
             }
             catch (Exception error)

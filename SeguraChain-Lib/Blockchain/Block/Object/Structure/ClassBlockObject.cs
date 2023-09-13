@@ -194,44 +194,57 @@ namespace SeguraChain_Lib.Blockchain.Block.Object.Structure
 
             try
             {
+                bool isLocked = false;
 
-                /*if (ClassBlockUtility.StringToBlockObject(ClassBlockUtility.SplitBlockObject(this), out blockObjectCopy) && retrieveTx)
-                    blockObjectCopy.BlockTransactions = new SortedList<string, ClassBlockTransaction>(_blockTransactions.ToDictionary(x => x.Key, x => x.Value));*/
-
-                if (BlockTransactions != null)
+                try
                 {
-                    blockObjectCopy = new ClassBlockObject(BlockHeight, BlockDifficulty, BlockHash, TimestampCreate, TimestampFound, BlockStatus, BlockUnlockValid, BlockTransactionConfirmationCheckTaskDone)
-                    {
-                        BlockDifficulty = BlockDifficulty,
-                        BlockFromMemory = BlockFromMemory,
-                        BlockFromCache = BlockFromCache,
-                        BlockFinalHashTransaction = BlockFinalHashTransaction,
-                        BlockHash = BlockHash,
-                        BlockHeight = BlockHeight,
-                        BlockIsUpdated = BlockIsUpdated,
-                        BlockLastChangeTimestamp = BlockLastChangeTimestamp,
-                        BlockLastHeightTransactionConfirmationDone = BlockLastHeightTransactionConfirmationDone,
-                        BlockMiningPowShareUnlockObject = BlockMiningPowShareUnlockObject,
-                        BlockNetworkAmountConfirmations = BlockNetworkAmountConfirmations,
-                        BlockSlowNetworkAmountConfirmations = BlockSlowNetworkAmountConfirmations,
-                        BlockStatus = BlockStatus,
-                        BlockTotalTaskTransactionConfirmationDone = BlockTotalTaskTransactionConfirmationDone,
-                        BlockTransactionConfirmationCheckTaskDone = BlockTransactionConfirmationCheckTaskDone,
-                        BlockTransactionCountInSync = BlockTransactionCountInSync,
-                        BlockTransactionFullyConfirmed = BlockTransactionFullyConfirmed,
-                        BlockUnlockValid = BlockUnlockValid,
-                        Disposed = Disposed,
-                        TimestampCreate = TimestampCreate,
-                        TimestampFound = TimestampFound,
-                        TotalCoinConfirmed = TotalCoinConfirmed,
-                        TotalCoinPending = TotalCoinPending,
-                        TotalFee = TotalFee,
-                        TotalTransactionConfirmed = TotalTransactionConfirmed,
-                        BlockCloned = true,
-                    };
+                    isLocked = Monitor.TryEnter(this);
 
-                    blockObjectCopy.BlockTransactions = retrieveTx ? new SortedList<string, ClassBlockTransaction>(BlockTransactions.ToDictionary(x => x.Key.DeepCopy(), x => x.Value.Clone())) : new SortedList<string, ClassBlockTransaction>();
-                    blockObjectCopy.TotalTransaction = retrieveTx ? blockObjectCopy.BlockTransactions.Count : (BlockTransactions != null ? BlockTransactions.Count : 0);
+                    /*if (ClassBlockUtility.StringToBlockObject(ClassBlockUtility.SplitBlockObject(this), out blockObjectCopy) && retrieveTx)
+                        blockObjectCopy.BlockTransactions = new SortedList<string, ClassBlockTransaction>(_blockTransactions.ToDictionary(x => x.Key, x => x.Value));*/
+                    if (isLocked)
+                    {
+                        if (BlockTransactions != null)
+                        {
+                            blockObjectCopy = new ClassBlockObject(BlockHeight, BlockDifficulty, BlockHash, TimestampCreate, TimestampFound, BlockStatus, BlockUnlockValid, BlockTransactionConfirmationCheckTaskDone)
+                            {
+                                BlockDifficulty = BlockDifficulty,
+                                BlockFromMemory = BlockFromMemory,
+                                BlockFromCache = BlockFromCache,
+                                BlockFinalHashTransaction = BlockFinalHashTransaction,
+                                BlockHash = BlockHash,
+                                BlockHeight = BlockHeight,
+                                BlockIsUpdated = BlockIsUpdated,
+                                BlockLastChangeTimestamp = BlockLastChangeTimestamp,
+                                BlockLastHeightTransactionConfirmationDone = BlockLastHeightTransactionConfirmationDone,
+                                BlockMiningPowShareUnlockObject = BlockMiningPowShareUnlockObject,
+                                BlockNetworkAmountConfirmations = BlockNetworkAmountConfirmations,
+                                BlockSlowNetworkAmountConfirmations = BlockSlowNetworkAmountConfirmations,
+                                BlockStatus = BlockStatus,
+                                BlockTotalTaskTransactionConfirmationDone = BlockTotalTaskTransactionConfirmationDone,
+                                BlockTransactionConfirmationCheckTaskDone = BlockTransactionConfirmationCheckTaskDone,
+                                BlockTransactionCountInSync = BlockTransactionCountInSync,
+                                BlockTransactionFullyConfirmed = BlockTransactionFullyConfirmed,
+                                BlockUnlockValid = BlockUnlockValid,
+                                Disposed = Disposed,
+                                TimestampCreate = TimestampCreate,
+                                TimestampFound = TimestampFound,
+                                TotalCoinConfirmed = TotalCoinConfirmed,
+                                TotalCoinPending = TotalCoinPending,
+                                TotalFee = TotalFee,
+                                TotalTransactionConfirmed = TotalTransactionConfirmed,
+                                BlockCloned = true,
+                            };
+
+                            blockObjectCopy.BlockTransactions = retrieveTx ? new SortedList<string, ClassBlockTransaction>(BlockTransactions.ToDictionary(x => x.Key.DeepCopy(), x => x.Value.Clone())) : new SortedList<string, ClassBlockTransaction>();
+                            blockObjectCopy.TotalTransaction = retrieveTx ? blockObjectCopy.BlockTransactions.Count : (BlockTransactions != null ? BlockTransactions.Count : 0);
+                        }
+                    }
+                }
+                finally
+                {
+                    if (isLocked)
+                        Monitor.Exit(this);
                 }
             }
 #if DEBUG

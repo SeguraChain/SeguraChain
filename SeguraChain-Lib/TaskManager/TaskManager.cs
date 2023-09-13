@@ -64,7 +64,7 @@ namespace SeguraChain_Lib.TaskManager
         {
             TaskManagerEnabled = true;
 
-            SetThreadPoolValue(peerNetworkSettingObject);
+            //SetThreadPoolValue(peerNetworkSettingObject);
 
             #region Auto clean up dead tasks.
 
@@ -77,7 +77,7 @@ namespace SeguraChain_Lib.TaskManager
                     await Task.Delay(1000);
                 }
 
-            }), 0, _cancelTaskManager);
+            }), 0, _cancelTaskManager).Wait();
 
             #endregion
 
@@ -92,7 +92,7 @@ namespace SeguraChain_Lib.TaskManager
 
                     await Task.Delay(1);
                 }
-            }), 0, _cancelTaskManager);
+            }), 0, _cancelTaskManager).Wait();
 
             #endregion
 
@@ -171,7 +171,7 @@ namespace SeguraChain_Lib.TaskManager
                     await Task.Delay(60 * 1000);
                 }
 
-            }), 0, _cancelTaskManager);
+            }), 0, _cancelTaskManager).Wait();
 
             #endregion
         }
@@ -301,7 +301,7 @@ namespace SeguraChain_Lib.TaskManager
         /// <param name="timestampEnd"></param>
         /// <param name="cancellation"></param>
         /// <param name="socket"></param>
-        public static void InsertTask(Action action, long timestampEnd, CancellationTokenSource cancellation, ClassCustomSocket socket = null, bool useFactory = false)
+        public static async Task InsertTask(Action action, long timestampEnd, CancellationTokenSource cancellation, ClassCustomSocket socket = null, bool useFactory = false)
         {
             if (TaskManagerEnabled)
             {
@@ -327,13 +327,13 @@ namespace SeguraChain_Lib.TaskManager
                     exception = true;
                 }
 
-                if (!exception)
+                if (!exception && !cancellationTask.IsCancellationRequested)
                 {
                     if (useFactory)
                     {
                         try
                         {
-                            Task.Factory.StartNew(action, cancellationTask.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
+                            await Task.Factory.StartNew(action, cancellationTask.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
                         }
                         catch
                         {
@@ -345,7 +345,16 @@ namespace SeguraChain_Lib.TaskManager
                         bool isLocked = false;
                         try
                         {
-                            isLocked = Monitor.TryEnter(_taskCollection);
+                            isLocked = Monitor.TryEnter(_taskCollection, 1000);
+
+                            while(!isLocked && !cancellationTask.IsCancellationRequested)
+                            {
+#if DEBUG
+                                Debug.WriteLine("Insert task count id: " + _taskCollection.Count+" in pending.");
+#endif
+                                await Task.Delay(1);
+                                isLocked = Monitor.TryEnter(_taskCollection, 1000);
+                            }
 
                             if (isLocked)
                             {
@@ -364,6 +373,12 @@ namespace SeguraChain_Lib.TaskManager
                         }
                     }
                 }
+#if DEBUG
+                else
+                {
+                    Debug.WriteLine("Can't insert new task. " + cancellationTask.IsCancellationRequested);
+                }
+#endif
             }
         }
 

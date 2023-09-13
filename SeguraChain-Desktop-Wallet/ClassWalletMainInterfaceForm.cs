@@ -504,7 +504,7 @@ namespace SeguraChain_Desktop_Wallet
 
                                 BeginInvoke(invoke);
                             }
-                        }, 0, null);
+                        }, 0, null).Wait();
                     }
 
                     invokeSwitch = () =>

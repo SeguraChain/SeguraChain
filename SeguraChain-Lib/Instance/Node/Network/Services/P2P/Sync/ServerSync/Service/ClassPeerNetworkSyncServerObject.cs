@@ -111,7 +111,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
                         string clientIp = clientPeerTcp.GetIp;
 
-                        TaskManager.TaskManager.InsertTask(new Action(async () =>
+                        await TaskManager.TaskManager.InsertTask(new Action(async () =>
                         {
                             ClassLog.WriteLine("Handle incoming connection from: " + clientIp, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
 
@@ -139,14 +139,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                     }
                                     break;
                             }
-                        }), 0, _cancellationTokenSourcePeerServer, null, true);
+                        }), 0, _cancellationTokenSourcePeerServer, null).ConfigureAwait(false);
                     }
                     catch
                     {
                         // Ignored, catch the exception once the task is cancelled.
                     }
                 }
-            }), 0, _cancellationTokenSourcePeerServer);
+            }), 0, _cancellationTokenSourcePeerServer).Wait();
 
             return true;
         }
@@ -244,7 +244,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     handlePeerClientStatus = await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.TryWaitAsync(_peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay, CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSourcePeerServer.Token, new CancellationTokenSource(_peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay).Token));
 
                     if (handlePeerClientStatus)
-                        _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
+                        await _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
                     else
                     {
                         _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].Dispose();

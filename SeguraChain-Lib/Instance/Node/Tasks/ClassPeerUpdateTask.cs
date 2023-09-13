@@ -214,7 +214,7 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
                     await Task.Delay(ManageApiFirewallInterval);
 
                 }
-            }), 0, _cancellationTokenSourceUpdateTask);
+            }), 0, _cancellationTokenSourceUpdateTask).Wait();
 
         }
 
@@ -245,7 +245,7 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
                     }
                     await Task.Delay(CleanUpApiDeadConnectionInterval);
                 }
-            }), 0, _cancellationTokenSourceUpdateTask);
+            }), 0, _cancellationTokenSourceUpdateTask).Wait();
 
         }
 
@@ -277,7 +277,7 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
                     await Task.Delay(CleanUpPeerDeadConnectionInterval);
                 }
 
-            }), 0, _cancellationTokenSourceUpdateTask);
+            }), 0, _cancellationTokenSourceUpdateTask).Wait();
 
         }
 
@@ -303,7 +303,7 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
                     }
                     await Task.Delay(UpdateBlockchainStatsInterval);
                 }
-            }), 0, _cancellationTokenSourceUpdateTask);
+            }), 0, _cancellationTokenSourceUpdateTask).Wait();
 
         }
 
@@ -407,7 +407,7 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
                     }
                 }
 
-            }), 0, _cancellationTokenSourceUpdateTask);
+            }), 0, _cancellationTokenSourceUpdateTask).Wait();
 
         }
 
@@ -443,7 +443,7 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
                     await Task.Delay(UpdateNodeInternalStats);
                 }
 
-            }), 0, _cancellationTokenSourceUpdateTask);
+            }), 0, _cancellationTokenSourceUpdateTask).Wait();
         }
 
         /// <summary>
@@ -470,7 +470,7 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
 
                     await Task.Delay(CleanUpGcInterval);
                 }
-            }), 0, _cancellationTokenSourceUpdateTask);
+            }), 0, _cancellationTokenSourceUpdateTask).Wait();
 
         }
 

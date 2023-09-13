@@ -221,13 +221,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
         /// <param name="peerFirewallSettingObject"></param>
         public static void BroadcastMiningShareAsync(string peerServerIp, string peerOpenNatServerIp, string peerToExcept, ClassMiningPoWaCShareObject miningPowShareObject, ClassPeerNetworkSettingObject peerNetworkSetting, ClassPeerFirewallSettingObject peerFirewallSettingObject)
         {
-            TaskManager.TaskManager.InsertTask(new Action(() =>
+            TaskManager.TaskManager.InsertTask(new Action(async () =>
             {
 
                 foreach (var peerValuePair in GetRandomListPeerTargetAlive(peerServerIp, peerOpenNatServerIp, peerToExcept, null, peerNetworkSetting, peerFirewallSettingObject, new CancellationTokenSource()))
                 {
 
-                    TaskManager.TaskManager.InsertTask(new Action(async () =>
+                    await TaskManager.TaskManager.InsertTask(new Action(async () =>
                     {
                         try
                         {
@@ -281,7 +281,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         }
                     }), 0, null);
                 }
-            }), 0, null);
+            }), 0, null).Wait();
         }
 
         /// <summary>
@@ -342,7 +342,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                     try
                                     {
 
-                                        TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                        await TaskManager.TaskManager.InsertTask(new Action(async () =>
                                         {
                                             bool invalidPacket = false;
                                             string peerIpTarget = peerListTarget[peerKey].PeerIpTarget;
@@ -771,7 +771,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                             {
                                 try
                                 {
-                                    TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                    await TaskManager.TaskManager.InsertTask(new Action(async () =>
                                     {
                                         bool invalidPacket = false;
 

@@ -400,7 +400,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                         {
                             if (_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask && ioFileNameArray.Length > 1)
                             {
-                                TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                await TaskManager.TaskManager.InsertTask(new Action(async () =>
                                 {
                                     try
                                     {
@@ -572,7 +572,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                         {
                             if (_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask && ioFileNameArray.Length > 1)
                             {
-                                TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                await TaskManager.TaskManager.InsertTask(new Action(async () =>
                                 {
                                     if (!cancel)
                                     {
@@ -781,7 +781,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
 
                                 foreach (string ioFileName in ioFileNameArray)
                                 {
-                                    TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                    await TaskManager.TaskManager.InsertTask(new Action(async () =>
                                     {
                                         try
                                         {

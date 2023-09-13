@@ -132,7 +132,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
 
                             if (clientApiTcp != null)
                             {
-                                TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                await TaskManager.TaskManager.InsertTask(new Action(async () =>
                                 {
                                     string clientIp = clientApiTcp.GetIp;
 
@@ -160,7 +160,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                     }
                 }
 
-            }), 0, _cancellationTokenSourcePeerApiServer, null);
+            }), 0, _cancellationTokenSourcePeerApiServer, null).Wait();
        
             return true;
         }

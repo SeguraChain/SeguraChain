@@ -1198,7 +1198,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                 // Read by seek and position registered directly.
                 _ioDataStructureFileLockStream.Position = ioDataPosition;
 
-                Tuple<bool, byte[]> readResult = await ReadByBlock(ioDataSize, cancellation, _ioDataStructureFileLockStream);
+                Tuple<bool, byte[]> readResult = ReadByBlock(ioDataSize, cancellation, _ioDataStructureFileLockStream);
 
                 if (readResult.Item1)
                 {
@@ -1246,7 +1246,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                             // Read by seek and position registered directly.
                             _ioDataStructureFileLockStream.Position = ioDataPosition;
 
-                            var readResult = await ReadByBlock(ioDataSize, cancellation, _ioDataStructureFileLockStream);
+                            var readResult = ReadByBlock(ioDataSize, cancellation, _ioDataStructureFileLockStream);
 
                             if (readResult.Item1)
                             {
@@ -1295,7 +1295,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// <param name="cancellation"></param>
         /// <param name="ioFileStream"></param>
         /// <returns></returns>
-        private async Task<Tuple<bool, byte[]>> ReadByBlock(long ioFileSize, CancellationTokenSource cancellation, FileStream ioFileStream)
+        private Tuple<bool, byte[]> ReadByBlock(long ioFileSize, CancellationTokenSource cancellation, FileStream ioFileStream)
         {
             bool readStatus = true;
             byte[] data = new byte[ioFileSize];
@@ -1515,7 +1515,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                                         // Read by seek and position registered directly.
                                         _ioDataStructureFileLockStream.Position = ioDataPosition;
 
-                                        var readResult = await ReadByBlock(ioDataSize, cancellation, _ioDataStructureFileLockStream);
+                                        var readResult = ReadByBlock(ioDataSize, cancellation, _ioDataStructureFileLockStream);
 
                                         if (readResult.Item1)
                                         {

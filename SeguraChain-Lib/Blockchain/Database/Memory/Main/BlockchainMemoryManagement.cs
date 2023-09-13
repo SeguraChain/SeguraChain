@@ -1151,6 +1151,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     continue;
 
                 ClassBlockObject blockObject = await GetBlockMirrorObject(blockHeightExpected, cancellation);
+
+                if (blockObject == null)
+                    break;
+
                 if (blockObject.BlockStatus == ClassBlockEnumStatus.LOCKED)
                 {
                     blockMiss.Add(blockHeightExpected);
@@ -1287,7 +1291,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             if (cancellation.IsCancellationRequested)
                                 break;
 
-                            ClassBlockObject blockObject = await GetBlockInformationDataStrategy(i + 1, cancellation);
+                            ClassBlockObject blockObject = await GetBlockMirrorObject(i +1, cancellation);
 
                             if (blockObject == null)
                             {
@@ -3470,7 +3474,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.GlobalTaskManageMemoryInterval);
                 }
 
-            }), 0, _cancellationTokenMemoryManagement, null);
+            }), 0, _cancellationTokenMemoryManagement, null).Wait();
             
         }
 
