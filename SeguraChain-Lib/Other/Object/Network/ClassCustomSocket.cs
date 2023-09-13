@@ -3,6 +3,7 @@ using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.Utility;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -43,13 +44,13 @@ namespace SeguraChain_Lib.Other.Object.Network
 
         }
 
-        public bool Connect(string ip, int port)
+        public bool Connect(string ip, int port, int delay)
         {
             try
             {
                 var result = _socket.BeginConnect(ip, port, null, null);
 
-                var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(1));
+                var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(delay));
 
                 if (_socket == null || _socket.Client == null || !success)
                     return false;
@@ -118,28 +119,25 @@ namespace SeguraChain_Lib.Other.Object.Network
 
             try
             {
-
-                using (DisposableList<byte> packetData = new DisposableList<byte>())
+                using (DisposableList<byte> listOfData = new DisposableList<byte>())
                 {
                     readPacketData.Data = new byte[packetLength];
-                    readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
 
+                    await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token);
 
-                    using (DisposableList<byte> listOfData = new DisposableList<byte>())
+                    foreach (byte data in readPacketData.Data)
                     {
-                        foreach (byte data in readPacketData.Data)
-                        {
-                            if ((char)data == '\0')
-                                continue;
+                        if ((char)data == '\0')
+                            continue;
 
-                            if (ClassUtility.CharIsABase64Character((char)data) || ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
-                                listOfData.Add(data);
-                        }
-
-                        readPacketData.Data = listOfData.GetList.ToArray();
+                        if (ClassUtility.CharIsABase64Character((char)data) || ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
+                            listOfData.Add(data);
                     }
+                    
+                    readPacketData.Data = listOfData.GetList.ToArray();
+                    readPacketData.Status = readPacketData.Data.Length > 0;
+                    
                 }
-
             }
             catch (Exception error)
             {

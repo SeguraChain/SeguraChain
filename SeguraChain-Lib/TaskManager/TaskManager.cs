@@ -64,7 +64,7 @@ namespace SeguraChain_Lib.TaskManager
         {
             TaskManagerEnabled = true;
 
-            //SetThreadPoolValue(peerNetworkSettingObject);
+            SetThreadPoolValue(peerNetworkSettingObject);
 
             #region Auto clean up dead tasks.
 
@@ -159,7 +159,10 @@ namespace SeguraChain_Lib.TaskManager
                         finally
                         {
                             if (isLocked)
+                            {
+                                Monitor.PulseAll(_taskCollection);
                                 Monitor.Exit(_taskCollection);
+                            }
                         }
 
 #if DEBUG
@@ -305,8 +308,6 @@ namespace SeguraChain_Lib.TaskManager
         {
             if (TaskManagerEnabled)
             {
-                //useFactory = true;
-
                 long end = timestampEnd - CurrentTimestampMillisecond;
 
                 CancellationTokenSource cancellationTask = null;
@@ -360,16 +361,16 @@ namespace SeguraChain_Lib.TaskManager
                             {
                                 _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
                                 if (!_taskCollection[_taskCollection.Count - 1].Started)
-                                {
-                                    _taskCollection[_taskCollection.Count - 1].Started = true;
                                     _taskCollection[_taskCollection.Count - 1].Run();
-                                }
                             }
                         }
                         finally
                         {
                             if (isLocked)
+                            {
+                                Monitor.PulseAll(_taskCollection);
                                 Monitor.Exit(_taskCollection);
+                            }
                         }
                     }
                 }

@@ -167,7 +167,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                 if (!await DoConnection())
                 {
-                    ClassLog.WriteLine("Failed to connect to peer " + PeerIpTarget + ":" + PeerPortTarget, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_LOWEST_PRIORITY);
+                    ClassLog.WriteLine("Failed to connect to peer " + PeerIpTarget + ":" + PeerPortTarget, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_LOWEST_PRIORITY, true);
                     ClassPeerCheckManager.InputPeerClientAttemptConnect(PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject);
                     DisconnectFromTarget();
                     return false;
@@ -231,7 +231,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             {
                 _peerSocketClient = new ClassCustomSocket(new TcpClient(ClassUtility.GetAddressFamily(PeerIpTarget)), false);
 
-                if (_peerSocketClient.Connect(PeerIpTarget, PeerPortTarget))
+                if (_peerSocketClient.Connect(PeerIpTarget, PeerPortTarget, _peerNetworkSetting.PeerMaxDelayToConnectToTarget))
                     return true;
                 else _peerSocketClient?.Kill(SocketShutdown.Both);
 
@@ -258,18 +258,22 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
             await TaskWaitPeerPacketResponse();
 
-
             if (PeerPacketReceived == null)
             {
-                ClassLog.WriteLine("Peer " + PeerIpTarget + " don't send a response to the packet sent.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_LOWEST_PRIORITY, true);
+#if DEBUG
+                Debug.WriteLine("Peer " + PeerIpTarget + "|" + PeerUniqueIdTarget + " don't send a response to the packet sent.");
+#endif
+                ClassLog.WriteLine("Peer " + PeerIpTarget + "|" + PeerUniqueIdTarget + "  don't send a response to the packet sent.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_LOWEST_PRIORITY, true);
                 return false;
             }
             else
             {
+
                 if (!_keepAlive)
                     DisconnectFromTarget();
-                /*else // Enable keep alive.
+               /* else // Enable keep alive.
                     TaskEnablePeerPacketKeepAlive();*/
+
             }
 
             return true;
@@ -296,12 +300,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                 {
                     using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSetting.PeerMaxPacketBufferSize, _peerCancellationTokenTaskListenPeerPacketResponse))
                     {
-                        _peerCancellationTokenTaskListenPeerPacketResponse = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationTokenMain.Token, new CancellationTokenSource(_peerNetworkSetting.PeerMaxDelayAwaitResponse * 1000).Token);
 
                         ClassPeerCheckManager.UpdatePeerClientLastPacketReceived(PeerIpTarget, PeerUniqueIdTarget, TaskManager.TaskManager.CurrentTimestampSecond);
 
                         if (!readPacketData.Status || !_peerSocketClient.IsConnected())
                             break;
+
+                        // Update cancellation.
+                        _peerCancellationTokenTaskListenPeerPacketResponse = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationTokenMain.Token, new CancellationTokenSource(_peerNetworkSetting.PeerMaxDelayAwaitResponse * 1000).Token);
 
                         #region Compile the packet.
 
