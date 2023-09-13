@@ -774,7 +774,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                                         var checkBlockResult = await StartCheckBlockDataUnlockedFromListPeerTarget(peerTargetList.GetList, blockHeightToCheck, blockObjectInformationsToCheck);
 
-                                                        //Debug.WriteLine(System.Enum.GetName(typeof(ClassPeerNetworkSyncServiceEnumCheckBlockDataUnlockedResult), checkBlockResult));
 
                                                         switch (checkBlockResult)
                                                         {
@@ -864,6 +863,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                                     }
                                                                 }
                                                                 break;
+#if DEBUG
+                                                            default:
+                                                                {
+                                                                    Debug.WriteLine("Unexpected result: "+System.Enum.GetName(typeof(ClassPeerNetworkSyncServiceEnumCheckBlockDataUnlockedResult), checkBlockResult));
+                                                                    cancelCheck = true;
+                                                                }
+                                                                break;
+#endif
                                                         }
 
                                                         if (cancelCheck)

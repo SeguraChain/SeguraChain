@@ -110,7 +110,7 @@ namespace SeguraChain_Lib.Other.Object.Network
             return false;
         }
 
-        public async Task<ReadPacketData> TryReadPacketData(int packetLength, CancellationTokenSource cancellation)
+        public async Task<ReadPacketData> TryReadPacketData(int packetLength, bool clientSide, CancellationTokenSource cancellation)
         {
             ReadPacketData readPacketData = new ReadPacketData();
 
@@ -118,24 +118,51 @@ namespace SeguraChain_Lib.Other.Object.Network
 
             try
             {
-
-                using (DisposableList<byte> packetData = new DisposableList<byte>())
+                if (!clientSide)
                 {
-                    readPacketData.Data = new byte[packetLength];
-                    readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
-
-                    using(DisposableList<byte> listOfData = new DisposableList<byte>())
+                    using (DisposableList<byte> packetData = new DisposableList<byte>())
                     {
-                        foreach(byte data in readPacketData.Data)
+                        readPacketData.Data = new byte[packetLength];
+                        readPacketData.Status = await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token) > 0;
+
+
+                        using (DisposableList<byte> listOfData = new DisposableList<byte>())
                         {
-                            if ((char)data == '\0')
-                                continue;
+                            foreach (byte data in readPacketData.Data)
+                            {
+                                if ((char)data == '\0')
+                                    continue;
+
+                                if (ClassUtility.CharIsABase64Character((char)data) || ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
+                                    listOfData.Add(data);
+                            }
+
+                            readPacketData.Data = listOfData.GetList.ToArray();
+                        }
+                    }
+                }
+                else
+                {
+                    using (DisposableList<byte> dataList = new DisposableList<byte>())
+                    {
+                        while (!cancellation.IsCancellationRequested)
+                        {
+                            byte data = (byte)_networkStream.ReadByte();
+
+                            if ((int)data == -1)
+                                break;
 
                             if (ClassUtility.CharIsABase64Character((char)data) || ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
-                                listOfData.Add(data);
+                                dataList.Add(data);
+
+                            if (ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
+                            {
+                                break;
+                            }
                         }
 
-                        readPacketData.Data = listOfData.GetList.ToArray();
+                        readPacketData.Status = dataList.GetList.Count > 0;
+                        readPacketData.Data = dataList.GetList.ToArray();
                     }
                 }
             }

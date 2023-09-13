@@ -294,7 +294,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             {
                 while (PeerTaskStatus && PeerConnectStatus)
                 {
-                    using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSetting.PeerMaxPacketBufferSize, _peerCancellationTokenTaskListenPeerPacketResponse))
+                    using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSetting.PeerMaxPacketBufferSize, true, _peerCancellationTokenTaskListenPeerPacketResponse))
                     {
                         _peerCancellationTokenTaskListenPeerPacketResponse = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationTokenMain.Token, new CancellationTokenSource(_peerNetworkSetting.PeerMaxDelayAwaitResponse * 1000).Token);
 
