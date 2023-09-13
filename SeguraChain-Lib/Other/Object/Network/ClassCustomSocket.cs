@@ -145,7 +145,7 @@ namespace SeguraChain_Lib.Other.Object.Network
                 {
                     using (DisposableList<byte> dataList = new DisposableList<byte>())
                     {
-                        while (!cancellation.IsCancellationRequested)
+                        while (true)
                         {
                             byte data = (byte)_networkStream.ReadByte();
 
@@ -156,9 +156,7 @@ namespace SeguraChain_Lib.Other.Object.Network
                                 dataList.Add(data);
 
                             if (ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
-                            {
                                 break;
-                            }
                         }
 
                         readPacketData.Status = dataList.GetList.Count > 0;
