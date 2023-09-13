@@ -538,7 +538,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         {
                             long lastBlockHeight = ClassBlockchainStats.GetLastBlockHeight();
 
-                            peerTargetList = ClassPeerNetworkBroadcastFunction.GetLastPeerTargetSynced(peerTargetList, lastBlockHeight, _peerNetworkSettingObject.ListenIp, PeerOpenNatServerIp, string.Empty, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenServiceSync);
+                            peerTargetList = GenerateOrUpdatePeerTargetList(peerTargetList);
                             bool forceDisconnect = false;
 
                             // If true, run every peer check tasks functions.
@@ -549,7 +549,17 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                 long lastBlockHeightUnlocked = await ClassBlockchainStats.GetLastBlockHeightUnlocked(_cancellationTokenServiceSync);
                                 long lastBlockHeightUnlockedChecked = await ClassBlockchainStats.GetLastBlockHeightNetworkConfirmationChecked(_cancellationTokenServiceSync);
-                                long lastBlockHeightTarget = ClassPeerDatabase.DictionaryPeerDataObject[peerTargetList[0].PeerIpTarget][peerTargetList[0].PeerUniqueIdTarget].PeerClientLastBlockHeight;
+
+
+                                long lastBlockHeightTarget = 0;
+
+                                foreach(var peer in peerTargetList.Values)
+                                {
+                                    if (!ClassPeerDatabase.ContainsPeer(peer.PeerIpTarget, peer.PeerUniqueIdTarget) || lastBlockHeightTarget > ClassPeerDatabase.DictionaryPeerDataObject[peer.PeerIpTarget][peer.PeerUniqueIdTarget].PeerClientLastBlockHeight)
+                                        continue;
+
+                                    lastBlockHeightTarget = ClassPeerDatabase.DictionaryPeerDataObject[peer.PeerIpTarget][peer.PeerUniqueIdTarget].PeerClientLastBlockHeight;
+                                }
 
                                 using (DisposableList<long> blockListToSync = await ClassBlockchainStats.GetListBlockMissing(lastBlockHeightTarget, true, false, _cancellationTokenServiceSync, _peerNetworkSettingObject.PeerMaxRangeBlockToSyncPerRequest))
                                 {
@@ -763,6 +773,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                         ClassLog.WriteLine("Start to check the block height: " + blockHeightToCheck + " with other peers..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
 
                                                         var checkBlockResult = await StartCheckBlockDataUnlockedFromListPeerTarget(peerTargetList.GetList, blockHeightToCheck, blockObjectInformationsToCheck);
+
+                                                        //Debug.WriteLine(System.Enum.GetName(typeof(ClassPeerNetworkSyncServiceEnumCheckBlockDataUnlockedResult), checkBlockResult));
 
                                                         switch (checkBlockResult)
                                                         {

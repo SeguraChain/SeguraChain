@@ -78,7 +78,14 @@ namespace SeguraChain_Lib.Other.Object.List
         {
             get
             {
-               return GetList != null ? GetList[key] : default;
+                try
+                {
+                    return GetList != null ? GetList[key] : default;
+                }
+                catch
+                {
+                    return default;
+                }
             }
             set
             {
