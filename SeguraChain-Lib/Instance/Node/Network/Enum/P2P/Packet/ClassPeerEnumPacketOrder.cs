@@ -3,7 +3,7 @@
     public class ClassPeerPacketSetting
     {
         public const char PacketPeerSplitSeperator = '*';
-        public const int PacketMaxLengthReceive = 10000000; // Maximum of 10000000 characters until to get the packet split seperator.
+        public const int PacketMaxLengthReceive = 1_000_000_000; // Maximum of 10000000 characters until to get the packet split seperator.
     }
 
     public enum ClassPeerEnumPacketSend

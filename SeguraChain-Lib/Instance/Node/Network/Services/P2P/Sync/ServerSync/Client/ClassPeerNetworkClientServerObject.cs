@@ -238,7 +238,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                     while (ClientPeerConnectionStatus && !_clientAskDisconnection)
                     {
-                        using (ReadPacketData readPacketData = await _clientSocket.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, false, _cancellationTokenListenPeerPacket))
+                        using (ReadPacketData readPacketData = await _clientSocket.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, _cancellationTokenListenPeerPacket))
                         {
                             if (!readPacketData.Status)
                                 break;
