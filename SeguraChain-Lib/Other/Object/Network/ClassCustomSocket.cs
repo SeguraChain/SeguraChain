@@ -145,7 +145,7 @@ namespace SeguraChain_Lib.Other.Object.Network
                 {
                     using (DisposableList<byte> dataList = new DisposableList<byte>())
                     {
-                        while (true)
+                        while (!cancellation.IsCancellationRequested)
                         {
                             byte data = (byte)_networkStream.ReadByte();
 
