@@ -191,18 +191,19 @@ namespace SeguraChain_Lib.Blockchain.Block.Object.Structure
         public void DeepCloneBlockObject(bool retrieveTx, out ClassBlockObject blockObjectCopy)
         {
             blockObjectCopy = null;
+            bool isLocked = false;
+            bool isLockedTransaction = false;
 
             try
             {
-                bool isLocked = false;
-
                 try
                 {
                     isLocked = Monitor.TryEnter(this);
+                    isLockedTransaction = Monitor.TryEnter(_blockTransactions);
 
                     /*if (ClassBlockUtility.StringToBlockObject(ClassBlockUtility.SplitBlockObject(this), out blockObjectCopy) && retrieveTx)
                         blockObjectCopy.BlockTransactions = new SortedList<string, ClassBlockTransaction>(_blockTransactions.ToDictionary(x => x.Key, x => x.Value));*/
-                    if (isLocked)
+                    if (isLocked && isLockedTransaction)
                     {
                         if (BlockTransactions != null)
                         {
@@ -236,29 +237,31 @@ namespace SeguraChain_Lib.Blockchain.Block.Object.Structure
                                 BlockCloned = true,
                             };
 
-                            blockObjectCopy.BlockTransactions = retrieveTx ? new SortedList<string, ClassBlockTransaction>(BlockTransactions.ToDictionary(x => x.Key.DeepCopy(), x => x.Value.Clone())) : new SortedList<string, ClassBlockTransaction>();
-                            blockObjectCopy.TotalTransaction = retrieveTx ? blockObjectCopy.BlockTransactions.Count : (BlockTransactions != null ? BlockTransactions.Count : 0);
+                            blockObjectCopy.BlockTransactions = retrieveTx ? new SortedList<string, ClassBlockTransaction>(_blockTransactions.ToDictionary(x => x.Key.DeepCopy(), x => x.Value.Clone())) : new SortedList<string, ClassBlockTransaction>();
+                            blockObjectCopy.TotalTransaction = retrieveTx ? blockObjectCopy.BlockTransactions.Count : (_blockTransactions != null ? _blockTransactions.Count : 0);
                         }
                     }
                 }
-                finally
+#if DEBUG
+                catch (Exception error)
                 {
-                    if (isLocked)
-                        Monitor.Exit(this);
+                    Debug.WriteLine("Error on cloning the Block Height: " + BlockHeight + " | Exception: " + error.Message);
+#else
+                catch
+                {
+#endif
                 }
             }
-#if DEBUG
-            catch(Exception error)
+            finally
             {
-                Debug.WriteLine("Error on cloning the Block Height: "+BlockHeight+" | Exception: " + error.Message);
-#else
-            catch
-            {
-#endif
-            
+                if (isLocked)
+                    Monitor.Exit(this);
 
+                if (isLockedTransaction)
+                    Monitor.Exit(_blockTransactions);
             }
-        
+
+
         }
 
         /// <summary>

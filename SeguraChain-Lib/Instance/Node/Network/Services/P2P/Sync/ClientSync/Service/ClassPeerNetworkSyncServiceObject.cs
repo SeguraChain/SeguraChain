@@ -63,7 +63,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
         /// Network informations saved.
         /// </summary>
         private ClassPeerPacketSendNetworkInformation _packetNetworkInformation;
-        private ConcurrentDictionary<string, Dictionary<string, ClassPeerPacketSendNetworkInformation>> _listPeerNetworkInformationStats;
 
 
 
@@ -78,7 +77,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
             PeerOpenNatServerIp = peerOpenNatServerIp;
             _peerNetworkSettingObject = peerNetworkSettingObject;
             _peerFirewallSettingObject = peerFirewallSettingObject;
-            _listPeerNetworkInformationStats = new ConcurrentDictionary<string, Dictionary<string, ClassPeerPacketSendNetworkInformation>>();
         }
 
         #region Dispose functions
@@ -1361,7 +1359,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                     if (result.Item2.ObjectReturned.LastBlockHeightUnlocked > 0 &&
                                                     result.Item2.ObjectReturned.CurrentBlockHeight > 0)
                                                     {
-                                                        ClassPeerDatabase.DictionaryPeerDataObject[peerListTarget[i1].PeerIpTarget][peerListTarget[i1].PeerUniqueIdTarget].PeerClientLastBlockHeight = result.Item2.ObjectReturned.CurrentBlockHeight;
+                                                        ClassPeerDatabase.DictionaryPeerDataObject[peerListTarget[i1].PeerIpTarget][peerListTarget[i1].PeerUniqueIdTarget].PeerClientLastBlockHeight = result.Item2.ObjectReturned.LastBlockHeightUnlocked;
 
                                                         if (result.Item2.ObjectReturned.CurrentBlockHeight >= ClassBlockchainStats.GetLastBlockHeight() &&
                                                             result.Item2.ObjectReturned.LastBlockHeightUnlocked <= result.Item2.ObjectReturned.CurrentBlockHeight)
@@ -1372,70 +1370,34 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                             packetData.PacketTimestamp = 0;
 
 
+                                                            string packetDataHash = ClassUtility.GenerateSha256FromString(ClassUtility.SerializeData(packetData));
 
-                                                            bool insert = false;
-                                                            if (!_listPeerNetworkInformationStats.ContainsKey(peerListTarget[i1].PeerIpTarget))
+                                                            if (!listNetworkInformationsSynced.ContainsKey(packetDataHash))
+                                                                listNetworkInformationsSynced.TryAdd(packetDataHash, packetData);
+
+                                                            if (peerRanked)
                                                             {
-                                                                if (_listPeerNetworkInformationStats.TryAdd(peerListTarget[i1].PeerIpTarget, new Dictionary<string, ClassPeerPacketSendNetworkInformation>()))
+                                                                if (!listNetworkInformationsRankedPeer.ContainsKey(packetDataHash))
                                                                 {
-
-                                                                    if (!_listPeerNetworkInformationStats[peerListTarget[i1].PeerIpTarget].ContainsKey(peerListTarget[i1].PeerUniqueIdTarget))
-                                                                    {
-                                                                        _listPeerNetworkInformationStats[peerListTarget[i1].PeerIpTarget].Add(peerListTarget[i1].PeerUniqueIdTarget, packetData);
-                                                                        insert = true;
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        _listPeerNetworkInformationStats[peerListTarget[i1].PeerIpTarget][peerListTarget[i1].PeerUniqueIdTarget] = packetData;
-                                                                        insert = true;
-                                                                    }
-                                                                }
-
-                                                            }
-                                                            else
-                                                            {
-                                                                if (!_listPeerNetworkInformationStats[peerListTarget[i1].PeerIpTarget].ContainsKey(peerListTarget[i1].PeerUniqueIdTarget))
-                                                                {
-                                                                    _listPeerNetworkInformationStats[peerListTarget[i1].PeerIpTarget].Add(peerListTarget[i1].PeerUniqueIdTarget, packetData);
-                                                                    insert = true;
-                                                                }
-                                                                else
-                                                                {
-                                                                    _listPeerNetworkInformationStats[peerListTarget[i1].PeerIpTarget][peerListTarget[i1].PeerUniqueIdTarget] = packetData;
-                                                                    insert = true;
-                                                                }
-                                                            }
-
-                                                            if (insert)
-                                                            {
-                                                                string packetDataHash = ClassUtility.GenerateSha256FromString(ClassUtility.SerializeData(packetData));
-
-                                                                if (!listNetworkInformationsSynced.ContainsKey(packetDataHash))
-                                                                    listNetworkInformationsSynced.TryAdd(packetDataHash, packetData);
-
-                                                                if (peerRanked)
-                                                                {
-                                                                    if (!listNetworkInformationsRankedPeer.ContainsKey(packetDataHash))
-                                                                    {
-                                                                        if (!listNetworkInformationsRankedPeer.TryAdd(packetDataHash, 1))
-                                                                            listNetworkInformationsRankedPeer[packetDataHash]++;
-                                                                    }
-                                                                    else
+                                                                    if (!listNetworkInformationsRankedPeer.TryAdd(packetDataHash, 1))
                                                                         listNetworkInformationsRankedPeer[packetDataHash]++;
                                                                 }
                                                                 else
+                                                                    listNetworkInformationsRankedPeer[packetDataHash]++;
+                                                            }
+                                                            else
+                                                            {
+                                                                if (!listNetworkInformationsNoRankPeer.ContainsKey(packetDataHash))
                                                                 {
-                                                                    if (!listNetworkInformationsNoRankPeer.ContainsKey(packetDataHash))
-                                                                    {
-                                                                        if (!listNetworkInformationsNoRankPeer.TryAdd(packetDataHash, 1))
-                                                                            listNetworkInformationsNoRankPeer[packetDataHash]++;
-                                                                    }
-                                                                    else
+                                                                    if (!listNetworkInformationsNoRankPeer.TryAdd(packetDataHash, 1))
                                                                         listNetworkInformationsNoRankPeer[packetDataHash]++;
                                                                 }
-
-                                                                totalResponseOk++;
+                                                                else
+                                                                    listNetworkInformationsNoRankPeer[packetDataHash]++;
                                                             }
+
+                                                            totalResponseOk++;
+
                                                         }
                                                     }
                                                 }

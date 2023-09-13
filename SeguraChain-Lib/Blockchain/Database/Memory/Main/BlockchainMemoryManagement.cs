@@ -1396,7 +1396,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                         long timestampStart = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
-                        ClassBlockObject lastBlockHeightUnlockedObject = await GetBlockInformationDataStrategy(lastBlockHeightUnlockedChecked, cancellation);
+                        ClassBlockObject lastBlockHeightUnlockedObject = await GetBlockMirrorObject(lastBlockHeightUnlockedChecked, cancellation);
                         long lastBlockHeightTransactionConfirmationDone = await GetLastBlockHeightTransactionConfirmationDone(cancellation);
 
                         if (lastBlockHeightUnlockedObject == null)
@@ -3828,14 +3828,35 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             {
                                 foreach (ClassBlockObject blockObject in listBlockObjects)
                                 {
-                                    
+                                    bool isLocked = false;
 
-                                    if (_dictionaryBlockObjectMemory[blockObject.BlockHeight].Content != null)
-                                        _dictionaryBlockObjectMemory[blockObject.BlockHeight].Content = blockObject;
-                                    else
-                                        AddOrUpdateBlockMirrorObject(blockObject);
+                                    try
+                                    {
+                                        try
+                                        {
+                                            isLocked = Monitor.TryEnter(blockObject.BlockTransactions);
+                                        }
+                                        catch
+                                        {
+                                            return false;
+                                        }
 
-                                    await UpdateListBlockTransactionCache(blockObject.BlockTransactions.Values.ToList(), cancellation, true);
+                                        if (!isLocked)
+                                            return false;
+
+                                        if (_dictionaryBlockObjectMemory[blockObject.BlockHeight].Content != null)
+                                            _dictionaryBlockObjectMemory[blockObject.BlockHeight].Content = blockObject;
+                                        else
+                                            AddOrUpdateBlockMirrorObject(blockObject);
+
+                                        await UpdateListBlockTransactionCache(blockObject.BlockTransactions.Values.ToList(), cancellation, true);
+
+                                    }
+                                    finally
+                                    {
+                                        if (isLocked)
+                                            Monitor.Exit(blockObject.BlockTransactions);
+                                    }
                                 }
                             }
                         }
