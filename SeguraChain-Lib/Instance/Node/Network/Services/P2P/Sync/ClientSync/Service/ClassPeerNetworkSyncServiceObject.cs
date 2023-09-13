@@ -1563,6 +1563,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                             try
                             {
+                                if (blockHeight > ClassPeerDatabase.DictionaryPeerDataObject[peerListTarget[i1].PeerIpTarget][peerListTarget[i1].PeerUniqueIdTarget].PeerClientLastBlockHeight)
+                                {
+                                    ClassLog.WriteLine("Peer not enough synced. " + peerListTarget[i1].PeerIpTarget + " | " + peerListTarget[i1].PeerUniqueIdTarget, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkYellow); ;
+                                    break;
+                                }
+
                                 Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>> result = null;
 
                                 using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token))
