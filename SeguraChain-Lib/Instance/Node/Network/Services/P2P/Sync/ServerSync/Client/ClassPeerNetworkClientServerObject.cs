@@ -1982,7 +1982,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 if (encrypted)
                 {
                     if (peerObject?.GetClientCryptoStreamObject != null)
-                        packetContentEncrypted = peerObject.GetClientCryptoStreamObject.EncryptDataProcess(packetSendObject.PacketContent.GetByteArray(), _cancellationTokenListenPeerPacket);
+                        packetContentEncrypted = await peerObject.GetClientCryptoStreamObject.EncryptDataProcess(packetSendObject.PacketContent.GetByteArray(), _cancellationTokenListenPeerPacket);
                     else
                     {
                         if (!ClassAes.EncryptionProcess(packetSendObject.PacketContent.GetByteArray(), peerObject.PeerClientPacketEncryptionKey, peerObject.PeerClientPacketEncryptionKeyIv, out packetContentEncrypted))
@@ -2000,7 +2000,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 packetSendObject.PacketHash = ClassUtility.GenerateSha256FromString(packetSendObject.PacketContent);
 
                 if (peerObject?.GetClientCryptoStreamObject != null)
-                    packetSendObject.PacketSignature = peerObject.GetClientCryptoStreamObject.DoSignatureProcess(packetSendObject.PacketHash, peerObject.PeerInternPrivateKey, _cancellationTokenListenPeerPacket);
+                    packetSendObject.PacketSignature = await peerObject.GetClientCryptoStreamObject.DoSignatureProcess(packetSendObject.PacketHash, peerObject.PeerInternPrivateKey, _cancellationTokenListenPeerPacket);
 
 
                 return await _clientSocket.TrySendSplittedPacket((Convert.ToBase64String(packetSendObject.GetPacketData()) + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray(), _cancellationTokenListenPeerPacket, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
@@ -2089,7 +2089,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             if (ClassUtility.GenerateSha256FromString(packetSendObject.PacketContent + packetSendObject.PacketOrder) != packetSendObject.PacketHash)
                 return false;
 
-            if (peerObject.GetClientCryptoStreamObject.CheckSignatureProcess(packetSendObject.PacketHash, packetSendObject.PacketSignature, peerObject.PeerClientPublicKey, _cancellationTokenListenPeerPacket))
+            if (await peerObject.GetClientCryptoStreamObject.CheckSignatureProcess(packetSendObject.PacketHash, packetSendObject.PacketSignature, peerObject.PeerClientPublicKey, _cancellationTokenListenPeerPacket))
             {
                 ClassLog.WriteLine("Signature of the packet received from peer " + _peerClientIp + " is valid. Hash: " + packetSendObject.PacketHash + " Signature: " + packetSendObject.PacketSignature, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
 
@@ -2115,7 +2115,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             byte[] contentData = ClassUtility.GetByteArrayFromHexString(content);
 
             if (peerObject?.GetClientCryptoStreamObject != null)
-                return peerObject.GetClientCryptoStreamObject.DecryptDataProcess(contentData, _cancellationTokenListenPeerPacket);
+                return await peerObject.GetClientCryptoStreamObject.DecryptDataProcess(contentData, _cancellationTokenListenPeerPacket);
             else
             {
                 if (peerObject?.PeerClientPacketEncryptionKey?.Length == 0 || peerObject?.PeerClientPacketEncryptionKeyIv?.Length == 0)

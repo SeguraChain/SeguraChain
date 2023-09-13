@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Threading;
+using System.Threading.Tasks;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Security;
@@ -21,6 +22,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         private Aes _aesManaged;
         private ICryptoTransform _encryptCryptoTransform;
         private ICryptoTransform _decryptCryptoTransform;
+        private SemaphoreSlim _semaphoreCryptoObject;
 
 
         private ECPrivateKeyParameters _ecPrivateKeyParameters;
@@ -45,7 +47,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         {
             PeerIp = peerIp;
             PeerUniqueId = peerUniqueId;
-            UpdateEncryptionStream(key, iv, publicKey, privateKey, cancellation);
+            _semaphoreCryptoObject = new SemaphoreSlim(1, 1);
+            UpdateEncryptionStream(key, iv, publicKey, privateKey, cancellation).Wait();
         }
 
         /// <summary>
@@ -57,9 +60,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         /// <param name="privateKey"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        public bool UpdateEncryptionStream(byte[] key, byte[] iv, string publicKey, string privateKey, CancellationTokenSource cancellation)
+        public async Task<bool> UpdateEncryptionStream(byte[] key, byte[] iv, string publicKey, string privateKey, CancellationTokenSource cancellation)
         {
-            return InitializeAesAndEcdsaSign(key, iv, publicKey, privateKey);
+            return await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
+            {
+                InitializeAesAndEcdsaSign(key, iv, publicKey, privateKey);
+            }, cancellation);
         }
 
         /// <summary>
@@ -69,7 +75,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         /// <param name="iv"></param>
         /// <param name="publicKey"></param>
         /// <param name="privateKey"></param>
-        private bool InitializeAesAndEcdsaSign(byte[] key, byte[] iv, string publicKey, string privateKey)
+        private void InitializeAesAndEcdsaSign(byte[] key, byte[] iv, string publicKey, string privateKey)
         {
 
             _initialized = false;
@@ -77,7 +83,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
             try
             {
                 if (publicKey.IsNullOrEmpty(false, out _) || privateKey.IsNullOrEmpty(false, out _))
-                    return false;
+                    return;
 
                 _aesManaged?.Dispose();
                 _encryptCryptoTransform?.Dispose();
@@ -102,7 +108,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
                 _ecPublicKeyParameters = new ECPublicKeyParameters(ClassWalletUtility.ECParameters.Curve.DecodePoint(ClassBase58.DecodeWithCheckSum(publicKey, false)), ClassWalletUtility.ECDomain);
 
                 _initialized = true;
-                return true;
+
             }
 #if DEBUG
             catch (Exception error)
@@ -116,7 +122,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
 #endif
                 _initialized = false;
             }
-            return false;
+
         }
 
         /// <summary>
@@ -125,7 +131,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         /// <param name="content"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        public byte[] EncryptDataProcess(byte[] content, CancellationTokenSource cancellation)
+        public async Task<byte[]> EncryptDataProcess(byte[] content, CancellationTokenSource cancellation)
         {
             byte[] result = null;
 
@@ -152,7 +158,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         /// <param name="content"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        public byte[] DecryptDataProcess(byte[] content, CancellationTokenSource cancellation)
+        public async Task<byte[]> DecryptDataProcess(byte[] content, CancellationTokenSource cancellation)
         {
             byte[] decryptResult = null;
             try
@@ -186,7 +192,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         /// <param name="hash"></param>
         /// <param name="privateKey"></param>
         /// <returns></returns>
-        public string DoSignatureProcess(string hash, string privateKey, CancellationTokenSource cancellation)
+        public async Task<string> DoSignatureProcess(string hash, string privateKey, CancellationTokenSource cancellation)
         {
             string result = string.Empty;
 
@@ -220,7 +226,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         /// <param name="signature"></param>
         /// <param name="publicKey"></param>
         /// <returns></returns>
-        public bool CheckSignatureProcess(string hash, string signature, string publicKey, CancellationTokenSource cancellation)
+        public async Task<bool> CheckSignatureProcess(string hash, string signature, string publicKey, CancellationTokenSource cancellation)
         {
 
             bool result = false;

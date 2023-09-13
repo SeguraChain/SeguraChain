@@ -74,7 +74,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 return default(R);
 
 
-            byte[] packetTupleDecrypted = peerObject.GetInternCryptoStreamObject.DecryptDataProcess(ClassUtility.GetByteArrayFromHexString(peerNetworkClientSyncObject.PeerPacketReceived.PacketContent), cancellation);
+            byte[] packetTupleDecrypted = await peerObject.GetInternCryptoStreamObject.DecryptDataProcess(ClassUtility.GetByteArrayFromHexString(peerNetworkClientSyncObject.PeerPacketReceived.PacketContent), cancellation);
 
             if (packetTupleDecrypted == null)
             {
@@ -129,7 +129,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     }
                     else
                     {
-                        packetContentEncrypted = ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetInternCryptoStreamObject.EncryptDataProcess(sendObject.PacketContent.GetByteArray(), cancellation);
+                        packetContentEncrypted = await ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetInternCryptoStreamObject.EncryptDataProcess(sendObject.PacketContent.GetByteArray(), cancellation);
 
                         if (packetContentEncrypted == null)
                         {
@@ -153,7 +153,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     if (ClassPeerCheckManager.CheckPeerClientWhitelistStatus(peerIp, peerUniqueId, peerNetworkSettingObject) || forceSignature)
                     {
                         if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject != null && cancellation != null)
-                            sendObject.PacketSignature = ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject.DoSignatureProcess(sendObject.PacketHash, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey, cancellation);
+                            sendObject.PacketSignature = await ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject.DoSignatureProcess(sendObject.PacketHash, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey, cancellation);
                         else
                         {
                             var signer = SignerUtilities.GetSigner(BlockchainSetting.SignerNameNetwork);
