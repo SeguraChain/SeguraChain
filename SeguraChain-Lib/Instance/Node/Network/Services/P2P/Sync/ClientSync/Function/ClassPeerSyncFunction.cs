@@ -58,7 +58,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
                 if (!peerIgnorePacketSignature)
                 {
                     if (ClassUtility.GenerateSha256FromString(packetContent) == packetHash)
-                        peerPacketSignatureValid = await ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject.CheckSignatureProcess(packetHash, packetSignature, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPublicKey, cancellation);
+                        peerPacketSignatureValid = ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject.CheckSignatureProcess(packetHash, packetSignature, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPublicKey, cancellation);
                     else
                         return false;
                 }
@@ -88,7 +88,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Fun
 
             try
             {
-                packetDecrypted = ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetInternCryptoStreamObject.DecryptDataProcess(ClassUtility.GetByteArrayFromHexString(packetContent), cancellation).Result;
+                packetDecrypted = ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetInternCryptoStreamObject.DecryptDataProcess(ClassUtility.GetByteArrayFromHexString(packetContent), cancellation);
             }
             catch
             {
