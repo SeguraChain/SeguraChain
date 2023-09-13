@@ -251,6 +251,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                             #endregion
 
+                            if (listPacketReceived.GetList.Sum(x => x.Packet.Length) >= ClassPeerPacketSetting.PacketMaxLengthReceive)
+                            {
+#if DEBUG
+                                Debug.WriteLine("Too huge packet data length from peer " + _peerClientIp + " | " + listPacketReceived.GetList.Sum(x => x.Packet.Length) + "/" + ClassPeerPacketSetting.PacketMaxLengthReceive);
+#endif
+                                break;
+                            }
+
                             _onSendingPacketResponse = true;
 
                             for (int index = 0; index < listPacketReceived.Count; index++)
