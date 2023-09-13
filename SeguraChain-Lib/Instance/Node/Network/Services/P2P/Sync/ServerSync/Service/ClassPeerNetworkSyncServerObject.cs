@@ -139,7 +139,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                     }
                                     break;
                             }
-                        }), 0, _cancellationTokenSourcePeerServer, null).ConfigureAwait(false);
+                        }), 0, _cancellationTokenSourcePeerServer, null);
                     }
                     catch
                     {

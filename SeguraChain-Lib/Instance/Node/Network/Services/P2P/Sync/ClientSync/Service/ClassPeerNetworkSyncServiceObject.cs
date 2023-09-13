@@ -1154,7 +1154,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     {
                         string peerIpTarget = peerListTarget[i1].PeerIpTarget;
                         int peerPortTarget = peerListTarget[i1].PeerPortTarget;
-                        using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token))
+                        using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token))
                         {
                             if (await SendAskPeerList(peerListTarget[i1].PeerNetworkClientSyncObject, cancellation))
                             {
@@ -1226,7 +1226,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                             {
                                 Tuple<bool, List<string>> result = null;
 
-                                using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token))
+                                using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token))
                                      result = await SendAskSovereignUpdateList(peerListTarget[i].PeerNetworkClientSyncObject, cancellation);
 
                                 if (result != null && result?.Item2 != null && result.Item1 && result.Item2?.Count > 0)
@@ -1276,7 +1276,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 {
                                     Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassSovereignUpdateObject>> result = null;
 
-                                    using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token))
+                                    using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token))
                                         result = await SendAskSovereignUpdateData(peerListTarget[i].PeerNetworkClientSyncObject, sovereignUpdateHash, cancellation);
 
                                     if (result != null &&
@@ -1340,7 +1340,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                     {
                                         Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendNetworkInformation>> result = null;
 
-                                        using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token))
+                                        using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token))
                                              result = await SendAskNetworkInformation(peerListTarget[i1].PeerNetworkClientSyncObject, cancellation);
 
                                         if (result != null)
@@ -1591,7 +1591,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                             {
                                 Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>> result = null;
 
-                                using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token))
+                                using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token))
                                     result = await SendAskBlockData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeight, refuseLockedBlock, cancellation);
 
                                 if (result == null ||
@@ -1637,7 +1637,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                         /*else
                         {
-                            Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockDataRange>> result = await SendAskBlockDataByRange(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeightStart, blockHeightEnd, refuseLockedBlock, CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token));
+                            Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockDataRange>> result = await SendAskBlockDataByRange(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeightStart, blockHeightEnd, refuseLockedBlock, CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token));
 
                             if (result != null && result.Item1 && result.Item2 != null)
                             {
@@ -1758,8 +1758,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
             return blockListSynced;
         }
 
-
-
         /// <summary>
         /// Start to ask a transaction data by a transaction id target.
         /// </summary>
@@ -1795,7 +1793,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                     {
                                         Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionData>> result = null;
 
-                                        using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token))
+                                        using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token))
                                              result = await SendAskBlockTransactionData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeightTarget, transactionId, cancellation);
                                         
                                         if (result != null)
@@ -1972,7 +1970,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                     {
                                         Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionDataByRange>> result = null;
 
-                                        using (CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token))
+                                        using (CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token))
                                             result = await SendAskBlockTransactionDataByRange(peerListTarget[i].PeerNetworkClientSyncObject, blockHeightTarget, transactionIdStart, transactionIdEnd, listWalletAndPublicKeys, cancellationTokenSourceTaskSync);
 
                                         if (result != null)
@@ -2151,7 +2149,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 {
                                     Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>> result = null;
 
-                                    using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token))
+                                    using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token))
                                         result = await SendAskBlockData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeightTarget, true, cancellation);
 
                                     if (result != null)
