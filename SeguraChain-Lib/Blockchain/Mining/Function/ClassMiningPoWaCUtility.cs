@@ -76,7 +76,7 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
                         break;
                     case ClassMiningPoWaCEnumInstructions.DO_LZ4_COMPRESS_NONCE_IV:
                         {
-                            pocShareIv = ClassUtility.CompressDataLz4(pocShareIv);
+                            pocShareIv = ClassUtility.WrapDataLz4(pocShareIv);
                         }
                         break;
                     case ClassMiningPoWaCEnumInstructions.DO_NONCE_IV_ITERATIONS:
@@ -286,7 +286,7 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
                         break;
                     case ClassMiningPoWaCEnumInstructions.DO_LZ4_COMPRESS_NONCE_IV:
                         {
-                            pocShareIv = ClassUtility.CompressDataLz4(pocShareIv);
+                            pocShareIv = ClassUtility.WrapDataLz4(pocShareIv);
                         }
                         break;
                     case ClassMiningPoWaCEnumInstructions.DO_NONCE_IV_ITERATIONS:

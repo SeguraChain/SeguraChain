@@ -57,7 +57,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                         {
                             if (blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableCompressBlockData)
                             {
-                                if (!ClassBlockUtility.StringToBlockObject(Utf8Encoding.GetString(ClassUtility.DecompressDataLz4(Convert.FromBase64String(ioDataLine))), out blockObject))
+                                if (!ClassBlockUtility.StringToBlockObject(Utf8Encoding.GetString(ClassUtility.UnWrapDataLz4(Convert.FromBase64String(ioDataLine))), out blockObject))
                                     return false;
                             }
                             else
@@ -81,7 +81,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                         {
                             if (blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableCompressBlockData)
                             {
-                                using (DisposableList<string> transactionList = Utf8Encoding.GetString(ClassUtility.DecompressDataLz4(Convert.FromBase64String(ioDataLine))).DisposableSplit(IoDataCharacterSeperator))
+                                using (DisposableList<string> transactionList = Utf8Encoding.GetString(ClassUtility.UnWrapDataLz4(Convert.FromBase64String(ioDataLine))).DisposableSplit(IoDataCharacterSeperator))
                                 {
                                     foreach (var transaction in transactionList.GetList)
                                     {
@@ -157,7 +157,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                             {
                                 if (blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableCompressBlockData)
                                 {
-                                    if (!ClassBlockUtility.StringToBlockObject(Utf8Encoding.GetString(ClassUtility.DecompressDataLz4(Convert.FromBase64String(ioDataLine))), out _))
+                                    if (!ClassBlockUtility.StringToBlockObject(Utf8Encoding.GetString(ClassUtility.UnWrapDataLz4(Convert.FromBase64String(ioDataLine))), out _))
                                         return false;
                                 }
                                 else
@@ -172,7 +172,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                             {
                                 if (blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableCompressBlockData)
                                 {
-                                    using (DisposableList<string> transactionList = Utf8Encoding.GetString(ClassUtility.DecompressDataLz4(Convert.FromBase64String(ioDataLine))).DisposableSplit(IoDataCharacterSeperator))
+                                    using (DisposableList<string> transactionList = Utf8Encoding.GetString(ClassUtility.UnWrapDataLz4(Convert.FromBase64String(ioDataLine))).DisposableSplit(IoDataCharacterSeperator))
                                     {
                                         foreach (var transaction in transactionList.GetList)
                                         {
@@ -235,7 +235,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
             yield return IoDataBeginBlockString + blockObject.BlockHeight + IoDataBeginBlockStringClose + Environment.NewLine;
 
             if (blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableCompressBlockData)
-                yield return Convert.ToBase64String(ClassUtility.CompressDataLz4(Utf8Encoding.GetBytes(ClassBlockUtility.SplitBlockObject(blockObject)))) + Environment.NewLine;
+                yield return Convert.ToBase64String(ClassUtility.WrapDataLz4(Utf8Encoding.GetBytes(ClassBlockUtility.SplitBlockObject(blockObject)))) + Environment.NewLine;
             else
                 yield return ClassBlockUtility.SplitBlockObject(blockObject) + Environment.NewLine;
 
@@ -257,14 +257,14 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                         ioDataLineTransaction.Length >= blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskMaxTransactionSizePerLine)
                     {
                         yield return (blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableCompressBlockData ?
-                            Convert.ToBase64String(ClassUtility.CompressDataLz4(Utf8Encoding.GetBytes(ioDataLineTransaction))) : ioDataLineTransaction) + Environment.NewLine;
+                            Convert.ToBase64String(ClassUtility.WrapDataLz4(Utf8Encoding.GetBytes(ioDataLineTransaction))) : ioDataLineTransaction) + Environment.NewLine;
 
                         totalIoTransactionDataInLine = 0;
                     }
                 }
 
                 yield return (blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableCompressBlockData ?
-                    Convert.ToBase64String(ClassUtility.CompressDataLz4(Utf8Encoding.GetBytes(ioDataLineTransaction))) : ioDataLineTransaction) + Environment.NewLine;
+                    Convert.ToBase64String(ClassUtility.WrapDataLz4(Utf8Encoding.GetBytes(ioDataLineTransaction))) : ioDataLineTransaction) + Environment.NewLine;
             }
 
             yield return IoDataEndBlockString;

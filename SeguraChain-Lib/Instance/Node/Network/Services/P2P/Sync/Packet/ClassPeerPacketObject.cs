@@ -40,6 +40,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
             {
                 try
                 {
+                    packetData = ClassUtility.DecompressLz4(packetData);
                     string[] splitPacketData = packetData.GetStringFromByteArrayUtf8().Split(new[] { "#" }, StringSplitOptions.RemoveEmptyEntries);
 
 
@@ -96,7 +97,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
                 (PacketPeerUniqueId.IsNullOrEmpty(false, out _) ? "empty" : PacketPeerUniqueId) + "#" +
                 (PublicKey.IsNullOrEmpty(false, out _) ? "empty" : PublicKey) + "#" +
                 PeerLastTimestampSignatureWhitelist;
-            return packetData.GetByteArray();
+            return ClassUtility.CompressLz4(packetData.GetByteArray());
 
         }
 
@@ -149,6 +150,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
             {
                 if (packetData?.Length > 0)
                 {
+                    packetData = ClassUtility.DecompressLz4(packetData);
                     splitPacketData = packetData.GetStringFromByteArrayUtf8().Split(new[] { "#" }, StringSplitOptions.RemoveEmptyEntries);
 
 
@@ -198,7 +200,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
                 (PacketPeerUniqueId.IsNullOrEmpty(false, out _) ? "empty" : PacketPeerUniqueId) + "#" +
                 (PublicKey.IsNullOrEmpty(false, out _) ? "empty" : PublicKey) + "#" +
                 PeerLastTimestampSignatureWhitelist;
-            return packetData.GetByteArray();
+            return ClassUtility.CompressLz4(packetData.GetByteArray());
 
         }
 

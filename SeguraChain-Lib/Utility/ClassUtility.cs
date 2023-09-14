@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -670,15 +671,43 @@ namespace SeguraChain_Lib.Utility
 
         #region Static functions about Compress/Decompress.
 
-        public static byte[] CompressDataLz4(byte[] data)
+        public static byte[] WrapDataLz4(byte[] data)
         {
             return LZ4Codec.Wrap(data, 0, data.Length);
         }
 
-        public static byte[] DecompressDataLz4(byte[] compressed)
+        public static byte[] UnWrapDataLz4(byte[] compressed)
         {
             return LZ4Codec.Unwrap(compressed);
         }
+
+        public static byte[] CompressLz4(byte[] data)
+        {
+            using (MemoryStream memory = new MemoryStream())
+            {
+                using (LZ4Stream lz4 = new LZ4Stream(memory, LZ4StreamMode.Compress, LZ4StreamFlags.HighCompression))
+                    lz4.Write(data, 0, data.Length);
+
+                return memory.ToArray();
+            }
+        }
+
+
+        public static byte[] DecompressLz4(byte[] data)
+        {
+            using (MemoryStream memory = new MemoryStream(data))
+            {
+                using (MemoryStream memoryResult = new MemoryStream())
+                {
+                    using (LZ4Stream lz4 = new LZ4Stream(memory, LZ4StreamMode.Decompress, LZ4StreamFlags.HighCompression))
+                    {
+                        lz4.CopyTo(memoryResult);
+                        return memoryResult.ToArray();
+                    }
+                }
+            }
+        }
+
 
         private static Dictionary<string, string> ListHexCombinaison = new Dictionary<string, string>()
         {

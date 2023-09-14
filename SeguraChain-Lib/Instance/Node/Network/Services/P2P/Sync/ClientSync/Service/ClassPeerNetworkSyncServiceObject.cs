@@ -762,8 +762,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                                         if (blockObjectInformationsToCheck == null)
                                                         {
-                                                            ClassLog.WriteLine("Can't check the block height: " + blockHeightToCheck + ", this one can't be retrieved successfully.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
-                                                            break;
+                                                            while (blockObjectInformationsToCheck == null && !_cancellationTokenServiceSync.IsCancellationRequested)
+                                                            {
+                                                                ClassLog.WriteLine("Can't check the block height: " + blockHeightToCheck + ", this one can't be retrieved successfully.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                                                                blockObjectInformationsToCheck = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(blockHeightToCheck, true, false, _cancellationTokenServiceSync);
+                                                                await Task.Delay(1000);
+                                                            }
                                                         }
 
                                                         ClassLog.WriteLine("Start to check the block height: " + blockHeightToCheck + " with other peers..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
@@ -1077,7 +1081,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                             {
                                 ClassLog.WriteLine("Start sync to retrieve back new network informations..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-                                bool blockchainNetworkInformationsStatus = true;
 
                                 Tuple<ClassPeerPacketSendNetworkInformation, float> packetNetworkInformationTmp = await StartAskNetworkInformationFromListPeerTarget(peerTargetList);
 
@@ -1085,28 +1088,20 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 {
                                     if (packetNetworkInformationTmp.Item2 > 0)
                                     {
+                                        ClassLog.WriteLine("Current network informations received successfully.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-                                        // Sync block missing or not yet synced.
-                                        if (blockchainNetworkInformationsStatus)
+                                        _packetNetworkInformation = new ClassPeerPacketSendNetworkInformation()
                                         {
-                                            ClassLog.WriteLine("Current network informations received successfully.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-
-                                            _packetNetworkInformation = new ClassPeerPacketSendNetworkInformation()
-                                            {
-                                                CurrentBlockDifficulty = packetNetworkInformationTmp.Item1.CurrentBlockDifficulty,
-                                                CurrentBlockHash = packetNetworkInformationTmp.Item1.CurrentBlockHash,
-                                                TimestampBlockCreate = packetNetworkInformationTmp.Item1.TimestampBlockCreate,
-                                                LastBlockHeightUnlocked = packetNetworkInformationTmp.Item1.LastBlockHeightUnlocked,
-                                                PacketNumericHash = packetNetworkInformationTmp.Item1.PacketNumericHash,
-                                                CurrentBlockHeight = packetNetworkInformationTmp.Item1.CurrentBlockHeight,
-                                                PacketTimestamp = packetNetworkInformationTmp.Item1.PacketTimestamp,
-                                                PacketNumericSignature = packetNetworkInformationTmp.Item1.PacketNumericSignature,
-                                            };
-                                            ClassBlockchainStats.UpdateLastNetworkBlockHeight(packetNetworkInformationTmp.Item1.CurrentBlockHeight);
-
-                                        }
-                                        else
-                                            ClassLog.WriteLine("Current network informations received are invalid. Retry the sync later..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                                            CurrentBlockDifficulty = packetNetworkInformationTmp.Item1.CurrentBlockDifficulty,
+                                            CurrentBlockHash = packetNetworkInformationTmp.Item1.CurrentBlockHash,
+                                            TimestampBlockCreate = packetNetworkInformationTmp.Item1.TimestampBlockCreate,
+                                            LastBlockHeightUnlocked = packetNetworkInformationTmp.Item1.LastBlockHeightUnlocked,
+                                            PacketNumericHash = packetNetworkInformationTmp.Item1.PacketNumericHash,
+                                            CurrentBlockHeight = packetNetworkInformationTmp.Item1.CurrentBlockHeight,
+                                            PacketTimestamp = packetNetworkInformationTmp.Item1.PacketTimestamp,
+                                            PacketNumericSignature = packetNetworkInformationTmp.Item1.PacketNumericSignature,
+                                        };
+                                        ClassBlockchainStats.UpdateLastNetworkBlockHeight(packetNetworkInformationTmp.Item1.CurrentBlockHeight);
                                     }
                                 }
                                 else
@@ -1161,15 +1156,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 {
                     try
                     {
-                        string peerIpTarget = peerListTarget[i1].PeerIpTarget;
-                        int peerPortTarget = peerListTarget[i1].PeerPortTarget;
-                        using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token))
+                        if (await SendAskPeerList(peerListTarget[i1].PeerNetworkClientSyncObject, _cancellationTokenServiceSync))
                         {
-                            if (await SendAskPeerList(peerListTarget[i1].PeerNetworkClientSyncObject, cancellation))
-                            {
-                                totalResponseOk++;
-                                ClassLog.WriteLine("Peer list asked to peer target: " + peerIpTarget + ":" + peerPortTarget + " successfully received.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
-                            }
+                            totalResponseOk++;
+                            ClassLog.WriteLine("Peer list asked to peer target: " + peerListTarget[i1].PeerIpTarget + ":" + peerListTarget[i1].PeerPortTarget + " successfully received.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
                         }
                     }
                     catch
@@ -1233,10 +1223,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         {
                             if (peerListTarget.ContainsKey(i))
                             {
-                                Tuple<bool, List<string>> result = null;
-
-                                using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token))
-                                    result = await SendAskSovereignUpdateList(peerListTarget[i].PeerNetworkClientSyncObject, cancellation);
+                                Tuple<bool, List<string>> result = await SendAskSovereignUpdateList(peerListTarget[i].PeerNetworkClientSyncObject, _cancellationTokenServiceSync);
 
                                 if (result != null && result?.Item2 != null && result.Item1 && result.Item2?.Count > 0)
                                 {
@@ -1283,10 +1270,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                             {
                                 try
                                 {
-                                    Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassSovereignUpdateObject>> result = null;
-
-                                    using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token))
-                                        result = await SendAskSovereignUpdateData(peerListTarget[i].PeerNetworkClientSyncObject, sovereignUpdateHash, cancellation);
+                                    Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassSovereignUpdateObject>> result = await SendAskSovereignUpdateData(peerListTarget[i].PeerNetworkClientSyncObject, sovereignUpdateHash, _cancellationTokenServiceSync);
 
                                     if (result != null &&
                                         result?.Item2 != null &&
@@ -1347,10 +1331,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 {
                                     try
                                     {
-                                        Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendNetworkInformation>> result = null;
-
-                                        using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token))
-                                            result = await SendAskNetworkInformation(peerListTarget[i1].PeerNetworkClientSyncObject, cancellation);
+                                        Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendNetworkInformation>> result = await SendAskNetworkInformation(peerListTarget[i1].PeerNetworkClientSyncObject, _cancellationTokenServiceSync);
 
                                         if (result != null)
                                         {
@@ -1502,10 +1483,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                 return new Tuple<ClassPeerPacketSendNetworkInformation, float>(listNetworkInformationsSynced[mostVotedDataHashNorm], totalVote);
                                         }
                                     }
-
-
                                 }
-
                             }
                             catch (Exception error)
                             {
@@ -1568,10 +1546,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                     break;
                                 }
 
-                                Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>> result = null;
-
-                                using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token))
-                                    result = await SendAskBlockData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeight, refuseLockedBlock, cancellation);
+                                Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>> result = await SendAskBlockData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeight, refuseLockedBlock, _cancellationTokenServiceSync);
 
                                 if (result == null ||
                                 !result.Item1 ||
@@ -1772,10 +1747,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                     try
                                     {
-                                        Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionData>> result = null;
-
-                                        using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token))
-                                            result = await SendAskBlockTransactionData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeightTarget, transactionId, cancellation);
+                                        Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionData>> result = await SendAskBlockTransactionData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeightTarget, transactionId, _cancellationTokenServiceSync);
 
                                         if (result != null)
                                         {
@@ -1949,10 +1921,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                     try
                                     {
-                                        Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionDataByRange>> result = null;
-
-                                        using (CancellationTokenSource cancellationTokenSourceTaskSync = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token))
-                                            result = await SendAskBlockTransactionDataByRange(peerListTarget[i].PeerNetworkClientSyncObject, blockHeightTarget, transactionIdStart, transactionIdEnd, listWalletAndPublicKeys, cancellationTokenSourceTaskSync);
+                                        Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionDataByRange>> result = await SendAskBlockTransactionDataByRange(peerListTarget[i].PeerNetworkClientSyncObject, blockHeightTarget, transactionIdStart, transactionIdEnd, listWalletAndPublicKeys, _cancellationTokenServiceSync);
 
                                         if (result != null)
                                         {
@@ -2128,10 +2097,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                 try
                                 {
-                                    Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>> result = null;
-
-                                    using (var cancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token))
-                                        result = await SendAskBlockData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeightTarget, true, cancellation);
+                                    Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>> result = await SendAskBlockData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeightTarget, true, _cancellationTokenServiceSync);
 
                                     if (result != null)
                                     {
