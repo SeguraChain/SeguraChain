@@ -633,7 +633,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         /// <returns></returns>
         public async Task<ClassBlockObject> GetBlockInformationDataStrategy(long blockHeight, CancellationTokenSource cancellation)
         {
-            return blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight ? await GetBlockMirrorObject(blockHeight, cancellation) : await GetBlockDataStrategy(blockHeight, true, false, cancellation);
+            return blockHeight >= BlockchainSetting.GenesisBlockHeight && blockHeight <= GetLastBlockHeight ? await GetBlockMirrorObject(blockHeight, cancellation) : await GetBlockDataStrategy(blockHeight, true, true, cancellation);
         }
 
         /// <summary>

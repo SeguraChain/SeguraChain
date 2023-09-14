@@ -1531,72 +1531,82 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     await TaskManager.TaskManager.InsertTask(new Action(async () =>
                     {
 
-                        //if (blockHeightEnd - blockHeightStart == 0)
-                        //{
-                        foreach (long blockHeight in listBlockHeightTarget.GetList)
+                        if (blockHeightEnd - blockHeightStart == 0)
                         {
-                            if (blockHeight < BlockchainSetting.GenesisBlockHeight)
-                                continue;
-
-                            try
+                            foreach (long blockHeight in listBlockHeightTarget.GetList)
                             {
-                                if (blockHeight > ClassPeerDatabase.DictionaryPeerDataObject[peerListTarget[i1].PeerIpTarget][peerListTarget[i1].PeerUniqueIdTarget].PeerClientLastBlockHeight)
+                                if (blockHeight < BlockchainSetting.GenesisBlockHeight)
+                                    continue;
+
+                                try
                                 {
-                                    ClassLog.WriteLine("Peer not enough synced. " + peerListTarget[i1].PeerIpTarget + " | " + peerListTarget[i1].PeerUniqueIdTarget, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkYellow); ;
+                                    if (blockHeight > ClassPeerDatabase.DictionaryPeerDataObject[peerListTarget[i1].PeerIpTarget][peerListTarget[i1].PeerUniqueIdTarget].PeerClientLastBlockHeight)
+                                    {
+                                        ClassLog.WriteLine("Peer not enough synced. " + peerListTarget[i1].PeerIpTarget + " | " + peerListTarget[i1].PeerUniqueIdTarget, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkYellow); ;
+                                        break;
+                                    }
+
+                                    Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>> result = await SendAskBlockData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeight, refuseLockedBlock, _cancellationTokenServiceSync);
+
+                                    if (result == null ||
+                                    !result.Item1 ||
+                                    result.Item2 == null ||
+                                    result.Item2.ObjectReturned.BlockData == null ||
+                                    result.Item2.ObjectReturned.BlockData.BlockStatus == ClassBlockEnumStatus.LOCKED ||
+                                    !listBlockObjectsReceived.ContainsKey(result.Item2.ObjectReturned.BlockData.BlockHeight))
+                                        break;
+
+                                    #region Ensure to reset the block data received.
+
+                                    if (result.Item2.ObjectReturned.BlockData.BlockTransactions == null ||
+                                        result.Item2.ObjectReturned.BlockData.BlockTransactions.Count == 0)
+                                        break;
+
+                                    result.Item2.ObjectReturned.BlockData.BlockTransactionFullyConfirmed = false;
+                                    result.Item2.ObjectReturned.BlockData.BlockUnlockValid = false;
+                                    result.Item2.ObjectReturned.BlockData.BlockNetworkAmountConfirmations = 0;
+                                    result.Item2.ObjectReturned.BlockData.BlockSlowNetworkAmountConfirmations = 0;
+                                    result.Item2.ObjectReturned.BlockData.BlockLastHeightTransactionConfirmationDone = 0;
+                                    result.Item2.ObjectReturned.BlockData.BlockTotalTaskTransactionConfirmationDone = 0;
+                                    result.Item2.ObjectReturned.BlockData.BlockTransactionConfirmationCheckTaskDone = false;
+
+
+                                    foreach (var transactionHash in result.Item2.ObjectReturned.BlockData.BlockTransactions.Keys)
+                                    {
+                                        result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TotalSpend = 0;
+                                        result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionTotalConfirmation = 0;
+                                        result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionStatus = true;
+                                        result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionInvalidStatus = ClassTransactionEnumStatus.VALID_TRANSACTION;
+                                    }
+
+                                    #endregion
+
+                                    listBlockObjectsReceived[result.Item2.ObjectReturned.BlockData.BlockHeight].Add(i1, result.Item2.ObjectReturned.BlockData);
+                                }
+                                catch
+                                {
                                     break;
                                 }
-
-                                Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>> result = await SendAskBlockData(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeight, refuseLockedBlock, _cancellationTokenServiceSync);
-
-                                if (result == null ||
-                                !result.Item1 ||
-                                result.Item2 == null ||
-                                result.Item2.ObjectReturned.BlockData == null ||
-                                result.Item2.ObjectReturned.BlockData.BlockStatus == ClassBlockEnumStatus.LOCKED)
-                                    break;
-
-                                #region Ensure to reset the block data received.
-
-                                if (result.Item2.ObjectReturned.BlockData.BlockTransactions == null ||
-                                    result.Item2.ObjectReturned.BlockData.BlockTransactions.Count == 0)
-                                    break;
-
-                                result.Item2.ObjectReturned.BlockData.BlockTransactionFullyConfirmed = false;
-                                result.Item2.ObjectReturned.BlockData.BlockUnlockValid = false;
-                                result.Item2.ObjectReturned.BlockData.BlockNetworkAmountConfirmations = 0;
-                                result.Item2.ObjectReturned.BlockData.BlockSlowNetworkAmountConfirmations = 0;
-                                result.Item2.ObjectReturned.BlockData.BlockLastHeightTransactionConfirmationDone = 0;
-                                result.Item2.ObjectReturned.BlockData.BlockTotalTaskTransactionConfirmationDone = 0;
-                                result.Item2.ObjectReturned.BlockData.BlockTransactionConfirmationCheckTaskDone = false;
-
-
-                                foreach (var transactionHash in result.Item2.ObjectReturned.BlockData.BlockTransactions.Keys)
-                                {
-                                    result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TotalSpend = 0;
-                                    result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionTotalConfirmation = 0;
-                                    result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionStatus = true;
-                                    result.Item2.ObjectReturned.BlockData.BlockTransactions[transactionHash].TransactionInvalidStatus = ClassTransactionEnumStatus.VALID_TRANSACTION;
-                                }
-
-                                #endregion
-
-                                listBlockObjectsReceived[result.Item2.ObjectReturned.BlockData.BlockHeight].Add(i1, result.Item2.ObjectReturned.BlockData);
-                            }
-                            catch
-                            {
-                                break;
                             }
                         }
-                        //}
 
-                        /*else
+                        else
                         {
-                            Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockDataRange>> result = await SendAskBlockDataByRange(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeightStart, blockHeightEnd, refuseLockedBlock, CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token));
+                            Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockDataRange>> result = await SendAskBlockDataByRange(peerListTarget[i1].PeerNetworkClientSyncObject, blockHeightStart, blockHeightEnd, refuseLockedBlock, _cancellationTokenServiceSync);
 
                             if (result != null && result.Item1 && result.Item2 != null)
                             {
                                 foreach (ClassBlockObject blockObject in result.Item2.ObjectReturned.ListBlockObject)
                                 {
+
+
+                                    if (blockObject == null ||
+                                        blockObject.BlockStatus == ClassBlockEnumStatus.LOCKED ||
+                                        !listBlockObjectsReceived.ContainsKey(blockObject.BlockHeight) ||
+                                        blockObject.BlockTransactions == null ||
+                                        blockObject.BlockTransactions.Count == 0)
+                                        break;
+
                                     #region Ensure to clean the block object received.
 
                                     if (listBlockObjectsReceived.ContainsKey(blockObject.BlockHeight))
@@ -1611,7 +1621,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                         foreach (var transactionHash in blockObject.BlockTransactions.Keys)
                                         {
+                                            blockObject.BlockTransactions[transactionHash].TotalSpend = 0;
                                             blockObject.BlockTransactions[transactionHash].TransactionTotalConfirmation = 0;
+                                            blockObject.BlockTransactions[transactionHash].TransactionStatus = true;
                                             blockObject.BlockTransactions[transactionHash].TransactionInvalidStatus = ClassTransactionEnumStatus.VALID_TRANSACTION;
                                         }
 
@@ -1621,7 +1633,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                     #endregion
                                 }
                             }
-                        }*/
+                        }
 
                         totalTaskDone++;
                     }), 0, null);
@@ -3762,16 +3774,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 try
                 {
                     if (!peerTargetList[peerKey].PeerNetworkClientSyncObject.PeerConnectStatus ||
-                        !peerTargetList[peerKey].PeerNetworkClientSyncObject.PeerPacketReceivedStatus ||
                         force)
                     {
                         peerTargetList[peerKey].PeerNetworkClientSyncObject.DisconnectFromTarget();
-
-                        if (!ClassPeerCheckManager.CheckPeerClientStatus(peerTargetList[peerKey].PeerIpTarget, peerTargetList[peerKey].PeerUniqueIdTarget, false, _peerNetworkSettingObject, _peerFirewallSettingObject))
-                        {
-                            peerTargetList[peerKey].PeerNetworkClientSyncObject.Dispose();
-                            peerTargetList.Remove(peerKey);
-                        }
+                        peerTargetList[peerKey].PeerNetworkClientSyncObject.Dispose();
+                        peerTargetList.Remove(peerKey);
                     }
                 }
                 catch

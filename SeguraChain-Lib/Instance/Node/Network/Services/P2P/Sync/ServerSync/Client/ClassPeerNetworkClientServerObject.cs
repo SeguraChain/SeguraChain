@@ -271,20 +271,19 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     continue;
 
                                 byte[] base64Packet = null;
-                                bool failed = !ClassUtility.CheckBase64String(listPacketReceived[index].Packet);
 
-                                if (!failed)
+                                bool failed = false;
+
+                                try
                                 {
-                                    try
-                                    {
-                                        base64Packet = Convert.FromBase64String(listPacketReceived[index].Packet);
-                                        failed = base64Packet == null || base64Packet.Length == 0;
-                                    }
-                                    catch
-                                    {
-                                        failed = true;
-                                    }
+                                    base64Packet = Convert.FromBase64String(listPacketReceived[index].Packet);
+                                    failed = base64Packet == null || base64Packet.Length == 0;
                                 }
+                                catch
+                                {
+                                    failed = true;
+                                }
+                                
 
                                 listPacketReceived[index].Used = true;
                                 listPacketReceived[index].Packet.Clear();
@@ -434,7 +433,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                         {
                             await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                             {
-                                PacketOrder = ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS,
+                                PacketOrder = ClassPeerEnumPacketResponse.INVALID_PEER_PACKET_SIGNATURE,
                                 PacketContent = string.Empty,
                             }, peerObject, false);
 

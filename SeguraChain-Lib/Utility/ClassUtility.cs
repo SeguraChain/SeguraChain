@@ -1389,6 +1389,9 @@ namespace SeguraChain_Lib.Utility
 
             try
             {
+                if (networkStream == null)
+                    return false;
+
                 if (packetBytesToSend.Length >= packetMaxSize && !singleWrite)
                 {
                     int countPacketSendLength = 0;

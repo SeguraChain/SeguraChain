@@ -6,6 +6,7 @@ using SeguraChain_Lib.TaskManager.Object;
 using SeguraChain_Lib.Utility;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 #if DEBUG
 using System.Diagnostics;
 using System.Linq;

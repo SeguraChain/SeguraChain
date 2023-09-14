@@ -123,18 +123,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="cancellation"></param>
         public static async Task<bool> UpdatePeerKeysReceivedNetworkServer(string peerIp, string peerUniqueId, ClassPeerPacketSendAskPeerAuthKeys sendAskPeerAuthKeysObject, CancellationTokenSource cancellation)
         {
-            bool peerUniqueIdExist = false;
 
             if (sendAskPeerAuthKeysObject.AesEncryptionIv == null || sendAskPeerAuthKeysObject.AesEncryptionKey == null ||
                 sendAskPeerAuthKeysObject.PublicKey.IsNullOrEmpty(false, out _))
-                return peerUniqueIdExist;
+                return false;
+
 
             if (ClassPeerDatabase.DictionaryPeerDataObject.ContainsKey(peerIp))
             {
                 if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].ContainsKey(peerUniqueId))
                 {
-                    peerUniqueIdExist = true;
-
 
                     ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPacketEncryptionKey = sendAskPeerAuthKeysObject.AesEncryptionKey;
                     ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPacketEncryptionKeyIv = sendAskPeerAuthKeysObject.AesEncryptionIv;
@@ -148,17 +146,19 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                     if (sendAskPeerAuthKeysObject.AesEncryptionKey != null && sendAskPeerAuthKeysObject.AesEncryptionIv != null)
                     {
                         if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject == null)
+                        {
                             ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject = new ClassPeerCryptoStreamObject(peerIp, peerUniqueId, sendAskPeerAuthKeysObject.AesEncryptionKey, sendAskPeerAuthKeysObject.AesEncryptionIv, sendAskPeerAuthKeysObject.PublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey, cancellation);
+                            return true;
+                        }
                         else
-                            await ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject.UpdateEncryptionStream(sendAskPeerAuthKeysObject.AesEncryptionKey, sendAskPeerAuthKeysObject.AesEncryptionIv, sendAskPeerAuthKeysObject.PublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey, cancellation);
+                            return await ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject.UpdateEncryptionStream(sendAskPeerAuthKeysObject.AesEncryptionKey, sendAskPeerAuthKeysObject.AesEncryptionIv, sendAskPeerAuthKeysObject.PublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey, cancellation);
                     }
                 }
             }
             else
+            { 
                 ClassPeerDatabase.DictionaryPeerDataObject.Add(peerIp, new ConcurrentDictionary<string, ClassPeerObject>());
 
-            if (!peerUniqueIdExist)
-            {
                 if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].TryAdd(peerUniqueId, new ClassPeerObject()
                 {
                     PeerUniqueId = peerUniqueId,
@@ -174,15 +174,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                 {
                     if (sendAskPeerAuthKeysObject.AesEncryptionKey != null && sendAskPeerAuthKeysObject.AesEncryptionIv != null)
                     {
-                        peerUniqueIdExist = true;
-
                         ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].GetClientCryptoStreamObject = new ClassPeerCryptoStreamObject(peerIp, peerUniqueId, sendAskPeerAuthKeysObject.AesEncryptionKey, sendAskPeerAuthKeysObject.AesEncryptionIv, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientPublicKey, ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerInternPrivateKey, cancellation);
+
+                        return true;
                     }
                 }
             }
 
-
-            return peerUniqueIdExist;
+            return false;
         }
 
         /// <summary>

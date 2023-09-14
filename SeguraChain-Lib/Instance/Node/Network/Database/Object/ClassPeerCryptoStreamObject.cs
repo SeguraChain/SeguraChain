@@ -62,10 +62,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         /// <returns></returns>
         public async Task<bool> UpdateEncryptionStream(byte[] key, byte[] iv, string publicKey, string privateKey, CancellationTokenSource cancellation)
         {
-            return await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
+            bool result = false;
+            await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
             {
-                InitializeAesAndEcdsaSign(key, iv, publicKey, privateKey);
+                result = InitializeAesAndEcdsaSign(key, iv, publicKey, privateKey);
             }, cancellation);
+
+            return result;
         }
 
         /// <summary>
@@ -75,7 +78,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         /// <param name="iv"></param>
         /// <param name="publicKey"></param>
         /// <param name="privateKey"></param>
-        private void InitializeAesAndEcdsaSign(byte[] key, byte[] iv, string publicKey, string privateKey)
+        private bool InitializeAesAndEcdsaSign(byte[] key, byte[] iv, string publicKey, string privateKey)
         {
 
             _initialized = false;
@@ -83,7 +86,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
             try
             {
                 if (publicKey.IsNullOrEmpty(false, out _) || privateKey.IsNullOrEmpty(false, out _))
-                    return;
+                    return false;
 
                 _aesManaged?.Dispose();
                 _encryptCryptoTransform?.Dispose();
@@ -109,6 +112,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
 
                 _initialized = true;
 
+                return true;
             }
 #if DEBUG
             catch (Exception error)
@@ -122,6 +126,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
 #endif
                 _initialized = false;
             }
+
+            return false;
 
         }
 
