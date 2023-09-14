@@ -813,7 +813,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                                         {
                                             Debug.WriteLine("Error to get the list of block data target by the block height range: " + blockHeightStart + "/" + blockHeightEnd + " | Exception: " + exception.Message);
 #endif
-
+                                            cancel = true;
                                             // The task has been cancelled.
                                         }
 

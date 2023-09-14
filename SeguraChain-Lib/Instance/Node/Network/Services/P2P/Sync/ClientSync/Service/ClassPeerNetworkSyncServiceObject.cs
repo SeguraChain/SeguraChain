@@ -2762,6 +2762,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     return new Tuple<bool, List<string>>(false, null);
                 }
 
+                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
+                {
+                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
+                    return new Tuple<bool, List<string>>(true, null);
+                }
+
                 if (peerNetworkClientSyncObject.PeerPacketReceived == null)
                     return new Tuple<bool, List<string>>(false, null);
 
@@ -2777,13 +2783,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     ClassLog.WriteLine(peerIp + ":" + peerPort + " packet return " + packetPeerSovereignUpdateList.SovereignUpdateHashList.Count + " sovereign update hash.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MEDIUM_PRIORITY);
                     return new Tuple<bool, List<string>>(true, packetPeerSovereignUpdateList.SovereignUpdateHashList);
                 }
-
-                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
-                {
-                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
-                    return new Tuple<bool, List<string>>(true, null);
-                }
-
 
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.NOT_YET_SYNCED)
                 {
@@ -2836,6 +2835,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassSovereignUpdateObject>>(false, null);
                 }
 
+                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
+                {
+                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
+                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassSovereignUpdateObject>>(true, null);
+                }
+
                 if (peerNetworkClientSyncObject.PeerPacketReceived == null)
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassSovereignUpdateObject>>(false, null);
 
@@ -2857,12 +2862,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         PacketNumericHash = packetSovereignUpdateData.PacketNumericHash,
                         PacketNumericSignature = packetSovereignUpdateData.PacketNumericSignature
                     });
-                }
-
-                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
-                {
-                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
-                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassSovereignUpdateObject>>(true, null);
                 }
 
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.NOT_YET_SYNCED)
@@ -2919,8 +2918,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendNetworkInformation>>(false, null);
                 }
 
-                if (peerNetworkClientSyncObject.PeerPacketReceived == null)
-                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendNetworkInformation>>(false, null);
+                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
+
+                {
+                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
+                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendNetworkInformation>>(true, null);
+                }
 
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.SEND_NETWORK_INFORMATION)
                 {
@@ -2951,18 +2954,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 }
 
-                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
-
-                {
-                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
-                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendNetworkInformation>>(true, null);
-                }
 
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.NOT_YET_SYNCED)
                 {
                     ClassLog.WriteLine(peerIp + ":" + peerPort + " is not enoguth synced yet.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendNetworkInformation>>(false, null);
                 }
+
+
+                if (peerNetworkClientSyncObject.PeerPacketReceived == null)
+                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendNetworkInformation>>(false, null);
 
                 ClassLog.WriteLine("Packet received type not expected: " + peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder + " received.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
                 return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendNetworkInformation>>(await HandleUnexpectedPacketOrder(peerIp, peerPort, peerUniqueId, peerNetworkClientSyncObject.PeerPacketReceived, cancellation), null);
@@ -3013,8 +3014,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockDataRange>>(false, null);
                 }
 
-                if (peerNetworkClientSyncObject.PeerPacketReceived == null)
-                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockDataRange>>(false, null);
+                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
+                {
+                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
+                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockDataRange>>(true, null);
+                }
 
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.SEND_BLOCK_DATA_BY_RANGE)
                 {
@@ -3039,17 +3043,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     });
                 }
 
-                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
-                {
-                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
-                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockDataRange>>(true, null);
-                }
 
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.NOT_YET_SYNCED)
                 {
                     ClassLog.WriteLine(peerIp + ":" + peerPort + " is not enougth synced yet.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockDataRange>>(true, null);
                 }
+
+
+                if (peerNetworkClientSyncObject.PeerPacketReceived == null)
+                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockDataRange>>(false, null);
 
                 ClassLog.WriteLine("Packet received type not expected: " + peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder + " received.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
                 return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockDataRange>>(await HandleUnexpectedPacketOrder(peerIp, peerPort, peerUniqueId, peerNetworkClientSyncObject.PeerPacketReceived, cancellation), null);
@@ -3102,8 +3105,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>>(false, null);
                 }
 
-                if (peerNetworkClientSyncObject.PeerPacketReceived == null)
-                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>>(false, null);
+
+                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
+                {
+                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
+                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>>(true, null);
+                }
 
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.SEND_BLOCK_DATA)
                 {
@@ -3128,17 +3135,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     });
                 }
 
-                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
-                {
-                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
-                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>>(true, null);
-                }
 
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.NOT_YET_SYNCED)
                 {
                     ClassLog.WriteLine(peerIp + ":" + peerPort + " is not enougth synced yet.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>>(true, null);
                 }
+
+
+                if (peerNetworkClientSyncObject.PeerPacketReceived == null)
+                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>>(false, null);
 
                 ClassLog.WriteLine("Packet received type not expected: " + peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder + " received.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
                 return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>>(await HandleUnexpectedPacketOrder(peerIp, peerPort, peerUniqueId, peerNetworkClientSyncObject.PeerPacketReceived, cancellation), null);
@@ -3191,8 +3197,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionData>>(false, null);
                 }
 
-                if (peerNetworkClientSyncObject.PeerPacketReceived == null)
-                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionData>>(false, null);
+                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
+                {
+                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
+                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionData>>(true, null);
+                }
 
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.SEND_BLOCK_TRANSACTION_DATA)
                 {
@@ -3222,17 +3231,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 }
 
-                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
-                {
-                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
-                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionData>>(true, null);
-                }
-
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.NOT_YET_SYNCED)
                 {
                     ClassLog.WriteLine(peerIp + ":" + peerPort + " is not enoguth synced yet.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionData>>(false, null);
                 }
+
+                if (peerNetworkClientSyncObject.PeerPacketReceived == null)
+                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionData>>(false, null);
+
 
                 ClassLog.WriteLine("Packet received type not expected: " + peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder + " received.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
                 return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionData>>(await HandleUnexpectedPacketOrder(peerIp, peerPort, peerUniqueId, peerNetworkClientSyncObject.PeerPacketReceived, cancellation), null);
@@ -3285,8 +3292,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionDataByRange>>(false, null);
                 }
 
-                if (peerNetworkClientSyncObject.PeerPacketReceived == null)
-                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionDataByRange>>(false, null);
+                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
+                {
+                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
+                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionDataByRange>>(true, null);
+                }
+
 
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.SEND_BLOCK_TRANSACTION_DATA_BY_RANGE)
                 {
@@ -3316,17 +3327,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 }
 
-                if (peerNetworkClientSyncObject.PeerPacketTypeReceived == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
-                {
-                    await SendAskAuthPeerKeys(peerNetworkClientSyncObject, cancellation, true);
-                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionDataByRange>>(true, null);
-                }
-
                 if (peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.NOT_YET_SYNCED)
                 {
                     ClassLog.WriteLine(peerIp + ":" + peerPort + " is not enoguth synced yet.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                     return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionDataByRange>>(false, null);
                 }
+
+                if (peerNetworkClientSyncObject.PeerPacketReceived == null)
+                    return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockTransactionDataByRange>>(false, null);
 
                 ClassLog.WriteLine("Packet received type not expected: " + peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder + " received.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
 

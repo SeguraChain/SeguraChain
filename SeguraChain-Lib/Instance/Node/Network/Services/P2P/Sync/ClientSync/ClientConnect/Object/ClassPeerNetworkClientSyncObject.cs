@@ -264,7 +264,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                 Debug.WriteLine("Peer " + PeerIpTarget + "|" + PeerUniqueIdTarget + " don't send a response to the packet sent.");
 #endif
                 ClassLog.WriteLine("Peer " + PeerIpTarget + "|" + PeerUniqueIdTarget + "  don't send a response to the packet sent.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_LOWEST_PRIORITY, true);
-                return false;
+                return PeerPacketReceivedStatus;
             }
             else
             {
@@ -296,14 +296,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                     new ClassReadPacketSplitted()
                 }))
             {
-                while (PeerTaskStatus && PeerConnectStatus)
+                while (true)
                 {
                     using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSetting.PeerMaxPacketBufferSize, _peerCancellationTokenTaskListenPeerPacketResponse))
                     {
 
                         ClassPeerCheckManager.UpdatePeerClientLastPacketReceived(PeerIpTarget, PeerUniqueIdTarget, TaskManager.TaskManager.CurrentTimestampSecond);
 
-                        if (!readPacketData.Status || !_peerSocketClient.IsConnected())
+                        if (!readPacketData.Status)
                             break;
 
                         // Update cancellation.
