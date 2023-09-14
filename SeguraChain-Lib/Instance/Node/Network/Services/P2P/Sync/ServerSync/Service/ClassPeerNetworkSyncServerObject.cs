@@ -114,22 +114,24 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
         {
             TcpListener listener = (TcpListener)asyn.AsyncState;
 
-            ClassCustomSocket clientPeerTcp = new ClassCustomSocket(listener.EndAcceptSocket(asyn), true);
-
-            TaskManager.TaskManager.InsertTask(new Action(async () =>
+            try
             {
-                string clientIp = clientPeerTcp.GetIp;
+                ClassCustomSocket clientPeerTcp = new ClassCustomSocket(listener.EndAcceptSocket(asyn), true);
 
-                ClassLog.WriteLine("Handle incoming connection from: " + clientIp, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
-
-                var handleResult = await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer);
-
-                switch (handleResult)
+                TaskManager.TaskManager.InsertTask(new Action(async () =>
                 {
+                    string clientIp = clientPeerTcp.GetIp;
+
+                    ClassLog.WriteLine("Handle incoming connection from: " + clientIp, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
+
+                    var handleResult = await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer);
+
+                    switch (handleResult)
+                    {
 
 
 #if NET5_0_OR_GREATER
-                    case not ClassPeerNetworkServerHandleConnectionEnum.VALID_HANDLE:
+                        case not ClassPeerNetworkServerHandleConnectionEnum.VALID_HANDLE:
 
 #else
                                     case ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS:
@@ -138,18 +140,23 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                                     case ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
 #endif
 
-                        {
-                            ClassLog.WriteLine("Cannot handle incoming connection from: " + clientIp + " | Result: " + System.Enum.GetName(typeof(ClassPeerNetworkServerHandleConnectionEnum), handleResult), ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
-                            if (_firewallSettingObject.PeerEnableFirewallLink)
-                                ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
-                            clientPeerTcp.Kill(SocketShutdown.Both);
-                        }
-                        break;
-                }
-            }), 0, _cancellationTokenSourcePeerServer, null).ConfigureAwait(false);
+                            {
+                                ClassLog.WriteLine("Cannot handle incoming connection from: " + clientIp + " | Result: " + System.Enum.GetName(typeof(ClassPeerNetworkServerHandleConnectionEnum), handleResult), ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                                if (_firewallSettingObject.PeerEnableFirewallLink)
+                                    ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
+                                clientPeerTcp.Kill(SocketShutdown.Both);
+                            }
+                            break;
+                    }
+                }), 0, _cancellationTokenSourcePeerServer, null).ConfigureAwait(false);
 
-            if (NetworkPeerServerStatus)
-                listener.BeginAcceptTcpClient(AcceptIncomingConnection, listener);
+                if (NetworkPeerServerStatus)
+                    listener.BeginAcceptTcpClient(AcceptIncomingConnection, listener);
+            }
+            catch
+            {
+                // Ignored, catch the exception once the task is cancelled.
+            }
         }
 
         /// <summary>
