@@ -346,7 +346,16 @@ namespace SeguraChain_Lib.TaskManager
                         bool isLocked = false;
                         try
                         {
-                            isLocked = Monitor.TryEnter(_taskCollection);
+                            isLocked = Monitor.TryEnter(_taskCollection, 100);
+
+                            while(!isLocked && !cancellationTask.IsCancellationRequested)
+                            {
+#if DEBUG
+                                Debug.WriteLine("Insert task count id: " + _taskCollection.Count+" in pending.");
+#endif
+                                await Task.Delay(1);
+                                isLocked = Monitor.TryEnter(_taskCollection, 100);
+                            }
 
                             if (isLocked)
                             {
