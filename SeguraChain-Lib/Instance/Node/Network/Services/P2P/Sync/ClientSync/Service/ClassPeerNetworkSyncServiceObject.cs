@@ -677,10 +677,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                     index++;
                                                 }
 
-                                                ClassBlockObject lastBlockObject = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockInformationDataStrategy(ClassBlockchainStats.GetLastBlockHeight(), _cancellationTokenServiceSync);
-
-                                                await ClassBlockchainDatabase.GenerateNewMiningBlockObject(lastBlockObject.BlockHeight, lastBlockObject.BlockHeight + 1, lastBlockObject.TimestampFound, lastBlockObject.BlockWalletAddressWinner, false, false, _cancellationTokenServiceSync);
-                                            }
+                                               }
                                             else
                                             {
                                                 forceDisconnect = true;
@@ -689,6 +686,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                         }
                                     }
                                 }
+
+                                ClassBlockObject lastBlockObject = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockInformationDataStrategy(ClassBlockchainStats.GetLastBlockHeight(), _cancellationTokenServiceSync);
+
+                                await ClassBlockchainDatabase.GenerateNewMiningBlockObject(lastBlockObject.BlockHeight, lastBlockObject.BlockHeight + 1, lastBlockObject.TimestampFound, lastBlockObject.BlockWalletAddressWinner, false, false, _cancellationTokenServiceSync);
+
 
 
                                 #endregion
