@@ -16,7 +16,7 @@ namespace SeguraChain_Lib.Other.Object.Network
     /// </summary>
     public class ClassCustomSocket
     {
-        private TcpClient _socket;
+        private Socket _socket;
         private NetworkStream _networkStream;
 
 
@@ -26,7 +26,7 @@ namespace SeguraChain_Lib.Other.Object.Network
         /// Constructor.
         /// </summary>
         /// <param name="socket"></param>
-        public ClassCustomSocket(TcpClient socket, bool isServer)
+        public ClassCustomSocket(Socket socket, bool isServer)
         {
             _socket = socket;
 
@@ -34,7 +34,7 @@ namespace SeguraChain_Lib.Other.Object.Network
             {
                 try
                 {
-                    _networkStream = new NetworkStream(_socket.Client);
+                    _networkStream = new NetworkStream(_socket);
                 }
                 catch
                 {
@@ -52,10 +52,10 @@ namespace SeguraChain_Lib.Other.Object.Network
 
                 var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(delay));
 
-                if (_socket == null || _socket.Client == null || !success)
+                if (_socket == null || !success)
                     return false;
 
-                _networkStream = new NetworkStream(_socket.Client);
+                _networkStream = new NetworkStream(_socket);
             }
             catch
             {
@@ -70,7 +70,7 @@ namespace SeguraChain_Lib.Other.Object.Network
             {
                 try
                 {
-                    return _socket?.Client?.RemoteEndPoint != null ? ((IPEndPoint)(_socket.Client.RemoteEndPoint)).Address.ToString() : string.Empty;
+                    return _socket?.RemoteEndPoint != null ? ((IPEndPoint)(_socket.RemoteEndPoint)).Address.ToString() : string.Empty;
                 }
                 catch
                 {
@@ -163,7 +163,7 @@ namespace SeguraChain_Lib.Other.Object.Network
 
             try
             {
-                _socket?.Client?.Shutdown(shutdownType);
+                _socket?.Shutdown(shutdownType);
                 _socket?.Close();
             }
             catch

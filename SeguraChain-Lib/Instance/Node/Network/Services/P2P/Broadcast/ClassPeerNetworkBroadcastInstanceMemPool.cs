@@ -489,7 +489,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         try
                         {
                             _peerSocketClient?.Kill(SocketShutdown.Both);
-                            _peerSocketClient = new ClassCustomSocket(new TcpClient(ClassUtility.GetAddressFamily(_peerIpTarget)), false);
+                            _peerSocketClient = new ClassCustomSocket(new Socket(ClassUtility.GetAddressFamily(_peerIpTarget), SocketType.Stream, ProtocolType.Tcp), false);
 
                             if (_peerSocketClient.Connect(_peerIpTarget, _peerPortTarget, _peerNetworkSettingObject.PeerMaxDelayToConnectToTarget))
                             {

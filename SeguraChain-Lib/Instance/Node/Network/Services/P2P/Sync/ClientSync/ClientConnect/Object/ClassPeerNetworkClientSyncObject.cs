@@ -229,7 +229,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
             while (!peerCancellationTokenDoConnection.IsCancellationRequested)
             {
-                _peerSocketClient = new ClassCustomSocket(new TcpClient(ClassUtility.GetAddressFamily(PeerIpTarget)), false);
+                _peerSocketClient = new ClassCustomSocket(new Socket(ClassUtility.GetAddressFamily(PeerIpTarget), SocketType.Stream, ProtocolType.Tcp), false);
 
                 if (_peerSocketClient.Connect(PeerIpTarget, PeerPortTarget, _peerNetworkSetting.PeerMaxDelayToConnectToTarget))
                     return true;
