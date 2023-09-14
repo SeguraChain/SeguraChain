@@ -165,7 +165,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         /// </summary>
         public const int PeerMaxNoPacketConnectionAttempt = 40;
         public const int PeerMaxInvalidPacket = 60; // Banned after 60 invalid packets.
-        public const int PeerMaxDelayAwaitResponse = 5; // Await a response from a peer target pending maximum 10 seconds per requests sent.
+        public const int PeerMaxDelayAwaitResponse = 1; // Await a response from a peer target pending maximum 10 seconds per requests sent.
         public const int PeerMaxDelayConnection = 10; // A maximum of 10 seconds on receive a packet.
         public const int PeerMaxTimestampDelayPacket = 360; // Await a maximum of 360 seconds on the timestamp of a packet, above the packet is considered has expired.
         public const int PeerMaxDelayKeepAliveStats = 60; // Keep alive packet stats of a peer pending 60 seconds.
