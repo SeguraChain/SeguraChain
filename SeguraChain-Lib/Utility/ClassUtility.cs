@@ -1381,7 +1381,6 @@ namespace SeguraChain_Lib.Utility
                         //Array.Copy(packetBytesToSend, countPacketSendLength, dataBytes, 0, packetSize);
 
                         await networkStream.WriteAsync(packetBytesToSend, countPacketSendLength, packetSize, cancellation.Token);
-                        await networkStream.FlushAsync(cancellation.Token);
 
                         countPacketSendLength += packetSize;
 
@@ -1389,6 +1388,7 @@ namespace SeguraChain_Lib.Utility
                             break;
 
                     }
+                    await networkStream.FlushAsync(cancellation.Token);
 
                 }
                 else
