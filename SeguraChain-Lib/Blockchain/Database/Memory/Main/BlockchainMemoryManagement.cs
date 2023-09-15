@@ -1547,7 +1547,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                                     blockObject.BlockNetworkAmountConfirmations = 0;
                                                                                     blockObject.BlockSlowNetworkAmountConfirmations = 0;
 
-                                                                                    await AddOrUpdateMemoryDataToCache(blockObject, true, cancellation);
+                                                                                    await InsertOrUpdateBlockObjectToCache(blockObject, true, cancellation);
                                                                                 }
 #if DEBUG
                                                                                 Debug.WriteLine("Failed to update block transaction(s) confirmation(s) on the block height: " + blockObject.BlockHeight + ", the confirmation check task failed.");
