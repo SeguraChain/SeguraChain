@@ -117,43 +117,45 @@ namespace SeguraChain_Lib.Other.Object.Network
             ReadPacketData readPacketData = new ReadPacketData();
 
             bool completed = false;
-            CancellationTokenSource cancellationReading = new CancellationTokenSource(delayReading);
-
-            await TaskManager.TaskManager.InsertTask(async () =>
+            using (CancellationTokenSource cancellationReading = new CancellationTokenSource(delayReading))
             {
-                try
+
+                await TaskManager.TaskManager.InsertTask(async () =>
                 {
-                    using (DisposableList<byte> listOfData = new DisposableList<byte>())
+                    try
                     {
-                        readPacketData.Data = new byte[packetLength];
-
-                        await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token);
-
-                        foreach (byte data in readPacketData.Data)
+                        using (DisposableList<byte> listOfData = new DisposableList<byte>())
                         {
-                            if ((char)data == '\0')
-                                continue;
+                            readPacketData.Data = new byte[packetLength];
 
-                            if (ClassUtility.CharIsABase64Character((char)data) || ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
-                                listOfData.Add(data);
+                            await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token);
+
+                            foreach (byte data in readPacketData.Data)
+                            {
+                                if ((char)data == '\0')
+                                    continue;
+
+                                if (ClassUtility.CharIsABase64Character((char)data) || ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
+                                    listOfData.Add(data);
+                            }
+
+                            readPacketData.Data = listOfData.GetList.ToArray();
+                            readPacketData.Status = readPacketData.Data.Length > 0;
                         }
-
-                        readPacketData.Data = listOfData.GetList.ToArray();
-                        readPacketData.Status = readPacketData.Data.Length > 0;
-                        completed = true;
                     }
-                }
-                catch (Exception error)
-                {
+                    catch (Exception error)
+                    {
 #if DEBUG
-                    Debug.WriteLine("Reading packet exception from " + GetIp + " | Exception: " + error.Message);
+                        Debug.WriteLine("Reading packet exception from " + GetIp + " | Exception: " + error.Message);
 #endif
-                }
-            }, 0, cancellationReading);
+                    }
+                    completed = true;
+                }, 0, cancellationReading);
 
-            while (!completed && !cancellation.IsCancellationRequested && !cancellationReading.IsCancellationRequested)
-                await Task.Delay(1);
+                while (!completed && !cancellation.IsCancellationRequested && !cancellationReading.IsCancellationRequested)
+                    await Task.Delay(1);
 
+            }
             return readPacketData;
         }
 

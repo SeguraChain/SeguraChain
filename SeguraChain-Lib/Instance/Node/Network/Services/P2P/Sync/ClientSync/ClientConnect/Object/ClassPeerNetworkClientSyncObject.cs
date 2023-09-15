@@ -293,7 +293,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                     new ClassReadPacketSplitted()
                 }))
             {
-                while (true)
+                while (PeerConnectStatus)
                 {
                     using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSetting.PeerMaxPacketBufferSize, _peerNetworkSetting.PeerMaxDelayAwaitResponse * 1000, _peerCancellationTokenMain))
                     {
