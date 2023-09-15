@@ -146,8 +146,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             if (packetData == null)
                 return false;
 
-            
-
             #region Init the client sync object.
 
             PacketResponseExpected = packetResponseExpected;
@@ -223,21 +221,19 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// <returns></returns>
         private async Task<bool> DoConnection()
         {
-            var peerCancellationTokenDoConnection = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationTokenMain.Token, new CancellationTokenSource(_peerNetworkSetting.PeerMaxDelayToConnectToTarget * 1000).Token);
-
-
-            while (!peerCancellationTokenDoConnection.IsCancellationRequested)
+            using (var peerCancellationTokenDoConnection = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationTokenMain.Token, new CancellationTokenSource(_peerNetworkSetting.PeerMaxDelayToConnectToTarget * 1000).Token))
             {
-                _peerSocketClient = new ClassCustomSocket(new Socket(ClassUtility.GetAddressFamily(PeerIpTarget), SocketType.Stream, ProtocolType.Tcp), false);
+                while (!peerCancellationTokenDoConnection.IsCancellationRequested)
+                {
+                    _peerSocketClient = new ClassCustomSocket(new Socket(ClassUtility.GetAddressFamily(PeerIpTarget), SocketType.Stream, ProtocolType.Tcp), false);
 
-                if (_peerSocketClient.Connect(PeerIpTarget, PeerPortTarget, _peerNetworkSetting.PeerMaxDelayToConnectToTarget))
-                    return true;
-                else _peerSocketClient?.Kill(SocketShutdown.Both);
+                    if (_peerSocketClient.Connect(PeerIpTarget, PeerPortTarget, _peerNetworkSetting.PeerMaxDelayToConnectToTarget))
+                        return true;
+                    else _peerSocketClient?.Kill(SocketShutdown.Both);
 
-                await Task.Delay(10);
+                    await Task.Delay(10);
+                }
             }
-
-
             return false;
         }
 

@@ -1428,7 +1428,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                                     long blockHeight = i + 1;
 
-                                    ClassBlockObject blockInformationObject = await GetBlockInformationDataStrategy(blockHeight, cancellation);
+                                    ClassBlockObject blockInformationObject = await GetBlockMirrorObject(blockHeight, cancellation);
 
                                     bool isFullyConfirmed = true;
 
@@ -1442,7 +1442,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                         {
                                             if (blockHeight > BlockchainSetting.GenesisBlockHeight)
                                             {
-                                                ClassBlockObject previousBlockInformationObject = await GetBlockInformationDataStrategy(blockHeight - 1, cancellation);
+                                                ClassBlockObject previousBlockInformationObject = await GetBlockMirrorObject(blockHeight - 1, cancellation);
 
                                                 if (previousBlockInformationObject == null)
                                                     isFullyConfirmed = false;
@@ -1528,7 +1528,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                                                                         if (!blockObject.BlockTransactionConfirmationCheckTaskDone)
                                                                         {
-                                                                            blockObject.BlockTransactionConfirmationCheckTaskDone = ClassBlockUtility.DoCheckBlockTransactionConfirmation(blockObject, await GetBlockInformationDataStrategy(blockHeight - 1, cancellation));
+                                                                            blockObject.BlockTransactionConfirmationCheckTaskDone = ClassBlockUtility.DoCheckBlockTransactionConfirmation(blockObject, await GetBlockMirrorObject(blockHeight - 1, cancellation));
                                                                             if (!blockObject.BlockTransactionConfirmationCheckTaskDone)
                                                                             {
                                                                                 if (_dictionaryBlockObjectMemory[blockObject.BlockHeight].Content != null)
@@ -1652,7 +1652,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                     Stopwatch stopwatch = new Stopwatch();
                                                                     stopwatch.Start();
 #endif
-                                                                    if (!await AddOrUpdateListBlockObjectOnMemoryDataCache(listBlockObjectUpdated.GetList.Values.ToList(), true, cancellation))
+                                                                    if (!await AddOrUpdateListBlockObjectOnMemoryDataCache(listBlockObjectUpdated.GetList.Values.ToList(), true, new CancellationTokenSource(10 * 1000)))
                                                                     {
 #if DEBUG
                                                                         Debug.WriteLine("Can't update block(s) updated on the cache system, cancel task of block transaction confirmation.");
@@ -2091,11 +2091,11 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                     blockTransaction = listBlockObjectUpdated[blockHeightSource].BlockTransactions[transactionHash].Clone();
 
                             if (blockTransaction == null)
-                                blockTransaction = (await GetBlockTransactionFromSpecificTransactionHashAndHeight(transactionHash, blockHeightSource, false, false, cancellation))?.Clone();
+                                blockTransaction = (await GetBlockTransactionFromSpecificTransactionHashAndHeight(transactionHash, blockHeightSource, false, true, cancellation))?.Clone();
 
                             if (blockTransaction == null)
                             {
-                                ClassBlockObject blockObject = await GetBlockDataStrategy(blockHeightSource, true, false, cancellation);
+                                ClassBlockObject blockObject = await GetBlockDataStrategy(blockHeightSource, true, true, cancellation);
                                 if (blockObject == null || blockObject.BlockTransactions == null || !blockObject.BlockTransactions.ContainsKey(transactionHash))
                                     return false;
 
@@ -2560,11 +2560,11 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     if (listBlockObjectUpdated.ContainsKey(blockHeightSource))
                         blockTransaction = listBlockObjectUpdated[blockHeightSource].BlockTransactions.ContainsKey(transactionHash) ? listBlockObjectUpdated[blockHeightSource].BlockTransactions[transactionHash] : await GetBlockTransactionFromSpecificTransactionHashAndHeight(transactionHash, blockHeightSource, false, false, cancellation);
                     else
-                        blockTransaction = await GetBlockTransactionFromSpecificTransactionHashAndHeight(transactionHash, blockHeightSource, false, false, cancellation);
+                        blockTransaction = await GetBlockTransactionFromSpecificTransactionHashAndHeight(transactionHash, blockHeightSource, false, true, cancellation);
 
                     if (blockTransaction == null)
                     {
-                        ClassBlockObject blockObject = await GetBlockDataStrategy(blockHeightSource, true, false, cancellation);
+                        ClassBlockObject blockObject = await GetBlockDataStrategy(blockHeightSource, true, true, cancellation);
 
                         if (blockObject == null || blockObject.BlockTransactions == null || !blockObject.BlockTransactions.ContainsKey(transactionHash))
                             return ClassTransactionEnumStatus.INVALID_TRANSACTION_SOURCE_LIST;
@@ -3643,7 +3643,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             }
 
             if (updateAddResult)
+            {
                 await UpdateListBlockTransactionCache(blockObject.BlockTransactions.Values.ToList(), cancellation, true);
+                AddOrUpdateBlockMirrorObject(blockObject);
+            }
 
             return updateAddResult;
         }

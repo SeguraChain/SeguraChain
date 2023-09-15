@@ -1,8 +1,6 @@
 ﻿using SeguraChain_Lib.Blockchain.Block.Function;
 using SeguraChain_Lib.Blockchain.Block.Object.Structure;
-using SeguraChain_Lib.Utility;
 using System.Runtime.CompilerServices;
-using System.Threading;
 
 namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Disk.Object
 {
@@ -14,7 +12,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// </summary>
         public ClassBlockObject BlockObject
         {
-            [MethodImpl(MethodImplOptions.Synchronized)]
             get
             {
                 if (!IsNull)
@@ -27,69 +24,52 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
                 return null;
             }
-            [MethodImpl(MethodImplOptions.Synchronized)]
             set
             {
                 if (value != null)
                 {
-                    bool lockedBlock = false;
+                    if (value.BlockIsUpdated)
+                        IsUpdated = true;
 
-                    try
+                    if (!IsNull)
                     {
-                        lockedBlock = Monitor.TryEnter(value);
 
-                        if (lockedBlock)
+                        lock (_blockObject)
                         {
-                            if (value.BlockIsUpdated)
-                                IsUpdated = true;
-
-                            if (!IsNull)
+                            if (value.BlockFromMemory || value.BlockCloned || !value.BlockFromCache)
                             {
-
-                                lock(_blockObject)
-                                {
-                                    if (value.BlockFromMemory || value.BlockCloned || !value.BlockFromCache)
-                                    {
-                                        bool isUpdated = _blockObject.BlockLastChangeTimestamp <= value.BlockLastChangeTimestamp;
-                                        _blockObject = value.DirectCloneBlockObject();
-                                        _blockObject.BlockIsUpdated = isUpdated;
-                                    }
-                                    else
-                                    {
-                                        if (_blockObject.BlockLastChangeTimestamp <= value.BlockLastChangeTimestamp)
-                                        {
-                                            _blockObject = value;
-                                            _blockObject.BlockIsUpdated = true;
-                                        }
-                                    }
-                                    _blockObject.BlockFromMemory = false;
-                                    _blockObject.BlockFromCache = true;
-                                    _blockObject.BlockCloned = false;
-                                    _blockObject.Disposed = false;
-                                    LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
-                                }
+                                bool isUpdated = _blockObject.BlockLastChangeTimestamp <= value.BlockLastChangeTimestamp;
+                                _blockObject = value.DirectCloneBlockObject();
+                                _blockObject.BlockIsUpdated = isUpdated;
                             }
                             else
                             {
-                                _blockObject = value.BlockFromMemory || value.BlockCloned || !value.BlockFromCache ? value.DirectCloneBlockObject() : value;
-                                _blockObject.BlockFromMemory = false;
-                                _blockObject.BlockFromCache = true;
-                                _blockObject.BlockCloned = false;
-                                _blockObject.BlockIsUpdated = false;
-                                _blockObject.Disposed = false;
-                                LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
+                                if (_blockObject.BlockLastChangeTimestamp <= value.BlockLastChangeTimestamp)
+                                {
+                                    _blockObject = value;
+                                    _blockObject.BlockIsUpdated = true;
+                                }
                             }
-
-                            if (_ioDataSizeOnMemory == 0)
-                                _ioDataSizeOnMemory = ClassBlockUtility.GetIoBlockSizeOnMemory(_blockObject);
+                            _blockObject.BlockFromMemory = false;
+                            _blockObject.BlockFromCache = true;
+                            _blockObject.BlockCloned = false;
+                            _blockObject.Disposed = false;
+                            LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
                         }
                     }
-                    finally
+                    else
                     {
-                        if (lockedBlock)
-                            Monitor.Exit(value);
-
+                        _blockObject = value.BlockFromMemory || value.BlockCloned || !value.BlockFromCache ? value.DirectCloneBlockObject() : value;
+                        _blockObject.BlockFromMemory = false;
+                        _blockObject.BlockFromCache = true;
+                        _blockObject.BlockCloned = false;
+                        _blockObject.BlockIsUpdated = false;
+                        _blockObject.Disposed = false;
+                        LastUpdateTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
                     }
+
+                    if (_ioDataSizeOnMemory == 0)
+                        _ioDataSizeOnMemory = ClassBlockUtility.GetIoBlockSizeOnMemory(_blockObject);
 
                 }
                 else
@@ -126,27 +106,12 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// </summary>
         public long IoDataSizeOnMemory
         {
-            [MethodImpl(MethodImplOptions.Synchronized)]
             get
             {
                 if (_ioDataSizeOnMemory == 0)
                 {
                     if (!IsNull)
-                    {
-                        bool locked = false;
-
-                        try
-                        {
-                            Monitor.TryEnter(_blockObject, ref locked);
-                            if (locked)
-                                _ioDataSizeOnMemory = ClassBlockUtility.GetIoBlockSizeOnMemory(_blockObject);
-                        }
-                        finally
-                        {
-                            if (locked)
-                                Monitor.Exit(_blockObject);
-                        }
-                    }
+                        _ioDataSizeOnMemory = ClassBlockUtility.GetIoBlockSizeOnMemory(_blockObject);
                 }
                 return _ioDataSizeOnMemory;
             }
@@ -188,7 +153,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// </summary>
         public bool IsNull
         {
-            [MethodImpl(MethodImplOptions.Synchronized)]
             get
             {
                 if (_blockObject == null)
@@ -196,67 +160,18 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
                 try
                 {
-                    if (Monitor.IsEntered(_blockObject))
-                    {
-                        try
-                        {
-                            if (_blockObject.Disposed)
-                                return true;
 
-                            if (_blockObject.BlockTransactions == null)
-                                return true;
+                    if (_blockObject.Disposed)
+                        return true;
 
-                            if (_blockObject.BlockTransactions.Count != _blockObject.TotalTransaction)
-                                return true;
+                    if (_blockObject.BlockTransactions == null)
+                        return true;
 
-                            if (IsDeleted)
-                                return true;
-                        }
-                        catch
-                        {
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        bool locked = false;
-                        bool exception = false;
+                    if (_blockObject.BlockTransactions.Count != _blockObject.TotalTransaction)
+                        return true;
 
-                        try
-                        {
-                            try
-                            {
-                                Monitor.TryEnter(_blockObject, ref locked);
-
-                                if (locked)
-                                {
-                                    if (_blockObject.Disposed)
-                                        return true;
-
-                                    if (_blockObject.BlockTransactions == null)
-                                        return true;
-
-                                    if (_blockObject.BlockTransactions.Count != _blockObject.TotalTransaction)
-                                        return true;
-
-                                    if (IsDeleted)
-                                        return true;
-                                }
-                            }
-                            finally
-                            {
-                                if (locked)
-                                    Monitor.Exit(_blockObject);
-                            }
-                        }
-                        catch
-                        {
-                            exception = true;
-                        }
-
-
-                        if (exception) return true;
-                    }
+                    if (IsDeleted)
+                        return true;
                 }
                 catch
                 {
