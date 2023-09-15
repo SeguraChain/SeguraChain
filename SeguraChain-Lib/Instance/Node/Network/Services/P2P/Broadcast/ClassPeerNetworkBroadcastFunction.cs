@@ -72,22 +72,26 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                 {
                                     if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerIsPublic && !ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].OnUpdateAuthKeys)
                                     {
-                                        if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus == ClassPeerEnumStatus.PEER_ALIVE)
+                                        if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus != ClassPeerEnumStatus.PEER_ALIVE)
+                                            continue;
+
+                                        if (!ClassPeerCheckManager.CheckPeerClientStatus(peerIp, peerUniqueId, false, peerNetworkSetting, peerFirewallSettingObject))
+                                            continue;
+
+                                        if (!ClassPeerCheckManager.CheckPeerClientInitializationStatus(peerIp, peerUniqueId))
+                                            continue;
+
+                                        if (!listPublicPeer.ContainsKey(peerIp))
                                         {
-                                            if (ClassPeerCheckManager.CheckPeerClientStatus(peerIp, peerUniqueId, false, peerNetworkSetting, peerFirewallSettingObject))
-                                            {
-                                                if (!listPublicPeer.ContainsKey(peerIp))
-                                                {
-                                                    if (previousListPeerSelected.Count(x => x.Value.PeerUniqueIdTarget == peerUniqueId) == 0)
-                                                        listPublicPeer.Add(peerIp, peerUniqueId);
-                                                }
-                                                else
-                                                {
-                                                    if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastValidPacket > ClassPeerDatabase.DictionaryPeerDataObject[peerIp][listPublicPeer[peerIp]].PeerLastValidPacket)
-                                                        listPublicPeer[peerIp] = peerUniqueId;
-                                                }
-                                            }
+                                            if (previousListPeerSelected.Count(x => x.Value.PeerUniqueIdTarget == peerUniqueId) == 0)
+                                                listPublicPeer.Add(peerIp, peerUniqueId);
                                         }
+                                        else
+                                        {
+                                            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastValidPacket > ClassPeerDatabase.DictionaryPeerDataObject[peerIp][listPublicPeer[peerIp]].PeerLastValidPacket)
+                                                listPublicPeer[peerIp] = peerUniqueId;
+                                        }
+
                                     }
                                 }
                             }
@@ -170,12 +174,25 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus != ClassPeerEnumStatus.PEER_ALIVE)
                         continue;
 
-                    if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastBlockHeight > peerLastBlockHeight && 
-                        ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastBlockHeight > lastBlockHeight)
+                    if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerIsPublic && !ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].OnUpdateAuthKeys)
                     {
-                        peerIpSelected = peerIp;
-                        peerUniqueIdSelected = peerUniqueId;
-                        peerLastBlockHeight = ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastBlockHeight;
+                        if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus != ClassPeerEnumStatus.PEER_ALIVE)
+                            continue;
+
+                        if (!ClassPeerCheckManager.CheckPeerClientStatus(peerIp, peerUniqueId, false, peerNetworkSetting, peerFirewallSettingObject))
+                            continue;
+
+                        if (!ClassPeerCheckManager.CheckPeerClientInitializationStatus(peerIp, peerUniqueId))
+                            continue;
+
+                        if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastBlockHeight > peerLastBlockHeight &&
+                            ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastBlockHeight > lastBlockHeight)
+                        {
+                            peerIpSelected = peerIp;
+                            peerUniqueIdSelected = peerUniqueId;
+                            peerLastBlockHeight = ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerClientLastBlockHeight;
+                        }
+
                     }
                 }
             }
