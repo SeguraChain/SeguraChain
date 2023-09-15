@@ -974,88 +974,95 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                         foreach (var transaction in listTransactionObject)
                         {
-                            float totalSeedVotes = 0;
-                            float percentSeedAgree = 0;
-                            float percentSeedDenied = 0;
-                            bool seedVoteResult = false;
-
-                            float totalNormVotes = 0;
-                            float percentNormAgree = 0;
-                            float percentNormDenied = 0;
-                            bool normVoteResult = false;
-
-                            if (dictionaryMemPoolTxVoteSeedPeer.ContainsKey(transaction.TransactionHash))
-                                totalSeedVotes = dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][false] + dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][true];
-
-                            if (dictionaryMemPoolTxVoteNormPeer.ContainsKey(transaction.TransactionHash))
-                                totalNormVotes = dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][false] + dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][true];
-
-
-                            if (totalSeedVotes > 0)
+                            try
                             {
-                                if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash].ContainsKey(true))
+                                float totalSeedVotes = 0;
+                                float percentSeedAgree = 0;
+                                float percentSeedDenied = 0;
+                                bool seedVoteResult = false;
+
+                                float totalNormVotes = 0;
+                                float percentNormAgree = 0;
+                                float percentNormDenied = 0;
+                                bool normVoteResult = false;
+
+                                if (dictionaryMemPoolTxVoteSeedPeer.ContainsKey(transaction.TransactionHash))
+                                    totalSeedVotes = dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][false] + dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][true];
+
+                                if (dictionaryMemPoolTxVoteNormPeer.ContainsKey(transaction.TransactionHash))
+                                    totalNormVotes = dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][false] + dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][true];
+
+
+                                if (totalSeedVotes > 0)
                                 {
-                                    if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][true] > 0)
-                                        percentSeedAgree = (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][true] / totalSeedVotes) * 100f;
+                                    if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash].ContainsKey(true))
+                                    {
+                                        if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][true] > 0)
+                                            percentSeedAgree = (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][true] / totalSeedVotes) * 100f;
+                                    }
+
+                                    if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash].ContainsKey(false))
+                                    {
+                                        if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][false] > 0)
+                                            percentSeedDenied = (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][false] / totalSeedVotes) * 100f;
+                                    }
+
+                                    seedVoteResult = percentSeedAgree > percentSeedDenied;
                                 }
 
-                                if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash].ContainsKey(false))
+                                if (totalNormVotes > 0)
                                 {
-                                    if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][false] > 0)
-                                        percentSeedDenied = (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][false] / totalSeedVotes) * 100f;
+                                    if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash].ContainsKey(true))
+                                    {
+                                        if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][true] > 0)
+                                            percentNormAgree = (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][true] / totalNormVotes) * 100f;
+                                    }
+
+                                    if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash].ContainsKey(false))
+                                    {
+                                        if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][false] > 0)
+                                            percentNormDenied = (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][false] / totalNormVotes) * 100f;
+                                    }
+
+                                    normVoteResult = percentNormAgree > percentNormDenied;
                                 }
 
-                                seedVoteResult = percentSeedAgree > percentSeedDenied;
+
+                                ClassTransactionEnumStatus result = ClassTransactionEnumStatus.INVALID_TRANSACTION_FROM_VOTE;
+
+                                if (!onlyOneAgree)
+                                {
+                                    switch (seedVoteResult)
+                                    {
+                                        case true:
+                                            {
+                                                // Total equality.
+                                                if (normVoteResult) result = ClassTransactionEnumStatus.VALID_TRANSACTION;
+                                                else if (percentSeedAgree > percentNormDenied) result = ClassTransactionEnumStatus.VALID_TRANSACTION;
+                                            }
+                                            break;
+                                        case false:
+                                            {
+                                                // Total equality.
+                                                if (!normVoteResult) result = ClassTransactionEnumStatus.INVALID_TRANSACTION_FROM_VOTE;
+                                                else if (percentNormAgree > percentSeedDenied) result = ClassTransactionEnumStatus.VALID_TRANSACTION;
+                                            }
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+                                    if (percentNormAgree > 0)
+                                        result = ClassTransactionEnumStatus.VALID_TRANSACTION;
+                                }
+
+                                if (!dictionaryTransactionCheckStatus.ContainsKey(transaction.TransactionHash))
+                                    dictionaryTransactionCheckStatus.Add(transaction.TransactionHash, result);
                             }
-
-                            if (totalNormVotes > 0)
+                            catch
                             {
-                                if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash].ContainsKey(true))
-                                {
-                                    if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][true] > 0)
-                                        percentNormAgree = (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][true] / totalNormVotes) * 100f;
-                                }
-
-                                if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash].ContainsKey(false))
-                                {
-                                    if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][false] > 0)
-                                        percentNormDenied = (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][false] / totalNormVotes) * 100f;
-                                }
-
-                                normVoteResult = percentNormAgree > percentNormDenied;
+                                // Ignored, a key is potentially lost.
                             }
-
-
-                            ClassTransactionEnumStatus result = ClassTransactionEnumStatus.INVALID_TRANSACTION_FROM_VOTE;
-
-                            if (!onlyOneAgree)
-                            {
-                                switch (seedVoteResult)
-                                {
-                                    case true:
-                                        {
-                                            // Total equality.
-                                            if (normVoteResult) result = ClassTransactionEnumStatus.VALID_TRANSACTION;
-                                            else if (percentSeedAgree > percentNormDenied) result = ClassTransactionEnumStatus.VALID_TRANSACTION;
-                                        }
-                                        break;
-                                    case false:
-                                        {
-                                            // Total equality.
-                                            if (!normVoteResult) result = ClassTransactionEnumStatus.INVALID_TRANSACTION_FROM_VOTE;
-                                            else if (percentNormAgree > percentSeedDenied) result = ClassTransactionEnumStatus.VALID_TRANSACTION;
-                                        }
-                                        break;
-                                }
-                            }
-                            else
-                            {
-                                if (percentNormAgree > 0)
-                                    result = ClassTransactionEnumStatus.VALID_TRANSACTION;
-                            }
-
-                            if (!dictionaryTransactionCheckStatus.ContainsKey(transaction.TransactionHash))
-                                dictionaryTransactionCheckStatus.Add(transaction.TransactionHash, result);
                         }
 
                         listOfRankedPeerPublicKeySaved.Clear();

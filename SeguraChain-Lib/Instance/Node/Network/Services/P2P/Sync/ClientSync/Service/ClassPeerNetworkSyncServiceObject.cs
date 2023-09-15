@@ -2123,6 +2123,18 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                                 ClassBlockObject blockDataReceived = result.Item2.ObjectReturned.BlockData;
 
+                                                #region Clean up check.
+
+                                                blockDataReceived.BlockTransactionFullyConfirmed = false;
+                                                blockDataReceived.BlockUnlockValid = false;
+                                                blockDataReceived.BlockNetworkAmountConfirmations = 0;
+                                                blockDataReceived.BlockSlowNetworkAmountConfirmations = 0;
+                                                blockDataReceived.BlockLastHeightTransactionConfirmationDone = 0;
+                                                blockDataReceived.BlockTotalTaskTransactionConfirmationDone = 0;
+                                                blockDataReceived.BlockTransactionConfirmationCheckTaskDone = false;
+
+                                                #endregion
+
                                                 if (blockDataReceived.BlockHeight != blockHeightTarget)
                                                     ClassPeerCheckManager.InputPeerClientInvalidPacket(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
                                                 else
@@ -2152,6 +2164,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                     }
 
                                                     bool isEqual = false;
+
+
 
                                                     if (blockDataReceived.BlockHeight == blockObject.BlockHeight &&
                                                         blockDataReceived.BlockHash == blockObject.BlockHash &&
