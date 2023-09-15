@@ -111,7 +111,7 @@ namespace SeguraChain_Lib.Other.Object.Network
             return false;
         }
 
-        public async Task<ReadPacketData> TryReadPacketData(int packetLength, CancellationTokenSource cancellation)
+        public async Task<ReadPacketData> TryReadPacketData(int packetLength, int delayReading, CancellationTokenSource cancellation)
         {
             ReadPacketData readPacketData = new ReadPacketData();
 
@@ -123,7 +123,7 @@ namespace SeguraChain_Lib.Other.Object.Network
                 {
                     readPacketData.Data = new byte[packetLength];
 
-                    await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellation.Token);
+                    await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, new CancellationTokenSource(delayReading).Token).Token);
 
                     foreach (byte data in readPacketData.Data)
                     {

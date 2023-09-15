@@ -677,7 +677,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                     index++;
                                                 }
 
-                                               }
+                                            }
                                             else
                                             {
                                                 forceDisconnect = true;
@@ -687,11 +687,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                     }
                                 }
 
-                                ClassBlockObject lastBlockObject = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockInformationDataStrategy(ClassBlockchainStats.GetLastBlockHeight(), _cancellationTokenServiceSync);
+                                if (lastBlockHeight >= BlockchainSetting.GenesisBlockHeight)
+                                {
+                                    ClassBlockObject lastBlockObject = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockInformationDataStrategy(ClassBlockchainStats.GetLastBlockHeight(), _cancellationTokenServiceSync);
 
-                                await ClassBlockchainDatabase.GenerateNewMiningBlockObject(lastBlockObject.BlockHeight, lastBlockObject.BlockHeight + 1, lastBlockObject.TimestampFound, lastBlockObject.BlockWalletAddressWinner, false, false, _cancellationTokenServiceSync);
-
-
+                                    await ClassBlockchainDatabase.GenerateNewMiningBlockObject(lastBlockObject.BlockHeight, lastBlockObject.BlockHeight + 1, lastBlockObject.TimestampFound, lastBlockObject.BlockWalletAddressWinner, false, false, _cancellationTokenServiceSync);
+                                }
 
                                 #endregion
 
@@ -1333,7 +1334,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 {
                                     try
                                     {
-                                        Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendNetworkInformation>> result = await SendAskNetworkInformation(peerListTarget[i1].PeerNetworkClientSyncObject, CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource(_peerNetworkSettingObject.PeerMaxDelayConnection * 1000).Token));
+                                        Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendNetworkInformation>> result = await SendAskNetworkInformation(peerListTarget[i1].PeerNetworkClientSyncObject, _cancellationTokenServiceSync);
 
                                         if (result != null)
                                         {

@@ -133,7 +133,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
                             while (continueReading && ClientConnectionStatus)
                             {
-                                using (ReadPacketData readPacketData = await _clientSocket.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, _cancellationTokenApiClient))
+                                using (ReadPacketData readPacketData = await _clientSocket.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, _peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000, _cancellationTokenApiClient))
                                 {
 
                                     if (readPacketData.Status)

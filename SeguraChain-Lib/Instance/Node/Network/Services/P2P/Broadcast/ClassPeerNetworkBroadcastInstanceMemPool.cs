@@ -572,7 +572,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                             while (!broadcastResponsePacketStatus)
                             {
-                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, cancellationReceiveBroadcastResponsePacket))
+                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, _peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000, cancellationReceiveBroadcastResponsePacket))
                                 {
                                     if (!readPacketData.Status)
                                         break;
@@ -1091,7 +1091,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                             while (!packetReceived && IsAlive && !taskComplete)
                             {
-                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, cancellationReceiveBlockListPacket))
+                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, _peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000, cancellationReceiveBlockListPacket))
                                 {
                                     if (!readPacketData.Status)
                                         break;
@@ -1209,7 +1209,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                     while (!endBroadcast && receiveStatus && IsAlive)
                                     {
 
-                                        using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, cancellationReceiveTransactionPacket))
+                                        using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, _peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000, cancellationReceiveTransactionPacket))
                                         {
                                             if (!readPacketData.Status)
                                                 break;
@@ -1442,7 +1442,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                             while (IsAlive && !taskDone && !voteStatus)
                             {
 
-                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, cancellationReceiveMemPoolTransactionVote))
+                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, _peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000, cancellationReceiveMemPoolTransactionVote))
                                 {
                                     if (!readPacketData.Status)
                                         break;

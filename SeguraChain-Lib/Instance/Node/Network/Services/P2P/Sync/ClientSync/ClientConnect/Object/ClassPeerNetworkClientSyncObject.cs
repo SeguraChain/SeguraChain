@@ -52,7 +52,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         private bool _peerTaskKeepAliveStatus;
         private CancellationTokenSource _peerCancellationTokenMain;
         private CancellationTokenSource _peerCancellationTokenKeepAlive;
-        private CancellationTokenSource _peerCancellationTokenTaskListenPeerPacketResponse;
 
 
         /// <summary>
@@ -251,8 +250,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         {
             CancelHandlePacket();
 
-            _peerCancellationTokenTaskListenPeerPacketResponse = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationTokenMain.Token, new CancellationTokenSource(_peerNetworkSetting.PeerMaxDelayAwaitResponse * 1000).Token);
-
 
             PeerTaskStatus = true;
 
@@ -298,7 +295,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             {
                 while (true)
                 {
-                    using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSetting.PeerMaxPacketBufferSize, _peerCancellationTokenTaskListenPeerPacketResponse))
+                    using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSetting.PeerMaxPacketBufferSize, _peerNetworkSetting.PeerMaxDelayAwaitResponse * 1000, _peerCancellationTokenMain))
                     {
 
                         ClassPeerCheckManager.UpdatePeerClientLastPacketReceived(PeerIpTarget, PeerUniqueIdTarget, TaskManager.TaskManager.CurrentTimestampSecond);
@@ -306,14 +303,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                         if (!readPacketData.Status)
                             break;
 
-                        // Update cancellation.
-                        _peerCancellationTokenTaskListenPeerPacketResponse = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationTokenMain.Token, new CancellationTokenSource(_peerNetworkSetting.PeerMaxDelayAwaitResponse * 1000).Token);
 
                         #region Compile the packet.
 
                         try
                         {
-                            listPacketReceived = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, _peerCancellationTokenTaskListenPeerPacketResponse);
+                            listPacketReceived = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, _peerCancellationTokenMain);
                         }
                         catch
                         {
