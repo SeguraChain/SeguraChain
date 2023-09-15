@@ -2569,7 +2569,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         if (blockObject == null || blockObject.BlockTransactions == null || !blockObject.BlockTransactions.ContainsKey(transactionHash))
                             return ClassTransactionEnumStatus.INVALID_TRANSACTION_SOURCE_LIST;
 
-                        blockTransaction = blockObject.BlockTransactions[transactionHash].Clone();
+                        blockTransaction = blockObject.BlockTransactions[transactionHash];
                     }
 
                     if (blockTransaction.TransactionObject == null)
