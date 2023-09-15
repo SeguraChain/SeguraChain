@@ -1485,7 +1485,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                             if (packetSendAskMemPoolTransactionVote.ListTransactionObject == null)
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
 
-                            List<ClassTransactionObject> listTransactionToBroadcast = new List<ClassTransactionObject>();
+                            DisposableList<ClassTransactionObject> listTransactionToBroadcast = new DisposableList<ClassTransactionObject>();
 
                             using (DisposableDictionary<string, ClassTransactionEnumStatus> listTransactionResult = new DisposableDictionary<string, ClassTransactionEnumStatus>())
                             {
@@ -1550,7 +1550,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                 }
 
                                 if (listTransactionToBroadcast.Count > 0)
-                                    await TaskManager.TaskManager.InsertTask(new Action(async () => await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(_peerServerOpenNatIp, _peerServerOpenNatIp, _peerClientIp, listTransactionToBroadcast, _peerNetworkSettingObject, _peerFirewallSettingObject, new CancellationTokenSource(), false)), 0, null, null);
+                                    await TaskManager.TaskManager.InsertTask(new Action(async () => await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(_peerServerOpenNatIp, _peerServerOpenNatIp, _peerClientIp, listTransactionToBroadcast.GetList.ToList(), _peerNetworkSettingObject, _peerFirewallSettingObject, new CancellationTokenSource(), false)), 0, null, null);
 
                                 ClassPeerPacketSendMemPoolTransactionVote packetSendMemPoolTransactionVote = new ClassPeerPacketSendMemPoolTransactionVote()
                                 {
@@ -1570,7 +1570,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                 {
                                     return ClassPeerNetworkClientServerHandlePacketEnumStatus.SEND_EXCEPTION_PACKET;
                                 }
+
                             }
+
                         }
                         break;
                     case ClassPeerEnumPacketSend.ASK_DISCONNECT_REQUEST: // Ask to disconnect propertly from the peer.

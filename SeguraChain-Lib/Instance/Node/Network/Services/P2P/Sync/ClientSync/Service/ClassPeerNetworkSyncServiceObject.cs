@@ -1602,38 +1602,44 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 foreach (ClassBlockObject blockObject in result.Item2.ObjectReturned.ListBlockObject)
                                 {
 
-
-                                    if (blockObject == null ||
-                                        blockObject.BlockStatus == ClassBlockEnumStatus.LOCKED ||
-                                        !listBlockObjectsReceived.ContainsKey(blockObject.BlockHeight) ||
-                                        blockObject.BlockTransactions == null ||
-                                        blockObject.BlockTransactions.Count == 0)
-                                        break;
-
-                                    #region Ensure to clean the block object received.
-
-                                    if (listBlockObjectsReceived.ContainsKey(blockObject.BlockHeight))
+                                    try
                                     {
-                                        blockObject.BlockTransactionFullyConfirmed = false;
-                                        blockObject.BlockUnlockValid = false;
-                                        blockObject.BlockNetworkAmountConfirmations = 0;
-                                        blockObject.BlockSlowNetworkAmountConfirmations = 0;
-                                        blockObject.BlockLastHeightTransactionConfirmationDone = 0;
-                                        blockObject.BlockTotalTaskTransactionConfirmationDone = 0;
-                                        blockObject.BlockTransactionConfirmationCheckTaskDone = false;
+                                        if (blockObject == null ||
+                                            blockObject.BlockStatus == ClassBlockEnumStatus.LOCKED ||
+                                            !listBlockObjectsReceived.ContainsKey(blockObject.BlockHeight) ||
+                                            blockObject.BlockTransactions == null ||
+                                            blockObject.BlockTransactions.Count == 0)
+                                            break;
 
-                                        foreach (var transactionHash in blockObject.BlockTransactions.Keys)
+                                        #region Ensure to clean the block object received.
+
+                                        if (listBlockObjectsReceived.ContainsKey(blockObject.BlockHeight))
                                         {
-                                            blockObject.BlockTransactions[transactionHash].TotalSpend = 0;
-                                            blockObject.BlockTransactions[transactionHash].TransactionTotalConfirmation = 0;
-                                            blockObject.BlockTransactions[transactionHash].TransactionStatus = true;
-                                            blockObject.BlockTransactions[transactionHash].TransactionInvalidStatus = ClassTransactionEnumStatus.VALID_TRANSACTION;
+                                            blockObject.BlockTransactionFullyConfirmed = false;
+                                            blockObject.BlockUnlockValid = false;
+                                            blockObject.BlockNetworkAmountConfirmations = 0;
+                                            blockObject.BlockSlowNetworkAmountConfirmations = 0;
+                                            blockObject.BlockLastHeightTransactionConfirmationDone = 0;
+                                            blockObject.BlockTotalTaskTransactionConfirmationDone = 0;
+                                            blockObject.BlockTransactionConfirmationCheckTaskDone = false;
+
+                                            foreach (var transactionHash in blockObject.BlockTransactions.Keys)
+                                            {
+                                                blockObject.BlockTransactions[transactionHash].TotalSpend = 0;
+                                                blockObject.BlockTransactions[transactionHash].TransactionTotalConfirmation = 0;
+                                                blockObject.BlockTransactions[transactionHash].TransactionStatus = true;
+                                                blockObject.BlockTransactions[transactionHash].TransactionInvalidStatus = ClassTransactionEnumStatus.VALID_TRANSACTION;
+                                            }
+
+
+                                            listBlockObjectsReceived[blockObject.BlockHeight].Add(i1, blockObject);
                                         }
-
-
-                                        listBlockObjectsReceived[blockObject.BlockHeight].Add(i1, blockObject);
+                                        #endregion
                                     }
-                                    #endregion
+                                    catch
+                                    {
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -2123,18 +2129,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                                 ClassBlockObject blockDataReceived = result.Item2.ObjectReturned.BlockData;
 
-                                                #region Clean up check.
-
-                                                blockDataReceived.BlockTransactionFullyConfirmed = false;
-                                                blockDataReceived.BlockUnlockValid = false;
-                                                blockDataReceived.BlockNetworkAmountConfirmations = 0;
-                                                blockDataReceived.BlockSlowNetworkAmountConfirmations = 0;
-                                                blockDataReceived.BlockLastHeightTransactionConfirmationDone = 0;
-                                                blockDataReceived.BlockTotalTaskTransactionConfirmationDone = 0;
-                                                blockDataReceived.BlockTransactionConfirmationCheckTaskDone = false;
-
-                                                #endregion
-
                                                 if (blockDataReceived.BlockHeight != blockHeightTarget)
                                                     ClassPeerCheckManager.InputPeerClientInvalidPacket(peerListTarget[i1].PeerIpTarget, peerListTarget[i1].PeerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
                                                 else
@@ -2164,8 +2158,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                     }
 
                                                     bool isEqual = false;
-
-
 
                                                     if (blockDataReceived.BlockHeight == blockObject.BlockHeight &&
                                                         blockDataReceived.BlockHash == blockObject.BlockHash &&
