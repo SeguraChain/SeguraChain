@@ -97,7 +97,4 @@ Every devs and potential users can send me their returns about the project, pote
 
 > Curecoin: B6V6mSNRDFzmDgiPcQKYhBer6GgbM5XJeR | Explorer: https://chainz.cryptoid.info/cure/address.dws?B6V6mSNRDFzmDgiPcQKYhBer6GgbM5XJeR.htm
 
-> Monero: 44TSVkQ2k9TVns4AdKpP1bSPQ5ZgHU9sULZZwBrWye82fa6MpLgFFi66mjLMtQEZ7xPXGLz5LPktfH71tFqdX36HCbE3DvU
-
-
 
