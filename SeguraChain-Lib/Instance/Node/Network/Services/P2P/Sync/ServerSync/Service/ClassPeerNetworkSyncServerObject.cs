@@ -149,7 +149,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                             break;
                     }
                 }), 0, _cancellationTokenSourcePeerServer, null).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Ignored, catch the exception once the task is cancelled.
+            }
 
+            try
+            {
                 if (NetworkPeerServerStatus)
                     listener.BeginAcceptTcpClient(AcceptIncomingConnection, listener);
             }
