@@ -115,43 +115,33 @@ namespace SeguraChain_Lib.Other.Object.Network
         public async Task<ReadPacketData> TryReadPacketData(int packetLength, int delayReading, CancellationTokenSource cancellation)
         {
             ReadPacketData readPacketData = new ReadPacketData();
+            readPacketData.Data = new byte[packetLength];
 
-            CancellationTokenSource cancellationReading = new CancellationTokenSource(delayReading);
 
-
-            await TaskManager.TaskManager.InsertTask(async () =>
+            try
             {
-                try
-                {
-                    using (DisposableList<byte> listOfData = new DisposableList<byte>())
-                    {
-                        readPacketData.Data = new byte[packetLength];
-
-                        await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, cancellationReading.Token);
-
-                        foreach (byte data in readPacketData.Data)
-                        {
-                            if ((char)data == '\0')
-                                continue;
-
-                            if (ClassUtility.CharIsABase64Character((char)data) || ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
-                                listOfData.Add(data);
-                        }
-
-                        readPacketData.Data = listOfData.GetList.ToArray();
-                        readPacketData.Status = readPacketData.Data.Length > 0;
-                    }
-                }
-                catch (Exception error)
-                {
+                await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, new CancellationTokenSource(delayReading).Token).Token);
+            }
+            catch (Exception error)
+            {
 #if DEBUG
-                    Debug.WriteLine("Reading packet exception from " + GetIp + " | Exception: " + error.Message);
+                Debug.WriteLine("Reading packet exception from " + GetIp + " | Exception: " + error.Message);
 #endif
-                }
-            }, 0, cancellationReading);
+            }
 
-            while (!cancellation.IsCancellationRequested && !cancellationReading.IsCancellationRequested && !readPacketData.Status)
-                await Task.Delay(1);
+            using (DisposableList<byte> listOfData = new DisposableList<byte>())
+            {
+                foreach (byte data in readPacketData.Data)
+                {
+                    if ((char)data == '\0')
+                        continue;
+
+                    if (ClassUtility.CharIsABase64Character((char)data) || ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
+                        listOfData.Add(data);
+                }
+                readPacketData.Data = listOfData.GetList.ToArray();
+                readPacketData.Status = readPacketData.Data.Length > 0;
+            }
 
             return readPacketData;
         }
