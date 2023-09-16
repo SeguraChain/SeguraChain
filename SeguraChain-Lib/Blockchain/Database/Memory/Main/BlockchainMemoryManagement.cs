@@ -538,9 +538,11 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     ObjectIndexed = true,
                     CacheUpdated = false
                 });
+
+                AddOrUpdateBlockMirrorObject(blockObject);
+
                 foreach (var blockTransaction in blockObject.BlockTransactions.Values)
                     await UpdateBlockTransactionCache(blockTransaction, cancellation);
-                return true;
             }
             else
             {
@@ -555,8 +557,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                     foreach (var blockTransaction in blockObject.BlockTransactions.Values)
                         await UpdateBlockTransactionCache(blockTransaction, cancellation);
-
-                    return true;
                 }
             }
 
@@ -574,7 +574,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                 }
             }
 
-            return false;
+            return true;
         }
 
         /// <summary>
