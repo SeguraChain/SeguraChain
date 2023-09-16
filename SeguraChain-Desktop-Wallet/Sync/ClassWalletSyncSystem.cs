@@ -1134,7 +1134,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                     break;
 
                                 if (blockObject.BlockTransactions.ContainsKey(transactionHash))
-                                    await InsertOrUpdateBlockTransactionToSyncCache(walletAddress, blockObject.BlockTransactions[transactionHash], false, true, cancellation);
+                                    await InsertOrUpdateBlockTransactionToSyncCache(walletAddress, blockObject.BlockTransactions[transactionHash].Clone(), false, true, cancellation);
                             }
                         }
                     }
@@ -1185,7 +1185,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                                                         if (ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletTransactionList[blockHeight].Add(transactionPair.Key))
                                                         {
                                                             ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileName].WalletTotalTransaction++;
-                                                            await InsertOrUpdateBlockTransactionToSyncCache(walletAddress, transactionPair.Value, false, false, cancellation);
+                                                            await InsertOrUpdateBlockTransactionToSyncCache(walletAddress, transactionPair.Value.Clone(), false, false, cancellation);
                                                             changeDone = true;
                                                         }
                                                         else
@@ -1849,18 +1849,20 @@ namespace SeguraChain_Desktop_Wallet.Sync
 
                                 using (DisposableDictionary<string, ClassTransactionEnumStatus> sendTransactionResult = await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(nodeLocalIp, openNatIp, openNatIp, new List<ClassTransactionObject>() { transactionObject }, _nodeInstance.PeerSettingObject.PeerNetworkSettingObject, _nodeInstance.PeerSettingObject.PeerFirewallSettingObject, cancellation, true))
                                 {
-
-                                    KeyValuePair<string, ClassTransactionEnumStatus> sendTransactionResultElement = sendTransactionResult.GetList.ElementAt(0);
-#if DEBUG
-                                    Debug.WriteLine("Send transaction request result: " + sendTransactionResultElement.Key + " | Tx response status: " + System.Enum.GetName(typeof(ClassTransactionEnumStatus), sendTransactionResultElement.Value));
-#endif
-                                    ClassLog.WriteLine("Send transaction request result: " + sendTransactionResultElement.Key + " | Tx response status: " + System.Enum.GetName(typeof(ClassTransactionEnumStatus), sendTransactionResultElement.Value), ClassEnumLogLevelType.LOG_LEVEL_WALLET, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
-
-                                    if (sendTransactionResultElement.Value == ClassTransactionEnumStatus.VALID_TRANSACTION)
+                                    if (sendTransactionResult.Count > 0)
                                     {
-                                        sendTransactionStatus = true;
+                                        KeyValuePair<string, ClassTransactionEnumStatus> sendTransactionResultElement = sendTransactionResult.GetList.ElementAt(0);
+#if DEBUG
+                                        Debug.WriteLine("Send transaction request result: " + sendTransactionResultElement.Key + " | Tx response status: " + System.Enum.GetName(typeof(ClassTransactionEnumStatus), sendTransactionResultElement.Value));
+#endif
+                                        ClassLog.WriteLine("Send transaction request result: " + sendTransactionResultElement.Key + " | Tx response status: " + System.Enum.GetName(typeof(ClassTransactionEnumStatus), sendTransactionResultElement.Value), ClassEnumLogLevelType.LOG_LEVEL_WALLET, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
 
-                                        ClassMemPoolDatabase.InsertTxToMemPool(transactionObject);
+                                        if (sendTransactionResultElement.Value == ClassTransactionEnumStatus.VALID_TRANSACTION)
+                                        {
+                                            sendTransactionStatus = true;
+
+                                            ClassMemPoolDatabase.InsertTxToMemPool(transactionObject);
+                                        }
                                     }
                                 }
                             }

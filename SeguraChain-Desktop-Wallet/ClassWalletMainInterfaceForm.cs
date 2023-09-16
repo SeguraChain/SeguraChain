@@ -2411,8 +2411,8 @@ namespace SeguraChain_Desktop_Wallet
 
             try
             {
-                taskSendTransactionFeeCostCalculationResult = ClassDesktopWalletCommonData.WalletSyncSystem.GetTransactionFeeCostVirtuallyFromSync(_currentWalletFilename, amountToSpend, totalConfirmationsTarget, _cancellationTokenTaskUpdateWalletContentInformations);
-                taskSendTransactionFeeCostCalculationResult.Wait(_cancellationTokenTaskUpdateWalletContentInformations.Token);
+                taskSendTransactionFeeCostCalculationResult = ClassDesktopWalletCommonData.WalletSyncSystem.GetTransactionFeeCostVirtuallyFromSync(_currentWalletFilename, amountToSpend, totalConfirmationsTarget, CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenTaskUpdateWalletContentInformations.Token, new CancellationTokenSource(5000).Token));
+                taskSendTransactionFeeCostCalculationResult.Wait(CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenTaskUpdateWalletContentInformations.Token, new CancellationTokenSource(5000).Token).Token);
             }
             catch
             {

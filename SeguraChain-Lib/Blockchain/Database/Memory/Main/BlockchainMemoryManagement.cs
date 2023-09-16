@@ -1995,6 +1995,11 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                             break;
                                                         case ClassBlockTransactionEnumStatus.TRANSACTION_BLOCK_HEIGHT_NOT_REACH:
                                                             {
+
+#if DEBUG
+                                                                if (blockObject.BlockTransactions[blockTransactionHash].TransactionObject.TransactionType == ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION)
+                                                                    Debug.WriteLine("Warning the block height is not reach for the transaction type: "+System.Enum.GetName(typeof(ClassTransactionEnumType), blockObject.BlockTransactions[blockTransactionHash].TransactionObject.TransactionType));
+#endif
                                                                 blockObject.BlockTransactions[blockTransactionHash].TransactionStatus = false;
                                                                 blockObject.BlockTransactions[blockTransactionHash].TransactionInvalidRemoveTimestamp = blockObject.BlockTransactions[blockTransactionHash].TransactionObject.TimestampSend + BlockchainSetting.TransactionInvalidDelayRemove;
 
@@ -2005,6 +2010,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                         case ClassBlockTransactionEnumStatus.TRANSACTION_BLOCK_INVALID:
                                                         case ClassBlockTransactionEnumStatus.TRANSACTION_BLOCK_AMOUNT_OF_CONFIRMATIONS_WRONG:
                                                             {
+#if DEBUG
+                                                                if (blockObject.BlockTransactions[blockTransactionHash].TransactionObject.TransactionType == ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION)
+                                                                    Debug.WriteLine("Warning the block height " + System.Enum.GetName(typeof(ClassBlockTransactionEnumStatus), blockTransactionStatus) + " the transaction type: " + System.Enum.GetName(typeof(ClassTransactionEnumType), blockObject.BlockTransactions[blockTransactionHash].TransactionObject.TransactionType));
+#endif
                                                                 blockObject.BlockTransactions[blockTransactionHash].TransactionStatus = false;
                                                                 blockObject.BlockTransactions[blockTransactionHash].TransactionInvalidRemoveTimestamp = blockObject.BlockTransactions[blockTransactionHash].TransactionObject.TimestampSend + BlockchainSetting.TransactionInvalidDelayRemove;
 
@@ -2318,14 +2327,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                             if (!cancel)
                                                             {
                                                                 if (blockObject.BlockTransactions[transactionHash].TransactionTotalConfirmation < transactionTotalConfirmationsToReach)
-                                                                {
-                                                                    var walletBalanceReceiver = await GetWalletBalanceFromTransaction(blockObject.BlockTransactions[transactionHash].TransactionObject.WalletAddressReceiver, blockObject.BlockHeight, useCheckpoint, true, false, false, listBlockObjectUpdated, cancellation);
-
-                                                                    if (walletBalanceReceiver.WalletBalance >= 0)
-                                                                        transactionResult = ClassBlockTransactionEnumStatus.TRANSACTION_BLOCK_CONFIRMATIONS_INCREMENTED;
-                                                                    else
-                                                                        transactionResult = ClassBlockTransactionEnumStatus.TRANSACTION_BLOCK_INVALID;
-                                                                }
+                                                                    transactionResult = ClassBlockTransactionEnumStatus.TRANSACTION_BLOCK_CONFIRMATIONS_INCREMENTED;
                                                                 else
                                                                     transactionResult = ClassBlockTransactionEnumStatus.TRANSACTION_BLOCK_ENOUGH_CONFIRMATIONS_REACH;
                                                             }
