@@ -1484,7 +1484,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                 long blockMinRange = blockRange[0];
                                                 long blockMaxRange = blockRange[blockRange.Count - 1];
 
-                                                using (DisposableSortedList<long, ClassBlockObject> blockDataListRetrievedRead = await GetBlockListFromBlockHeightRangeTargetFromMemoryDataCache(blockMinRange, blockMaxRange, true, true, cancellation))
+                                                using (DisposableSortedList<long, ClassBlockObject> blockDataListRetrievedRead = await GetBlockListFromBlockHeightRangeTargetFromMemoryDataCache(blockMinRange, blockMaxRange, true, true, CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, new CancellationTokenSource(60 * 1000).Token)))
                                                 {
                                                     if (blockDataListRetrievedRead.Count > 0)
                                                     {
@@ -1495,7 +1495,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                             // Retrieve by range blocks from the active memory if possible or by the cache system.
                                                             foreach (ClassBlockObject blockObject in blockDataListRetrievedRead.GetList.Values)
                                                             {
-                                                                
+
 
                                                                 if (blockObject != null)
                                                                 {
@@ -1588,7 +1588,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                     // Update block cached confirmed retrieved.
                                                                     foreach (var txHash in blockObjectUpdated.BlockTransactions.Keys)
                                                                     {
-                                                                        
+
 
                                                                         if (blockObjectUpdated.BlockTransactions[txHash].TransactionStatus)
                                                                         {
@@ -1662,13 +1662,13 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                     }
 #if DEBUG
                                                                     stopwatch.Stop();
-                                                                    Debug.WriteLine("Timespend to insert: " + listBlockObjectUpdated.Count + " | Total tx: " + listBlockObjectUpdated.GetList.Values.Sum(x => x.TotalTransaction) + " | "+stopwatch.ElapsedMilliseconds+" ms.");
+                                                                    Debug.WriteLine("Timespend to insert: " + listBlockObjectUpdated.Count + " | Total tx: " + listBlockObjectUpdated.GetList.Values.Sum(x => x.TotalTransaction) + " | " + stopwatch.ElapsedMilliseconds + " ms.");
 #endif
                                                                 }
                                                             }
                                                         }
                                                     }
-
+                                                    else canceled = true;
                                                 }
                                             }
                                         }
@@ -1834,7 +1834,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             if (_dictionaryBlockObjectMemory[blockHeight].Content != null)
                                 _dictionaryBlockObjectMemory[blockHeight].Content = blockObjectUpdated;
 
-                            if (!await AddOrUpdateMemoryDataToCache(blockObjectUpdated, false, cancellation))
+                            if (!await InsertOrUpdateBlockObjectToCache(blockObjectUpdated, true, cancellation))
                             {
                                 cancelConfirmations = true;
                                 break;
