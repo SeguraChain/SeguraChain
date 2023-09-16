@@ -220,6 +220,8 @@ namespace SeguraChain_Lib.TaskManager
                                 if (_taskCollection[i].Task != null && (_taskCollection[i].Task.IsCanceled ||
 #if NET5_0_OR_GREATER
                                         _taskCollection[i].Task.IsCompletedSuccessfully ||
+#else
+                                        _taskCollection[i].Task.IsCompleted ||
 #endif
 
                                     _taskCollection[i].Task.IsFaulted))
