@@ -776,7 +776,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 {
                     using (DisposableHashset<string> listOfRankedPeerPublicKeySaved = new DisposableHashset<string>())
                     {
-                        long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (peerNetworkSetting.PeerMaxDelayAwaitResponse * 1000);
                         int totalTaskDone = 0;
                         int totalResponseOk = 0;
 
@@ -902,16 +901,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                                 totalTaskDone++;
 
-                            }), timestampEnd, cancellationTokenSourceMemPoolTxVote);
+                            }), 0, cancellationTokenSourceMemPoolTxVote);
                         }
 
                         while (totalTaskDone < peerListTarget.Count)
                         {
                             if (totalResponseOk >= peerListTarget.Count)
-                                break;
-
-                            // Timeout reach.
-                            if (timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond)
                                 break;
 
                             try
