@@ -84,14 +84,12 @@ namespace SeguraChain_Lib.TaskManager
 
             #region Auto update current timestamp in millisecond.
 
-            InsertTask(new Action(async () =>
+            InsertTask(new Action(() =>
             {
                 while (TaskManagerEnabled)
                 {
                     CurrentTimestampMillisecond = ClassUtility.GetCurrentTimestampInMillisecond();
                     CurrentTimestampSecond = ClassUtility.GetCurrentTimestampInSecond();
-
-                    await Task.Delay(1);
                 }
             }), 0, _cancelTaskManager).Wait();
 
@@ -160,10 +158,7 @@ namespace SeguraChain_Lib.TaskManager
                         finally
                         {
                             if (isLocked)
-                            {
-                                Monitor.PulseAll(_taskCollection);
                                 Monitor.Exit(_taskCollection);
-                            }
                         }
 
 #if DEBUG
@@ -349,7 +344,7 @@ namespace SeguraChain_Lib.TaskManager
                         bool isLocked = false;
                         try
                         {
-                            isLocked = Monitor.TryEnter(_taskCollection, 1);
+                            isLocked = Monitor.TryEnter(_taskCollection, 1000);
 
                             while(!isLocked && !cancellationTask.IsCancellationRequested)
                             {
@@ -357,7 +352,7 @@ namespace SeguraChain_Lib.TaskManager
                                 Debug.WriteLine("Insert task count id: " + _taskCollection.Count+" in pending.");
 #endif
                                 await Task.Delay(1);
-                                isLocked = Monitor.TryEnter(_taskCollection, 1);
+                                isLocked = Monitor.TryEnter(_taskCollection, 1000);
                             }
 
                             if (isLocked)
@@ -370,10 +365,7 @@ namespace SeguraChain_Lib.TaskManager
                         finally
                         {
                             if (isLocked)
-                            {
-                                Monitor.PulseAll(_taskCollection);
                                 Monitor.Exit(_taskCollection);
-                            }
                         }
                     }
                 }

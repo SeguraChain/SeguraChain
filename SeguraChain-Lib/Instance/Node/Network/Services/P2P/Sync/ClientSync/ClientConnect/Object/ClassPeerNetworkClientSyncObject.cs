@@ -221,19 +221,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// <returns></returns>
         private async Task<bool> DoConnection()
         {
-            using (var peerCancellationTokenDoConnection = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationTokenMain.Token, new CancellationTokenSource(_peerNetworkSetting.PeerMaxDelayToConnectToTarget * 1000).Token))
-            {
-                while (!peerCancellationTokenDoConnection.IsCancellationRequested)
-                {
-                    _peerSocketClient = new ClassCustomSocket(new Socket(ClassUtility.GetAddressFamily(PeerIpTarget), SocketType.Stream, ProtocolType.Tcp), false);
+            _peerSocketClient = new ClassCustomSocket(new Socket(ClassUtility.GetAddressFamily(PeerIpTarget), SocketType.Stream, ProtocolType.Tcp), false);
 
-                    if (_peerSocketClient.Connect(PeerIpTarget, PeerPortTarget, _peerNetworkSetting.PeerMaxDelayToConnectToTarget))
-                        return true;
-                    else _peerSocketClient?.Kill(SocketShutdown.Both);
+            if (_peerSocketClient.Connect(PeerIpTarget, PeerPortTarget, _peerNetworkSetting.PeerMaxDelayToConnectToTarget))
+                return true;
+            else _peerSocketClient?.Kill(SocketShutdown.Both);
 
-                    await Task.Delay(10);
-                }
-            }
+            await Task.Delay(10);
+
             return false;
         }
 
@@ -264,8 +259,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                 if (!_keepAlive)
                     DisconnectFromTarget();
-               /* else // Enable keep alive.
-                    TaskEnablePeerPacketKeepAlive();*/
+                else // Enable keep alive.
+                    TaskEnablePeerPacketKeepAlive();
 
             }
 
@@ -352,7 +347,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                         listPacketReceived[listPacketReceived.Count - 1].Packet.Clear();
 
                         if (failed)
-                            continue;
+                            break;
 
                         ClassPeerPacketRecvObject peerPacketReceived = new ClassPeerPacketRecvObject(base64Packet, out bool status);
 

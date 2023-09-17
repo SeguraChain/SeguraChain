@@ -88,8 +88,10 @@ namespace SeguraChain_Lib.Other.Object.Network
         {
             try
             {
+                if ((Closed || _socket == null || !_socket.Connected || _networkStream == null))
+                    return false;
+
                 return !((_socket.Poll(10, SelectMode.SelectRead) && (_socket.Available == 0)));
-               // return (Closed || _socket == null || !_socket.Connected || _networkStream == null) ? false : true;
             }
             catch
             {
@@ -163,6 +165,7 @@ namespace SeguraChain_Lib.Other.Object.Network
             {
                 _socket?.Shutdown(shutdownType);
                 _socket?.Close();
+                _networkStream.Close();
             }
             catch
             {
