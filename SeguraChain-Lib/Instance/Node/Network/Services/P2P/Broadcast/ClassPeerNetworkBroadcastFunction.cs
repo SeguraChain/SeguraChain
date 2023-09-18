@@ -164,12 +164,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             string peerUniqueIdSelected = string.Empty;
             long peerLastBlockHeight = 0;
 
-            foreach(string peerIp in ClassPeerDatabase.DictionaryPeerDataObject.Keys)
+            foreach(string peerIp in ClassPeerDatabase.DictionaryPeerDataObject.Keys.ToArray())
             {
                 if (peerIp == peerServerIp || peerIp == peerOpenNatServerIp || peerIp == peerToExcept)
                     continue;
 
-                foreach(string peerUniqueId in ClassPeerDatabase.DictionaryPeerDataObject[peerIp].Keys)
+                foreach(string peerUniqueId in ClassPeerDatabase.DictionaryPeerDataObject[peerIp].Keys.ToArray())
                 {
                     if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus != ClassPeerEnumStatus.PEER_ALIVE)
                         continue;
