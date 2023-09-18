@@ -1519,8 +1519,9 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                                                                         if (!blockObject.BlockTransactionConfirmationCheckTaskDone)
                                                                         {
-                                                                            blockObject.BlockTransactionConfirmationCheckTaskDone = ClassBlockUtility.DoCheckBlockTransactionConfirmation(blockObject, await GetBlockMirrorObject(blockHeight - 1, cancellation));
-                                                                            if (!blockObject.BlockTransactionConfirmationCheckTaskDone)
+                                                                            ClassBlockObject previousBlockObject = await GetBlockMirrorObject(blockHeight - 1, cancellation);
+
+                                                                            if (!ClassBlockUtility.DoCheckBlockTransactionConfirmation(blockObject, previousBlockObject))
                                                                             {
 #if DEBUG
                                                                                 Debug.WriteLine("Failed to update block transaction(s) confirmation(s) on the block height: " + blockObject.BlockHeight + ", the confirmation check task failed.");
@@ -1530,15 +1531,15 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                                 canceled = true;
                                                                                 break;
                                                                             }
+
+                                                                            blockObject.BlockTransactionConfirmationCheckTaskDone = true;
                                                                         }
 
                                                                         #endregion
                                                                     }
                                                                     else
-                                                                    {
-                                                                        canceled = true;
                                                                         break;
-                                                                    }
+                                                                    
                                                                     #region Attempt to increment block transaction confirmation(s).
 
                                                                     ClassBlockObject blockObjectUpdated = null;

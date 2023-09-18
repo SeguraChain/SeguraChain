@@ -131,11 +131,11 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
 
                         if (blockTransactionCountFromHash != previousBlockTransactionCount)
                             result = ClassBlockEnumCheckStatus.INVALID_BLOCK_TRANSACTION_COUNT;
-                        else
+                        /*else
                         {
                             if (!string.Equals(ClassUtility.GetHexStringFromByteArray(blockFinalTransactionHashBytes), blockTransactionHash, StringComparison.CurrentCultureIgnoreCase))
                                 result = ClassBlockEnumCheckStatus.INVALID_BLOCK_TRANSACTION_HASH;
-                        }
+                        }*/
                     }
                 }
 
