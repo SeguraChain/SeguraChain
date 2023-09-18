@@ -527,7 +527,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                     blockObject.BlockIsUpdated = true;
                     await InsertInActiveMemory(blockObject, keepAlive, false, cancellationIoCache);
                     _ioStructureObjectsDictionary[blockObject.BlockHeight].IsDeleted = false;
-                    return false;
+                    return true;
                 }
                 else
                 {
