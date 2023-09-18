@@ -740,7 +740,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                                                 }
                                                                                 else
                                                                                 {
-                                                                                    if (await ClassBlockchainDatabase.BlockchainMemoryManagement.InsertOrUpdateBlockObjectToCache(result[blockHeightToCheck], true, _cancellationTokenServiceSync))
+                                                                                    if (await ClassBlockchainDatabase.BlockchainMemoryManagement.InsertOrUpdateBlockObjectToCache(result[blockHeightToCheck].DirectCloneBlockObject(), true, _cancellationTokenServiceSync))
                                                                                         ClassLog.WriteLine("The block height: " + blockHeightToCheck + " retrieved from peers, is fixed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
                                                                                     else
                                                                                     {
