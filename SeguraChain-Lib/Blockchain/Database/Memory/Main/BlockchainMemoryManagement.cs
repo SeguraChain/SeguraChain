@@ -1522,24 +1522,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                             blockObject.BlockTransactionConfirmationCheckTaskDone = ClassBlockUtility.DoCheckBlockTransactionConfirmation(blockObject, await GetBlockMirrorObject(blockHeight - 1, cancellation));
                                                                             if (!blockObject.BlockTransactionConfirmationCheckTaskDone)
                                                                             {
-                                                                                if (_dictionaryBlockObjectMemory[blockObject.BlockHeight].Content != null)
-                                                                                {
-                                                                                    _dictionaryBlockObjectMemory[blockObject.BlockHeight].Content.BlockTransactionConfirmationCheckTaskDone = false;
-                                                                                    _dictionaryBlockObjectMemory[blockObject.BlockHeight].Content.BlockUnlockValid = false;
-                                                                                    _dictionaryBlockObjectMemory[blockObject.BlockHeight].Content.BlockNetworkAmountConfirmations = 0;
-                                                                                    _dictionaryBlockObjectMemory[blockObject.BlockHeight].Content.BlockSlowNetworkAmountConfirmations = 0;
-
-                                                                                    AddOrUpdateBlockMirrorObject(_dictionaryBlockObjectMemory[blockObject.BlockHeight].Content);
-                                                                                }
-                                                                                else
-                                                                                {
-                                                                                    blockObject.BlockTransactionConfirmationCheckTaskDone = false;
-                                                                                    blockObject.BlockUnlockValid = false;
-                                                                                    blockObject.BlockNetworkAmountConfirmations = 0;
-                                                                                    blockObject.BlockSlowNetworkAmountConfirmations = 0;
-
-                                                                                    await InsertOrUpdateBlockObjectToCache(blockObject, true, cancellation);
-                                                                                }
 #if DEBUG
                                                                                 Debug.WriteLine("Failed to update block transaction(s) confirmation(s) on the block height: " + blockObject.BlockHeight + ", the confirmation check task failed.");
 #endif
