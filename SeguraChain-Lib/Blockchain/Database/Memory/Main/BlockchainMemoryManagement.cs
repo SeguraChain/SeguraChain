@@ -557,15 +557,13 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                 }
             }
 
+            AddOrUpdateBlockMirrorObject(blockObject);
 
             // Try to update or add the block data updated to the cache.
             if (_blockchainDatabaseSetting.BlockchainCacheSetting.EnableCacheDatabase &&
                 blockObject.BlockHeight > BlockchainSetting.GenesisBlockHeight)
-                await AddOrUpdateMemoryDataToCache(blockObject, keepAlive, cancellation);
-
-            AddOrUpdateBlockMirrorObject(blockObject);
-
-            return true;
+                return await AddOrUpdateMemoryDataToCache(blockObject, keepAlive, cancellation);
+            else return true;
         }
 
         /// <summary>
