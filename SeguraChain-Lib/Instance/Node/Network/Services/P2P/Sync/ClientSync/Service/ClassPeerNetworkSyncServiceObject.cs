@@ -733,7 +733,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                                             if (result[blockHeightToCheck]?.BlockStatus == ClassBlockEnumStatus.UNLOCKED && result[blockHeightToCheck]?.BlockHeight == blockHeightToCheck)
                                                                             {
 
-                                                                                if (!await ClassBlockUtility.CheckBlockDataObject(result[blockHeightToCheck], blockHeightToCheck, false, _cancellationTokenServiceSync))
+                                                                                if (!await ClassBlockUtility.CheckBlockDataObject(result[blockHeightToCheck], blockHeightToCheck, true, _cancellationTokenServiceSync))
                                                                                 {
                                                                                     ClassLog.WriteLine("The block height: " + result[blockHeightToCheck].BlockHeight + " is invalid. Cancel sync and retry again.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                                                                                     cancelCheck = true;

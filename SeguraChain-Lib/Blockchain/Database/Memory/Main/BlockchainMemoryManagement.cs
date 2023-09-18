@@ -1534,8 +1534,11 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                                                                         #endregion
                                                                     }
-                                                                    else break;
-
+                                                                    else
+                                                                    {
+                                                                        canceled = true;
+                                                                        break;
+                                                                    }
                                                                     #region Attempt to increment block transaction confirmation(s).
 
                                                                     ClassBlockObject blockObjectUpdated = null;
