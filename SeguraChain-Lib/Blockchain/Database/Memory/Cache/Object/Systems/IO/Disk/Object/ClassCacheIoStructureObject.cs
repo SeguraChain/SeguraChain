@@ -158,6 +158,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                 if (_blockObject == null)
                     return true;
 
+
+                if (IsDeleted)
+                    return true;
+
                 try
                 {
 
@@ -170,8 +174,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                     if (_blockObject.BlockTransactions.Count != _blockObject.TotalTransaction)
                         return true;
 
-                    if (IsDeleted)
-                        return true;
                 }
                 catch
                 {

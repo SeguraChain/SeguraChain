@@ -539,8 +539,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     CacheUpdated = false
                 });
 
-                AddOrUpdateBlockMirrorObject(blockObject);
-
                 foreach (var blockTransaction in blockObject.BlockTransactions.Values)
                     await UpdateBlockTransactionCache(blockTransaction, cancellation);
             }
@@ -553,26 +551,19 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     _dictionaryBlockObjectMemory[blockObject.BlockHeight].Content = blockObject;
                     _dictionaryBlockObjectMemory[blockObject.BlockHeight].CacheUpdated = false;
                     _dictionaryBlockObjectMemory[blockObject.BlockHeight].ObjectCacheType = CacheBlockMemoryEnumState.IN_ACTIVE_MEMORY;
-                    AddOrUpdateBlockMirrorObject(blockObject);
 
                     foreach (var blockTransaction in blockObject.BlockTransactions.Values)
                         await UpdateBlockTransactionCache(blockTransaction, cancellation);
                 }
             }
 
+
             // Try to update or add the block data updated to the cache.
             if (_blockchainDatabaseSetting.BlockchainCacheSetting.EnableCacheDatabase &&
                 blockObject.BlockHeight > BlockchainSetting.GenesisBlockHeight)
-            {
-                if (blockObject.BlockHeight > BlockchainSetting.GenesisBlockHeight)
-                {
-                    if (await AddOrUpdateMemoryDataToCache(blockObject, keepAlive, cancellation))
-                    {
-                        foreach (var blockTransaction in blockObject.BlockTransactions.Values)
-                            await UpdateBlockTransactionCache(blockTransaction, cancellation);
-                    }
-                }
-            }
+                await AddOrUpdateMemoryDataToCache(blockObject, keepAlive, cancellation);
+
+            AddOrUpdateBlockMirrorObject(blockObject);
 
             return true;
         }
