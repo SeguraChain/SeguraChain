@@ -1622,7 +1622,10 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                     }
 
                                                                     totalBlockTravel++;
-                                                                    listBlockObjectUpdated.Add(blockObject.BlockHeight, blockObjectUpdated);
+                                                                    if (listBlockObjectUpdated.ContainsKey(blockObject.BlockHeight))
+                                                                        listBlockObjectUpdated[blockObject.BlockHeight] = blockObject;
+                                                                    else
+                                                                        listBlockObjectUpdated.Add(blockObject.BlockHeight, blockObjectUpdated);
 
                                                                     #endregion
 
