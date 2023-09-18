@@ -3842,7 +3842,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                     {
                                         try
                                         {
-                                            isLocked = Monitor.TryEnter(blockObject.BlockTransactions);
+                                            isLocked = Monitor.TryEnter(blockObject);
                                         }
                                         catch
                                         {
@@ -3863,7 +3863,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                     finally
                                     {
                                         if (isLocked)
-                                            Monitor.Exit(blockObject.BlockTransactions);
+                                            Monitor.Exit(blockObject);
                                     }
                                 }
                             }
@@ -4487,16 +4487,23 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         {
             if (ContainsKey(blockHeight))
             {
-                if (_dictionaryBlockObjectMemory[blockHeight].Content != null)
+                try
                 {
-                    _dictionaryBlockObjectMemory[blockHeight].Content.DeepCloneBlockObject(false, out ClassBlockObject blockObject);
+                    if (_dictionaryBlockObjectMemory[blockHeight].Content != null)
+                    {
+                        _dictionaryBlockObjectMemory[blockHeight].Content.DeepCloneBlockObject(false, out ClassBlockObject blockObject);
 
-                    if (blockObject != null)
-                        return blockObject;
+                        if (blockObject != null)
+                            return blockObject;
+                    }
+
+                    if (_dictionaryBlockObjectMemory[blockHeight].ContentMirror != null)
+                        return _dictionaryBlockObjectMemory[blockHeight].ContentMirror;
                 }
-
-                if (_dictionaryBlockObjectMemory[blockHeight].ContentMirror != null)
-                    return _dictionaryBlockObjectMemory[blockHeight].ContentMirror;
+                catch(Exception error)
+                {
+                    ClassLog.WriteLine("Cannot found block height: " + blockHeight + " into Block object mirror. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_MEMORY_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                }
             }
 
             return await GetBlockInformationMemoryDataFromCacheByKey(blockHeight, cancellation);

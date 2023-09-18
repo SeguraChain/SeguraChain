@@ -201,14 +201,15 @@ namespace SeguraChain_Lib.Blockchain.Block.Object.Structure
                 try
                 {
                     isLocked = Monitor.TryEnter(this);
-                    isLockedTransaction = Monitor.TryEnter(_blockTransactions);
-
-                    /*if (ClassBlockUtility.StringToBlockObject(ClassBlockUtility.SplitBlockObject(this), out blockObjectCopy) && retrieveTx)
-                        blockObjectCopy.BlockTransactions = new SortedList<string, ClassBlockTransaction>(_blockTransactions.ToDictionary(x => x.Key, x => x.Value));*/
-                    if (isLocked && isLockedTransaction)
+                    if (_blockTransactions != null)
                     {
-                        if (BlockTransactions != null)
+                        isLockedTransaction = Monitor.TryEnter(_blockTransactions);
+
+                        /*if (ClassBlockUtility.StringToBlockObject(ClassBlockUtility.SplitBlockObject(this), out blockObjectCopy) && retrieveTx)
+                            blockObjectCopy.BlockTransactions = new SortedList<string, ClassBlockTransaction>(_blockTransactions.ToDictionary(x => x.Key, x => x.Value));*/
+                        if (isLocked && isLockedTransaction)
                         {
+
                             blockObjectCopy = new ClassBlockObject(BlockHeight, BlockDifficulty, BlockHash, TimestampCreate, TimestampFound, BlockStatus, BlockUnlockValid, BlockTransactionConfirmationCheckTaskDone)
                             {
                                 BlockDifficulty = BlockDifficulty,
@@ -247,6 +248,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Object.Structure
                             }
 
                             blockObjectCopy.TotalTransaction = retrieveTx ? blockObjectCopy.BlockTransactions.Count : (_blockTransactions != null ? _blockTransactions.Count : 0);
+
                         }
                     }
                 }
