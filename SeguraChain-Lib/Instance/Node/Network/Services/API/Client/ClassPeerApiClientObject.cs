@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -113,122 +114,104 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
 
            await TaskManager.TaskManager.InsertTask(new Action(async () => await CheckApiClientConnection()), 0, _cancellationTokenApiClientCheck, _clientSocket);
-       
 
-            try
+            await TaskManager.TaskManager.InsertTask(new Action(async () =>
             {
-                long packetSizeCount = 0;
-
-                using (DisposableList<byte[]> listPacket = new DisposableList<byte[]>())
+                try
                 {
-                    if (ClientConnectionStatus)
+                    long packetSizeCount = 0;
+
+                    using (DisposableList<byte[]> listPacket = new DisposableList<byte[]>())
                     {
-                        try
+                        if (ClientConnectionStatus)
                         {
-                            bool continueReading = true;
-                            bool isPostRequest = false;
-
-                            string packetReceived = string.Empty;
-
-
-                            while (continueReading && ClientConnectionStatus)
+                            try
                             {
-                                using (ReadPacketData readPacketData = await _clientSocket.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, _peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000, _cancellationTokenApiClient))
+                                bool continueReading = true;
+                                bool isPostRequest = false;
+
+                                string packetReceived = string.Empty;
+
+
+                                while (continueReading && ClientConnectionStatus)
                                 {
-
-                                    if (readPacketData.Status)
-                                        listPacket.Add(readPacketData.Data);
-                                    else break;
-
-                                    packetSizeCount += _peerNetworkSettingObject.PeerMaxPacketBufferSize;
-
-                                    ClientConnectTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
-
-                                    if (listPacket.Count > 0)
+                                    using (ReadPacketData readPacketData = await _clientSocket.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, _peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000, true, _cancellationTokenApiClient))
                                     {
-                                        // If above the max data to receive.
-                                        if (packetSizeCount / 1024 >= ClassPeerPacketSetting.PacketMaxLengthReceive)
-                                            listPacket.Clear();
 
-                                        foreach (byte dataByte in listPacket.GetList.SelectMany(x => x).ToArray())
+                                        if (readPacketData.Status)
+                                            listPacket.Add(readPacketData.Data);
+                                        else break;
+
+#if DEBUG
+                                        ClassLog.WriteLine("Packet data size received: " + readPacketData.Data.Length, ClassEnumLogLevelType.LOG_LEVEL_API_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.White); ;
+#endif
+
+                                        packetSizeCount += _peerNetworkSettingObject.PeerMaxPacketBufferSize;
+
+                                        ClientConnectTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
+
+                                        if (listPacket.Count > 0)
                                         {
-                                            char character = (char)dataByte;
+                                            // If above the max data to receive.
+                                            if (packetSizeCount / 1024 >= ClassPeerPacketSetting.PacketMaxLengthReceive)
+                                                listPacket.Clear();
 
-                                            if (character != '\0')
-                                                packetReceived += character;
-                                        }
-
-                                        // Control the post request content length, break the reading if the content length is reach.
-                                        if (packetReceived.Contains(ClassPeerApiEnumHttpPostRequestSyntax.HttpPostRequestType) && packetReceived.Contains(ClassPeerApiEnumHttpPostRequestSyntax.PostDataPosition1))
-                                        {
-                                            isPostRequest = true;
-
-                                            int indexPacket = packetReceived.IndexOf(ClassPeerApiEnumHttpPostRequestSyntax.PostDataPosition1, 0, StringComparison.Ordinal);
-
-                                            string[] packetInfoSplitted = packetReceived.Substring(indexPacket).Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
-
-                                            if (packetInfoSplitted.Length == 2)
+                                            foreach (byte dataByte in listPacket.GetList.SelectMany(x => x).ToArray())
                                             {
-                                                int packetContentLength = 0;
+                                                char character = (char)dataByte;
 
-                                                string contentLength = packetInfoSplitted[0].Replace(ClassPeerApiEnumHttpPostRequestSyntax.PostDataPosition1 + " ", "");
+                                                if (character != '\0')
+                                                    packetReceived += character;
+                                            }
 
-                                                // Compare Content-length with content.
-                                                if (int.TryParse(contentLength, out packetContentLength))
+                                            // Control the post request content length, break the reading if the content length is reach.
+                                            if (packetReceived.Contains(ClassPeerApiEnumHttpPostRequestSyntax.HttpPostRequestType) && packetReceived.Contains(ClassPeerApiEnumHttpPostRequestSyntax.PostDataPosition1))
+                                            {
+                                                isPostRequest = true;
+
+                                                int indexPacket = packetReceived.IndexOf(ClassPeerApiEnumHttpPostRequestSyntax.PostDataPosition1, 0, StringComparison.Ordinal);
+
+                                                string[] packetInfoSplitted = packetReceived.Substring(indexPacket).Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+
+                                                if (packetInfoSplitted.Length == 2)
                                                 {
-                                                    if (packetContentLength == packetInfoSplitted[1].Length)
-                                                        continueReading = false;
+                                                    int packetContentLength = 0;
+
+                                                    string contentLength = packetInfoSplitted[0].Replace(ClassPeerApiEnumHttpPostRequestSyntax.PostDataPosition1 + " ", "");
+
+                                                    // Compare Content-length with content.
+                                                    if (int.TryParse(contentLength, out packetContentLength))
+                                                    {
+                                                        if (packetContentLength == packetInfoSplitted[1].Length)
+                                                            continueReading = false;
+                                                    }
                                                 }
                                             }
+                                            else if (packetReceived.Contains("GET /"))
+                                                continueReading = false;
+
+                                            if (continueReading)
+                                                packetReceived.Clear();
                                         }
-                                        else if (packetReceived.Contains("GET /"))
-                                            continueReading = false;
-
-                                        if (continueReading)
-                                            packetReceived.Clear();
                                     }
                                 }
-                            }
-                            
 
-                            if (listPacket.Count > 0 && ClientConnectionStatus)
-                            {
-                                #region Take in count the common POST HTTP request syntax of data.
 
-                                if (isPostRequest)
+                                if (listPacket.Count > 0 && ClientConnectionStatus)
                                 {
-                                    _validPostRequest = true;
+                                    #region Take in count the common POST HTTP request syntax of data.
 
-                                    int indexPacket = packetReceived.IndexOf(ClassPeerApiEnumHttpPostRequestSyntax.PostDataTargetIndexOf, 0, StringComparison.Ordinal);
-
-                                    packetReceived = packetReceived.Substring(indexPacket);
-
-                                    OnHandlePacket = true;
-
-                                    if (!await HandleApiClientPostPacket(packetReceived))
+                                    if (isPostRequest)
                                     {
-                                        if (_peerFirewallSettingObject.PeerEnableFirewallLink)
-                                            ClassPeerFirewallManager.InsertInvalidPacket(_clientIp);
-                                    }
+                                        _validPostRequest = true;
 
-                                    OnHandlePacket = false;
-                                }
+                                        int indexPacket = packetReceived.IndexOf(ClassPeerApiEnumHttpPostRequestSyntax.PostDataTargetIndexOf, 0, StringComparison.Ordinal);
 
-                                #endregion
-
-                                #region Take in count the common GET HTTP request.
-
-                                if (!_validPostRequest)
-                                {
-                                    if (packetReceived.Contains("GET"))
-                                    {
-                                        packetReceived = packetReceived.GetStringBetweenTwoStrings("GET /", "HTTP");
-                                        packetReceived = packetReceived.Replace("%7C", "|"); // Translate special character | 
-                                        packetReceived = packetReceived.Replace(" ", ""); // Remove empty,space characters
+                                        packetReceived = packetReceived.Substring(indexPacket);
 
                                         OnHandlePacket = true;
 
-                                        if (!await HandleApiClientGetPacket(packetReceived))
+                                        if (!await HandleApiClientPostPacket(packetReceived))
                                         {
                                             if (_peerFirewallSettingObject.PeerEnableFirewallLink)
                                                 ClassPeerFirewallManager.InsertInvalidPacket(_clientIp);
@@ -236,27 +219,50 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
                                         OnHandlePacket = false;
                                     }
+
+                                    #endregion
+
+                                    #region Take in count the common GET HTTP request.
+
+                                    if (!_validPostRequest)
+                                    {
+                                        if (packetReceived.Contains("GET"))
+                                        {
+                                            packetReceived = packetReceived.GetStringBetweenTwoStrings("GET /", "HTTP");
+                                            packetReceived = packetReceived.Replace("%7C", "|"); // Translate special character | 
+                                            packetReceived = packetReceived.Replace(" ", ""); // Remove empty,space characters
+
+                                            OnHandlePacket = true;
+
+                                            if (!await HandleApiClientGetPacket(packetReceived))
+                                            {
+                                                if (_peerFirewallSettingObject.PeerEnableFirewallLink)
+                                                    ClassPeerFirewallManager.InsertInvalidPacket(_clientIp);
+                                            }
+
+                                            OnHandlePacket = false;
+                                        }
+                                    }
+
+                                    #endregion
                                 }
 
-                                #endregion
+                                // Close the connection after to have receive the packet of the incoming connection.
+                                ClientConnectionStatus = false;
+
                             }
-
-                            // Close the connection after to have receive the packet of the incoming connection.
-                            ClientConnectionStatus = false;
-
-                        }
-                        catch
-                        {
-                            ClientConnectionStatus = false;
+                            catch
+                            {
+                                ClientConnectionStatus = false;
+                            }
                         }
                     }
                 }
-            }
-            catch
-            {
-                // Ignored.
-            }
-
+                catch
+                {
+                    // Ignored.
+                }
+            }), 0, _cancellationTokenApiClient);
 
             return PacketResponseSent;
         }
@@ -1016,14 +1022,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
             bool sendResult;
 
-            try
-            {
-                sendResult = await _clientSocket.TrySendSplittedPacket(builder.ToString().GetByteArray(), _cancellationTokenApiClient, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
-            }
-            catch
-            {
-                sendResult = false;
-            }
+            sendResult = await _clientSocket.TrySendSplittedPacket(builder.ToString().GetByteArray(), _cancellationTokenApiClient, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
 
             PacketResponseSent = sendResult;
 

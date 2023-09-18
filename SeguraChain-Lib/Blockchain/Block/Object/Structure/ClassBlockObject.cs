@@ -8,6 +8,8 @@ using Newtonsoft.Json;
 using SeguraChain_Lib.Blockchain.Block.Enum;
 using SeguraChain_Lib.Blockchain.Mining.Object;
 using SeguraChain_Lib.Blockchain.Setting;
+using SeguraChain_Lib.Blockchain.Transaction.Object;
+using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.Utility;
 
 namespace SeguraChain_Lib.Blockchain.Block.Object.Structure
@@ -240,7 +242,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Object.Structure
                             blockObjectCopy.BlockTransactions = new SortedList<string, ClassBlockTransaction>();
                             if (retrieveTx)
                             {
-                                foreach (var blockTransaction in _blockTransactions)
+                                foreach (var blockTransaction in _blockTransactions.ToArray())
                                     blockObjectCopy.BlockTransactions.Add(blockTransaction.Key, blockTransaction.Value.Clone());
                             }
 

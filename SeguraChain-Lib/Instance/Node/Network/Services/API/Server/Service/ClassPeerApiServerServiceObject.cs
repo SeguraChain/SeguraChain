@@ -136,6 +136,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                                 {
                                     string clientIp = clientApiTcp.GetIp;
 
+                                    ClassLog.WriteLine("Handle incoming connection from: " + clientIp + " to the API.", ClassEnumLogLevelType.LOG_LEVEL_API_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
+
                                     switch (await HandleIncomingConnection(clientIp, clientApiTcp))
                                     {
 
@@ -280,13 +282,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
 
                                 if (semaphoreUsed)
                                 {
-                                    _listApiIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
 #if DEBUG
                                     ClassLog.WriteLine("Complete to handle the peer client IP: " + clientIp + " | " + randomId + " into " + stopwatch.ElapsedMilliseconds + " ms.", ClassEnumLogLevelType.LOG_LEVEL_API_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 #endif
-                                    semaphoreUsed = false;
                                     failed = false;
-
                                     resultHandleRequest = await _listApiIncomingConnectionObject[clientIp].ListApiClientObject[randomId].HandleApiClientConnection();
                                 }
 
@@ -309,9 +308,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                         ClassLog.WriteLine("Complete the task who handle the peer client IP: " + clientIp + " | " + randomId + " into " + stopwatch.ElapsedMilliseconds + " ms.", ClassEnumLogLevelType.LOG_LEVEL_API_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 #endif
 
-                        _listApiIncomingConnectionObject[clientIp].ListApiClientObject[randomId].Dispose();
-
-                        _listApiIncomingConnectionObject[clientIp].ListApiClientObject.TryRemove(randomId, out _);
 
 
                         if (failed)

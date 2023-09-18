@@ -286,7 +286,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             {
                 while (PeerConnectStatus)
                 {
-                    using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSetting.PeerMaxPacketBufferSize, _peerNetworkSetting.PeerMaxDelayAwaitResponse * 1000, _peerCancellationTokenMain))
+                    using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSetting.PeerMaxPacketBufferSize, _peerNetworkSetting.PeerApiMaxConnectionDelay * 1000, false, _peerCancellationTokenMain))
                     {
 
                         ClassPeerCheckManager.UpdatePeerClientLastPacketReceived(PeerIpTarget, PeerUniqueIdTarget, TaskManager.TaskManager.CurrentTimestampSecond);

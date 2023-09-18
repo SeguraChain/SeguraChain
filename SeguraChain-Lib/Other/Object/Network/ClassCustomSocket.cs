@@ -114,7 +114,7 @@ namespace SeguraChain_Lib.Other.Object.Network
             return false;
         }
 
-        public async Task<ReadPacketData> TryReadPacketData(int packetLength, int delayReading, CancellationTokenSource cancellation)
+        public async Task<ReadPacketData> TryReadPacketData(int packetLength, int delayReading, bool isHttp, CancellationTokenSource cancellation)
         {
             ReadPacketData readPacketData = new ReadPacketData();
             readPacketData.Data = new byte[packetLength];
@@ -131,6 +131,7 @@ namespace SeguraChain_Lib.Other.Object.Network
 #endif
             }
 
+
             using (DisposableList<byte> listOfData = new DisposableList<byte>())
             {
                 foreach (byte data in readPacketData.Data)
@@ -138,12 +139,18 @@ namespace SeguraChain_Lib.Other.Object.Network
                     if ((char)data == '\0')
                         continue;
 
-                    if (ClassUtility.CharIsABase64Character((char)data) || ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
-                        listOfData.Add(data);
+                    if (!isHttp)
+                    {
+                        if (ClassUtility.CharIsABase64Character((char)data) || ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
+                            listOfData.Add(data);
+                    }
+                    else listOfData.Add(data);
                 }
                 readPacketData.Data = listOfData.GetList.ToArray();
-                readPacketData.Status = readPacketData.Data.Length > 0;
             }
+            
+
+            readPacketData.Status = readPacketData.Data.Length > 0;
 
             return readPacketData;
         }
