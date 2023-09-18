@@ -1776,7 +1776,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                 !blockObjectInformations.BlockTransactionFullyConfirmed)
                                 continue;
 
-                            ClassBlockObject blockObjectUpdated = _dictionaryBlockObjectMemory[blockHeight].Content != null ? _dictionaryBlockObjectMemory[blockHeight].Content : await GetBlockDataStrategy(blockHeight, false, true, cancellation);
+                            ClassBlockObject blockObjectUpdated =  await GetBlockDataStrategy(blockHeight, true, true, cancellation);
 
                             if (blockObjectUpdated == null)
                             {

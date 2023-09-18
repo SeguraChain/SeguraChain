@@ -203,10 +203,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                         return ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS;
                 }
 
-                long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + _peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay;
 
-
-                if (GetTotalActiveConnection(clientIp, _cancellationTokenSourcePeerServer, true, timestampEnd) > _peerNetworkSettingObject.PeerMaxNodeConnectionPerIp)
+                if (GetTotalActiveConnection(clientIp, _cancellationTokenSourcePeerServer) > _peerNetworkSettingObject.PeerMaxNodeConnectionPerIp)
                     return ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT;
 
                 if (_listPeerIncomingConnectionObject.Count >= int.MaxValue - 1)
@@ -224,7 +222,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
                 #region Ensure to not have too much incoming connection from the same ip.
 
-                long randomId = await GeneratePeerUniqueIdAsync(clientIp, _cancellationTokenSourcePeerServer, timestampEnd);
+                long randomId = await GeneratePeerUniqueIdAsync(clientPeerTcp, _cancellationTokenSourcePeerServer);
 
                 if (randomId == -1)
                     return ClassPeerNetworkServerHandleConnectionEnum.BAD_RANDOM_ID;
@@ -274,22 +272,26 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
         /// <summary>
         /// Generate peer unique id.
         /// </summary>
-        /// <param name="clientIp"></param>
+        /// <param name="client"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        public async Task<long> GeneratePeerUniqueIdAsync(string clientIp, CancellationTokenSource cancellation, long timestampEnd)
+        public async Task<long> GeneratePeerUniqueIdAsync(ClassCustomSocket client, CancellationTokenSource cancellation)
         {
 
-            long randomId = ClassUtility.GetRandomBetweenInt(0, int.MaxValue - 1);
+            long randomId = -1;
+
             try
             {
-                while (_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.ContainsKey(randomId))
+                while (client.IsConnected())
                 {
+                    randomId = ClassUtility.GetRandomBetweenInt(0, int.MaxValue - 1);
 
-                    if (cancellation.IsCancellationRequested || TaskManager.TaskManager.CurrentTimestampMillisecond >= timestampEnd)
+                    if (cancellation.IsCancellationRequested)
                         return -1;
 
-                    randomId = ClassUtility.GetRandomBetweenInt(0, int.MaxValue - 1);
+                    if (!_listPeerIncomingConnectionObject[client.GetIp].ListPeerClientObject.ContainsKey(randomId))
+                        break;
+
 
                     await Task.Delay(1);
                 }
@@ -308,7 +310,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
         /// </summary>
         /// <param name="clientIp">The client IP.</param>
         /// <returns>Return the amount of total connection of a client IP.</returns>
-        private int GetTotalActiveConnection(string clientIp, CancellationTokenSource cancellation, bool useTimestamp, long timestampEnd)
+        private int GetTotalActiveConnection(string clientIp, CancellationTokenSource cancellation)
         {
             if (_listPeerIncomingConnectionObject.Count == 0 ||
                 !_listPeerIncomingConnectionObject.ContainsKey(clientIp) ||
@@ -321,7 +323,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
             foreach (long key in _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.Keys.ToArray())
             {
-                if (cancellation.IsCancellationRequested || (useTimestamp && timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond))
+                if (cancellation.IsCancellationRequested)
                     break;
 
                 if (!_listPeerIncomingConnectionObject[clientIp].ListPeerClientObject.ContainsKey(key))
