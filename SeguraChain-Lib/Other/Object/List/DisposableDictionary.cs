@@ -80,7 +80,7 @@ namespace SeguraChain_Lib.Other.Object.List
             {
                 try
                 {
-                    return GetList != null ? GetList[key] : default;
+                    return GetList != null ? GetList.ContainsKey(key) ? GetList[key] : default : default;
                 }
                 catch
                 {
