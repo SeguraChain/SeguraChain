@@ -1932,12 +1932,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                                         bool isEqual = false;
 
+
                                                         if (blockDataReceived.BlockHeight == blockObject.BlockHeight &&
                                                             blockDataReceived.BlockHash == blockObject.BlockHash &&
-                                                            blockDataReceived.TimestampFound == blockObject.TimestampFound &&
-                                                            blockDataReceived.TimestampCreate == blockObject.TimestampCreate &&
+                                                            /*blockDataReceived.TimestampFound == blockObject.TimestampFound &&
+                                                            blockDataReceived.TimestampCreate == blockObject.TimestampCreate &&*/
                                                             blockDataReceived.BlockStatus == blockObject.BlockStatus &&
-                                                            blockDataReceived.BlockDifficulty == blockObject.BlockDifficulty &&
+                                                            /*blockDataReceived.BlockDifficulty == blockObject.BlockDifficulty &&*/
                                                             blockDataReceived.BlockFinalHashTransaction == blockObject.BlockFinalHashTransaction &&
                                                             comparedShares &&
                                                             blockDataReceived.BlockWalletAddressWinner == blockObject.BlockWalletAddressWinner)

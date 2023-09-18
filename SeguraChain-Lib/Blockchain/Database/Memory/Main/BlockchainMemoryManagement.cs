@@ -1526,6 +1526,17 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 #endif
                                                                                 ClassLog.WriteLine("Failed to update block transaction(s) confirmation(s) on the block height: " + blockObject.BlockHeight + ", the confirmation check task failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_TRANSACTION_CONFIRMATION, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
 
+
+                                                                                blockObject.BlockTransactionFullyConfirmed = false;
+                                                                                blockObject.BlockUnlockValid = false;
+                                                                                blockObject.BlockNetworkAmountConfirmations = 0;
+                                                                                blockObject.BlockSlowNetworkAmountConfirmations = 0;
+                                                                                blockObject.BlockLastHeightTransactionConfirmationDone = 0;
+                                                                                blockObject.BlockTotalTaskTransactionConfirmationDone = 0;
+                                                                                blockObject.BlockTransactionConfirmationCheckTaskDone = false;
+
+                                                                                await InsertOrUpdateBlockObjectToCache(blockObject, true, cancellation);
+
                                                                                 canceled = true;
                                                                                 break;
                                                                             }

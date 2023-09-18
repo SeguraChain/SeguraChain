@@ -525,7 +525,12 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
         public static bool DoCheckBlockTransactionConfirmation(ClassBlockObject blockObject, ClassBlockObject previousBlockObject)
         {
             if (!blockObject.IsConfirmedByNetwork)
+            {
+#if DEBUG
+                Debug.WriteLine(blockObject.BlockHeight + " unconfirmed by the network.");
+#endif
                 return false;
+            }
 
             if (blockObject.BlockTransactionConfirmationCheckTaskDone)
                 return true;
@@ -533,18 +538,38 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
             if (blockObject.BlockHeight > BlockchainSetting.GenesisBlockHeight)
             {
                 if (previousBlockObject == null)
+                {
+#if DEBUG
+                    Debug.WriteLine(blockObject.BlockHeight + " the previous block is empty.");
+#endif
                     return false;
+                }
 
                 ClassBlockEnumCheckStatus blockCheckStatus = CheckBlockHash(blockObject.BlockHash, blockObject.BlockHeight, blockObject.BlockDifficulty, previousBlockObject.TotalTransaction, previousBlockObject.BlockFinalHashTransaction);
 
                 if (blockCheckStatus != ClassBlockEnumCheckStatus.VALID_BLOCK_HASH)
+                {
+#if DEBUG
+                    Debug.WriteLine(blockObject.BlockHeight + " the block hash is invalid.");
+#endif
                     return false;
+                }
 
                 if (blockObject.BlockStatus != ClassBlockEnumStatus.UNLOCKED)
+                {
+#if DEBUG
+                    Debug.WriteLine(blockObject.BlockHeight + " the block is locked.");
+#endif
                     return false;
+                }
 
                 if (blockObject.BlockMiningPowShareUnlockObject == null)
+                {
+#if DEBUG
+                    Debug.WriteLine(blockObject.BlockHeight + " the unlock mining share is empty.");
+#endif
                     return false;
+                }
 
                 string blockHash = blockObject.BlockHash;
                 BigInteger blockDifficulty = blockObject.BlockDifficulty;
@@ -552,7 +577,12 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
                 ClassMiningPoWaCShareObject miningPocShareObject = blockObject.BlockMiningPowShareUnlockObject;
 
                 if (walletAddressWinner != miningPocShareObject.WalletAddress)
+                {
+#if DEBUG
+                    Debug.WriteLine(blockObject.BlockHeight + " the wallet address of the share is different.");
+#endif
                     return false;
+                }
 
                 string previousFinalBlockTransactionHash = previousBlockObject.BlockFinalHashTransaction;
 
@@ -561,10 +591,20 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
                 var resultShare = ClassMiningPoWaCUtility.CheckPoWaCShare(BlockchainSetting.CurrentMiningPoWaCSettingObject(blockObject.BlockHeight), miningPocShareObject, blockObject.BlockHeight, blockHash, blockDifficulty, previousBlockTransactionCount, previousFinalBlockTransactionHash, out BigInteger jobDifficulty, out int jobCompabilityValue);
 
                 if (resultShare != ClassMiningPoWaCEnumStatus.VALID_UNLOCK_BLOCK_SHARE)
+                {
+#if DEBUG
+                    Debug.WriteLine(blockObject.BlockHeight + " the share not unlock the block.");
+#endif
                     return false;
+                }
 
                 if (jobDifficulty != miningPocShareObject.PoWaCShareDifficulty || jobCompabilityValue != previousBlockTransactionCount)
+                {
+#if DEBUG
+                    Debug.WriteLine(blockObject.BlockHeight + " the difficulty share and the job compatibility are invalid.");
+#endif
                     return false;
+                }
             }
             else
             {
