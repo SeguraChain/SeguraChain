@@ -143,12 +143,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
 
                                         case ClassPeerApiHandleIncomingConnectionEnum.INSERT_CLIENT_IP_EXCEPTION:
                                         case ClassPeerApiHandleIncomingConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
-                                            if (_firewallSettingObject.PeerEnableFirewallLink)
-                                                ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
+                                            {
+                                                if (_firewallSettingObject.PeerEnableFirewallLink)
+                                                    ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
+                                                clientApiTcp?.Kill(SocketShutdown.Both);
+                                            }
                                             break;
                                     }
 
-                                    clientApiTcp?.Kill(SocketShutdown.Both);
 
                                 }), 0, _cancellationTokenSourcePeerApiServer, clientApiTcp);
                             }

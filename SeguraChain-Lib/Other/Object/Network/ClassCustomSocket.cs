@@ -100,12 +100,12 @@ namespace SeguraChain_Lib.Other.Object.Network
 
         }
 
-        public async Task<bool> TrySendSplittedPacket(byte[] packetData, CancellationTokenSource cancellation, int packetPeerSplitSeperator)
+        public async Task<bool> TrySendSplittedPacket(byte[] packetData, CancellationTokenSource cancellation, int packetPeerSplitSeperator, bool singleWrite)
         {
 
             try
             {
-                return await _networkStream.TrySendSplittedPacket(packetData, cancellation, packetPeerSplitSeperator);
+                return await _networkStream.TrySendSplittedPacket(packetData, cancellation, packetPeerSplitSeperator, singleWrite);
             }
             catch (Exception error)
             {

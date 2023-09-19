@@ -1022,7 +1022,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
             bool sendResult;
 
-            sendResult = await _clientSocket.TrySendSplittedPacket(builder.ToString().GetByteArray(), _cancellationTokenApiClient, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize);
+            byte[] dataToSend = builder.ToString().GetByteArray();
+
+            sendResult = await _clientSocket.TrySendSplittedPacket(dataToSend, _cancellationTokenApiClient, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize, false);
 
             PacketResponseSent = sendResult;
 
