@@ -770,7 +770,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                                                 if (blockObjectInformationsToCheck.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
                                                                 {
-                                                                    blockObjectInformationsToCheck.BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
                                                                     ClassLog.WriteLine("The block height: " + blockHeightToCheck + " seems to be valid for other peers. Amount of confirmations: " + blockObjectInformationsToCheck.BlockNetworkAmountConfirmations + "/" + BlockchainSetting.BlockAmountNetworkConfirmations, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
 

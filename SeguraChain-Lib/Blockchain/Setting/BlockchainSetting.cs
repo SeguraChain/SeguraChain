@@ -178,7 +178,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int PeerMinValidPacket = 2; // Do not check packet signature after 2 valid packets sent.
         public const int PeerMaxWhiteListPacket = 1000; // Empty valid packet counter of a peer after to have ignoring packet signature 1000 of a peer.
         public const int PeerTaskSyncDelay = 10;
-        public const int MaxPeerPerSyncTask = 50;
+        public const int MaxPeerPerSyncTask = 5;
         public const int PeerMinAvailablePeerSync = 1; // The minimum of required peer(s).
         public const int PeerMaxAuthKeysExpire = 86_400 * 7; // Each week, internal auth keys of a peer are renewed.
         public const int PeerMaxPacketBufferSize = 8_192;
@@ -188,7 +188,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int PeerMaxPort = 65_535;
         public const int PeerMaxNodeConnectionPerIp = 1024;
         public const int PeerMaxSemaphoreConnectAwaitDelay = 5_000;
-        public const int PeerMaxRangeBlockToSyncPerRequest = 5; // Amount of blocks to sync per range.
+        public const int PeerMaxRangeBlockToSyncPerRequest = 500; // Amount of blocks to sync per range.
         public const int PeerMaxRangeTransactionToSyncPerRequest = 5; // Amount of transactions to sync per range.
         public const bool PeerEnableSyncTransactionByRange = true;
         public const bool PeerEnableSovereignPeerVote = false;

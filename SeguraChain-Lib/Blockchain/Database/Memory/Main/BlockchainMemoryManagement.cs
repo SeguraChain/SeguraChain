@@ -19,6 +19,7 @@ using SeguraChain_Lib.Blockchain.Wallet.Function;
 using SeguraChain_Lib.Blockchain.Wallet.Object.Blockchain;
 using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Other.Object.List;
+using SeguraChain_Lib.TaskManager;
 using SeguraChain_Lib.Utility;
 using System;
 using System.Collections.Generic;
@@ -527,7 +528,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         /// <returns></returns>
         public async Task<bool> InsertOrUpdateBlockObjectToCache(ClassBlockObject blockObject, bool keepAlive, CancellationTokenSource cancellation)
         {
-            blockObject.BlockLastChangeTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+            blockObject.BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
 
             if (!ContainsKey(blockObject.BlockHeight))
             {
