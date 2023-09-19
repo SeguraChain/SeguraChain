@@ -109,51 +109,33 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                 {
                     try
                     {
-                        while (!_tcpListenerPeerApi.Pending())
-                        {
-                            if (!_cancellationTokenSourcePeerApiServer.IsCancellationRequested)
-                                break;
-
-                            await Task.Delay(1);
-                        }
 
                         await _tcpListenerPeerApi.AcceptSocketAsync().ContinueWith(async clientTask =>
                         {
-                            ClassCustomSocket clientApiTcp = null;
+                            ClassCustomSocket clientApiTcp = new ClassCustomSocket(await clientTask, true);
 
-                            try
+                            await TaskManager.TaskManager.InsertTask(new Action(async () =>
                             {
-                                clientApiTcp = new ClassCustomSocket(await clientTask, true);
-                            }
-                            catch
-                            {
-                                // Ignored catch the exception once the task is cancelled.
-                            }
+                                string clientIp = clientApiTcp.GetIp;
 
-                            if (clientApiTcp != null)
-                            {
-                                await TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                ClassLog.WriteLine("Handle incoming connection from: " + clientIp + " to the API.", ClassEnumLogLevelType.LOG_LEVEL_API_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
+
+                                switch (await HandleIncomingConnection(clientIp, clientApiTcp))
                                 {
-                                    string clientIp = clientApiTcp.GetIp;
 
-                                    ClassLog.WriteLine("Handle incoming connection from: " + clientIp + " to the API.", ClassEnumLogLevelType.LOG_LEVEL_API_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
-
-                                    switch (await HandleIncomingConnection(clientIp, clientApiTcp))
-                                    {
-
-                                        case ClassPeerApiHandleIncomingConnectionEnum.INSERT_CLIENT_IP_EXCEPTION:
-                                        case ClassPeerApiHandleIncomingConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
-                                            {
-                                                if (_firewallSettingObject.PeerEnableFirewallLink)
-                                                    ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
-                                                clientApiTcp?.Kill(SocketShutdown.Both);
-                                            }
-                                            break;
-                                    }
+                                    case ClassPeerApiHandleIncomingConnectionEnum.INSERT_CLIENT_IP_EXCEPTION:
+                                    case ClassPeerApiHandleIncomingConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
+                                        {
+                                            if (_firewallSettingObject.PeerEnableFirewallLink)
+                                                ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
+                                            clientApiTcp?.Kill(SocketShutdown.Both);
+                                        }
+                                        break;
+                                }
 
 
-                                }), 0, _cancellationTokenSourcePeerApiServer, clientApiTcp);
-                            }
+                            }), 0, _cancellationTokenSourcePeerApiServer, clientApiTcp);
+
 
                         }, _cancellationTokenSourcePeerApiServer.Token);
                     }
