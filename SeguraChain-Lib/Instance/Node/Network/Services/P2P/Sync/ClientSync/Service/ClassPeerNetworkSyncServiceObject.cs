@@ -735,7 +735,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                                                                 if (!await ClassBlockUtility.CheckBlockDataObject(result[blockHeightToCheck], blockHeightToCheck, true, _cancellationTokenServiceSync))
                                                                                 {
-                                                                                    ClassLog.WriteLine("The block height: " + result[blockHeightToCheck].BlockHeight + " is invalid. Cancel sync and retry again.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                                                                                    ClassLog.WriteLine("The block height: " + blockHeightToCheck + " is invalid. Cancel sync and retry again.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                                                                                     cancelCheck = true;
                                                                                 }
                                                                                 else
@@ -1427,7 +1427,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 {
                     foreach (int peerId in listBlockObjectsReceived[blockHeight].Keys)
                     {
-                        if (!listBlockObjectsReceived.ContainsKey(blockHeight) || !listBlockObjectsReceived[blockHeight].ContainsKey(peerId))
+                        if (!listBlockObjectsReceived.ContainsKey(blockHeight) ||
+                            !listBlockObjectsReceived[blockHeight].ContainsKey(peerId) ||
+                            listBlockObjectsReceived[blockHeight][peerId] == null)
                             continue;
 
                         listBlockObjectsReceived[blockHeight][peerId].DeepCloneBlockObject(false, out ClassBlockObject blockObjectInformation);

@@ -3854,6 +3854,13 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                     }
                                 }
                             }
+#if DEBUG
+                            else
+                            {
+                                Debug.WriteLine("Can't insert: " + listBlockObjects.Count + " block object to the IO CACHE.");
+                                ClassLog.WriteLine("Can't insert: " + listBlockObjects.Count + " block object to the IO CACHE.", ClassEnumLogLevelType.LOG_LEVEL_MEMORY_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                            }
+#endif
                         }
                         break;
                 }
