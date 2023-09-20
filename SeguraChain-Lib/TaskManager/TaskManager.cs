@@ -84,7 +84,7 @@ namespace SeguraChain_Lib.TaskManager
 
             #region Auto update current timestamp in millisecond.
 
-            InsertTask(new Action(() =>
+            InsertTask(new Action(async () =>
             {
                 while (TaskManagerEnabled)
                 {
