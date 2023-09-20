@@ -90,6 +90,7 @@ namespace SeguraChain_Lib.TaskManager
                 {
                     CurrentTimestampMillisecond = ClassUtility.GetCurrentTimestampInMillisecond();
                     CurrentTimestampSecond = ClassUtility.GetCurrentTimestampInSecond();
+                    await Task.Delay(1);
                 }
             }), 0, _cancelTaskManager).Wait();
 
