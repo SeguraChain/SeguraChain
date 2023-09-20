@@ -1704,161 +1704,87 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                     _onSendingMemPoolTransaction = true;
                                     doBroadcast = true;
 
-                                    try
+                                    // Enable a task of broadcasting transactions from the MemPool, await after each sending a confirmation. 
+                                    await TaskManager.TaskManager.InsertTask(new Action(async () =>
                                     {
+                                        int countMemPoolTxSent = 0;
+                                        bool exceptionOnSending = false;
 
-                                        // Enable a task of broadcasting transactions from the MemPool, await after each sending a confirmation. 
-                                        await TaskManager.TaskManager.InsertTask(new Action(async () =>
+                                        using (DisposableList<ClassTransactionObject> listTransaction = await ClassMemPoolDatabase.GetMemPoolTxObjectFromBlockHeight(packetMemPoolAskMemPoolTransactionList.BlockHeight, true, _cancellationTokenListenPeerPacket))
                                         {
-                                            int countMemPoolTxSent = 0;
-                                            bool exceptionOnSending = false;
-
-                                            using (DisposableList<ClassTransactionObject> listTransaction = await ClassMemPoolDatabase.GetMemPoolTxObjectFromBlockHeight(packetMemPoolAskMemPoolTransactionList.BlockHeight, true, _cancellationTokenListenPeerPacket))
+                                            using (DisposableList<ClassTransactionObject> listToSend = new DisposableList<ClassTransactionObject>())
                                             {
-                                                using (DisposableList<ClassTransactionObject> listToSend = new DisposableList<ClassTransactionObject>())
-                                                {
 
-                                                    int currentProgress = 0;
+                                                int currentProgress = 0;
 
-                                                    if (_listMemPoolBroadcastBlockHeight.ContainsKey(packetMemPoolAskMemPoolTransactionList.BlockHeight))
-                                                        currentProgress = _listMemPoolBroadcastBlockHeight[packetMemPoolAskMemPoolTransactionList.BlockHeight];
-                                                    else
-                                                        _listMemPoolBroadcastBlockHeight.Add(packetMemPoolAskMemPoolTransactionList.BlockHeight, 0);
-
-                                                    if (currentProgress < packetMemPoolAskMemPoolTransactionList.TotalTransactionProgress)
-                                                        currentProgress = packetMemPoolAskMemPoolTransactionList.TotalTransactionProgress;
-
-                                                    foreach (ClassTransactionObject transactionObject in listTransaction.GetAll.Skip(currentProgress))
-                                                    {
-                                                        if (transactionObject != null)
-                                                        {
-                                                            if (transactionObject.TransactionType == ClassTransactionEnumType.NORMAL_TRANSACTION || transactionObject.TransactionType == ClassTransactionEnumType.TRANSFER_TRANSACTION)
-                                                            {
-                                                                listToSend.Add(transactionObject);
-
-                                                                if (listToSend.Count >= _peerNetworkSettingObject.PeerMaxRangeTransactionToSyncPerRequest)
-                                                                {
-                                                                    ClassPeerPacketSendMemPoolTransaction packetSendMemPoolTransaction = new ClassPeerPacketSendMemPoolTransaction()
-                                                                    {
-                                                                        ListTransactionObject = listToSend.GetList,
-                                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
-                                                                    };
-
-                                                                    _onWaitingMemPoolTransactionConfirmationReceived = true;
-
-                                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
-                                                                    {
-                                                                        PacketOrder = ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE,
-                                                                        PacketContent = ClassUtility.SerializeData(packetSendMemPoolTransaction),
-                                                                    }, peerObject, true))
-                                                                    {
-                                                                        exceptionOnSending = true;
-                                                                        ClientPeerConnectionStatus = false;
-                                                                        break;
-                                                                    }
-
-                                                                    if (!exceptionOnSending)
-                                                                    {
-                                                                        long timestampStartWaitingResponse = TaskManager.TaskManager.CurrentTimestampMillisecond;
-                                                                        while (_onWaitingMemPoolTransactionConfirmationReceived)
-                                                                        {
-                                                                            if (timestampStartWaitingResponse + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000) < TaskManager.TaskManager.CurrentTimestampMillisecond)
-                                                                                break;
-
-                                                                            if (!_cancellationTokenListenPeerPacket.IsCancellationRequested)
-                                                                                break;
-
-                                                                            await Task.Delay(100);
-                                                                        }
-
-                                                                        if (!_onWaitingMemPoolTransactionConfirmationReceived)
-                                                                            countMemPoolTxSent += listToSend.Count;
-                                                                        else
-                                                                        {
-                                                                            exceptionOnSending = true;
-                                                                            break;
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-
-                                                    if (!exceptionOnSending)
-                                                    {
-                                                        if (listToSend.Count > 0)
-                                                        {
-                                                            ClassPeerPacketSendMemPoolTransaction packetSendMemPoolTransaction = new ClassPeerPacketSendMemPoolTransaction()
-                                                            {
-                                                                ListTransactionObject = listToSend.GetList,
-                                                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
-                                                            };
-
-                                                            _onWaitingMemPoolTransactionConfirmationReceived = true;
-
-                                                            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
-                                                            {
-                                                                PacketOrder = ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE,
-                                                                PacketContent = ClassUtility.SerializeData(packetSendMemPoolTransaction),
-                                                            }, peerObject, true))
-                                                            {
-                                                                exceptionOnSending = true;
-                                                                ClientPeerConnectionStatus = false;
-                                                            }
-
-                                                            if (!exceptionOnSending)
-                                                            {
-                                                                long timestampStartWaitingResponse = TaskManager.TaskManager.CurrentTimestampMillisecond;
-                                                                while (_onWaitingMemPoolTransactionConfirmationReceived)
-                                                                {
-                                                                    if (timestampStartWaitingResponse + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000) < TaskManager.TaskManager.CurrentTimestampMillisecond)
-                                                                        break;
-
-                                                                    if (!_cancellationTokenListenPeerPacket.IsCancellationRequested)
-                                                                        break;
-
-                                                                    await Task.Delay(100);
-
-                                                                }
-
-                                                                if (!_onWaitingMemPoolTransactionConfirmationReceived)
-                                                                    countMemPoolTxSent += listToSend.Count;
-                                                                else
-                                                                    exceptionOnSending = true;
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-
-                                            if (exceptionOnSending)
-                                                ClientPeerConnectionStatus = false;
-                                            else
-                                            {
-                                                // End broadcast transaction. Packet not encrypted, no content.
-                                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
-                                                {
-                                                    PacketOrder = ClassPeerEnumPacketResponse.SEND_MEM_POOL_END_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE,
-                                                    PacketContent = string.Empty,
-                                                }, peerObject, false))
-                                                {
-                                                    ClientPeerConnectionStatus = false;
-                                                }
+                                                if (_listMemPoolBroadcastBlockHeight.ContainsKey(packetMemPoolAskMemPoolTransactionList.BlockHeight))
+                                                    currentProgress = _listMemPoolBroadcastBlockHeight[packetMemPoolAskMemPoolTransactionList.BlockHeight];
                                                 else
-                                                    _listMemPoolBroadcastBlockHeight[packetMemPoolAskMemPoolTransactionList.BlockHeight] += countMemPoolTxSent;
+                                                    _listMemPoolBroadcastBlockHeight.Add(packetMemPoolAskMemPoolTransactionList.BlockHeight, 0);
+
+                                                if (currentProgress < packetMemPoolAskMemPoolTransactionList.TotalTransactionProgress)
+                                                    currentProgress = packetMemPoolAskMemPoolTransactionList.TotalTransactionProgress;
+
+                                                foreach (ClassTransactionObject transactionObject in listTransaction.GetAll.Skip(currentProgress))
+                                                {
+                                                    if (transactionObject != null)
+                                                    {
+                                                        if (transactionObject.TransactionType == ClassTransactionEnumType.NORMAL_TRANSACTION || transactionObject.TransactionType == ClassTransactionEnumType.TRANSFER_TRANSACTION)
+                                                            listToSend.Add(transactionObject);
+                                                    }
+                                                }
+
+
+                                                if (listToSend.Count > 0)
+                                                {
+                                                    ClassLog.WriteLine("Sending " + listToSend.Count + " transaction MemPool to peer: " + _peerClientIp + "..", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
+
+                                                    ClassPeerPacketSendMemPoolTransaction packetSendMemPoolTransaction = new ClassPeerPacketSendMemPoolTransaction()
+                                                    {
+                                                        ListTransactionObject = listToSend.GetList,
+                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
+                                                    };
+
+                                                    _onWaitingMemPoolTransactionConfirmationReceived = true;
+
+                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                    {
+                                                        PacketOrder = ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE,
+                                                        PacketContent = ClassUtility.SerializeData(packetSendMemPoolTransaction),
+                                                    }, peerObject, true))
+                                                    {
+                                                        exceptionOnSending = true;
+                                                        ClientPeerConnectionStatus = false;
+                                                    }
+                                                    else ClassLog.WriteLine("Sending " + listToSend.Count + " transaction MemPool to peer: " + _peerClientIp + " successfully done.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
+
+                                                }
 
                                             }
+                                        }
 
-                                            _onSendingMemPoolTransaction = false;
+                                        if (exceptionOnSending)
+                                            ClientPeerConnectionStatus = false;
+                                        else
+                                        {
+                                            // End broadcast transaction. Packet not encrypted, no content.
+                                            if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                            {
+                                                PacketOrder = ClassPeerEnumPacketResponse.SEND_MEM_POOL_END_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE,
+                                                PacketContent = string.Empty,
+                                            }, peerObject, false))
+                                            {
+                                                ClientPeerConnectionStatus = false;
+                                            }
+                                            else
+                                                _listMemPoolBroadcastBlockHeight[packetMemPoolAskMemPoolTransactionList.BlockHeight] += countMemPoolTxSent;
 
-                                        }), 0, _cancellationTokenListenPeerPacket);
+                                        }
 
-                                    }
-                                    catch
-                                    {
-                                        // Ignored, catch the exception once broadcast task is cancelled.
                                         _onSendingMemPoolTransaction = false;
-                                    }
+
+                                    }), 0, _cancellationTokenListenPeerPacket);
+
 
                                     return ClassPeerNetworkClientServerHandlePacketEnumStatus.VALID_PACKET;
 
