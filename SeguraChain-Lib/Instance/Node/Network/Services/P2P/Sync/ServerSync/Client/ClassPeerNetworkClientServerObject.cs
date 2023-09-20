@@ -153,7 +153,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 }
 
                 if (!(_onHandlePacketResponse || _onSendingPacketResponse || (_enableMemPoolBroadcastClientMode && _onSendingMemPoolTransaction)))
-                { 
+                {
                     // If any packet are received after the delay, the function close the peer client connection to listen.
                     if (ClientPeerLastPacketReceived + _peerNetworkSettingObject.PeerServerPacketDelay < TaskManager.TaskManager.CurrentTimestampMillisecond)
                     {
@@ -283,7 +283,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                 {
                                     failed = true;
                                 }
-                                
+
 
                                 listPacketReceived[index].Used = true;
                                 listPacketReceived[index].Packet.Clear();
@@ -313,7 +313,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                             case ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET:
                                                 {
 #if DEBUG
-                                                    Debug.WriteLine("Invalid packet data from "+_peerClientIp+" | Order: "+packetSendObject.PacketOrder);
+                                                    Debug.WriteLine("Invalid packet data from " + _peerClientIp + " | Order: " + packetSendObject.PacketOrder);
 #endif
                                                     ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerClientIp, _peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject);
                                                 }
@@ -686,7 +686,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                             bool containRange = true;
 
-                            for(long i = packetSendAskBlockDataByRange.BlockHeightStart; i < packetSendAskBlockDataByRange.BlockHeightEnd; i++)
+                            for (long i = packetSendAskBlockDataByRange.BlockHeightStart; i < packetSendAskBlockDataByRange.BlockHeightEnd; i++)
                             {
                                 if (!ClassBlockchainStats.ContainsBlockHeight(i))
                                 {
@@ -1671,8 +1671,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                     case ClassPeerEnumPacketSend.ASK_MEM_POOL_TRANSACTION_BROADCAST_CONFIRMATION_RECEIVED:
                         {
 
-                            if (!ClassUtility.TryDeserialize(packetSendObject.PacketContent, out ClassPeerPacketAskMemPoolTransactionBroadcastConfirmationReceived packetAskMemPoolBroadcastTransactionConfirmationReceived, ObjectCreationHandling.Reuse) 
-                                || packetAskMemPoolBroadcastTransactionConfirmationReceived  == null)
+                            if (!ClassUtility.TryDeserialize(packetSendObject.PacketContent, out ClassPeerPacketAskMemPoolTransactionBroadcastConfirmationReceived packetAskMemPoolBroadcastTransactionConfirmationReceived, ObjectCreationHandling.Reuse)
+                                || packetAskMemPoolBroadcastTransactionConfirmationReceived == null)
                                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET;
 
                             if (!ClassUtility.CheckPacketTimestamp(packetAskMemPoolBroadcastTransactionConfirmationReceived.PacketTimestamp, _peerNetworkSettingObject.PeerMaxTimestampDelayPacket, _peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
@@ -1712,56 +1712,45 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                         using (DisposableList<ClassTransactionObject> listTransaction = await ClassMemPoolDatabase.GetMemPoolTxObjectFromBlockHeight(packetMemPoolAskMemPoolTransactionList.BlockHeight, true, _cancellationTokenListenPeerPacket))
                                         {
-                                            using (DisposableList<ClassTransactionObject> listToSend = new DisposableList<ClassTransactionObject>())
+
+                                            int currentProgress = 0;
+
+                                            if (_listMemPoolBroadcastBlockHeight.ContainsKey(packetMemPoolAskMemPoolTransactionList.BlockHeight))
+                                                currentProgress = _listMemPoolBroadcastBlockHeight[packetMemPoolAskMemPoolTransactionList.BlockHeight];
+                                            else
+                                                _listMemPoolBroadcastBlockHeight.Add(packetMemPoolAskMemPoolTransactionList.BlockHeight, 0);
+
+                                            if (currentProgress < packetMemPoolAskMemPoolTransactionList.TotalTransactionProgress)
+                                                currentProgress = packetMemPoolAskMemPoolTransactionList.TotalTransactionProgress;
+
+
+                                            if (listTransaction.Count > 0)
                                             {
+                                                ClassLog.WriteLine("Sending " + listTransaction.Count + " transaction MemPool to peer: " + _peerClientIp + "..", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
 
-                                                int currentProgress = 0;
-
-                                                if (_listMemPoolBroadcastBlockHeight.ContainsKey(packetMemPoolAskMemPoolTransactionList.BlockHeight))
-                                                    currentProgress = _listMemPoolBroadcastBlockHeight[packetMemPoolAskMemPoolTransactionList.BlockHeight];
-                                                else
-                                                    _listMemPoolBroadcastBlockHeight.Add(packetMemPoolAskMemPoolTransactionList.BlockHeight, 0);
-
-                                                if (currentProgress < packetMemPoolAskMemPoolTransactionList.TotalTransactionProgress)
-                                                    currentProgress = packetMemPoolAskMemPoolTransactionList.TotalTransactionProgress;
-
-                                                foreach (ClassTransactionObject transactionObject in listTransaction.GetAll.Skip(currentProgress))
+                                                ClassPeerPacketSendMemPoolTransaction packetSendMemPoolTransaction = new ClassPeerPacketSendMemPoolTransaction()
                                                 {
-                                                    if (transactionObject != null)
-                                                    {
-                                                        if (transactionObject.TransactionType == ClassTransactionEnumType.NORMAL_TRANSACTION || transactionObject.TransactionType == ClassTransactionEnumType.TRANSFER_TRANSACTION)
-                                                            listToSend.Add(transactionObject);
-                                                    }
-                                                }
+                                                    ListTransactionObject = listTransaction.GetList,
+                                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
+                                                };
 
+                                                _onWaitingMemPoolTransactionConfirmationReceived = true;
 
-                                                if (listToSend.Count > 0)
+                                                if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                 {
-                                                    ClassLog.WriteLine("Sending " + listToSend.Count + " transaction MemPool to peer: " + _peerClientIp + "..", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
-
-                                                    ClassPeerPacketSendMemPoolTransaction packetSendMemPoolTransaction = new ClassPeerPacketSendMemPoolTransaction()
-                                                    {
-                                                        ListTransactionObject = listToSend.GetList,
-                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
-                                                    };
-
-                                                    _onWaitingMemPoolTransactionConfirmationReceived = true;
-
-                                                    if (!await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
-                                                    {
-                                                        PacketOrder = ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE,
-                                                        PacketContent = ClassUtility.SerializeData(packetSendMemPoolTransaction),
-                                                    }, peerObject, true))
-                                                    {
-                                                        exceptionOnSending = true;
-                                                        ClientPeerConnectionStatus = false;
-                                                    }
-                                                    else ClassLog.WriteLine("Sending " + listToSend.Count + " transaction MemPool to peer: " + _peerClientIp + " successfully done.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
-
+                                                    PacketOrder = ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE,
+                                                    PacketContent = ClassUtility.SerializeData(packetSendMemPoolTransaction),
+                                                }, peerObject, true))
+                                                {
+                                                    exceptionOnSending = true;
+                                                    ClientPeerConnectionStatus = false;
                                                 }
+                                                else ClassLog.WriteLine("Sending " + listTransaction.Count + " transaction MemPool to peer: " + _peerClientIp + " successfully done.", ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
 
                                             }
+
                                         }
+
 
                                         if (exceptionOnSending)
                                             ClientPeerConnectionStatus = false;
@@ -1980,8 +1969,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             packetSendObject.ClearPacketData();
 #endif
             if (decryptedPacketContent == null)
-                 return default;
-           
+                return default;
+
 
             string jsonContent = decryptedPacketContent.GetStringFromByteArrayUtf8();
 
@@ -2066,6 +2055,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
             return null;
         }
 
-#endregion
+        #endregion
     }
 }
