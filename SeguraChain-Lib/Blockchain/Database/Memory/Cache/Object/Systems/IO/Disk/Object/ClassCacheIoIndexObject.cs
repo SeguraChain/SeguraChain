@@ -519,7 +519,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
             {
                 useSemaphore = await _ioSemaphoreAccess.TryWaitAsync(cancellationIoCache);
 
-                if (!useSemaphore)
+                if (!useSemaphore || blockObject == null)
                     return false;
 
                 if (_ioStructureObjectsDictionary.ContainsKey(blockObject.BlockHeight))

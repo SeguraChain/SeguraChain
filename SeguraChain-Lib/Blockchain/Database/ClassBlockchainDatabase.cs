@@ -1370,6 +1370,9 @@ namespace SeguraChain_Lib.Blockchain.Database
         {
             if (BlockchainMemoryManagement.ContainsKey(blockHeight))
             {
+                if (BlockchainMemoryManagement[blockHeight, cancellation] == null)
+                    return false;
+
                 if (BlockchainMemoryManagement[blockHeight, cancellation].TimestampCreate <= timestampFound)
                 {
                     if (!BlockchainMemoryManagement.ContainsKey(newBlockHeight) || remakeBlockHeight)
