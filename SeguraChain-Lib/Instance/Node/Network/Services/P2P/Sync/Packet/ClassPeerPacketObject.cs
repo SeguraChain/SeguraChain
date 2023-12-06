@@ -43,7 +43,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
                     packetData = ClassUtility.DecompressLz4(packetData);
                     string[] splitPacketData = packetData.GetStringFromByteArrayUtf8().Split(new[] { "#" }, StringSplitOptions.RemoveEmptyEntries);
 
-
                     if (int.TryParse(splitPacketData[0], out int packetOrder) &&
                     long.TryParse(splitPacketData[6], out long peerLastTimestampSignatureWhitelist))
                     {
@@ -153,6 +152,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
                     packetData = ClassUtility.DecompressLz4(packetData);
                     splitPacketData = packetData.GetStringFromByteArrayUtf8().Split(new[] { "#" }, StringSplitOptions.RemoveEmptyEntries);
 
+                    /*
+#if DEBUG
+                    Debug.WriteLine("Packet data received: " + packetData.GetStringFromByteArrayUtf8());
+#endif
+                    */
 
                     if (int.TryParse(splitPacketData[0], out int packetOrder) &&
                         long.TryParse(splitPacketData[6], out long peerLastTimestampSignatureWhitelist))

@@ -68,13 +68,6 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
 
             blockHash = ClassUtility.GetHexStringFromByteArray(blockHashBytes).ToLower();
 
-            // Clear.
-            Array.Resize(ref blockHashBytes, 0);
-            Array.Resize(ref blockDifficultyBytes, 0);
-            Array.Resize(ref blockCountTransactionBytes, 0);
-            Array.Resize(ref blockFinalTransactionHashBytes, 0);
-            Array.Resize(ref previousWalletAddressWinnerBytes, 0);
-
             return true;
         }
 

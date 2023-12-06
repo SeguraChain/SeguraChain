@@ -528,46 +528,53 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         /// <returns></returns>
         public async Task<bool> InsertOrUpdateBlockObjectToCache(ClassBlockObject blockObject, bool keepAlive, CancellationTokenSource cancellation)
         {
-            if (blockObject == null)
-                return false;
-
-            blockObject.BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
-
-            if (!ContainsKey(blockObject.BlockHeight))
+            try
             {
-                _dictionaryBlockObjectMemory.Add(blockObject.BlockHeight, new BlockchainMemoryObject()
-                {
-                    Content = blockObject,
-                    ObjectCacheType = CacheBlockMemoryEnumState.IN_ACTIVE_MEMORY,
-                    ObjectIndexed = true,
-                    CacheUpdated = false
-                });
+                if (blockObject == null)
+                    return false;
 
-                foreach (var blockTransaction in blockObject.BlockTransactions.Values)
-                    await UpdateBlockTransactionCache(blockTransaction, cancellation);
-            }
-            else
-            {
-                // Update the active memory if the content of the block height target if this one is not empty.
-                if (_dictionaryBlockObjectMemory[blockObject.BlockHeight].Content != null ||
-                    keepAlive || blockObject.BlockHeight == BlockchainSetting.GenesisBlockHeight)
+                blockObject.BlockLastChangeTimestamp = TaskManager.TaskManager.CurrentTimestampMillisecond;
+
+                if (!ContainsKey(blockObject.BlockHeight))
                 {
-                    _dictionaryBlockObjectMemory[blockObject.BlockHeight].Content = blockObject;
-                    _dictionaryBlockObjectMemory[blockObject.BlockHeight].CacheUpdated = false;
-                    _dictionaryBlockObjectMemory[blockObject.BlockHeight].ObjectCacheType = CacheBlockMemoryEnumState.IN_ACTIVE_MEMORY;
+                    _dictionaryBlockObjectMemory.Add(blockObject.BlockHeight, new BlockchainMemoryObject()
+                    {
+                        Content = blockObject,
+                        ObjectCacheType = CacheBlockMemoryEnumState.IN_ACTIVE_MEMORY,
+                        ObjectIndexed = true,
+                        CacheUpdated = false
+                    });
 
                     foreach (var blockTransaction in blockObject.BlockTransactions.Values)
                         await UpdateBlockTransactionCache(blockTransaction, cancellation);
                 }
+                else
+                {
+                    // Update the active memory if the content of the block height target if this one is not empty.
+                    if (_dictionaryBlockObjectMemory[blockObject.BlockHeight].Content != null ||
+                        keepAlive || blockObject.BlockHeight == BlockchainSetting.GenesisBlockHeight)
+                    {
+                        _dictionaryBlockObjectMemory[blockObject.BlockHeight].Content = blockObject;
+                        _dictionaryBlockObjectMemory[blockObject.BlockHeight].CacheUpdated = false;
+                        _dictionaryBlockObjectMemory[blockObject.BlockHeight].ObjectCacheType = CacheBlockMemoryEnumState.IN_ACTIVE_MEMORY;
+
+                        foreach (var blockTransaction in blockObject.BlockTransactions.Values)
+                            await UpdateBlockTransactionCache(blockTransaction, cancellation);
+                    }
+                }
+
+                AddOrUpdateBlockMirrorObject(blockObject);
+
+                // Try to update or add the block data updated to the cache.
+                if (_blockchainDatabaseSetting.BlockchainCacheSetting.EnableCacheDatabase &&
+                    blockObject.BlockHeight > BlockchainSetting.GenesisBlockHeight)
+                    return await AddOrUpdateMemoryDataToCache(blockObject, keepAlive, cancellation);
+                else return true;
             }
-
-            AddOrUpdateBlockMirrorObject(blockObject);
-
-            // Try to update or add the block data updated to the cache.
-            if (_blockchainDatabaseSetting.BlockchainCacheSetting.EnableCacheDatabase &&
-                blockObject.BlockHeight > BlockchainSetting.GenesisBlockHeight)
-                return await AddOrUpdateMemoryDataToCache(blockObject, keepAlive, cancellation);
-            else return true;
+            catch
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -746,7 +753,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         /// </summary>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        public async Task<DisposableList<long>> GetListBlockNetworkUnconfirmed(CancellationTokenSource cancellation)
+        public async Task<DisposableList<long>> GetListBlockNetworkUnconfirmed(CancellationTokenSource cancellation, int totalBlockCount)
         {
             DisposableList<long> blockNetworkUnconfirmedList = new DisposableList<long>();
 
@@ -789,9 +796,12 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                     if (!found)
                         listBlockHeight.Add(blockHeight);
+
+                    if (blockNetworkUnconfirmedList.Count == totalBlockCount)
+                        break;
                 }
 
-                if (listBlockHeight.Count > 0)
+                if (listBlockHeight.Count > 0 && blockNetworkUnconfirmedList.Count < totalBlockCount)
                 {
                     using (var listBlockObject = await GetBlockInformationListByBlockHeightListTargetFromMemoryDataCache(listBlockHeight, cancellation))
                     {
@@ -1118,41 +1128,48 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             long blockHeightExpected = 0;
             int countBlockListed = 0;
 
-            for (long i = 0; i < blockHeightTarget; i++)
+            try
             {
-                if (cancellation.IsCancellationRequested)
-                    break;
-
-                if (enableMaxRange)
+                for (long i = 0; i < blockHeightTarget; i++)
                 {
-                    if (countBlockListed >= maxRange)
+                    if (cancellation.IsCancellationRequested)
                         break;
+
+                    if (enableMaxRange)
+                    {
+                        if (countBlockListed >= maxRange)
+                            break;
+                    }
+
+                    blockHeightExpected++;
+
+                    bool found = false;
+
+                    if (!(blockHeightExpected >= BlockchainSetting.GenesisBlockHeight && blockHeightExpected <= GetLastBlockHeight))
+                    {
+                        blockMiss.Add(blockHeightExpected);
+                        countBlockListed++;
+                        found = true;
+                    }
+
+                    if (found || ignoreLockedBlocks || !ContainsKey(blockHeightExpected))
+                        continue;
+
+                    ClassBlockObject blockObject = await GetBlockMirrorObject(blockHeightExpected, cancellation);
+
+                    if (blockObject == null)
+                        break;
+
+                    if (blockObject.BlockStatus == ClassBlockEnumStatus.LOCKED)
+                    {
+                        blockMiss.Add(blockHeightExpected);
+                        countBlockListed++;
+                    }
                 }
-
-                blockHeightExpected++;
-
-                bool found = false;
-
-                if (!(blockHeightExpected >= BlockchainSetting.GenesisBlockHeight && blockHeightExpected <= GetLastBlockHeight))
-                {
-                    blockMiss.Add(blockHeightExpected);
-                    countBlockListed++;
-                    found = true;
-                }
-
-                if (found || ignoreLockedBlocks || !ContainsKey(blockHeightExpected))
-                    continue;
-
-                ClassBlockObject blockObject = await GetBlockMirrorObject(blockHeightExpected, cancellation);
-
-                if (blockObject == null)
-                    break;
-
-                if (blockObject.BlockStatus == ClassBlockEnumStatus.LOCKED)
-                {
-                    blockMiss.Add(blockHeightExpected);
-                    countBlockListed++;
-                }
+            }
+            catch
+            {
+                blockMiss.Clear();
             }
 
             return blockMiss;

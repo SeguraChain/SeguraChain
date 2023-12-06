@@ -44,108 +44,115 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
         public static Dictionary<int, ClassPeerTargetObject> GetRandomListPeerTargetAlive(string peerServerIp,
             string peerOpenNatServerIp, string peerToExcept, Dictionary<int, ClassPeerTargetObject> previousListPeerSelected, ClassPeerNetworkSettingObject peerNetworkSetting, ClassPeerFirewallSettingObject peerFirewallSettingObject, CancellationTokenSource cancellation)
         {
-            if (previousListPeerSelected == null)
-                previousListPeerSelected = new Dictionary<int, ClassPeerTargetObject>();
-
-            Dictionary<int, ClassPeerTargetObject> newListSelected = new Dictionary<int, ClassPeerTargetObject>();
-
-
-            if (ClassPeerDatabase.DictionaryPeerDataObject.Count > 0)
+            try
             {
-                Dictionary<string, string> listPublicPeer = new Dictionary<string, string>(); // Peer ip | Peer unique id.
+                if (previousListPeerSelected == null)
+                    previousListPeerSelected = new Dictionary<int, ClassPeerTargetObject>();
 
-                foreach (string peerIp in ClassPeerDatabase.DictionaryPeerDataObject.Keys.ToArray())
+                Dictionary<int, ClassPeerTargetObject> newListSelected = new Dictionary<int, ClassPeerTargetObject>();
+
+
+                if (ClassPeerDatabase.DictionaryPeerDataObject.Count > 0)
                 {
-                    if (cancellation.IsCancellationRequested)
-                        break;
-                    
-                    if (peerIp != peerToExcept && peerIp != peerServerIp && peerIp != peerOpenNatServerIp)
+                    Dictionary<string, string> listPublicPeer = new Dictionary<string, string>(); // Peer ip | Peer unique id.
+
+                    foreach (string peerIp in ClassPeerDatabase.DictionaryPeerDataObject.Keys.ToArray())
                     {
-                        if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].Count > 0 && peerIp != peerToExcept)
+                        if (cancellation.IsCancellationRequested)
+                            break;
+
+                        if (peerIp != peerToExcept && peerIp != peerServerIp && peerIp != peerOpenNatServerIp)
                         {
-                            foreach (string peerUniqueId in ClassPeerDatabase.DictionaryPeerDataObject[peerIp].Keys.ToArray())
+                            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].Count > 0 && peerIp != peerToExcept)
                             {
-                                if (cancellation.IsCancellationRequested)
-                                    break;
-
-                                if (!peerUniqueId.IsNullOrEmpty(false, out _))
+                                foreach (string peerUniqueId in ClassPeerDatabase.DictionaryPeerDataObject[peerIp].Keys.ToArray())
                                 {
-                                    if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerIsPublic && !ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].OnUpdateAuthKeys)
+                                    if (cancellation.IsCancellationRequested)
+                                        break;
+
+                                    if (!peerUniqueId.IsNullOrEmpty(false, out _))
                                     {
-                                        if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus != ClassPeerEnumStatus.PEER_ALIVE)
-                                            continue;
-
-                                        if (!ClassPeerCheckManager.CheckPeerClientStatus(peerIp, peerUniqueId, false, peerNetworkSetting, peerFirewallSettingObject))
-                                            continue;
-
-                                        if (!ClassPeerCheckManager.CheckPeerClientInitializationStatus(peerIp, peerUniqueId))
-                                            continue;
-
-                                        if (!listPublicPeer.ContainsKey(peerIp))
+                                        if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerIsPublic && !ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].OnUpdateAuthKeys)
                                         {
-                                            if (previousListPeerSelected.Count(x => x.Value.PeerUniqueIdTarget == peerUniqueId) == 0)
-                                                listPublicPeer.Add(peerIp, peerUniqueId);
-                                        }
-                                        else
-                                        {
-                                            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastValidPacket > ClassPeerDatabase.DictionaryPeerDataObject[peerIp][listPublicPeer[peerIp]].PeerLastValidPacket)
-                                                listPublicPeer[peerIp] = peerUniqueId;
-                                        }
+                                            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus != ClassPeerEnumStatus.PEER_ALIVE)
+                                                continue;
 
+                                            if (!ClassPeerCheckManager.CheckPeerClientStatus(peerIp, peerUniqueId, false, peerNetworkSetting, peerFirewallSettingObject))
+                                                continue;
+
+                                            if (!ClassPeerCheckManager.CheckPeerClientInitializationStatus(peerIp, peerUniqueId))
+                                                continue;
+
+                                            if (!listPublicPeer.ContainsKey(peerIp))
+                                            {
+                                                if (previousListPeerSelected.Count(x => x.Value.PeerUniqueIdTarget == peerUniqueId) == 0)
+                                                    listPublicPeer.Add(peerIp, peerUniqueId);
+                                            }
+                                            else
+                                            {
+                                                if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerLastValidPacket > ClassPeerDatabase.DictionaryPeerDataObject[peerIp][listPublicPeer[peerIp]].PeerLastValidPacket)
+                                                    listPublicPeer[peerIp] = peerUniqueId;
+                                            }
+
+                                        }
                                     }
                                 }
                             }
                         }
+
+                        if (listPublicPeer.Count >= BlockchainSetting.MaxPeerPerSyncTask)
+                            break;
                     }
 
-                    if (listPublicPeer.Count >= BlockchainSetting.MaxPeerPerSyncTask)
-                        break;
-                }
 
-
-                int indexPeer = 0;
-                if (previousListPeerSelected.Count > 0)
-                {
-                    foreach (var peerIndex in previousListPeerSelected.Keys)
+                    int indexPeer = 0;
+                    if (previousListPeerSelected.Count > 0)
                     {
-                        if (cancellation.IsCancellationRequested)
-                            break;
-
-                        while (newListSelected.ContainsKey(indexPeer))
+                        foreach (var peerIndex in previousListPeerSelected.Keys)
                         {
                             if (cancellation.IsCancellationRequested)
                                 break;
 
+                            while (newListSelected.ContainsKey(indexPeer))
+                            {
+                                if (cancellation.IsCancellationRequested)
+                                    break;
+
+                                indexPeer++;
+                            }
+
+                            newListSelected.Add(indexPeer, previousListPeerSelected[peerIndex]);
                             indexPeer++;
                         }
-
-                        newListSelected.Add(indexPeer, previousListPeerSelected[peerIndex]);
-                        indexPeer++;
                     }
-                }
 
-                if (listPublicPeer.Count > 0)
-                {
-
-                    foreach (var peer in listPublicPeer)
+                    if (listPublicPeer.Count > 0)
                     {
-                        if (cancellation.IsCancellationRequested)
-                            break;
 
-                        while (newListSelected.ContainsKey(indexPeer))
-                            indexPeer++;
-
-                        newListSelected.Add(indexPeer, new ClassPeerTargetObject()
+                        foreach (var peer in listPublicPeer)
                         {
-                            PeerNetworkClientSyncObject = new ClassPeerNetworkClientSyncObject(peer.Key, ClassPeerDatabase.DictionaryPeerDataObject[peer.Key][peer.Value].PeerPort, peer.Value, peerNetworkSetting, peerFirewallSettingObject)
-                        });
+                            if (cancellation.IsCancellationRequested)
+                                break;
 
-                        indexPeer++;
+                            while (newListSelected.ContainsKey(indexPeer))
+                                indexPeer++;
+
+                            newListSelected.Add(indexPeer, new ClassPeerTargetObject()
+                            {
+                                PeerNetworkClientSyncObject = new ClassPeerNetworkClientSyncObject(peer.Key, ClassPeerDatabase.DictionaryPeerDataObject[peer.Key][peer.Value].PeerPort, peer.Value, peerNetworkSetting, peerFirewallSettingObject)
+                            });
+
+                            indexPeer++;
+                        }
                     }
                 }
-            }
 
-            return newListSelected;
+                return newListSelected;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         /// <summary>

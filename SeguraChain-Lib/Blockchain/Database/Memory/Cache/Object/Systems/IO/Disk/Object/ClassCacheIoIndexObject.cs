@@ -222,20 +222,28 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
                 foreach (long blockHeight in listBlockHeight)
                 {
-                    if (_ioStructureObjectsDictionary.ContainsKey(blockHeight))
+                    try
                     {
-                        if (!_ioStructureObjectsDictionary[blockHeight].IsNull)
+                        if (_ioStructureObjectsDictionary.ContainsKey(blockHeight))
                         {
-                            _ioStructureObjectsDictionary[blockHeight].BlockObject.DeepCloneBlockObject(false, out ClassBlockObject blockObjectCopy);
-                            listBlockInformation.Add(blockObjectCopy);
-                        }
-                        else
-                        {
-                            ClassBlockObject blockObject = await CallGetRetrieveDataAccess(blockHeight, false, true, false, cancellationIoCache);
+                            if (!_ioStructureObjectsDictionary[blockHeight].IsNull)
+                            {
+                                _ioStructureObjectsDictionary[blockHeight].BlockObject.DeepCloneBlockObject(false, out ClassBlockObject blockObjectCopy);
+                                listBlockInformation.Add(blockObjectCopy);
+                            }
+                            else
+                            {
+                                ClassBlockObject blockObject = await CallGetRetrieveDataAccess(blockHeight, false, true, false, cancellationIoCache);
 
-                            if (blockObject != null)
-                                listBlockInformation.Add(blockObject);
+                                if (blockObject != null)
+                                    listBlockInformation.Add(blockObject);
+                            }
                         }
+                    }
+                    catch
+                    {
+                        listBlockInformation.Clear();
+                        break;
                     }
                 }
             }

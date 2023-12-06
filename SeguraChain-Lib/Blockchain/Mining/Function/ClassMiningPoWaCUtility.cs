@@ -92,6 +92,9 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
                 }
             }
 
+            if (pocShareData == null)
+                return null;
+
             string pocShare = ClassUtility.GetHexStringFromByteArray(pocShareData);
 
             BigInteger pocShareDifficulty = CalculateDifficultyShare(pocShareData, blockDifficulty);
@@ -904,7 +907,7 @@ namespace SeguraChain_Lib.Blockchain.Mining.Function
             }
             catch
             {
-                // Ignored.
+                return null;
             }
 
             return pocShareData;

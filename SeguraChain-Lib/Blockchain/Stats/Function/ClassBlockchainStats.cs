@@ -172,9 +172,9 @@ namespace SeguraChain_Lib.Blockchain.Stats.Function
         /// Get the list of blocks unconfirmed.
         /// </summary>
         /// <returns></returns>
-        public static async Task<DisposableList<long>> GetListBlockNetworkUnconfirmed(CancellationTokenSource cancellation)
+        public static async Task<DisposableList<long>> GetListBlockNetworkUnconfirmed(CancellationTokenSource cancellation, int totalBlockCount)
         {
-            return await ClassBlockchainDatabase.BlockchainMemoryManagement.GetListBlockNetworkUnconfirmed(cancellation);
+            return await ClassBlockchainDatabase.BlockchainMemoryManagement.GetListBlockNetworkUnconfirmed(cancellation, totalBlockCount);
         }
 
         /// <summary>
