@@ -125,6 +125,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                     }
                                                     else
                                                         success = true;
+
+                                                    ClassLog.WriteLine("Run Sync MemPool Receive Mode transaction from Peer: " + peerIpTarget + " | Status: " + (success ? "success" : "failed") + ".", ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, success ? ConsoleColor.Green : ConsoleColor.Red);
                                                 }
 
                                                 // Build sender instance if the node is in public node.
@@ -142,11 +144,17 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                                                                                                                _peerNetworkSettingObject,
                                                                                                                                                _peerFirewallSettingObject));
 
+                                                        bool successRunClientBroadcast = true;
+
                                                         if (!await RunPeerNetworkClientBroadcastMemPool(peerIpTarget, peerUniqueIdTarget, true))
                                                         {
                                                             _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].StopTaskAndDisconnect();
                                                             _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget].Remove(peerUniqueIdTarget);
+                                                            successRunClientBroadcast = false;
                                                         }
+
+                                                        ClassLog.WriteLine("Run Sync Sending Mode MemPool transaction from Peer: " + peerIpTarget + " | Status: " + (successRunClientBroadcast ? "success" : "failed") + ".", ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, successRunClientBroadcast ? ConsoleColor.Green : ConsoleColor.Red);
+
                                                     }
                                                 }
                                             }

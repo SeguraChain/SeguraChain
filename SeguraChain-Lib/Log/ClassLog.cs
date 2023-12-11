@@ -26,6 +26,7 @@ namespace SeguraChain_Lib.Log
         LOG_LEVEL_PEER_TASK_TRANSACTION_CONFIRMATION = 9,
         LOG_LEVEL_MEMORY_MANAGER = 10,
         LOG_LEVEL_TASK_MANAGER = 11,
+        LOG_LEVEL_MEMPOOL_BROADCAST = 12
     }
 
     public enum ClassEnumLogWriteLevel
@@ -73,6 +74,7 @@ namespace SeguraChain_Lib.Log
         private const string LogPeerTaskTransactionConfirmationFileName = "peer-task-transaction-confirmation.log";
         private const string LogMemoryManagerFileName = "memory-manager.log";
         private const string LogTaskManagerFileName = "task-manager.log";
+        private const string LogMemPoolBroadcastFileName = "mempool-broadcast.log";
         private static readonly string LogFilePath = ClassUtility.ConvertPath(AppContext.BaseDirectory + LogDirectoryName);
 
         #endregion
@@ -90,6 +92,7 @@ namespace SeguraChain_Lib.Log
         private static FileStream _logPeerTaskTransactionConfirmationStream;
         private static FileStream _logCacheManagerStream;
         private static FileStream _logTaskManagerStream;
+        private static FileStream _logMemPoolBroadcastStream;
         private static StreamWriter _logGeneralStreamWriter;
         private static StreamWriter _logPeerTaskSyncStreamWriter;
         private static StreamWriter _logPeerServerStreamWriter;
@@ -101,6 +104,7 @@ namespace SeguraChain_Lib.Log
         private static StreamWriter _logPeerTaskTransactionConfirmationStreamWriter;
         private static StreamWriter _logCacheManagerStreamWriter;
         private static StreamWriter _logTaskManagerStreamWriter;
+        private static StreamWriter _logMemPoolBroadcastStreamWriter;
 
         #endregion
 
@@ -168,6 +172,9 @@ namespace SeguraChain_Lib.Log
 
                 _logTaskManagerStream = new FileStream(ClassUtility.ConvertPath(customLogFilePath + LogTaskManagerFileName), FileMode.Append, FileAccess.Write, FileShare.Read);
                 _logTaskManagerStreamWriter = new StreamWriter(_logTaskManagerStream) { AutoFlush = true };
+
+                _logMemPoolBroadcastStream = new FileStream(ClassUtility.ConvertPath(customLogFilePath + LogMemPoolBroadcastFileName), FileMode.Append, FileAccess.Write, FileShare.Read);
+                _logMemPoolBroadcastStreamWriter = new StreamWriter(_logMemPoolBroadcastStream) { AutoFlush = true };
             }
             catch (Exception error)
             {
@@ -312,6 +319,9 @@ namespace SeguraChain_Lib.Log
                                             break;
                                         case ClassEnumLogLevelType.LOG_LEVEL_TASK_MANAGER:
                                             _logPeerTaskTransactionConfirmationStreamWriter.WriteLine(logLine.LogContent);
+                                            break;
+                                        case ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST:
+                                            _logMemPoolBroadcastStreamWriter.WriteLine(logLine.LogContent);
                                             break;
                                     }
                                 }

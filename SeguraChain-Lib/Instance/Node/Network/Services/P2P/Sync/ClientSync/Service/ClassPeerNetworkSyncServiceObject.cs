@@ -695,7 +695,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                             foreach (long blockHeightToCheck in listBlockNetworkUnconfirmed.GetAll.OrderBy(x => x))
                                             {
-                                                TaskManager.TaskManager.InsertTask(async () =>
+                                                await TaskManager.TaskManager.InsertTask(async () =>
                                                 {
                                                     try
                                                     {
@@ -1430,8 +1430,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                     if (listBlockObjectsReceived.ContainsKey(blockObject.BlockHeight))
                                     {
                                         blockObject.BlockTransactionFullyConfirmed = false;
-                                        blockObject.BlockUnlockValid = true;
-                                        blockObject.BlockNetworkAmountConfirmations = BlockchainSetting.BlockAmountNetworkConfirmations;
+                                        blockObject.BlockUnlockValid = false;
+                                        blockObject.BlockNetworkAmountConfirmations = 0;
                                         blockObject.BlockSlowNetworkAmountConfirmations = 0;
                                         blockObject.BlockLastHeightTransactionConfirmationDone = 0;
                                         blockObject.BlockTotalTaskTransactionConfirmationDone = 0;
