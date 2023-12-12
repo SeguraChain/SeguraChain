@@ -30,6 +30,8 @@ namespace SeguraChain_Lib.Instance.Node
         public bool PeerToolStatus;
         public ClassNodeSettingObject PeerSettingObject;
 
+        public ClassPeerDatabase PeerDatabase;
+
         // Network objects.
         public ClassPeerNetworkSyncServerObject PeerNetworkServerObject;
         public ClassPeerNetworkSyncServiceObject PeerNetworkClientSyncObject;
@@ -55,6 +57,7 @@ namespace SeguraChain_Lib.Instance.Node
         public ClassNodeInstance()
         {
             _peerUpdateTask = new ClassPeerUpdateTask(this);
+            PeerDatabase = new ClassPeerDatabase();
             NodeInternalStatsReportObject = new ClassNodeInternalStatsReportObject();
         }
 
@@ -84,7 +87,7 @@ namespace SeguraChain_Lib.Instance.Node
 
             if (ClassSovereignUpdateDatabase.LoadSovereignUpdateData(encryptionKey, PeerSettingObject.PeerBlockchainDatabaseSettingObject.DataSetting.EnableCompressDatabase, PeerSettingObject.PeerBlockchainDatabaseSettingObject.DataSetting.EnableEncryptionDatabase))
             {
-                if (ClassPeerDatabase.LoadPeerDatabase(PeerSettingObject.PeerNetworkSettingObject))
+                if (PeerDatabase.LoadPeerDatabase(PeerSettingObject.PeerNetworkSettingObject))
                 {
 
                     if (ClassMemPoolDatabase.LoadMemPoolDatabase(encryptionKey, PeerSettingObject.PeerBlockchainDatabaseSettingObject))
@@ -126,7 +129,7 @@ namespace SeguraChain_Lib.Instance.Node
 
                             ClassLog.WriteLine("Start peer network server..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-                            PeerNetworkServerObject = new ClassPeerNetworkSyncServerObject(PeerOpenNatPublicIp, PeerSettingObject.PeerNetworkSettingObject, PeerSettingObject.PeerFirewallSettingObject);
+                            PeerNetworkServerObject = new ClassPeerNetworkSyncServerObject(PeerDatabase, PeerOpenNatPublicIp, PeerSettingObject.PeerNetworkSettingObject, PeerSettingObject.PeerFirewallSettingObject);
 
                             if (PeerNetworkServerObject.StartPeerServer())
                             {
@@ -136,7 +139,7 @@ namespace SeguraChain_Lib.Instance.Node
 
                                 ClassLog.WriteLine("Enable Peer Sync Network Task(s)..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-                                PeerNetworkClientSyncObject = new ClassPeerNetworkSyncServiceObject(PeerOpenNatPublicIp, PeerSettingObject.PeerNetworkSettingObject, PeerSettingObject.PeerFirewallSettingObject);
+                                PeerNetworkClientSyncObject = new ClassPeerNetworkSyncServiceObject(PeerDatabase, PeerOpenNatPublicIp, PeerSettingObject.PeerNetworkSettingObject, PeerSettingObject.PeerFirewallSettingObject);
                                 PeerNetworkClientSyncObject.EnablePeerSyncTask();
 
                                 ClassLog.WriteLine("Peer Sync Task(s) enabled.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
@@ -144,7 +147,7 @@ namespace SeguraChain_Lib.Instance.Node
                                 #endregion
 
                                 ClassLog.WriteLine("Start peer API server..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                                PeerApiServerObject = new ClassPeerApiServerServiceObject(PeerOpenNatPublicIp, PeerSettingObject.PeerNetworkSettingObject, PeerSettingObject.PeerFirewallSettingObject);
+                                PeerApiServerObject = new ClassPeerApiServerServiceObject(PeerDatabase, PeerOpenNatPublicIp, PeerSettingObject.PeerNetworkSettingObject, PeerSettingObject.PeerFirewallSettingObject);
 
                                 if (PeerApiServerObject.StartPeerApiServer())
                                 {
@@ -156,7 +159,7 @@ namespace SeguraChain_Lib.Instance.Node
 
                                     #endregion
 
-                                    PeerNetworkBroadcastInstanceMemPoolObject = new ClassPeerNetworkBroadcastInstanceMemPool(PeerSettingObject.PeerNetworkSettingObject, PeerSettingObject.PeerFirewallSettingObject, PeerOpenNatPublicIp);
+                                    PeerNetworkBroadcastInstanceMemPoolObject = new ClassPeerNetworkBroadcastInstanceMemPool(PeerDatabase, PeerSettingObject.PeerNetworkSettingObject, PeerSettingObject.PeerFirewallSettingObject, PeerOpenNatPublicIp);
                                     PeerNetworkBroadcastInstanceMemPoolObject.RunNetworkBroadcastMemPoolInstanceTask();
 
                                     return true;
@@ -293,7 +296,7 @@ namespace SeguraChain_Lib.Instance.Node
 
             ClassLog.WriteLine("Save peer list..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-            if (ClassPeerDatabase.SavePeers(string.Empty, true))
+            if (PeerDatabase.SavePeers(string.Empty, true))
                 ClassLog.WriteLine("Peer list saved.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
             else
                 ClassLog.WriteLine("Peer list saved failed.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);

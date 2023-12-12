@@ -1,4 +1,5 @@
-﻿using SeguraChain_Lib.Instance.Node.Network.Services.API.Client;
+﻿using SeguraChain_Lib.Instance.Node.Network.Database;
+using SeguraChain_Lib.Instance.Node.Network.Services.API.Client;
 using SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Enum;
 using SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Object;
 using SeguraChain_Lib.Instance.Node.Network.Services.Firewall.Manager;
@@ -25,6 +26,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
         private TcpListener _tcpListenerPeerApi;
         private CancellationTokenSource _cancellationTokenSourcePeerApiServer;
         private ConcurrentDictionary<string, ClassPeerApiIncomingConnectionObject> _listApiIncomingConnectionObject;
+        private ClassPeerDatabase _peerDatabase;
         private ClassPeerNetworkSettingObject _peerNetworkSettingObject;
         private ClassPeerFirewallSettingObject _firewallSettingObject;
         private string _peerIpOpenNatServer;
@@ -66,8 +68,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
         /// <param name="peerIpOpenNatServer">The OpenNAT IP Server.</param>
         /// <param name="peerNetworkSettingObject">The network setting object.</param>
         /// <param name="firewallSettingObject">The firewall setting object.</param>
-        public ClassPeerApiServerServiceObject(string peerIpOpenNatServer, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject firewallSettingObject)
+        public ClassPeerApiServerServiceObject(ClassPeerDatabase peerDatabase, string peerIpOpenNatServer, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject firewallSettingObject)
         {
+            _peerDatabase = peerDatabase;
             _peerIpOpenNatServer = peerIpOpenNatServer;
             _peerNetworkSettingObject = peerNetworkSettingObject;
             _firewallSettingObject = firewallSettingObject;
@@ -224,14 +227,14 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
 
                         if (_listApiIncomingConnectionObject[clientIp].ListApiClientObject.Count < _peerNetworkSettingObject.PeerMaxApiConnectionPerIp)
                         {
-                            if (!_listApiIncomingConnectionObject[clientIp].ListApiClientObject.TryAdd(randomId, new ClassPeerApiClientObject(clientApiTcp, clientIp, _peerNetworkSettingObject, _firewallSettingObject, _peerIpOpenNatServer, _cancellationTokenSourcePeerApiServer)))
+                            if (!_listApiIncomingConnectionObject[clientIp].ListApiClientObject.TryAdd(randomId, new ClassPeerApiClientObject(_peerDatabase, clientApiTcp, clientIp, _peerNetworkSettingObject, _firewallSettingObject, _peerIpOpenNatServer, _cancellationTokenSourcePeerApiServer)))
                                 return ClassPeerApiHandleIncomingConnectionEnum.HANDLE_CLIENT_EXCEPTION;
                         }
                         else
                         {
                             if (CleanUpInactiveConnectionFromClientIp(clientIp) > 0 || _listApiIncomingConnectionObject[clientIp].ListApiClientObject.Count < _peerNetworkSettingObject.PeerMaxApiConnectionPerIp)
                             {
-                                if (!_listApiIncomingConnectionObject[clientIp].ListApiClientObject.TryAdd(randomId, new ClassPeerApiClientObject(clientApiTcp, clientIp, _peerNetworkSettingObject, _firewallSettingObject, _peerIpOpenNatServer, _cancellationTokenSourcePeerApiServer)))
+                                if (!_listApiIncomingConnectionObject[clientIp].ListApiClientObject.TryAdd(randomId, new ClassPeerApiClientObject(_peerDatabase, clientApiTcp, clientIp, _peerNetworkSettingObject, _firewallSettingObject, _peerIpOpenNatServer, _cancellationTokenSourcePeerApiServer)))
                                     return ClassPeerApiHandleIncomingConnectionEnum.HANDLE_CLIENT_EXCEPTION;
                             }
                             else

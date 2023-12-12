@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Utilities.IO.Pem;
 using SeguraChain_Lib.Algorithm;
 using SeguraChain_Lib.Blockchain.Setting;
 using SeguraChain_Lib.Instance.Node.Network.Database.Object;
@@ -27,17 +28,18 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
 
     public class ClassPeerDatabase
     {
-        public static Dictionary<string, ConcurrentDictionary<string, ClassPeerObject>> DictionaryPeerDataObject;
-        private static string _peerDataDirectoryPath;
-        private static string _peerDataFilePath;
-        private static byte[] _peerDataStandardEncryptionKey;
-        private static byte[] _peerDataStandardEncryptionKeyIv;
+        private Dictionary<string, ConcurrentDictionary<string, ClassPeerObject>> DictionaryPeerDataObject;
+        private SemaphoreSlim _semaphoreAccess = new SemaphoreSlim(1, 1);
+        private string _peerDataDirectoryPath;
+        private string _peerDataFilePath;
+        private byte[] _peerDataStandardEncryptionKey;
+        private byte[] _peerDataStandardEncryptionKeyIv;
 
         /// <summary>
         /// Load peers saved.
         /// </summary>
         /// <returns></returns>
-        public static bool LoadPeerDatabase(ClassPeerNetworkSettingObject peerNetworkSetting)
+        public bool LoadPeerDatabase(ClassPeerNetworkSettingObject peerNetworkSetting)
         {
             DictionaryPeerDataObject = new Dictionary<string, ConcurrentDictionary<string, ClassPeerObject>>();
 
@@ -65,7 +67,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
                 {
                     string line;
                     int lineIndex = 1;
-                    while((line = peerReader.ReadLine()) != null)
+                    while ((line = peerReader.ReadLine()) != null)
                     {
                         try
                         {
@@ -124,9 +126,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
                                 }
                             }
                         }
-                        catch(Exception error)
+                        catch (Exception error)
                         {
-                            ClassLog.WriteLine("Error on reading peer line at index: "+lineIndex+" | Exception: "+error.Message, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
+                            ClassLog.WriteLine("Error on reading peer line at index: " + lineIndex + " | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
                         }
                         lineIndex++;
                     }
@@ -146,7 +148,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
         /// <param name="peerKey"></param>
         /// <param name="fullSave"></param>
         /// <returns></returns>
-        public static bool SavePeers(string peerKey, bool fullSave = false)
+        public bool SavePeers(string peerKey, bool fullSave = false)
         {
             if (_peerDataDirectoryPath.IsNullOrEmpty(false, out _) || _peerDataFilePath.IsNullOrEmpty(false, out _))
             {
@@ -232,215 +234,300 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
                 }
 
             }
-            catch(Exception error)
+            catch (Exception error)
             {
-                ClassLog.WriteLine("Error on saving peer(s). | Exception: "+error.Message, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
+                ClassLog.WriteLine("Error on saving peer(s). | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
                 return false;
             }
 
             return true;
         }
 
-        #region Manage Peers functions.
-
         /// <summary>
-        /// Return the port of a peer registered.
+        /// Get peer list from peer ip.
         /// </summary>
-        /// <param name="peerKey"></param>
-        /// <param name="peerUniqueId"></param>
+        /// <param name="peerIp"></param>
+        /// <param name="cancellation"></param>
         /// <returns></returns>
-        public static int GetPeerPort(string peerKey, string peerUniqueId)
+        public ConcurrentDictionary<string, ClassPeerObject> this[string peerIp, CancellationTokenSource cancellation]
         {
-            if (!peerKey.IsNullOrEmpty(false, out _))
-                return BlockchainSetting.PeerDefaultPort;
+            get
+            {
+                bool semaphore = false;
+                try
+                {
+                    semaphore = _semaphoreAccess.TryWait(cancellation);
 
-            if (!DictionaryPeerDataObject.ContainsKey(peerKey))
-                return BlockchainSetting.PeerDefaultPort;
+                    if (!semaphore)
+                        return null;
 
-            if (!DictionaryPeerDataObject[peerKey].ContainsKey(peerUniqueId))
-                return BlockchainSetting.PeerDefaultPort;
-
-            if (DictionaryPeerDataObject[peerKey][peerUniqueId].PeerPort < BlockchainSetting.PeerMinPort || DictionaryPeerDataObject[peerKey][peerUniqueId].PeerPort > BlockchainSetting.PeerMaxPort)
-                return BlockchainSetting.PeerDefaultPort;
-
-            return DictionaryPeerDataObject[peerKey][peerUniqueId].PeerPort;
+                    return DictionaryPeerDataObject[peerIp];
+                }
+                finally
+                {
+                    if (semaphore)
+                        _semaphoreAccess.Release();
+                }
+            }
         }
 
         /// <summary>
-        /// Input a peer to the database of peer if possible.
+        /// Get peer object from peer ip and peer unique id.
         /// </summary>
         /// <param name="peerIp"></param>
-        /// <param name="peerPort"></param>
         /// <param name="peerUniqueId"></param>
+        /// <param name="cancellation"></param>
         /// <returns></returns>
-        public static ClassPeerEnumInsertStatus InputPeer(string peerIp, int peerPort, string peerUniqueId)
+        public ClassPeerObject this[string peerIp, string peerUniqueId, CancellationTokenSource cancellation]
         {
-            if (!peerIp.IsNullOrEmpty(false, out _))
+            get
             {
-                if (peerPort >= BlockchainSetting.PeerMinPort && peerPort <= BlockchainSetting.PeerMaxPort)
+                bool semaphore = false;
+                try
                 {
+                    semaphore = _semaphoreAccess.TryWait(cancellation);
+
+                    if (!semaphore)
+                        return null;
+
                     if (!DictionaryPeerDataObject.ContainsKey(peerIp))
-                    {
-                        if (IPAddress.TryParse(peerIp, out _))
-                        {
-                            try
-                            {
-                                DictionaryPeerDataObject.Add(peerIp, new ConcurrentDictionary<string, ClassPeerObject>());
-                                if (DictionaryPeerDataObject[peerIp].TryAdd(peerUniqueId, new ClassPeerObject()
-                                {
-                                    PeerPort = peerPort,
-                                    PeerIp = peerIp,
-                                    PeerUniqueId = peerUniqueId,
-                                    PeerStatus = ClassPeerEnumStatus.PEER_ALIVE
-                                }))
-                                {
+                        return null;
 
-                                    ClassLog.WriteLine("Peer: " + peerIp + ":" + peerPort + " has been inserted successfully into the database list.", ClassEnumLogLevelType.LOG_LEVEL_PEER_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Magenta);
-                                    return ClassPeerEnumInsertStatus.PEER_INSERT_SUCCESS;
-                                }
-
-                                return ClassPeerEnumInsertStatus.PEER_ALREADY_EXIST;
-                            }
-                            catch
-                            {
-                                return ClassPeerEnumInsertStatus.EXCEPTION_INSERT_PEER;
-                            }
-                        }
-                        return ClassPeerEnumInsertStatus.INVALID_PEER_IP;
-                    }
-
-                    if (!DictionaryPeerDataObject[peerIp].ContainsKey(peerUniqueId))
-                    {
-                        if (DictionaryPeerDataObject[peerIp].TryAdd(peerUniqueId, new ClassPeerObject()
-                        {
-                            PeerPort = peerPort,
-                            PeerIp = peerIp,
-                            PeerUniqueId = peerUniqueId,
-                            PeerStatus = ClassPeerEnumStatus.PEER_ALIVE
-                        }))
-                        {
-
-                            ClassLog.WriteLine("Peer: " + peerIp + ":" + peerPort + " has been inserted successfully into the database list.", ClassEnumLogLevelType.LOG_LEVEL_PEER_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Magenta);
-                            return ClassPeerEnumInsertStatus.PEER_INSERT_SUCCESS;
-                        }
-                        return ClassPeerEnumInsertStatus.PEER_ALREADY_EXIST;
-
-                    }
-
-                    return ClassPeerEnumInsertStatus.PEER_ALREADY_EXIST;
+                    return DictionaryPeerDataObject[peerIp][peerUniqueId];
                 }
-                return ClassPeerEnumInsertStatus.INVALID_PEER_PORT;
-            }
-
-            return ClassPeerEnumInsertStatus.EMPTY_PEER_IP;
-        }
-
-        /// <summary>
-        /// Generate a peer list info.
-        /// </summary>
-        /// <param name="peerIpIgnored"></param>
-        /// <returns></returns>
-        public static Dictionary<string, Tuple<int, string>> GetPeerListInfo(string peerIpIgnored)
-        {
-            Dictionary<string, Tuple<int, string>> listPeerInfo = new Dictionary<string, Tuple<int, string>>();
-
-            using (DisposableList<string> listIpPeer = new DisposableList<string>(false, 0, DictionaryPeerDataObject.Keys.ToList()))
-            {
-
-                if (listIpPeer.Contains(peerIpIgnored))
-                    listIpPeer.Remove(peerIpIgnored);
-
-                foreach (var peerIp in listIpPeer.GetList)
+                finally
                 {
-                    if (!listPeerInfo.ContainsKey(peerIp))
-                    {
-                        if (DictionaryPeerDataObject[peerIp].Count > 0)
-                        {
-                            foreach (var peerUniqueId in DictionaryPeerDataObject[peerIp].Keys.ToArray())
-                            {
-                                if (DictionaryPeerDataObject[peerIp][peerUniqueId].PeerIsPublic)
-                                {
-                                    if (DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus == ClassPeerEnumStatus.PEER_ALIVE)
-                                    {
-                                        if (!listPeerInfo.ContainsKey(peerIp))
-                                            listPeerInfo.Add(peerIp, new Tuple<int, string>(DictionaryPeerDataObject[peerIp][peerUniqueId].PeerPort, peerUniqueId));
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    if (semaphore)
+                        _semaphoreAccess.Release();
                 }
-
-                // Clean up.
-                listIpPeer.Clear();
             }
-
-            return listPeerInfo;
         }
 
         /// <summary>
-        /// Return a collection of peer informations by a peer ip target.
+        /// Check if the peer ip exist.
         /// </summary>
         /// <param name="peerIp"></param>
+        /// <param name="cancellation"></param>
         /// <returns></returns>
-        public static ConcurrentDictionary<string,ClassPeerObject>  GetPeerCollectionObject(string peerIp)
+        public bool ContainsPeerIp(string peerIp, CancellationTokenSource cancellation)
         {
-            if (DictionaryPeerDataObject.ContainsKey(peerIp))
-                return DictionaryPeerDataObject[peerIp];
-
-            return null;
-        }
-
-        /// <summary>
-        /// Return a peer object.
-        /// </summary>
-        /// <param name="peerIp"></param>
-        /// <param name="peerUniqueId"></param>
-        /// <returns></returns>
-        public static ClassPeerObject GetPeerObject(string peerIp, string peerUniqueId)
-        {
-            if (ContainsPeer(peerIp, peerUniqueId))
-                return DictionaryPeerDataObject[peerIp][peerUniqueId];
-
-            return null;
-        }
-
-        /// <summary>
-        /// Retrieve the numeric public key of a peer.
-        /// </summary>
-        /// <param name="peerIp"></param>
-        /// <param name="peerUniqueId"></param>
-        /// <param name="numericPublicKey"></param>
-        /// <returns></returns>
-        public static bool GetPeerNumericPublicKey(string peerIp, string peerUniqueId, out string numericPublicKey)
-        {
-            numericPublicKey = null;
-            if (DictionaryPeerDataObject.ContainsKey(peerIp))
+            bool semaphore = false;
+            try
             {
-                numericPublicKey = DictionaryPeerDataObject[peerIp][peerUniqueId].PeerNumericPublicKey;
+                semaphore = _semaphoreAccess.TryWait(cancellation);
+
+                if (!semaphore)
+                    return false;
+
+                return DictionaryPeerDataObject.ContainsKey(peerIp);
+            }
+            finally
+            {
+                if (semaphore)
+                    _semaphoreAccess.Release();
+            }
+        }
+
+        /// <summary>
+        /// Check if the peer unique id exist.
+        /// </summary>
+        /// <param name="peerIp"></param>
+        /// <param name="peerUniqueId"></param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
+        public bool ContainsPeerUniqueId(string peerIp, string peerUniqueId, CancellationTokenSource cancellation)
+        {
+            bool semaphore = false;
+            try
+            {
+                semaphore = _semaphoreAccess.TryWait(cancellation);
+
+                if (!semaphore)
+                    return false;
+
+                return DictionaryPeerDataObject[peerIp].ContainsKey(peerUniqueId);
+            }
+            finally
+            {
+                if (semaphore)
+                    _semaphoreAccess.Release();
+            }
+        }
+
+        /// <summary>
+        /// Return the amount of peer ip.
+        /// </summary>
+        public int Count => DictionaryPeerDataObject.Count;
+
+        /// <summary>
+        /// Return the list of peer ip.
+        /// </summary>
+        public IEnumerable<string> Keys => DictionaryPeerDataObject.Keys.ToArray();
+
+        /// <summary>
+        /// Try to insert a new peer ip.
+        /// </summary>
+        /// <param name="peerIp"></param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
+        public bool TryAddPeerIp(string peerIp, CancellationTokenSource cancellation)
+        {
+            bool semaphore = false;
+            try
+            {
+                semaphore = _semaphoreAccess.TryWait(cancellation);
+
+                if (!semaphore)
+                    return false;
+
+                if (!DictionaryPeerDataObject.ContainsKey(peerIp))
+                    DictionaryPeerDataObject.Add(peerIp, new ConcurrentDictionary<string, ClassPeerObject>());
+
                 return true;
             }
-
-            return false;
+            finally
+            {
+                if (semaphore)
+                    _semaphoreAccess.Release();
+            }
         }
 
         /// <summary>
-        /// Check if the database of peer contains a peer ip followed by his peer unique id.
+        /// Try to insert a new peer.
         /// </summary>
         /// <param name="peerIp"></param>
         /// <param name="peerUniqueId"></param>
+        /// <param name="cancellation"></param>
         /// <returns></returns>
-        public static bool ContainsPeer(string peerIp, string peerUniqueId)
+        public bool TryAddPeer(string peerIp, int peerPort, string peerUniqueId, CancellationTokenSource cancellation)
         {
-            if (peerUniqueId.IsNullOrEmpty(false, out _))
-                return false;
+            bool semaphore = false;
+            try
+            {
+                semaphore = _semaphoreAccess.TryWait(cancellation);
 
-            if (!DictionaryPeerDataObject.ContainsKey(peerIp))
-                return false;
+                if (!semaphore)
+                    return false;
 
-            return DictionaryPeerDataObject[peerIp].ContainsKey(peerUniqueId);
+                if (!DictionaryPeerDataObject.ContainsKey(peerIp))
+                    DictionaryPeerDataObject.Add(peerIp, new ConcurrentDictionary<string, ClassPeerObject>());
+
+                if (DictionaryPeerDataObject[peerIp].ContainsKey(peerUniqueId))
+                    return false;
+
+                return DictionaryPeerDataObject[peerIp].TryAdd(peerUniqueId, new ClassPeerObject()
+                {
+                    PeerIp = peerIp,
+                    PeerPort = peerPort,
+                    PeerUniqueId = peerUniqueId
+                });
+            }
+            finally
+            {
+                if (semaphore)
+                    _semaphoreAccess.Release();
+            }
         }
 
-        #endregion
+        /// <summary>
+        /// Remove a peer from ip.
+        /// </summary>
+        /// <param name="peerIp"></param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
+        public bool RemovePeer(string peerIp, CancellationTokenSource cancellation)
+        {
+            bool semaphore = false;
+            try
+            {
+                semaphore = _semaphoreAccess.TryWait(cancellation);
+
+                if (!semaphore)
+                    return false;
+
+                if (!DictionaryPeerDataObject.ContainsKey(peerIp))
+                    return false;
+
+                DictionaryPeerDataObject[peerIp].Clear(); // Clear peers registered.
+
+                return DictionaryPeerDataObject.Remove(peerIp);
+            }
+            finally
+            {
+                if (semaphore)
+                    _semaphoreAccess.Release();
+            }
+        }
+
+        /// <summary>
+        /// Update a peer object.
+        /// </summary>
+        /// <param name="peerIp"></param>
+        /// <param name="peerUniqueId"></param>
+        /// <param name="peerObject"></param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
+        public bool UpdatePeer(string peerIp, string peerUniqueId, ClassPeerObject peerObject, CancellationTokenSource cancellation)
+        {
+            bool semaphore = false;
+            try
+            {
+                semaphore = _semaphoreAccess.TryWait(cancellation);
+
+                if (!semaphore)
+                    return false;
+
+                if (!DictionaryPeerDataObject.ContainsKey(peerIp) || !DictionaryPeerDataObject[peerIp].ContainsKey(peerUniqueId))
+                    return false;
+
+                DictionaryPeerDataObject[peerIp][peerUniqueId] = peerObject;
+
+                return true;
+            }
+            finally
+            {
+                if (semaphore)
+                    _semaphoreAccess.Release();
+            }
+        }
+
+        /// <summary>
+        /// Return a list of peer informations (peer ip's, peer ports, peer unique id's)
+        /// </summary>
+        /// <param name="peerClientIp"></param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
+        public Dictionary<string, Tuple<int, string>> GetPeerListInfo(string peerClientIp,  CancellationTokenSource cancellation)
+        {
+            Dictionary<string, Tuple<int, string>> peerClientListInfo = new Dictionary<string, Tuple<int, string>>();
+
+            bool semaphore = false;
+            try
+            {
+                semaphore = _semaphoreAccess.TryWait(cancellation);
+
+                if (!semaphore)
+                    return peerClientListInfo;
+
+                foreach (string peerIp in DictionaryPeerDataObject.Keys)
+                {
+                    if (peerIp == peerClientIp)
+                        continue;
+
+                    foreach (ClassPeerObject peerObject in DictionaryPeerDataObject[peerIp].Values)
+                    {
+                        if (!peerClientListInfo.ContainsKey(peerIp))
+                            peerClientListInfo.Add(peerIp, new Tuple<int, string>(peerObject.PeerPort, peerObject.PeerUniqueId));
+                    }
+                }
+
+                return peerClientListInfo;
+            }
+            finally
+            {
+                if (semaphore)
+                    _semaphoreAccess.Release();
+            }
+        }
     }
 }

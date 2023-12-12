@@ -17,6 +17,7 @@ using SeguraChain_Lib.Blockchain.Stats.Function;
 using SeguraChain_Lib.Blockchain.Transaction.Enum;
 using SeguraChain_Lib.Blockchain.Transaction.Object;
 using SeguraChain_Lib.Blockchain.Transaction.Utility;
+using SeguraChain_Lib.Instance.Node.Network.Database;
 using SeguraChain_Lib.Instance.Node.Network.Enum.API.Packet;
 using SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Packet;
 using SeguraChain_Lib.Instance.Node.Network.Services.API.Client.Enum;
@@ -37,6 +38,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 {
     public class ClassPeerApiClientObject : IDisposable
     {
+        private readonly ClassPeerDatabase _peerDatabase;
         private readonly ClassPeerNetworkSettingObject _peerNetworkSettingObject;
         private readonly ClassPeerFirewallSettingObject _peerFirewallSettingObject;
         private readonly string _apiServerOpenNatIp;
@@ -90,8 +92,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
         /// <param name="apiServerOpenNatIp"></param>
         /// <param name="cancellationTokenApiServer"></param>
         /// <param name="peerNetworkSettingObject"></param>
-        public ClassPeerApiClientObject(ClassCustomSocket clientSocket, string clientIp, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject, string apiServerOpenNatIp, CancellationTokenSource cancellationTokenApiServer)
+        public ClassPeerApiClientObject(ClassPeerDatabase peerDatabase, ClassCustomSocket clientSocket, string clientIp, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject, string apiServerOpenNatIp, CancellationTokenSource cancellationTokenApiServer)
         {
+            _peerDatabase = peerDatabase;
             _apiServerOpenNatIp = apiServerOpenNatIp;
             _clientSocket = clientSocket;
             _peerNetworkSettingObject = peerNetworkSettingObject;
@@ -696,7 +699,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                                 if (await ClassBlockchainStats.CheckTransaction(apiPeerPacketPushWalletTransaction.TransactionObject, null, false, null, _cancellationTokenApiClient, true) == ClassTransactionEnumStatus.VALID_TRANSACTION)
                                                 {
 
-                                                    using (DisposableDictionary<string, ClassTransactionEnumStatus> transactionStatus = await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(_peerNetworkSettingObject.ListenApiIp, _apiServerOpenNatIp, _clientIp, new List<ClassTransactionObject>() { apiPeerPacketPushWalletTransaction.TransactionObject }, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenApiClient, true))
+                                                    using (DisposableDictionary<string, ClassTransactionEnumStatus> transactionStatus = await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(_peerDatabase, _peerNetworkSettingObject.ListenApiIp, _apiServerOpenNatIp, _clientIp, new List<ClassTransactionObject>() { apiPeerPacketPushWalletTransaction.TransactionObject }, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenApiClient, true))
                                                     {
                                                         if (transactionStatus.Count > 0)
                                                         {
@@ -771,13 +774,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                                         // Unlock the current block if everything is okay with other peers.
                                                         case ClassMiningPoWaCEnumStatus.VALID_UNLOCK_BLOCK_SHARE:
                                                             {
-                                                                ClassBlockEnumMiningShareVoteStatus miningShareVoteStatus = await ClassBlockchainDatabase.UnlockCurrentBlockAsync(lastBlockHeight, apiPeerPacketSendMiningShare.MiningPowShareObject, false, _peerNetworkSettingObject.ListenIp, _apiServerOpenNatIp, false, false, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenApiClient);
+                                                                ClassBlockEnumMiningShareVoteStatus miningShareVoteStatus = await ClassBlockchainDatabase.UnlockCurrentBlockAsync(_peerDatabase, lastBlockHeight, apiPeerPacketSendMiningShare.MiningPowShareObject, false, _peerNetworkSettingObject.ListenIp, _apiServerOpenNatIp, false, false, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenApiClient);
 
                                                                 switch (miningShareVoteStatus)
                                                                 {
                                                                     case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ACCEPTED:
                                                                         miningPowShareStatus = ClassMiningPoWaCEnumStatus.VALID_UNLOCK_BLOCK_SHARE;
-                                                                        ClassPeerNetworkBroadcastFunction.BroadcastMiningShareAsync(_peerNetworkSettingObject.ListenIp, _apiServerOpenNatIp, _clientIp, apiPeerPacketSendMiningShare.MiningPowShareObject, _peerNetworkSettingObject, _peerFirewallSettingObject);
+                                                                        ClassPeerNetworkBroadcastFunction.BroadcastMiningShareAsync(_peerDatabase, _peerNetworkSettingObject.ListenIp, _apiServerOpenNatIp, _clientIp, apiPeerPacketSendMiningShare.MiningPowShareObject, _peerNetworkSettingObject, _peerFirewallSettingObject);
                                                                         break;
                                                                     case ClassBlockEnumMiningShareVoteStatus.MINING_SHARE_VOTE_ALREADY_FOUND:
                                                                         // That's can happen sometimes when the broadcast of the share to other nodes is very fast and return back the data of the block unlocked to the synced data before to retrieve back every votes done.

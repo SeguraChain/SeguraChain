@@ -146,7 +146,7 @@ namespace SeguraChain_Peer.CommandLine
                             {
                                 ClassLog.SimpleWriteLine("Coin name: " + BlockchainSetting.CoinName);
 
-                                ClassLog.SimpleWriteLine("Total Peer(s) registered: " + ClassPeerDatabase.DictionaryPeerDataObject.Count);
+                                ClassLog.SimpleWriteLine("Total Peer(s) registered: " + _nodeInstance.PeerDatabase.Count);
                                 ClassLog.SimpleWriteLine("Total Sovereign Update(s) synced: " + ClassSovereignUpdateDatabase.DictionarySovereignUpdateObject.Count);
                                 ClassLog.SimpleWriteLine("Total Peer(s) sync client active connection(s): " + _nodeInstance.PeerNetworkServerObject.GetAllTotalActiveConnection());
                                 ClassLog.SimpleWriteLine("Total Client API active connection(s): " + _nodeInstance.PeerApiServerObject.GetAllTotalActiveConnection());
@@ -224,25 +224,27 @@ namespace SeguraChain_Peer.CommandLine
                             break;
                         case ClassConsoleCommandLineEnumeration.ShowPeerListSeedRankCommand:
                             {
+                                CancellationTokenSource cancellation = new CancellationTokenSource();
+
                                 if (ClassSovereignUpdateDatabase.DictionarySortedSovereignUpdateList.ContainsKey(ClassSovereignEnumUpdateType.SOVEREIGN_SEED_NODE_GRANT_RANK_UPDATE))
                                 {
                                     ClassLog.SimpleWriteLine("Total numeric public key peer(s) with the Seed Node rank: " + ClassSovereignUpdateDatabase.DictionarySortedSovereignUpdateList[ClassSovereignEnumUpdateType.SOVEREIGN_SEED_NODE_GRANT_RANK_UPDATE].Count);
 
-                                    using (DisposableList<string> peerList = new DisposableList<string>(false, 0, ClassPeerDatabase.DictionaryPeerDataObject.Keys.ToList()))
+                                    using (DisposableList<string> peerList = new DisposableList<string>(false, 0, _nodeInstance.PeerDatabase.Keys.ToList()))
                                     {
                                         if (peerList.Count > 0)
                                         {
                                             foreach (var peerIp in peerList.GetList)
                                             {
-                                                if (ClassPeerDatabase.DictionaryPeerDataObject.ContainsKey(peerIp))
+                                                if (_nodeInstance.PeerDatabase.ContainsPeerIp(peerIp, cancellation))
                                                 {
-                                                    if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].Count > 0)
+                                                    if (_nodeInstance.PeerDatabase[peerIp, cancellation].Count > 0)
                                                     {
-                                                        foreach (string peerUniqueId in ClassPeerDatabase.DictionaryPeerDataObject[peerIp].Keys.ToArray())
+                                                        foreach (string peerUniqueId in _nodeInstance.PeerDatabase[peerIp, cancellation].Keys.ToArray())
                                                         {
-                                                            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerIsPublic)
+                                                            if (_nodeInstance.PeerDatabase[peerIp, peerUniqueId, cancellation].PeerIsPublic)
                                                             {
-                                                                if (ClassPeerCheckManager.PeerHasSeedRank(peerIp, peerUniqueId, out var numericPublicKey, out var timestampRankDelay))
+                                                                if (ClassPeerCheckManager.PeerHasSeedRank(_nodeInstance.PeerDatabase, peerIp, peerUniqueId, cancellation, out var numericPublicKey, out var timestampRankDelay))
                                                                     ClassLog.SimpleWriteLine("Peer: " + peerIp + " | Unique ID: " + peerUniqueId + " | Numeric Public Key: " + numericPublicKey + " | Rank valid until: " + ClassUtility.GetDatetimeFromTimestamp(timestampRankDelay));
                                                             }
                                                         }
@@ -260,26 +262,28 @@ namespace SeguraChain_Peer.CommandLine
                             break;
                         case ClassConsoleCommandLineEnumeration.ShowPeerListCommand:
                             {
-                                if (ClassPeerDatabase.DictionaryPeerDataObject.Count > 0)
+                                CancellationTokenSource cancellation = new CancellationTokenSource();
+
+                                if (_nodeInstance.PeerDatabase.Count > 0)
                                 {
-                                    using (DisposableList<string> peerList = new DisposableList<string>(false, 0, ClassPeerDatabase.DictionaryPeerDataObject.Keys.ToList()))
+                                    using (DisposableList<string> peerList = new DisposableList<string>(false, 0, _nodeInstance.PeerDatabase.Keys.ToList()))
                                     {
                                         if (peerList.Count > 0)
                                         {
                                             foreach (var peerIp in peerList.GetList)
                                             {
-                                                if (ClassPeerDatabase.DictionaryPeerDataObject.ContainsKey(peerIp))
+                                                if (_nodeInstance.PeerDatabase.ContainsPeerIp(peerIp, cancellation))
                                                 {
-                                                    if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp].Count > 0)
+                                                    if (_nodeInstance.PeerDatabase[peerIp, cancellation].Count > 0)
                                                     {
-                                                        foreach (string peerUniqueId in ClassPeerDatabase.DictionaryPeerDataObject[peerIp].Keys.ToArray())
+                                                        foreach (string peerUniqueId in _nodeInstance.PeerDatabase[peerIp, cancellation].Keys.ToArray())
                                                         {
-                                                            if (ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerIsPublic)
+                                                            if (_nodeInstance.PeerDatabase[peerIp, peerUniqueId, cancellation].PeerIsPublic)
                                                             {
-                                                                if (ClassPeerCheckManager.PeerHasSeedRank(peerIp, peerUniqueId, out _, out var timestampRankDelay))
-                                                                    ClassLog.SimpleWriteLine("Peer: " + peerIp + ":" + ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerPort + " | Status: " + ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus + " | Rank: Seed | Rank valid until: " + ClassUtility.GetDatetimeFromTimestamp(timestampRankDelay));
+                                                                if (ClassPeerCheckManager.PeerHasSeedRank(_nodeInstance.PeerDatabase, peerIp, peerUniqueId, cancellation, out _, out var timestampRankDelay))
+                                                                    ClassLog.SimpleWriteLine("Peer: " + peerIp + ":" + _nodeInstance.PeerDatabase[peerIp, peerUniqueId, cancellation].PeerPort + " | Status: " + _nodeInstance.PeerDatabase[peerIp, peerUniqueId, cancellation].PeerStatus + " | Rank: Seed | Rank valid until: " + ClassUtility.GetDatetimeFromTimestamp(timestampRankDelay));
                                                                 else
-                                                                    ClassLog.SimpleWriteLine("Peer: " + peerIp + ":" + ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerPort + " | Status: " + ClassPeerDatabase.DictionaryPeerDataObject[peerIp][peerUniqueId].PeerStatus + " | Rank: Normal.");
+                                                                    ClassLog.SimpleWriteLine("Peer: " + peerIp + ":" + _nodeInstance.PeerDatabase[peerIp, peerUniqueId, cancellation].PeerPort + " | Status: " + _nodeInstance.PeerDatabase[peerIp, peerUniqueId, cancellation].PeerStatus + " | Rank: Normal.");
                                                             }
                                                         }
                                                     }
@@ -332,6 +336,8 @@ namespace SeguraChain_Peer.CommandLine
                             break;
                         case ClassConsoleCommandLineEnumeration.RegisterPeerCommand:
                             {
+                                CancellationTokenSource cancellation = new CancellationTokenSource();
+
                                 if (splitCommandLine.Length >= 4)
                                 {
                                     if (!splitCommandLine[1].IsNullOrEmpty(false, out _))
@@ -344,12 +350,10 @@ namespace SeguraChain_Peer.CommandLine
                                                 {
                                                     if (splitCommandLine[3].Length == BlockchainSetting.PeerUniqueIdHashLength && ClassUtility.CheckHexStringFormat(splitCommandLine[3]))
                                                     {
-                                                        ClassPeerEnumInsertStatus insertStatus = ClassPeerDatabase.InputPeer(splitCommandLine[1], peerPort, splitCommandLine[3]);
-
-                                                        if (insertStatus == ClassPeerEnumInsertStatus.PEER_INSERT_SUCCESS)
+                                                        if (_nodeInstance.PeerDatabase.TryAddPeer(splitCommandLine[1], peerPort, splitCommandLine[3], cancellation))
                                                             ClassLog.SimpleWriteLine("Peer " + splitCommandLine[1] + ":" + peerPort + " successfully inserted.", ConsoleColor.Green);
                                                         else
-                                                            ClassLog.SimpleWriteLine("Insert peer failed. Result: " + insertStatus, ConsoleColor.Red);
+                                                            ClassLog.SimpleWriteLine("Insert peer failed.", ConsoleColor.Red);
                                                     }
                                                     else
                                                         ClassLog.SimpleWriteLine("Invalid Peer Unique ID argument.", ConsoleColor.Red);
@@ -441,7 +445,7 @@ namespace SeguraChain_Peer.CommandLine
                                             }
                                             if (!instanceRunning)
                                             { 
-                                                _soloMiningInstance = new ClassSoloMiningInstance(splitCommandLine[2], totalThreads, _nodeInstance.PeerSettingObject.PeerNetworkSettingObject.ListenIp, _nodeInstance.PeerOpenNatPublicIp, _nodeInstance.PeerSettingObject.PeerNetworkSettingObject, _nodeInstance.PeerSettingObject.PeerFirewallSettingObject);
+                                                _soloMiningInstance = new ClassSoloMiningInstance(_nodeInstance.PeerDatabase, splitCommandLine[2], totalThreads, _nodeInstance.PeerSettingObject.PeerNetworkSettingObject.ListenIp, _nodeInstance.PeerOpenNatPublicIp, _nodeInstance.PeerSettingObject.PeerNetworkSettingObject, _nodeInstance.PeerSettingObject.PeerFirewallSettingObject);
                                                 _soloMiningInstance.StartMining();
                                                 ClassLog.SimpleWriteLine("Solo mining started.", ConsoleColor.Green);
                                             }
