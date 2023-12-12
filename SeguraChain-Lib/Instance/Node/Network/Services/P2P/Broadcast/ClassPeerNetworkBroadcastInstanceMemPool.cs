@@ -831,6 +831,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                         packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(_peerDatabase, packetSendObject, _peerIpTarget, _peerUniqueIdTarget, true, _peerNetworkSettingObject, _peerCancellationToken);
 
+                        if (packetSendObject == null)
+                        {
+                            IsAlive = false;
+                            break;
+                        }
+
                         if (!await TrySendPacketToPeer(packetSendObject.GetPacketData(), _peerCancellationToken))
                         {
                             IsAlive = false;
@@ -841,7 +847,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                         ClassTranslatePacket<ClassPeerPacketSendMemPoolBlockHeightList> peerPacketMemPoolBlockHeightListTranslated = await TranslatePacketReceived<ClassPeerPacketSendMemPoolBlockHeightList>(peerPacketRecvMemPoolBlockHeightList, ClassPeerEnumPacketResponse.SEND_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE, _peerCancellationToken);
 
-                        if (!peerPacketMemPoolBlockHeightListTranslated.Status)
+                        if (peerPacketMemPoolBlockHeightListTranslated == null || !peerPacketMemPoolBlockHeightListTranslated.Status)
                         {
                             IsAlive = false;
                             break;

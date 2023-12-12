@@ -42,11 +42,11 @@ namespace SeguraChain_Test_Tool
             while (!exit)
             {
                 string fullLine = "";
-                for (int i = 0; i < Console.WindowWidth-1; i++)
+                for (int i = 0; i < Console.WindowWidth - 1; i++)
                     fullLine += "#";
 
                 string otherLine = "#";
-                for (int i = 0; i < ((Console.WindowWidth*96.0d)/100d); i++)
+                for (int i = 0; i < ((Console.WindowWidth * 96.0d) / 100d); i++)
                     otherLine += " ";
 
 
@@ -70,12 +70,12 @@ namespace SeguraChain_Test_Tool
                 string centerLine = "#";
 
                 double rest = Console.WindowWidth - (((Console.WindowWidth * 50.0d) / 100d) - (AppDomain.CurrentDomain.FriendlyName.Length / 2));
-                for (int i = 0; i < (((Console.WindowWidth * 50.0d) / 100d) - (AppDomain.CurrentDomain.FriendlyName.Length/2)); i++)
+                for (int i = 0; i < (((Console.WindowWidth * 50.0d) / 100d) - (AppDomain.CurrentDomain.FriendlyName.Length / 2)); i++)
                     centerLine += " ";
 
                 centerLine += AppDomain.CurrentDomain.FriendlyName;
 
-                for (int i = 0; i < (rest / 2) + ((AppDomain.CurrentDomain.FriendlyName.Length+1) % AppDomain.CurrentDomain.FriendlyName.Length); i++)
+                for (int i = 0; i < (rest / 2) + ((AppDomain.CurrentDomain.FriendlyName.Length + 1) % AppDomain.CurrentDomain.FriendlyName.Length); i++)
                     centerLine += " ";
 
                 centerLine += "#";
@@ -926,6 +926,13 @@ namespace SeguraChain_Test_Tool
 
                 #endregion
 
+                #region Default seed peer list.
+
+                ClassLog.SimpleWriteLine("Please write the default peer dns. Example: " + BlockchainSetting.BlockchainStaticSeedList);
+                string defaultPeerDns = Console.ReadLine();
+
+                #endregion
+
                 if (Directory.Exists(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryPath))
                     Directory.Delete(blockchainDatabaseSetting.BlockchainSetting.BlockchainDirectoryPath, true);
 
@@ -949,7 +956,7 @@ namespace SeguraChain_Test_Tool
                         if (ClassBlockUtility.GenerateBlockHash(blockHeight, blockDifficulty, 1, finalTransactionHash, BlockchainSetting.WalletAddressDev(0), out string blockHash))
                         {
 
-                            if (ClassBlockchainDatabase.BlockchainMemoryManagement.Add(blockHeight, new ClassBlockObject(blockHeight, blockDifficulty, blockHash, timestampCreate, ClassUtility.GetCurrentTimestampInSecond(), ClassBlockEnumStatus.UNLOCKED, true, false) { BlockNetworkAmountConfirmations = BlockchainSetting.BlockAmountNetworkConfirmations, BlockUnlockValid = true}, CacheBlockMemoryInsertEnumType.INSERT_IN_ACTIVE_MEMORY_OBJECT, new CancellationTokenSource()).Result)
+                            if (ClassBlockchainDatabase.BlockchainMemoryManagement.Add(blockHeight, new ClassBlockObject(blockHeight, blockDifficulty, blockHash, timestampCreate, ClassUtility.GetCurrentTimestampInSecond(), ClassBlockEnumStatus.UNLOCKED, true, false) { BlockNetworkAmountConfirmations = BlockchainSetting.BlockAmountNetworkConfirmations, BlockUnlockValid = true }, CacheBlockMemoryInsertEnumType.INSERT_IN_ACTIVE_MEMORY_OBJECT, new CancellationTokenSource()).Result)
                             {
                                 ClassBlockchainDatabase.BlockchainMemoryManagement[blockHeight, null].BlockTransactions.Add(blockTransaction.TransactionHash, new ClassBlockTransaction(0, blockTransaction)
                                 {
@@ -1106,7 +1113,8 @@ namespace SeguraChain_Test_Tool
 
                                         else if (blockchainLine.Contains("public const bool BlockchainDefaultDataFormatIsJson"))
                                             writer.WriteLine("\t\tpublic const bool BlockchainDefaultDataFormatIsJson = " + useJson.ToString().ToLower() + ";");
-
+                                        else if (blockchainData.Contains("public static readonly string BlockchainStaticSeedList = \"seed.xenophyte.com\";"))
+                                            writer.WriteLine("\t\tpublic static readonly string BlockchainStaticSeedList = \"" + defaultPeerDns + "\";");
                                         #endregion
                                         else
                                             writer.WriteLine(blockchainLine);

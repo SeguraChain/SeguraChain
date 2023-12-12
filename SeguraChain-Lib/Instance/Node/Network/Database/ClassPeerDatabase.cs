@@ -261,6 +261,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
                     if (!semaphore)
                         return null;
 
+                    if (!DictionaryPeerDataObject.ContainsKey(peerIp))
+                        return null;
+
                     return DictionaryPeerDataObject[peerIp];
                 }
                 finally
@@ -291,6 +294,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
                         return null;
 
                     if (!DictionaryPeerDataObject.ContainsKey(peerIp))
+                        return null;
+
+                    if (!DictionaryPeerDataObject[peerIp].ContainsKey(peerUniqueId))
                         return null;
 
                     return DictionaryPeerDataObject[peerIp][peerUniqueId];
@@ -343,6 +349,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
                 semaphore = _semaphoreAccess.TryWait(cancellation);
 
                 if (!semaphore)
+                    return false;
+
+
+                if (!DictionaryPeerDataObject.ContainsKey(peerIp))
                     return false;
 
                 return DictionaryPeerDataObject[peerIp].ContainsKey(peerUniqueId);
@@ -497,7 +507,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
         /// <param name="peerClientIp"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        public Dictionary<string, Tuple<int, string>> GetPeerListInfo(string peerClientIp,  CancellationTokenSource cancellation)
+        public Dictionary<string, Tuple<int, string>> GetPeerListInfo(string peerClientIp, CancellationTokenSource cancellation)
         {
             Dictionary<string, Tuple<int, string>> peerClientListInfo = new Dictionary<string, Tuple<int, string>>();
 

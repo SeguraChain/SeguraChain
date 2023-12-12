@@ -116,59 +116,71 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
         /// <returns></returns>
         public static async Task<ClassPeerPacketSendObject> BuildSignedPeerSendPacketObject(ClassPeerDatabase peerDatabase, ClassPeerPacketSendObject sendObject, string peerIp, string peerUniqueId, bool forceSignature, ClassPeerNetworkSettingObject peerNetworkSettingObject, CancellationTokenSource cancellation)
         {
-            if (peerDatabase.ContainsPeerUniqueId(peerIp, peerUniqueId, cancellation))
+            try
             {
-                byte[] packetContentEncrypted;
-
-                if (peerDatabase[peerIp, peerUniqueId, cancellation].GetInternCryptoStreamObject != null)
+                if (peerDatabase.ContainsPeerUniqueId(peerIp, peerUniqueId, cancellation))
                 {
-                    if (cancellation == null)
+                    ClassPeerObject peerObject = peerDatabase[peerIp, peerUniqueId, cancellation];
+
+                    if (peerObject == null)
+                        return null;
+
+                    byte[] packetContentEncrypted;
+
+                    if (peerObject.GetInternCryptoStreamObject != null)
                     {
-                        if (!ClassAes.EncryptionProcess(sendObject.PacketContent.GetByteArray(), peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKey, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKeyIv, out packetContentEncrypted))
-                            return null;
+                        if (cancellation == null)
+                        {
+                            if (!ClassAes.EncryptionProcess(sendObject.PacketContent.GetByteArray(), peerObject.PeerInternPacketEncryptionKey, peerObject.PeerInternPacketEncryptionKeyIv, out packetContentEncrypted))
+                                return null;
+                        }
+                        else
+                        {
+                            packetContentEncrypted = await peerObject.GetInternCryptoStreamObject.EncryptDataProcess(sendObject.PacketContent.GetByteArray(), cancellation);
+
+                            if (packetContentEncrypted == null)
+                            {
+                                if (!ClassAes.EncryptionProcess(sendObject.PacketContent.GetByteArray(), peerObject.PeerInternPacketEncryptionKey, peerObject.PeerInternPacketEncryptionKeyIv, out packetContentEncrypted))
+                                    return null;
+                            }
+                        }
                     }
                     else
                     {
-                        packetContentEncrypted = await peerDatabase[peerIp, peerUniqueId, cancellation].GetInternCryptoStreamObject.EncryptDataProcess(sendObject.PacketContent.GetByteArray(), cancellation);
-
-                        if (packetContentEncrypted == null)
-                        {
-                            if (!ClassAes.EncryptionProcess(sendObject.PacketContent.GetByteArray(), peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKey, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKeyIv, out packetContentEncrypted))
-                                return null;
-                        }
+                        if (!ClassAes.EncryptionProcess(sendObject.GetPacketData(), peerObject.PeerInternPacketEncryptionKey, peerObject.PeerInternPacketEncryptionKeyIv, out packetContentEncrypted))
+                            return null;
                     }
-                }
-                else
-                {
-                    if (!ClassAes.EncryptionProcess(sendObject.GetPacketData(), peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKey, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKeyIv, out packetContentEncrypted))
-                        return null;
-                }
 
 
-                sendObject.PacketContent = ClassUtility.GetHexStringFromByteArray(packetContentEncrypted);
-                sendObject.PacketHash = ClassUtility.GenerateSha256FromString(sendObject.PacketContent + sendObject.PacketOrder);
+                    sendObject.PacketContent = ClassUtility.GetHexStringFromByteArray(packetContentEncrypted);
+                    sendObject.PacketHash = ClassUtility.GenerateSha256FromString(sendObject.PacketContent + sendObject.PacketOrder);
 
-                if (peerDatabase[peerIp, cancellation].ContainsKey(peerUniqueId))
-                {
-                    if (ClassPeerCheckManager.CheckPeerClientWhitelistStatus(peerDatabase, peerIp, peerUniqueId, peerNetworkSettingObject, cancellation) || forceSignature)
+                    if (peerDatabase[peerIp, cancellation].ContainsKey(peerUniqueId))
                     {
-                        if (peerDatabase[peerIp, peerUniqueId, cancellation].GetClientCryptoStreamObject != null && cancellation != null)
-                            sendObject.PacketSignature = await peerDatabase[peerIp, peerUniqueId, cancellation].GetClientCryptoStreamObject.DoSignatureProcess(sendObject.PacketHash, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey, cancellation);
-                        else
+                        if (ClassPeerCheckManager.CheckPeerClientWhitelistStatus(peerDatabase, peerIp, peerUniqueId, peerNetworkSettingObject, cancellation) || forceSignature)
                         {
-                            var signer = SignerUtilities.GetSigner(BlockchainSetting.SignerNameNetwork);
+                            if (peerObject.GetClientCryptoStreamObject != null && cancellation != null)
+                                sendObject.PacketSignature = await peerObject.GetClientCryptoStreamObject.DoSignatureProcess(sendObject.PacketHash, peerObject.PeerInternPrivateKey, cancellation);
+                            else
+                            {
+                                var signer = SignerUtilities.GetSigner(BlockchainSetting.SignerNameNetwork);
 
-                            signer.Init(true, new ECPrivateKeyParameters(new BigInteger(ClassBase58.DecodeWithCheckSum(peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey, true)), ClassWalletUtility.ECDomain));
+                                signer.Init(true, new ECPrivateKeyParameters(new BigInteger(ClassBase58.DecodeWithCheckSum(peerObject.PeerInternPrivateKey, true)), ClassWalletUtility.ECDomain));
 
-                            signer.BlockUpdate(ClassUtility.GetByteArrayFromHexString(sendObject.PacketHash), 0, sendObject.PacketHash.Length / 2);
+                                signer.BlockUpdate(ClassUtility.GetByteArrayFromHexString(sendObject.PacketHash), 0, sendObject.PacketHash.Length / 2);
 
-                            sendObject.PacketSignature = Convert.ToBase64String(signer.GenerateSignature());
+                                sendObject.PacketSignature = Convert.ToBase64String(signer.GenerateSignature());
 
-                            // Reset.
-                            signer.Reset();
+                                // Reset.
+                                signer.Reset();
+                            }
                         }
                     }
                 }
+            }
+            catch
+            {
+                return null;
             }
             return sendObject;
         }

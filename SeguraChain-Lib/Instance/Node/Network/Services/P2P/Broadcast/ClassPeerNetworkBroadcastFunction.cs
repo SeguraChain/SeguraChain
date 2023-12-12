@@ -175,7 +175,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             {
                 foreach (string peerIp in peerDatabase.Keys.ToArray())
                 {
-                    if (peerIp == peerServerIp || peerIp == peerOpenNatServerIp || peerIp == peerToExcept)
+                    if (peerIp.IsNullOrEmpty(false, out _) || peerIp == peerServerIp || peerIp == peerOpenNatServerIp || peerIp == peerToExcept)
                         continue;
 
                     foreach (string peerUniqueId in peerDatabase[peerIp, cancellation].Keys.ToArray())
