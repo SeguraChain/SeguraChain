@@ -84,8 +84,8 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public static string WalletAddressDevPublicKey(long timestampSovereignUpdate) => SovereignUpdateGetter.GetLastDevWalletPublicKey(timestampSovereignUpdate);
         public static string WalletAddressDev(long timestampSovereignUpdate) => SovereignUpdateGetter.GetLastDevWalletAddress(timestampSovereignUpdate);
 
-		public const string DefaultWalletAddressDevPublicKey ="YMud5NVSPeK4mkzSAR1bHGVq8xeZeKv2L9iP8W3uD5qGrHUaTwHaKQdGjSxFZeLWUWdniM3Vrrh8k93crj99idMGkWR379j28t6EGfZ45nhx9nih5hG8n6EQQPLF2g4XRWyWsjoSueHLsuwwXKfeFiQrRHhQX14xRkD2SrEkVnZnVN3bbCQBeiYVeoX4hHzuoMqoUas9yryn2jALoZtFfUSb9Pg";
-		public const string DefaultWalletAddressDev ="5ek4k31bxQ1TZ2mrJfEnkAmnsaXvAd8F2mfDGe6DAFSKK24Z1BgppRkMbAKwkY3Dw4PFk4VRmnihE1NTaPBUdbp7d8RXZMHKJcvJ5PNUwU86RH";
+		public const string DefaultWalletAddressDevPublicKey ="YLcKX3tL4Q1PchGc4JHXt6oyAGK4qAG24jLTZyMAsjMw2WXbWXekwVy5d9wbUexG3gKcUvVsLvXigc4rJXmXmzdVqAyzZ5qC4i39hDJJCJkAyQm131v4w4cvwVyBbLcWrbNZr3k8xW6xLVjyNduNRErGnjDkM8ZKk6J3YaW4vLQFerppvvQyeNXzu2tiQNJDHj1vDyPi5t8gYnjtnkGsTFLmSDW";
+		public const string DefaultWalletAddressDev ="3pkVXPdEW94xkgXh73CH5pWDq5hsJ2gV9kdD15LKVZiazccGccM2f2fATZ9hK59U3gfm6NT5EkXuopp8NYaEHvUCgBA778zBwtJFAg79trr91o";
 
         #endregion
 
@@ -106,7 +106,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int BlockDifficultyPrecision = 100_000; // The precision put on the difficulty factor calculated.
         public const int GenesisBlockHeight = 1; // The genesis block height.
 		public static readonly BigInteger GenesisBlockAmount = 2_000_000 * CoinDecimal; // The genesis block amount reward has pre-mining.
-		public const string GenesisBlockFinalTransactionHash ="43ADDD4B78C8BC43E08EF8CEDAB48E1C19DC8DBBCA5EFD37E3953CFD1A69C447C11D941316A65173D5DAC62E5E32591B910F32D0395D7C79C7CC1531344A3EB9";
+		public const string GenesisBlockFinalTransactionHash ="791BB3DC69208073071C524E2628B8F9C8C216EBDF1DC9A622DCEB11D36970536304499DBAAC9EB72530888A4E37E49B2BD753DE3538842353E1AF002AED4504";
         public const int GenesisBlockTransactionCount = 1; // The maximum of transaction inserted on the genesis block.
         public const int BlockAmountNetworkConfirmations = 1; // The minimum amount of network checks on blocks to do with peers, before to enable the task of confirmations on the block.
         public const int BlockAmountSlowNetworkConfirmations = 1; // This amount increment another amount of network checks, once this one is reach, the network counter increment and this one return back to 0.
@@ -200,7 +200,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int PeerDefaultPort = 2400;
         public static readonly Dictionary<string, Dictionary<string, int>> BlockchainStaticPeerList = new Dictionary<string, Dictionary<string, int>>()
         {
-			{ "141.95.229.233", new Dictionary<string, int>() { { "D0BFF4A56F062828939E40E6DFD8A5EF58E28A10CB69E9E281C90802632D0345618CB5DA20736C2BAAC458A1EB5239F012621847B40F76C0CD10EA05CC4FD184", 2400} }},
+			{ "51.222.207.219", new Dictionary<string, int>() { { "D0BFF4A56F062828939E40E6DFD8A5EF58E28A10CB69E9E281C90802632D0345618CB5DA20736C2BAAC458A1EB5239F012621847B40F76C0CD10EA05CC4FD184", 2400} }},
         }; // This is a static peer list who can't be updated, it's usually used once a peer don't have any peer list saved.
 
         /// <summary>

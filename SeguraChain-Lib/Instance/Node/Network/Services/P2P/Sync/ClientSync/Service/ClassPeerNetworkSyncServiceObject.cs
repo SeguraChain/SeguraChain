@@ -742,8 +742,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                                             ClassLog.WriteLine("Start to check the block height: " + blockHeightToCheck + " with other peers..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
 
-
-                                                            ClassBlockObject blockObjectInformationsToCheck = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(blockHeightToCheck, true, true, _cancellationTokenServiceSync);
+                                                            ClassBlockObject blockObjectInformation = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockInformationDataStrategy(blockHeightToCheck, _cancellationTokenServiceSync);
+                                                            ClassBlockObject blockObjectInformationsToCheck = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(blockHeightToCheck, true, false, CancellationTokenSource.CreateLinkedTokenSource(new CancellationTokenSource(blockObjectInformation.TotalTransaction > 0 ? blockObjectInformation.TotalTransaction * 1000 : 1000).Token, _cancellationTokenServiceSync.Token));
 
 
 
@@ -902,7 +902,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                     }
                                                     totalTaskDone++;
 
-                                                }, 0, _cancellationTokenServiceSync, null, true);
+                                                }, 0, _cancellationTokenServiceSync);
 
                                                 if (cancelCheck)
                                                     break;
@@ -2251,7 +2251,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                 totalTaskDone++;
 
-                            }), 0, null);
+                            }), 0, _cancellationTokenServiceSync);
                         }
 
                         while (totalTaskDone < totalTaskToDo)
