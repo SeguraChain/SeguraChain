@@ -577,6 +577,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
                     return false;
                 }
 
+                /*
                 string previousFinalBlockTransactionHash = previousBlockObject.BlockFinalHashTransaction;
 
                 int previousBlockTransactionCount = previousBlockObject.TotalTransaction;
@@ -598,6 +599,7 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
 #endif
                     return false;
                 }
+                */
             }
             else
             {

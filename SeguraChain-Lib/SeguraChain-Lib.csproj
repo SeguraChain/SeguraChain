@@ -35,6 +35,7 @@
   
   <PropertyGroup>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AnalysisLevel>6.0-all</AnalysisLevel>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-Net48|AnyCPU'">

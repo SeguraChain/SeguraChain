@@ -1503,10 +1503,11 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                         {
 
                                                             // Retrieve by range blocks from the active memory if possible or by the cache system.
-                                                            foreach (ClassBlockObject blockObject in blockDataListRetrievedRead.GetList.Values)
+                                                            foreach (var block in blockDataListRetrievedRead.GetList)
                                                             {
-
-
+                                                                ClassBlockObject blockObject = block.Value;
+                                                                if (blockObject == null)
+                                                                    blockObject = _dictionaryBlockObjectMemory[block.Key] != null ? _dictionaryBlockObjectMemory[block.Key].Content : await GetBlockDataStrategy(block.Key, true, true, cancellation);
                                                                 if (blockObject != null)
                                                                 {
                                                                     long blockHeight = blockObject.BlockHeight;

@@ -6,12 +6,14 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFrameworks>net7.0-windows;net6.0-windows;net5.0-windows;net48</TargetFrameworks>
     <RootNamespace>SeguraChain_Desktop_Wallet</RootNamespace>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>logo-web-profil.ico</ApplicationIcon>
     <StartupObject>SeguraChain_Desktop_Wallet.Program</StartupObject>
+    <AnalysisLevel>6.0-all</AnalysisLevel>
+    <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
 	<PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0-windows'">
