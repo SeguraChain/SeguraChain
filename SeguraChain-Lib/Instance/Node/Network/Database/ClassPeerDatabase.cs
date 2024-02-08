@@ -343,6 +343,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database
         /// <returns></returns>
         public bool ContainsPeerUniqueId(string peerIp, string peerUniqueId, CancellationTokenSource cancellation)
         {
+
+            if (peerIp.IsNullOrEmpty(false, out _) || peerUniqueId.IsNullOrEmpty(false, out _))
+                return false;
+
             bool semaphore = false;
             try
             {

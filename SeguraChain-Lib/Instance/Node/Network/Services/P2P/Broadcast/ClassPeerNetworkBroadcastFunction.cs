@@ -52,7 +52,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 Dictionary<int, ClassPeerTargetObject> newListSelected = new Dictionary<int, ClassPeerTargetObject>();
 
 
-                if (peerDatabase.Count > 0)
+                if (peerDatabase?.Count > 0)
                 {
                     Dictionary<string, string> listPublicPeer = new Dictionary<string, string>(); // Peer ip | Peer unique id.
 
