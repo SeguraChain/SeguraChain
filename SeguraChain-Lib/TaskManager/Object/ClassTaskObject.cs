@@ -34,15 +34,18 @@ namespace SeguraChain_Lib.TaskManager.Object
         /// </summary>
         public void Run()
         {
-            try
+            Task.Run(() =>
             {
-                Task = Task.Factory.StartNew(_action, Cancellation.Token, TaskCreationOptions.DenyChildAttach, TaskScheduler.Current);
-            }
-            catch
-            {
-                // Catch the exception, once the task is canelled.
-            }
-            Started = true;
+                try
+                {
+                    Task = Task.Factory.StartNew(_action, Cancellation.Token, TaskCreationOptions.DenyChildAttach, TaskScheduler.Current);
+                }
+                catch
+                {
+                    // Catch the exception, once the task is canelled.
+                }
+                Started = true;
+            });
         }
     }
 }
