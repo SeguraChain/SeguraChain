@@ -980,11 +980,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                         break;
                     default:
                         {
-                            typeResponse = ClassPeerApiPacketResponseEnum.INVALID_PACKET;
-
                             if (!await SendApiResponse(BlockchainSetting.CoinName + " API."))
                                 return false;
-
                         }
                         break;
                 }
