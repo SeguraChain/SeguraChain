@@ -894,8 +894,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                     }
                                                     catch (Exception error)
                                                     {
+                                                        if (error is OperationCanceledException)
+                                                            totalTaskDone++;
+
                                                         ClassLog.WriteLine("Error to check the block height: " + blockHeightToCheck + " | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
                                                         cancelCheck = true;
+
                                                     }
 
                                                     totalTaskDone++;
