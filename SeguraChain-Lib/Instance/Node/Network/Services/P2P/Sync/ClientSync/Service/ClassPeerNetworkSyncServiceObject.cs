@@ -724,16 +724,23 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                         ClassLog.WriteLine("Increment " + listBlockNetworkUnconfirmed.Count + " block check network confirmations..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Magenta);
 
                                         bool cancelCheck = false;
-
-                                        var peerTargetList = GenerateOrUpdatePeerTargetList(null);
+                                        int totalTask = listBlockNetworkUnconfirmed.Count;
+                                        int totalTaskDone = 0;
 
                                         foreach (long blockHeightToCheck in listBlockNetworkUnconfirmed.GetAll.OrderBy(x => x))
                                         {
                                             if (cancelCheck)
                                                 break;
 
+                                            ClassBlockObject blockObject = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(blockHeightToCheck, false, true, _cancellationTokenServiceSync);
 
-                                            try
+                                            long blockSize = ClassBlockUtility.GetIoBlockSizeOnMemory(blockObject);
+
+                                            await TaskManager.TaskManager.InsertTask(async () =>
+                                            {
+                                                var peerTargetList = GenerateOrUpdatePeerTargetList(null);
+
+                                                try
                                                 {
 
                                                     ClassLog.WriteLine("Start to check the block height: " + blockHeightToCheck + " with other peers..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
@@ -890,11 +897,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                     cancelCheck = true;
                                                 }
 
-                                            
+                                                totalTaskDone++;
+
+                                                ClearPeerTargetList(peerTargetList, true);
+
+                                            }, blockSize > 0 ? blockSize : _peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000 , _cancellationTokenServiceSync);
                                         }
 
-                                        ClearPeerTargetList(peerTargetList, true);
-
+                                        while (totalTaskDone < totalTask)
+                                            await Task.Delay(1, _cancellationTokenServiceSync.Token);
 
                                         ClassLog.WriteLine("Increment " + listBlockNetworkUnconfirmed.Count + "  block check network confirmations done..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Cyan);
                                     }
