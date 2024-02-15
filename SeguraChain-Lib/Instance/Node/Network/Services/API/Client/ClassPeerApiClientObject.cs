@@ -118,7 +118,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
            await TaskManager.TaskManager.InsertTask(new Action(async () => await CheckApiClientConnection()), 0, _cancellationTokenApiClientCheck, _clientSocket);
 
-            await TaskManager.TaskManager.InsertTask(new Action(async () =>
+           await TaskManager.TaskManager.InsertTask(new Action(async () =>
             {
                 try
                 {
@@ -368,6 +368,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
         {
             try
             {
+
                 ClassPeerApiPacketResponseEnum typeResponse = ClassPeerApiPacketResponseEnum.OK;
 
                 ClassApiPeerPacketObjectSend apiPeerPacketObjectSend = TryDeserializedPacketContent<ClassApiPeerPacketObjectSend>(packetReceived);
@@ -390,7 +391,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
                                     if (apiPeerPacketAskBlockinformation != null)
                                     {
-                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketAskBlockinformation.PacketTimestamp, _peerNetworkSettingObject.PeerApiMaxPacketDelay, _peerNetworkSettingObject.PeerApiMaxEarlierPacketDelay))
+                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketAskBlockinformation.PacketTimestamp,  _peerNetworkSettingObject.PeerMaxTimestampDelayPacket, _peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
                                         {
                                             if (ClassBlockchainStats.ContainsBlockHeight(apiPeerPacketAskBlockinformation.BlockHeight))
                                             {
@@ -422,7 +423,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
                                     if (apiPeerPacketAskBlockTransaction != null)
                                     {
-                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketAskBlockTransaction.PacketTimestamp, _peerNetworkSettingObject.PeerApiMaxPacketDelay, _peerNetworkSettingObject.PeerApiMaxEarlierPacketDelay))
+                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketAskBlockTransaction.PacketTimestamp,  _peerNetworkSettingObject.PeerMaxTimestampDelayPacket, _peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
                                         {
                                             if (ClassBlockchainStats.ContainsBlockHeight(apiPeerPacketAskBlockTransaction.BlockHeight))
                                             {
@@ -453,7 +454,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
                                     if (apiPeerPacketAskGenerateBlockHeightStartTransactionConfirmation != null)
                                     {
-                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketAskGenerateBlockHeightStartTransactionConfirmation.PacketTimestamp, _peerNetworkSettingObject.PeerApiMaxPacketDelay, _peerNetworkSettingObject.PeerApiMaxEarlierPacketDelay))
+                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketAskGenerateBlockHeightStartTransactionConfirmation.PacketTimestamp,  _peerNetworkSettingObject.PeerMaxTimestampDelayPacket, _peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
                                         {
                                             if (ClassBlockchainStats.ContainsBlockHeight(apiPeerPacketAskGenerateBlockHeightStartTransactionConfirmation.LastBlockHeight) &&
                                                 ClassBlockchainStats.ContainsBlockHeight(apiPeerPacketAskGenerateBlockHeightStartTransactionConfirmation.LastBlockHeightUnlocked))
@@ -486,7 +487,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
                                     if (apiPeerPacketAskMemPoolTransaction != null)
                                     {
-                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketAskMemPoolTransaction.PacketTimestamp, _peerNetworkSettingObject.PeerApiMaxPacketDelay, _peerNetworkSettingObject.PeerApiMaxEarlierPacketDelay))
+                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketAskMemPoolTransaction.PacketTimestamp,  _peerNetworkSettingObject.PeerMaxTimestampDelayPacket, _peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
                                         {
                                             if (ClassBlockchainStats.ContainsBlockHeight(apiPeerPacketAskMemPoolTransaction.BlockHeight))
                                             {
@@ -518,7 +519,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
                                     if (apiPeerPacketAskFeeCostTransaction != null)
                                     {
-                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketAskFeeCostTransaction.PacketTimestamp, _peerNetworkSettingObject.PeerApiMaxPacketDelay, _peerNetworkSettingObject.PeerApiMaxEarlierPacketDelay))
+                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketAskFeeCostTransaction.PacketTimestamp,  _peerNetworkSettingObject.PeerMaxTimestampDelayPacket, _peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
                                         {
                                             if (ClassBlockchainStats.ContainsBlockHeight(apiPeerPacketAskFeeCostTransaction.LastBlockHeightUnlocked))
                                             {
@@ -560,7 +561,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
                                     if (apiPeerPacketAskMemPoolTxCountByBlockHeight != null)
                                     {
-                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketAskMemPoolTxCountByBlockHeight.PacketTimestamp, _peerNetworkSettingObject.PeerApiMaxPacketDelay, _peerNetworkSettingObject.PeerApiMaxEarlierPacketDelay))
+                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketAskMemPoolTxCountByBlockHeight.PacketTimestamp,  _peerNetworkSettingObject.PeerMaxTimestampDelayPacket, _peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
                                         {
                                             if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendMemPoolTransactionCount()
                                             {
@@ -586,7 +587,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
                                     if (apiPeerPacketAsMemPoolTransactionByRange != null)
                                     {
-                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketAsMemPoolTransactionByRange.PacketTimestamp, _peerNetworkSettingObject.PeerApiMaxPacketDelay, _peerNetworkSettingObject.PeerApiMaxEarlierPacketDelay))
+                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketAsMemPoolTransactionByRange.PacketTimestamp,  _peerNetworkSettingObject.PeerMaxTimestampDelayPacket, _peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
                                         {
                                             using (DisposableList<ClassTransactionObject> listMemPoolTransaction = await ClassMemPoolDatabase.GetMemPoolTxObjectFromBlockHeight(apiPeerPacketAsMemPoolTransactionByRange.BlockHeight, true, _cancellationTokenApiClient))
                                             {
@@ -615,7 +616,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
                                     if (apiPeerPacketAskBlockTransactionByRange != null)
                                     {
-                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketAskBlockTransactionByRange.PacketTimestamp, _peerNetworkSettingObject.PeerApiMaxPacketDelay, _peerNetworkSettingObject.PeerApiMaxEarlierPacketDelay))
+                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketAskBlockTransactionByRange.PacketTimestamp,  _peerNetworkSettingObject.PeerMaxTimestampDelayPacket, _peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
                                         {
                                             if (ClassBlockchainStats.ContainsBlockHeight(apiPeerPacketAskBlockTransactionByRange.BlockHeight))
                                             {
@@ -658,7 +659,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
                                     if (apiPeerPacketAskBlockTransactionByHashList != null)
                                     {
-                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketAskBlockTransactionByHashList.PacketTimestamp, _peerNetworkSettingObject.PeerApiMaxPacketDelay, _peerNetworkSettingObject.PeerApiMaxEarlierPacketDelay))
+                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketAskBlockTransactionByHashList.PacketTimestamp,  _peerNetworkSettingObject.PeerMaxTimestampDelayPacket, _peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
                                         {
                                             if (ClassBlockchainStats.ContainsBlockHeight(apiPeerPacketAskBlockTransactionByHashList.BlockHeight))
                                             {
@@ -692,7 +693,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
                                     if (apiPeerPacketPushWalletTransaction != null)
                                     {
-                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketPushWalletTransaction.PacketTimestamp, _peerNetworkSettingObject.PeerApiMaxPacketDelay, _peerNetworkSettingObject.PeerApiMaxEarlierPacketDelay))
+                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketPushWalletTransaction.PacketTimestamp,  _peerNetworkSettingObject.PeerMaxTimestampDelayPacket, _peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
                                         {
                                             if (apiPeerPacketPushWalletTransaction.TransactionObject != null)
                                             {
@@ -755,7 +756,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
                                     if (apiPeerPacketSendMiningShare != null)
                                     {
-                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketSendMiningShare.PacketTimestamp, _peerNetworkSettingObject.PeerApiMaxPacketDelay, _peerNetworkSettingObject.PeerApiMaxEarlierPacketDelay))
+                                        if (ClassUtility.CheckPacketTimestamp(apiPeerPacketSendMiningShare.PacketTimestamp,  _peerNetworkSettingObject.PeerMaxTimestampDelayPacket, _peerNetworkSettingObject.PeerMaxEarlierPacketDelay))
                                         {
                                             long lastBlockHeight = ClassBlockchainStats.GetLastBlockHeight();
 
@@ -1030,7 +1031,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 
             byte[] dataToSend = builder.ToString().GetByteArray();
 
-            sendResult = await _clientSocket.TrySendSplittedPacket(dataToSend, _cancellationTokenApiClient, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize, false);
+            sendResult = await _clientSocket.TrySendSplittedPacket(dataToSend, _cancellationTokenApiClient, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize, true);
 
             PacketResponseSent = sendResult;
 

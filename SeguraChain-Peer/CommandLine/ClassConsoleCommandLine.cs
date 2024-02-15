@@ -38,7 +38,6 @@ namespace SeguraChain_Peer.CommandLine
         public const string SetLogWriteLevelCommand = "set-log-write-level";
         public const string RegisterPeerCommand = "register-peer-command";
         public const string CloseActivePeerConnection = "close-active-peer-connection";
-        public const string CloseActiveApiConnection = "close-active-api-connection";
         public const string GetWalletBalance = "get-wallet-balance";
         public const string StartSoloMining = "start-solo-mining";
         public const string StopSoloMining = "stop-solo-mining";
@@ -118,7 +117,6 @@ namespace SeguraChain_Peer.CommandLine
 
                                 ClassLog.SimpleWriteLine(ClassConsoleCommandLineEnumeration.RegisterPeerCommand + " - Permit to register a peer. Usage example: " + ClassConsoleCommandLineEnumeration.RegisterPeerCommand + " peer_ip peer_port peer_unique_id_hash");
                                 ClassLog.SimpleWriteLine(ClassConsoleCommandLineEnumeration.CloseActivePeerConnection + " - Close every active peer(s) incoming connection(s).");
-                                ClassLog.SimpleWriteLine(ClassConsoleCommandLineEnumeration.CloseActiveApiConnection + " - Close every active API incoming connection(s).");
 
                                 ClassLog.SimpleWriteLine(ClassConsoleCommandLineEnumeration.GetWalletBalance + " - Get the wallet balance from a wallet address. Usage example: " + ClassConsoleCommandLineEnumeration.GetWalletBalance + " " + BlockchainSetting.WalletAddressDev(0));
                                 ClassLog.SimpleWriteLine(ClassConsoleCommandLineEnumeration.StartSoloMining + " - Execute a solo mining instance on your node. Usage example: " + ClassConsoleCommandLineEnumeration.StartSoloMining + " thread wallet_address -> " + ClassConsoleCommandLineEnumeration.StartSoloMining + " 4 " + BlockchainSetting.WalletAddressDev(0));
@@ -149,7 +147,6 @@ namespace SeguraChain_Peer.CommandLine
                                 ClassLog.SimpleWriteLine("Total Peer(s) registered: " + _nodeInstance.PeerDatabase.Count);
                                 ClassLog.SimpleWriteLine("Total Sovereign Update(s) synced: " + ClassSovereignUpdateDatabase.DictionarySovereignUpdateObject.Count);
                                 ClassLog.SimpleWriteLine("Total Peer(s) sync client active connection(s): " + _nodeInstance.PeerNetworkServerObject.GetAllTotalActiveConnection());
-                                ClassLog.SimpleWriteLine("Total Client API active connection(s): " + _nodeInstance.PeerApiServerObject.GetAllTotalActiveConnection());
 
                                 if (ClassBlockchainStats.BlockCount > 0)
                                 {
@@ -377,11 +374,6 @@ namespace SeguraChain_Peer.CommandLine
                         case ClassConsoleCommandLineEnumeration.CloseActivePeerConnection:
                             {
                                 ClassLog.SimpleWriteLine("Total Peer(s) incoming connection(s) closed:" + _nodeInstance.PeerNetworkServerObject.CleanUpAllIncomingConnection(), ConsoleColor.Cyan);
-                            }
-                            break;
-                        case ClassConsoleCommandLineEnumeration.CloseActiveApiConnection:
-                            {
-                                ClassLog.SimpleWriteLine("Total API incoming connection(s) closed:" + _nodeInstance.PeerApiServerObject.CleanUpAllIncomingConnection(), ConsoleColor.Cyan);
                             }
                             break;
                         case ClassConsoleCommandLineEnumeration.ClearConsoleCommand:

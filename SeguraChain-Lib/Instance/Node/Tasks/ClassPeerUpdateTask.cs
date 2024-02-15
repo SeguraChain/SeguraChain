@@ -78,7 +78,6 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
 #endif
 
             StartTaskConfirmBlockTransaction();
-            StartTaskCleanUpClosedApiClientConnection();
             StartTaskCleanUpClosedPeerClientConnection();
 
             if (_nodeInstance.PeerSettingObject.PeerFirewallSettingObject.PeerEnableFirewallLink)
@@ -218,36 +217,6 @@ namespace SeguraChain_Lib.Instance.Node.Tasks
 
         }
 
-        /// <summary>
-        /// Start a task who clean up all closed api client connection.
-        /// </summary>
-        private void StartTaskCleanUpClosedApiClientConnection()
-        {
-
-            TaskManager.TaskManager.InsertTask(new Action(async () =>
-            {
-                while (_nodeInstance.PeerToolStatus)
-                {
-
-                    try
-                    {
-                        if (_cancellationTokenSourceUpdateTask.IsCancellationRequested)
-                            break;
-
-                        long totalClosed = _nodeInstance.PeerApiServerObject.CleanUpAllIncomingClosedConnection(out int totalIp);
-
-                        if (totalClosed > 0)
-                            ClassLog.WriteLine("Total incoming dead api connection cleaned: " + totalClosed + " | Total IP: " + totalIp, ClassEnumLogLevelType.LOG_LEVEL_API_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, true);
-                    }
-                    catch
-                    {
-                        // Ignored.
-                    }
-                    await Task.Delay(CleanUpApiDeadConnectionInterval);
-                }
-            }), 0, _cancellationTokenSourceUpdateTask).Wait();
-
-        }
 
         /// <summary>
         /// Start a task whop clean up all closed peer client connection.
