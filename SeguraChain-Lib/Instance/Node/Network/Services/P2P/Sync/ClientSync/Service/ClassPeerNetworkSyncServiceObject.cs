@@ -906,7 +906,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                                     ClearPeerTargetList(peerTargetList, true);
 
-                                                }, blockSize > 0 ? blockSize : _peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000, _cancellationTokenServiceSync);
+                                                }, (blockSize > 0 ? blockSize : _peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000) * Environment.ProcessorCount, _cancellationTokenServiceSync);
                                             }
 
                                             while (totalTaskDone < totalTask)
@@ -950,45 +950,50 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 while (_peerSyncStatus)
                 {
-
-                    if (_peerDatabase.Count > 0)
+                    try
                     {
-                        peerTargetList = GenerateOrUpdatePeerTargetList(peerTargetList);
-
-                        // If true, run every peer check tasks functions.
-                        if (peerTargetList.Count > 0)
+                        if (_peerDatabase.Count > 0)
                         {
-                            ClassLog.WriteLine("Start sync to retrieve back new network informations..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                            peerTargetList = GenerateOrUpdatePeerTargetList(peerTargetList);
 
-
-                            Tuple<ClassPeerPacketSendNetworkInformation, float> packetNetworkInformationTmp = await StartAskNetworkInformationFromListPeerTarget(peerTargetList);
-
-                            if (packetNetworkInformationTmp?.Item1 != null)
+                            // If true, run every peer check tasks functions.
+                            if (peerTargetList.Count > 0)
                             {
-                                if (packetNetworkInformationTmp.Item2 > 0)
+                                ClassLog.WriteLine("Start sync to retrieve back new network informations..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+
+
+                                Tuple<ClassPeerPacketSendNetworkInformation, float> packetNetworkInformationTmp = await StartAskNetworkInformationFromListPeerTarget(peerTargetList);
+
+                                if (packetNetworkInformationTmp?.Item1 != null)
                                 {
-                                    ClassLog.WriteLine("Current network informations received successfully.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-
-                                    _packetNetworkInformation = new ClassPeerPacketSendNetworkInformation()
+                                    if (packetNetworkInformationTmp.Item2 > 0)
                                     {
-                                        CurrentBlockDifficulty = packetNetworkInformationTmp.Item1.CurrentBlockDifficulty,
-                                        CurrentBlockHash = packetNetworkInformationTmp.Item1.CurrentBlockHash,
-                                        TimestampBlockCreate = packetNetworkInformationTmp.Item1.TimestampBlockCreate,
-                                        LastBlockHeightUnlocked = packetNetworkInformationTmp.Item1.LastBlockHeightUnlocked,
-                                        PacketNumericHash = packetNetworkInformationTmp.Item1.PacketNumericHash,
-                                        CurrentBlockHeight = packetNetworkInformationTmp.Item1.CurrentBlockHeight,
-                                        PacketTimestamp = packetNetworkInformationTmp.Item1.PacketTimestamp,
-                                        PacketNumericSignature = packetNetworkInformationTmp.Item1.PacketNumericSignature,
-                                    };
-                                    ClassBlockchainStats.UpdateLastNetworkBlockHeight(packetNetworkInformationTmp.Item1.CurrentBlockHeight);
-                                }
-                            }
-                            else
-                                ClassLog.WriteLine("Current network informations not received. Retry the sync later..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                        }
-                        ClearPeerTargetList(peerTargetList, false);
-                    }
+                                        ClassLog.WriteLine("Current network informations received successfully.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
+                                        _packetNetworkInformation = new ClassPeerPacketSendNetworkInformation()
+                                        {
+                                            CurrentBlockDifficulty = packetNetworkInformationTmp.Item1.CurrentBlockDifficulty,
+                                            CurrentBlockHash = packetNetworkInformationTmp.Item1.CurrentBlockHash,
+                                            TimestampBlockCreate = packetNetworkInformationTmp.Item1.TimestampBlockCreate,
+                                            LastBlockHeightUnlocked = packetNetworkInformationTmp.Item1.LastBlockHeightUnlocked,
+                                            PacketNumericHash = packetNetworkInformationTmp.Item1.PacketNumericHash,
+                                            CurrentBlockHeight = packetNetworkInformationTmp.Item1.CurrentBlockHeight,
+                                            PacketTimestamp = packetNetworkInformationTmp.Item1.PacketTimestamp,
+                                            PacketNumericSignature = packetNetworkInformationTmp.Item1.PacketNumericSignature,
+                                        };
+                                        ClassBlockchainStats.UpdateLastNetworkBlockHeight(packetNetworkInformationTmp.Item1.CurrentBlockHeight);
+                                    }
+                                }
+                                else
+                                    ClassLog.WriteLine("Current network informations not received. Retry the sync later..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                            }
+                            ClearPeerTargetList(peerTargetList, false);
+                        }
+                    }
+                    catch(Exception error)
+                    {
+                        ClassLog.WriteLine("Error on syncing network informations. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                    }
                     await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                 }
 
