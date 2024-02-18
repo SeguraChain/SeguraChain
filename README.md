@@ -84,8 +84,6 @@ https://github.com/SeguraChain/SeguraChain/wiki/Compilation-Platform-Target
 <h3>Contact</h3>
 
 Discord: https://discord.gg/mvc7v9FDyJ
-
-Linkedln: https://www.linkedin.com/in/sam-segura/
   
 Every devs and potential users can send me their returns about the project, potential fix, issues and more.
   
