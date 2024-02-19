@@ -6,8 +6,10 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using SeguraChain_Lib.Instance.Node.Network.Database;
 using SeguraChain_Lib.Instance.Node.Network.Database.Manager;
+using SeguraChain_Lib.Instance.Node.Network.Enum.API.Packet;
 using SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Packet;
 using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast;
 using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet;
@@ -136,21 +138,30 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
             if (toSignAndEncrypt)
             {
                 packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(_peerDatabase, packetSendObject, PeerIpTarget, peerUniqueId, false, _peerNetworkSetting, _peerCancellationTokenMain);
-               
+
                 if (packetSendObject == null ||
                     packetSendObject.PacketContent.IsNullOrEmpty(false, out _) ||
                     packetSendObject.PacketHash.IsNullOrEmpty(false, out _) ||
                     packetSendObject.PacketSignature.IsNullOrEmpty(false, out _) ||
                     packetSendObject.PublicKey.IsNullOrEmpty(false, out _))
+                {
+#if DEBUG
+                    Debug.WriteLine("Failed, to sign packet data target" + PeerIpTarget + " | Type: " + System.Enum.GetName(typeof(ClassPeerEnumPacketSend), PacketResponseExpected));
+#endif
                     return false;
+                }
             }
 
 
             byte[] packetData = packetSendObject.GetPacketData();
 
             if (packetData == null)
+            {
+#if DEBUG
+                Debug.WriteLine("Failed, packet data empty target" + PeerIpTarget + " | Type: " + System.Enum.GetName(typeof(ClassPeerEnumPacketSend), packetSendObject.PacketOrder));
+#endif
                 return false;
-
+            }
             #region Init the client sync object.
 
             PacketResponseExpected = packetResponseExpected;
@@ -169,6 +180,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                 if (!await DoConnection())
                 {
+#if DEBUG
+                    Debug.WriteLine("Failed to connect to peer " + PeerIpTarget + ":" + PeerPortTarget);
+#endif
                     ClassLog.WriteLine("Failed to connect to peer " + PeerIpTarget + ":" + PeerPortTarget, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_LOWEST_PRIORITY, true);
                     ClassPeerCheckManager.InputPeerClientAttemptConnect(_peerDatabase, PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject, _peerCancellationTokenMain);
                     DisconnectFromTarget();
@@ -183,6 +197,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
             if (!await SendPeerPacket(packetData, _peerCancellationTokenMain))
             {
+#if DEBUG
+                Debug.WriteLine("Failed to send packet data to " + PeerIpTarget + ":" + PeerPortTarget);
+#endif
                 ClassPeerCheckManager.InputPeerClientNoPacketConnectionOpened(_peerDatabase, PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject, _peerCancellationTokenMain);
                 DisconnectFromTarget();
                 return false;
@@ -383,24 +400,22 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                         else
                         {
-                            PeerPacketReceivedStatus = peerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS;
-#if DEBUG
-                            if (!PeerPacketReceivedStatus)
+
+
+                            if (peerPacketReceived.PacketOrder != ClassPeerEnumPacketResponse.NOT_YET_SYNCED &&
+                                peerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS)
+                                PeerPacketReceivedStatus = peerPacketReceived.PacketOrder == ClassPeerEnumPacketResponse.SEND_MISSING_AUTH_KEYS;
+                            else
                             {
-                                switch (PacketResponseExpected)
+                                if (peerPacketReceived.PacketOrder != ClassPeerEnumPacketResponse.NOT_YET_SYNCED &&
+                                    PacketResponseExpected == ClassPeerEnumPacketResponse.SEND_BLOCK_DATA)
                                 {
-                                    case ClassPeerEnumPacketResponse.SEND_BLOCK_DATA:
-                                    case ClassPeerEnumPacketResponse.SEND_BLOCK_TRANSACTION_DATA_BY_RANGE:
-                                        {
-                                            Debug.WriteLine("The peer " + PeerIpTarget + ":" + PeerPortTarget + " is not enough synced yet.");
-                                        }
-                                        break;
-                                    default:
-                                        Debug.WriteLine("Failed, the packet order expected is invalid: " + peerPacketReceived.PacketOrder + "/" + PacketResponseExpected);
-                                        break;
+#if DEBUG
+                                    Debug.WriteLine("Invalid packet data received: " + JsonConvert.SerializeObject(peerPacketReceived));
+#endif
+                                    ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerDatabase, PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject, _peerCancellationTokenMain);
                                 }
                             }
-#endif
                         }
                         break;
                     }

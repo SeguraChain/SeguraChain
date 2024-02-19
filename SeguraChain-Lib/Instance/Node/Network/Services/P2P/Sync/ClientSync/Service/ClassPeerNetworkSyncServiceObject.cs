@@ -4,7 +4,6 @@ using SeguraChain_Lib.Blockchain.Block.Object.Structure;
 using SeguraChain_Lib.Blockchain.Database;
 using SeguraChain_Lib.Blockchain.Database.Memory.Main.Enum;
 using SeguraChain_Lib.Blockchain.MemPool.Database;
-using SeguraChain_Lib.Blockchain.Mining.Enum;
 using SeguraChain_Lib.Blockchain.Mining.Function;
 using SeguraChain_Lib.Blockchain.Setting;
 using SeguraChain_Lib.Blockchain.Sovereign.Database;
@@ -30,10 +29,10 @@ using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet.SubPacket.R
 using SeguraChain_Lib.Instance.Node.Setting.Object;
 using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Other.Object.List;
-using SeguraChain_Lib.TaskManager;
 using SeguraChain_Lib.Utility;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Net;
@@ -2969,8 +2968,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
         }
 
-
-
         /// <summary>
         /// Send a request to ask a block data target.
         /// </summary>
@@ -3063,7 +3060,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
             return new Tuple<bool, ClassPeerSyncPacketObjectReturned<ClassPeerPacketSendBlockData>>(false, null);
 
         }
-
 
         /// <summary>
         /// Send a request to ask a block transaction data target.

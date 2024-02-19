@@ -924,7 +924,8 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
                     totalMemoryUsage += sizeof(long);
 
                     // Wallet address who unlock the block.
-                    totalMemoryUsage += blockObject.BlockWalletAddressWinner.Length * sizeof(char);
+                    if (!blockObject.BlockWalletAddressWinner.IsNullOrEmpty(false, out _))
+                        totalMemoryUsage += blockObject.BlockWalletAddressWinner.Length * sizeof(char);
 
                     // Block last change timestamp.
                     totalMemoryUsage += sizeof(long);
@@ -956,7 +957,8 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
                     totalMemoryUsage += sizeof(long);
 
                     // Block final transaction hash.
-                    totalMemoryUsage += (blockObject.BlockFinalHashTransaction.Length * sizeof(char));
+                    if (!blockObject.BlockFinalHashTransaction.IsNullOrEmpty(false, out _))
+                        totalMemoryUsage += (blockObject.BlockFinalHashTransaction.Length * sizeof(char));
 
                     // Block transaction fully confirmed status.
                     totalMemoryUsage += sizeof(bool);

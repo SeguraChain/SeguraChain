@@ -145,11 +145,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                             }
                         }
                     }
-                    else
+                    else if (peerObject.PeerInternPacketEncryptionKey != null && peerObject.PeerInternPacketEncryptionKeyIv != null)
                     {
                         if (!ClassAes.EncryptionProcess(sendObject.GetPacketData(), peerObject.PeerInternPacketEncryptionKey, peerObject.PeerInternPacketEncryptionKeyIv, out packetContentEncrypted))
                             return null;
                     }
+                    else return null;
 
 
                     sendObject.PacketContent = ClassUtility.GetHexStringFromByteArray(packetContentEncrypted);
@@ -178,8 +179,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     }
                 }
             }
-            catch
+            catch (Exception error)
             {
+#if DEBUG
+                Debug.WriteLine("Failed to sign packet data. Exception: " + error.Message + " \n Trace: "+error.StackTrace+" \n | Peer: " + peerIp + ":" + peerUniqueId);
+#endif
                 return null;
             }
             return sendObject;

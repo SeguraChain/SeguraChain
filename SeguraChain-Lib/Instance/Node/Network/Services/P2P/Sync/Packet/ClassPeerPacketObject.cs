@@ -2,7 +2,6 @@
 using SeguraChain_Lib.Utility;
 using System;
 using System.Diagnostics;
-using System.Linq;
 
 namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet
 {

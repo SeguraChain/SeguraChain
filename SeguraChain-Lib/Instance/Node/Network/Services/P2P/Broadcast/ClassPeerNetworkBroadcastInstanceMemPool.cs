@@ -25,8 +25,8 @@ using SeguraChain_Lib.Other.Object.List;
 using System.Diagnostics;
 using SeguraChain_Lib.Instance.Node.Network.Database.Object;
 using System.Collections.Concurrent;
-using SeguraChain_Lib.Other.Object.Network;
-using static SeguraChain_Lib.Other.Object.Network.ClassCustomSocket;
+using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.ClientConnect.Object;
+using SeguraChain_Lib.Blockchain.Wallet.Function;
 
 namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 {
@@ -79,103 +79,105 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                 continue;
 
 
-                            ConcurrentDictionary<string, ClassPeerObject> peerObject = _peerDatabase[peerIpTarget, _cancellation];
+                            ConcurrentDictionary<string, ClassPeerObject> peerListObject = _peerDatabase[peerIpTarget, _cancellation];
 
-                            if (peerObject == null)
+                            if (peerListObject == null)
                                 continue;
 
-                            if (peerObject.Count == 0)
-                                continue;
-
-                            foreach (string peerUniqueIdTarget in peerObject.Keys.ToArray())
+                            foreach (string peerUniqueIdTarget in peerListObject.Keys.ToArray())
                             {
+
+                                if (peerUniqueIdTarget.IsNullOrEmpty(false, out _))
+                                    continue;
 
                                 bool success = false;
 
-                                try
+                                ClassPeerObject peerObject = _peerDatabase[peerIpTarget, peerUniqueIdTarget, _cancellation];
+
+                                if (peerObject.PeerIsPublic)
                                 {
-                                    if (!peerUniqueIdTarget.IsNullOrEmpty(false, out _))
+
+
+                                    int peerPortTarget = peerObject.PeerPort;
+
+
+                                    // Build receiver instance.
+                                    if (!_listPeerNetworkClientBroadcastMemPoolReceiver.ContainsKey(peerIpTarget))
+                                        _listPeerNetworkClientBroadcastMemPoolReceiver.Add(peerIpTarget, new Dictionary<string, ClassPeerNetworkClientBroadcastMemPool>());
+
+                                    if (!_listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].ContainsKey(peerUniqueIdTarget))
                                     {
-                                        if (ClassPeerCheckManager.CheckPeerClientStatus(_peerDatabase, peerIpTarget, peerUniqueIdTarget, false, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellation))
+                                        _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].Add(peerUniqueIdTarget, new ClassPeerNetworkClientBroadcastMemPool(
+                                                                                                                               _peerDatabase,
+                                                                                                                               _cancellation,
+                                                                                                                               peerIpTarget,
+                                                                                                                               peerUniqueIdTarget,
+                                                                                                                               peerPortTarget,
+                                                                                                                               false,
+                                                                                                                               _peerNetworkSettingObject,
+                                                                                                                               _peerFirewallSettingObject));
+                                        if (!RunPeerNetworkClientBroadcastMemPool(peerIpTarget, peerUniqueIdTarget, false))
                                         {
-                                            if (peerObject[peerUniqueIdTarget].PeerIsPublic)
-                                            {
-                                                int peerPortTarget = peerObject[peerUniqueIdTarget].PeerPort;
+                                            if (!_listPeerNetworkClientBroadcastMemPoolReceiver.ContainsKey(peerIpTarget) ||
+                                                !_listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].ContainsKey(peerUniqueIdTarget))
+                                                continue;
 
+                                            _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].StopTaskAndDisconnect();
+                                            _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].Remove(peerUniqueIdTarget);
 
-                                                // Build receiver instance.
-                                                if (!_listPeerNetworkClientBroadcastMemPoolReceiver.ContainsKey(peerIpTarget))
-                                                    _listPeerNetworkClientBroadcastMemPoolReceiver.Add(peerIpTarget, new Dictionary<string, ClassPeerNetworkClientBroadcastMemPool>());
-
-                                                if (!_listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].ContainsKey(peerUniqueIdTarget))
-                                                {
-                                                    _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].Add(peerUniqueIdTarget, new ClassPeerNetworkClientBroadcastMemPool(
-                                                                                                                                           _peerDatabase,
-                                                                                                                                           peerIpTarget,
-                                                                                                                                           peerUniqueIdTarget,
-                                                                                                                                           peerPortTarget,
-                                                                                                                                           false,
-                                                                                                                                           _peerNetworkSettingObject,
-                                                                                                                                           _peerFirewallSettingObject));
-                                                    if (!await RunPeerNetworkClientBroadcastMemPool(peerIpTarget, peerUniqueIdTarget, false))
-                                                    {
-                                                        if (!_listPeerNetworkClientBroadcastMemPoolReceiver.ContainsKey(peerIpTarget) ||
-                                                            !_listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].ContainsKey(peerUniqueIdTarget))
-                                                            continue;
-
-                                                        _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].StopTaskAndDisconnect();
-                                                        _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].Remove(peerUniqueIdTarget);
-
-                                                    }
-                                                    else
-                                                        success = true;
-
-                                                    ClassLog.WriteLine("Run Sync MemPool Receive Mode transaction from Peer: " + peerIpTarget + " | Status: " + (success ? "success" : "failed") + ".", ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, success ? ConsoleColor.Green : ConsoleColor.Red);
-                                                }
-
-                                                // Build sender instance if the node is in public node.
-                                                if (success && _peerNetworkSettingObject.PublicPeer)
-                                                {
-                                                    if (!_listPeerNetworkClientBroadcastMemPoolSender.ContainsKey(peerIpTarget))
-                                                        _listPeerNetworkClientBroadcastMemPoolSender.Add(peerIpTarget, new Dictionary<string, ClassPeerNetworkClientBroadcastMemPool>());
-
-                                                    if (!_listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget].ContainsKey(peerUniqueIdTarget))
-                                                    {
-                                                        _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget].Add(peerUniqueIdTarget, new ClassPeerNetworkClientBroadcastMemPool(
-                                                                                                                                               _peerDatabase,
-                                                                                                                                               peerIpTarget,
-                                                                                                                                               peerUniqueIdTarget,
-                                                                                                                                               peerPortTarget,
-                                                                                                                                               true,
-                                                                                                                                               _peerNetworkSettingObject,
-                                                                                                                                               _peerFirewallSettingObject));
-
-                                                        bool successRunClientBroadcast = true;
-
-                                                        if (!await RunPeerNetworkClientBroadcastMemPool(peerIpTarget, peerUniqueIdTarget, true))
-                                                        {
-                                                            _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].StopTaskAndDisconnect();
-                                                            _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget].Remove(peerUniqueIdTarget);
-                                                            successRunClientBroadcast = false;
-                                                        }
-
-                                                        ClassLog.WriteLine("Run Sync Sending Mode MemPool transaction from Peer: " + peerIpTarget + " | Status: " + (successRunClientBroadcast ? "success" : "failed") + ".", ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, successRunClientBroadcast ? ConsoleColor.Green : ConsoleColor.Red);
-
-                                                    }
-                                                }
-                                            }
                                         }
+                                        else
+                                            success = true;
+
+
+#if DEBUG
+                                        Debug.WriteLine("Run Sync MemPool Receive Mode transaction from Peer: " + peerIpTarget + ":" + peerUniqueIdTarget + " | Status: " + (success ? "success" : "failed"));
+#endif
+                                        ClassLog.WriteLine("Run Sync MemPool Receive Mode transaction from Peer: " + peerIpTarget + ":" + peerUniqueIdTarget + " | Status: " + (success ? "success" : "failed") + ".", ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, success ? ConsoleColor.Green : ConsoleColor.Red);
                                     }
+
+                                    if (!success)
+                                        continue;
+
+                                    // Build sender instance if the node is in public node.
+
+                                    if (!_listPeerNetworkClientBroadcastMemPoolSender.ContainsKey(peerIpTarget))
+                                        _listPeerNetworkClientBroadcastMemPoolSender.Add(peerIpTarget, new Dictionary<string, ClassPeerNetworkClientBroadcastMemPool>());
+
+                                    if (!_listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget].ContainsKey(peerUniqueIdTarget))
+                                    {
+                                        _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget].Add(peerUniqueIdTarget, new ClassPeerNetworkClientBroadcastMemPool(
+                                                                                                                               _peerDatabase,
+                                                                                                                               _cancellation,
+                                                                                                                               peerIpTarget,
+                                                                                                                               peerUniqueIdTarget,
+                                                                                                                               peerPortTarget,
+                                                                                                                               true,
+                                                                                                                               _peerNetworkSettingObject,
+                                                                                                                               _peerFirewallSettingObject));
+
+                                        bool successRunClientBroadcast = true;
+
+                                        if (!RunPeerNetworkClientBroadcastMemPool(peerIpTarget, peerUniqueIdTarget, true))
+                                        {
+                                            _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].StopTaskAndDisconnect();
+                                            _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget].Remove(peerUniqueIdTarget);
+                                            successRunClientBroadcast = false;
+                                        }
+
+#if DEBUG
+                                        Debug.WriteLine("Run Sync Sending Mode MemPool transaction from Peer: " + peerIpTarget + " | Status: " + (successRunClientBroadcast ? "success" : "failed") + ".");
+#endif
+                                        ClassLog.WriteLine("Run Sync Sending Mode MemPool transaction from Peer: " + peerIpTarget + " | Status: " + (successRunClientBroadcast ? "success" : "failed") + ".", ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, successRunClientBroadcast ? ConsoleColor.Green : ConsoleColor.Red);
+
+                                    }
+
                                 }
-                                catch
-                                {
-                                    break;
-                                }
+
                             }
                         }
+                        #endregion
                     }
-
-                    #endregion
 
                     #region Check Client MemPool broadcast launched.
 
@@ -191,15 +193,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                     foreach (string peerUniqueId in _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Keys.ToArray())
                                     {
                                         if (!_listPeerNetworkClientBroadcastMemPoolReceiver[peerIp][peerUniqueId].IsAlive)
-                                        {
                                             _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp][peerUniqueId].StopTaskAndDisconnect();
-
-                                            if (!await RunPeerNetworkClientBroadcastMemPool(peerIp, peerUniqueId, false))
-                                            {
-                                                _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp][peerUniqueId].Dispose();
-                                                _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Remove(peerUniqueId);
-                                            }
-                                        }
                                     }
                                 }
 
@@ -229,15 +223,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                             try
                                             {
                                                 if (!_listPeerNetworkClientBroadcastMemPoolSender[peerIp][peerUniqueId].IsAlive)
-                                                {
                                                     _listPeerNetworkClientBroadcastMemPoolSender[peerIp][peerUniqueId].StopTaskAndDisconnect();
-
-                                                    if (!await RunPeerNetworkClientBroadcastMemPool(peerIp, peerUniqueId, true))
-                                                    {
-                                                        _listPeerNetworkClientBroadcastMemPoolSender[peerIp][peerUniqueId].Dispose();
-                                                        _listPeerNetworkClientBroadcastMemPoolSender[peerIp].Remove(peerUniqueId);
-                                                    }
-                                                }
                                             }
                                             catch
                                             {
@@ -257,6 +243,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                         }
                     }
 
+
                     #endregion
 
                     await Task.Delay(1000);
@@ -272,39 +259,21 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
         /// <param name="peerIpTarget"></param>
         /// <param name="peerUniqueIdTarget"></param>
         /// <returns></returns>
-        private async Task<bool> RunPeerNetworkClientBroadcastMemPool(string peerIpTarget, string peerUniqueIdTarget, bool onSendingMode)
+        private bool RunPeerNetworkClientBroadcastMemPool(string peerIpTarget, string peerUniqueIdTarget, bool onSendingMode)
         {
             try
             {
                 if (!onSendingMode)
-                {
-                    if (await _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].TryConnectAsync(_cancellation))
-                    {
-                        if (await _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].TryAskBroadcastMode())
-                        {
-                            _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].RunBroadcastTransactionTask();
-                            return true;
-                        }
-                    }
-                }
+                    _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].RunBroadcastTransactionTask();
                 else
-                {
-                    if (await _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].TryConnectAsync(_cancellation))
-                    {
-                        if (await _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].TryAskBroadcastMode())
-                        {
-                            _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].RunBroadcastTransactionTask();
-                            return true;
-                        }
-                    }
-                }
+                    _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].RunBroadcastTransactionTask();
             }
             catch
             {
                 return false;
             }
 
-            return false;
+            return true;
         }
 
         /// <summary>
@@ -402,15 +371,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
         {
             private ClassPeerDatabase _peerDatabase;
             public bool IsAlive;
-            private ClassCustomSocket _peerSocketClient;
+            private ClassPeerNetworkClientSyncObject _peerClientSyncObject;
             private string _peerIpTarget;
             private string _peerUniqueIdTarget;
             private int _peerPortTarget;
             private ClassPeerNetworkSettingObject _peerNetworkSettingObject;
             private ClassPeerFirewallSettingObject _peerFirewallSettingObject;
             private CancellationTokenSource _peerCancellationToken;
-            private CancellationTokenSource _peerCheckConnectionCancellationToken;
-            private CancellationTokenSource _peerDoConnectionCancellationToken;
             private Dictionary<long, HashSet<string>> _memPoolListBlockHeightTransactionReceived;
             private Dictionary<long, HashSet<string>> _memPoolListBlockHeightTransactionSend;
             private bool _onSendBroadcastMode;
@@ -423,9 +390,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             /// <param name="peerPortTarget"></param>
             /// <param name="peerNetworkSettingObject"></param>
             /// <param name="peerFirewallSettingObject"></param>
-            public ClassPeerNetworkClientBroadcastMemPool(ClassPeerDatabase peerDatabase, string peerIpTarget, string peerUniqueIdTarget, int peerPortTarget, bool onSendBroadcastMode, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject)
+            public ClassPeerNetworkClientBroadcastMemPool(ClassPeerDatabase peerDatabase, CancellationTokenSource peerCancellation, string peerIpTarget, string peerUniqueIdTarget, int peerPortTarget, bool onSendBroadcastMode, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject)
             {
                 _peerDatabase = peerDatabase;
+                _peerCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(peerCancellation.Token);
                 _peerIpTarget = peerIpTarget;
                 _peerUniqueIdTarget = peerUniqueIdTarget;
                 _peerPortTarget = peerPortTarget;
@@ -434,6 +402,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                 _peerFirewallSettingObject = peerFirewallSettingObject;
                 _memPoolListBlockHeightTransactionReceived = new Dictionary<long, HashSet<string>>();
                 _memPoolListBlockHeightTransactionSend = new Dictionary<long, HashSet<string>>();
+                _peerClientSyncObject = new ClassPeerNetworkClientSyncObject(_peerDatabase, _peerIpTarget, _peerPortTarget, _peerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
             }
 
             #region Dispose functions
@@ -466,226 +435,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
             #region Initialize/Stop broadcast client.
 
-            /// <summary>
-            /// Try to connect to the peer target.
-            /// </summary>
-            /// <returns></returns>
-            public async Task<bool> TryConnectAsync(CancellationTokenSource mainCancellation)
-            {
-                if (_peerCheckConnectionCancellationToken != null)
-                {
-                    if (!_peerCheckConnectionCancellationToken.IsCancellationRequested)
-                    {
-                        _peerCheckConnectionCancellationToken.Cancel();
-                        _peerCheckConnectionCancellationToken.Dispose();
-                    }
-                }
-
-                if (_peerDoConnectionCancellationToken != null)
-                {
-                    if (!_peerDoConnectionCancellationToken.IsCancellationRequested)
-                    {
-                        _peerDoConnectionCancellationToken.Cancel();
-                        _peerDoConnectionCancellationToken.Dispose();
-                    }
-                }
-
-                StopTaskAndDisconnect();
-
-                _peerDoConnectionCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(mainCancellation.Token);
-
-                bool successConnect = false;
-
-                long timestampEnd = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayToConnectToTarget * 1000);
-
-                await TaskManager.TaskManager.InsertTask(new Action(async () =>
-                {
-                    while (!successConnect)
-                    {
-                        try
-                        {
-                            _peerSocketClient?.Kill(SocketShutdown.Both);
-                            _peerSocketClient = new ClassCustomSocket(new Socket(ClassUtility.GetAddressFamily(_peerIpTarget), SocketType.Stream, ProtocolType.Tcp), false);
-
-                            if (_peerSocketClient.Connect(_peerIpTarget, _peerPortTarget, _peerNetworkSettingObject.PeerMaxDelayToConnectToTarget))
-                            {
-                                successConnect = true;
-                                break;
-                            }
-                        }
-                        catch
-                        {
-                            // Ignored, catch the exception once the attempt to connect to a peer failed.
-                        }
-                        await Task.Delay(10);
-                    }
-
-                }), 0, _peerDoConnectionCancellationToken, null);
-
-
-
-                while (!successConnect)
-                {
-                    if (timestampEnd < TaskManager.TaskManager.CurrentTimestampMillisecond ||
-                        _peerDoConnectionCancellationToken.Token.IsCancellationRequested)
-                        break;
-
-                    await Task.Delay(10);
-                }
-
-
-                if (!successConnect)
-                {
-                    IsAlive = false;
-                    return false;
-                }
-
-
-                IsAlive = true;
-                _peerCheckConnectionCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(mainCancellation.Token);
-                _peerCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(mainCancellation.Token);
-
-
-                return successConnect;
-            }
-
-            /// <summary>
-            /// Try to ask the broadcast mode.
-            /// </summary>
-            /// <returns></returns>
-            public async Task<bool> TryAskBroadcastMode()
-            {
-
-                ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId,
-                    _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken].PeerInternPublicKey,
-                    _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken].PeerClientLastTimestampPeerPacketSignatureWhitelist)
-                {
-                    PacketOrder = ClassPeerEnumPacketSend.ASK_MEM_POOL_BROADCAST_MODE,
-                };
-
-                if (!await TrySendPacketToPeer(packetSendObject.GetPacketData(), _peerCancellationToken))
-                {
-                    IsAlive = false;
-                    return false;
-                }
-
-                bool broadcastResponsePacketStatus = false;
-                bool failed = false;
-
-                CancellationTokenSource cancellationReceiveBroadcastResponsePacket = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationToken.Token);
-
-
-                await TaskManager.TaskManager.InsertTask(new Action(async () =>
-                {
-
-                    try
-                    {
-                        using (DisposableList<ClassReadPacketSplitted> listPacketReceived = new DisposableList<ClassReadPacketSplitted>(false, 0, new List<ClassReadPacketSplitted>() { new ClassReadPacketSplitted() }))
-                        {
-
-                            while (!broadcastResponsePacketStatus)
-                            {
-                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, _peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000, false, cancellationReceiveBroadcastResponsePacket))
-                                {
-                                    if (!readPacketData.Status)
-                                        break;
-
-                                    listPacketReceived.GetList = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, cancellationReceiveBroadcastResponsePacket).GetList;
-
-                                    if (listPacketReceived.Count > 0)
-                                    {
-                                        for (int i = 0; i < listPacketReceived.Count; i++)
-                                        {
-                                            if (!listPacketReceived[i].Complete || listPacketReceived[i].Used)
-                                                continue;
-
-                                            listPacketReceived[i].Used = true;
-
-                                            ClassPeerPacketRecvObject peerPacketRecvObject = new ClassPeerPacketRecvObject(Convert.FromBase64String(listPacketReceived[i].Packet), out bool status);
-
-                                            listPacketReceived[i].Packet.Clear();
-
-                                            if (!status)
-                                            {
-                                                failed = true;
-                                                break;
-                                            }
-
-                                            if (peerPacketRecvObject.PacketContent.IsNullOrEmpty(false, out _))
-                                            {
-                                                failed = true;
-                                                break;
-                                            }
-
-                                            if (peerPacketRecvObject.PacketOrder != ClassPeerEnumPacketResponse.SEND_MEM_POOL_BROADCAST_RESPONSE)
-                                            {
-                                                failed = true;
-                                                break;
-                                            }
-
-                                            if (!ClassUtility.TryDeserialize(peerPacketRecvObject.PacketContent, out ClassPeerPacketSendBroadcastMemPoolResponse packetSendBroadcastMemPoolResponse, ObjectCreationHandling.Reuse))
-                                            {
-                                                failed = true;
-                                                break;
-                                            }
-
-                                            if (packetSendBroadcastMemPoolResponse == null)
-                                            {
-                                                failed = true;
-                                                break;
-                                            }
-
-                                            if (!packetSendBroadcastMemPoolResponse.Status)
-                                            {
-                                                failed = true;
-                                                break;
-                                            }
-
-                                            _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken].PeerTimestampSignatureWhitelist = peerPacketRecvObject.PeerLastTimestampSignatureWhitelist;
-
-                                            broadcastResponsePacketStatus = true;
-
-                                            listPacketReceived.GetList.RemoveAll(x => x.Complete);
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-
-                        }
-                    }
-                    catch (Exception error)
-                    {
-#if DEBUG
-                        Debug.WriteLine("Exception on asking broadcast mode. " + error.Message);
-#endif
-                    }
-
-                }), 0, cancellationReceiveBroadcastResponsePacket, null);
-
-
-
-                while (!broadcastResponsePacketStatus)
-                {
-
-                    if (cancellationReceiveBroadcastResponsePacket.IsCancellationRequested)
-                        break;
-
-                    if (failed)
-                        break;
-
-
-                    await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
-                }
-
-                cancellationReceiveBroadcastResponsePacket.Cancel();
-
-
-                if (!broadcastResponsePacketStatus)
-                    IsAlive = false;
-
-                return broadcastResponsePacketStatus;
-            }
 
             /// <summary>
             /// Stop tasks and disconnect.
@@ -711,7 +460,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     }
                 }
 
-                _peerSocketClient?.Kill(SocketShutdown.Both);
+                _peerClientSyncObject?.DisconnectFromTarget();
 
                 // Clean up past heights received/sent.
                 _memPoolListBlockHeightTransactionReceived?.Clear();
@@ -729,165 +478,130 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
             {
                 IsAlive = true;
 
-                EnableCheckConnect();
-
-                try
-                {
-                    EnableKeepAliveTask();
-                    if (!_onSendBroadcastMode)
-                        EnableReceiveBroadcastTransactionTask();
-                    else
-                        EnableSendBroadcastTransactionTask();
-                }
-                catch
-                {
-                    // Ignored, catch the exception once the task is cancelled.
-                }
+                if (!_onSendBroadcastMode)
+                    EnableReceiveBroadcastTransactionTask();
+                else
+                    EnableSendBroadcastTransactionTask();
             }
 
-            /// <summary>
-            /// Enable the keep alive task.
-            /// </summary>
-            private void EnableKeepAliveTask()
-            {
-                TaskManager.TaskManager.InsertTask(new Action(async () =>
-                {
-                    while (IsAlive)
-                    {
-                        try
-                        {
-                            ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId,
-                                _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken].PeerInternPublicKey,
-                                _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken].PeerClientLastTimestampPeerPacketSignatureWhitelist)
-                            {
-                                PacketOrder = ClassPeerEnumPacketSend.ASK_KEEP_ALIVE,
-                                PacketContent = ClassUtility.SerializeData(new ClassPeerPacketAskKeepAlive()
-                                {
-                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
-                                }),
-                            };
-
-                            if (!await TrySendPacketToPeer(packetSendObject.GetPacketData(), _peerCancellationToken))
-                            {
-                                IsAlive = false;
-                                break;
-                            }
-
-                            await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
-                        }
-                        catch
-                        {
-                            IsAlive = false;
-                            break;
-                        }
-                    }
-
-                }), 0, _peerCancellationToken, _peerSocketClient).Wait();
-            }
 
             /// <summary>
             /// Enable the received broadcast transaction task.
             /// </summary>
             private void EnableReceiveBroadcastTransactionTask()
             {
+
+
                 TaskManager.TaskManager.InsertTask(new Action(async () =>
                 {
-
-                    while (IsAlive)
+                    using (DisposableDictionary<string, string> listWalletAddressAndPublicKeyCache = new DisposableDictionary<string, string>())
                     {
-                        ClassPeerObject peerObject = _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken];
-
-                        if (peerObject == null)
+                        while (IsAlive)
                         {
-                            IsAlive = false;
-                            break;
-                        }
 
-                        long lastBlockHeightUnlocked = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeightUnlocked(_peerCancellationToken);
+                            ClassPeerObject peerObject = _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken];
 
-                        // Clean passed blocks mined.
-                        foreach (long blockHeight in _memPoolListBlockHeightTransactionReceived.Keys.ToArray())
-                        {
-                            if (blockHeight <= lastBlockHeightUnlocked)
+
+
+                            if (peerObject == null)
                             {
-                                _memPoolListBlockHeightTransactionReceived[blockHeight].Clear();
-                                _memPoolListBlockHeightTransactionReceived.Remove(blockHeight);
+                                Debug.WriteLine("peer object null");
+                                IsAlive = false;
+                                break;
                             }
-                        }
+
+                            long lastBlockHeightUnlocked = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeightUnlocked(_peerCancellationToken);
 
 
-                        #region First ask the mem pool block height list and their transaction counts.
-
-                        ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId,
-                            peerObject.PeerInternPublicKey,
-                            peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
-                        {
-                            PacketOrder = ClassPeerEnumPacketSend.ASK_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE,
-                            PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskMemPoolBlockHeightList()
+                            // Clean passed blocks mined.
+                            foreach (long blockHeight in _memPoolListBlockHeightTransactionReceived.Keys.ToArray())
                             {
-                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
-                            }),
-                        };
-
-                        packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(_peerDatabase, packetSendObject, _peerIpTarget, _peerUniqueIdTarget, true, _peerNetworkSettingObject, _peerCancellationToken);
-
-                        if (packetSendObject == null)
-                        {
-                            IsAlive = false;
-                            break;
-                        }
-
-                        if (!await TrySendPacketToPeer(packetSendObject.GetPacketData(), _peerCancellationToken))
-                        {
-                            IsAlive = false;
-                            break;
-                        }
-
-                        ClassPeerPacketRecvObject peerPacketRecvMemPoolBlockHeightList = await TryReceiveMemPoolBlockHeightListPacket();
-
-                        ClassTranslatePacket<ClassPeerPacketSendMemPoolBlockHeightList> peerPacketMemPoolBlockHeightListTranslated = await TranslatePacketReceived<ClassPeerPacketSendMemPoolBlockHeightList>(peerPacketRecvMemPoolBlockHeightList, ClassPeerEnumPacketResponse.SEND_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE, _peerCancellationToken);
-
-                        if (peerPacketMemPoolBlockHeightListTranslated == null || !peerPacketMemPoolBlockHeightListTranslated.Status)
-                        {
-                            IsAlive = false;
-                            break;
-                        }
-
-
-                        #endregion
-
-                        #region Check the packet of mempool block height lists.
-
-                        if (peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount == null)
-                        {
-                            IsAlive = false;
-                            break;
-                        }
-
-                        #endregion
-
-                        #region Then sync transaction by height.
-
-                        if (peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount.Count > 0)
-                        {
-                            bool failed = false;
-
-                            foreach (long blockHeight in peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount.Keys.OrderBy(x => x))
-                            {
-                                if (_peerCancellationToken.IsCancellationRequested)
-                                    break;
-
-                                if (ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeight < blockHeight)
+                                if (blockHeight <= lastBlockHeightUnlocked)
                                 {
-                                    int countAlreadySynced = 0;
+                                    _memPoolListBlockHeightTransactionReceived[blockHeight].Clear();
+                                    _memPoolListBlockHeightTransactionReceived.Remove(blockHeight);
+                                }
+                            }
 
-                                    if (_memPoolListBlockHeightTransactionReceived.ContainsKey(blockHeight))
-                                        countAlreadySynced = _memPoolListBlockHeightTransactionReceived[blockHeight].Count;
-                                    else
-                                        _memPoolListBlockHeightTransactionReceived.Add(blockHeight, new HashSet<string>());
 
-                                    try
+                            #region First ask the mem pool block height list and their transaction counts.
+
+                            ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId,
+                                peerObject.PeerInternPublicKey,
+                                peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                            {
+                                PacketOrder = ClassPeerEnumPacketSend.ASK_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE,
+                                PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskMemPoolBlockHeightList()
+                                {
+                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
+                                }),
+                            };
+
+                            packetSendObject.PacketHash = ClassUtility.GenerateSha256FromString(packetSendObject.PacketContent + packetSendObject.PacketOrder);
+                            packetSendObject.PacketSignature = ClassWalletUtility.WalletGenerateSignature(peerObject.PeerInternPrivateKey, packetSendObject.PacketHash);
+
+#if DEBUG
+                            Debug.WriteLine("Try to send ask MemPool block height list: " + _peerIpTarget + " request.");
+#endif
+                            if (!await _peerClientSyncObject.TrySendPacketToPeerTarget(packetSendObject, true, _peerPortTarget, _peerUniqueIdTarget, _peerCancellationToken, ClassPeerEnumPacketResponse.SEND_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE, true, false))
+                            {
+#if DEBUG
+                                Debug.WriteLine("Try to send ask MemPool block height list: " + _peerIpTarget + " failed.");
+#endif
+                                IsAlive = false;
+                                break;
+                            }
+
+#if DEBUG
+                            Debug.WriteLine("Request to ask MemPool block height list: " + _peerIpTarget + " done.");
+#endif
+
+                            ClassTranslatePacket<ClassPeerPacketSendMemPoolBlockHeightList> peerPacketMemPoolBlockHeightListTranslated = await TranslatePacketReceived<ClassPeerPacketSendMemPoolBlockHeightList>(_peerClientSyncObject.PeerPacketReceived, ClassPeerEnumPacketResponse.SEND_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE, _peerCancellationToken);
+
+#if DEBUG
+                            Debug.WriteLine("MemPool block height list received from: " + _peerIpTarget + " | " + JsonConvert.SerializeObject(peerPacketMemPoolBlockHeightListTranslated));
+#endif
+
+                            if (peerPacketMemPoolBlockHeightListTranslated == null || !peerPacketMemPoolBlockHeightListTranslated.Status)
+                            {
+                                IsAlive = false;
+                                break;
+                            }
+
+
+                            #endregion
+
+                            #region Check the packet of mempool block height lists.
+
+                            if (peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount == null)
+                            {
+                                IsAlive = false;
+                                break;
+                            }
+
+                            #endregion
+
+                            #region Then sync transaction by height.
+
+                            if (peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount.Count > 0)
+                            {
+                                bool failed = false;
+
+                                foreach (long blockHeight in peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount.Keys.OrderBy(x => x))
+                                {
+                                    if (_peerCancellationToken.IsCancellationRequested)
+                                        break;
+
+                                    if (ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeight < blockHeight)
                                     {
+                                        int countAlreadySynced = 0;
+
+                                        if (_memPoolListBlockHeightTransactionReceived.ContainsKey(blockHeight))
+                                            countAlreadySynced = _memPoolListBlockHeightTransactionReceived[blockHeight].Count;
+                                        else
+                                            _memPoolListBlockHeightTransactionReceived.Add(blockHeight, new HashSet<string>());
+
+
                                         if (peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount[blockHeight] > 0)
                                         {
                                             long lastBlockHeightUnlockedConfirmed = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeightTransactionConfirmationDone(_peerCancellationToken);
@@ -915,47 +629,70 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                     }),
                                                 };
 
-                                                packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(_peerDatabase, packetSendObject, _peerIpTarget, _peerUniqueIdTarget, true, _peerNetworkSettingObject, _peerCancellationToken);
+                                                packetSendObject.PacketHash = ClassUtility.GenerateSha256FromString(packetSendObject.PacketContent + packetSendObject.PacketOrder);
+                                                packetSendObject.PacketSignature = ClassWalletUtility.WalletGenerateSignature(peerObject.PeerInternPrivateKey, packetSendObject.PacketHash);
 
-                                                if (!await TrySendPacketToPeer(packetSendObject.GetPacketData(), _peerCancellationToken))
+                                                if (!await _peerClientSyncObject.TrySendPacketToPeerTarget(packetSendObject, true, _peerPortTarget, _peerUniqueIdTarget, _peerCancellationToken, ClassPeerEnumPacketResponse.SEND_MEM_POOL_END_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE, true, false))
                                                 {
                                                     IsAlive = false;
                                                     failed = true;
                                                     break;
                                                 }
 
-                                                if (!await TryReceiveMemPoolTransactionPacket(blockHeight, countToSync))
+
+                                                ClassTranslatePacket<ClassPeerPacketSendMemPoolTransaction> packetTranslated = await TranslatePacketReceived<ClassPeerPacketSendMemPoolTransaction>(_peerClientSyncObject.PeerPacketReceived, ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE, _peerCancellationToken);
+
+                                                if (packetTranslated.Status && packetTranslated.PacketTranslated.ListTransactionObject.Count > 0)
                                                 {
-                                                    IsAlive = false;
-                                                    failed = true;
-                                                    break;
+
+                                                    foreach (ClassTransactionObject transactionObject in packetTranslated.PacketTranslated.ListTransactionObject)
+                                                    {
+                                                        if (transactionObject != null)
+                                                        {
+                                                            if (transactionObject.TransactionType != ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION &&
+                                                            transactionObject.TransactionType != ClassTransactionEnumType.DEV_FEE_TRANSACTION)
+                                                            {
+
+                                                                if (!_memPoolListBlockHeightTransactionReceived[blockHeight].Contains(transactionObject.TransactionHash))
+                                                                {
+                                                                    bool canInsert = false;
+
+                                                                    if (transactionObject.BlockHeightTransaction > ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeight)
+                                                                    {
+                                                                        ClassTransactionEnumStatus checkTxResult = await ClassTransactionUtility.CheckTransactionWithBlockchainData(transactionObject, true, false, true, null, 0, listWalletAddressAndPublicKeyCache, true, _peerCancellationToken);
+
+                                                                        if (checkTxResult == ClassTransactionEnumStatus.VALID_TRANSACTION || checkTxResult == ClassTransactionEnumStatus.DUPLICATE_TRANSACTION_HASH)
+                                                                            canInsert = true;
+                                                                    }
+
+                                                                    if (canInsert)
+                                                                    {
+                                                                        ClassMemPoolDatabase.InsertTxToMemPool(transactionObject);
+                                                                        _memPoolListBlockHeightTransactionReceived[blockHeight].Add(transactionObject.TransactionHash);
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                             }
 
                                         }
-                                    }
-                                    catch
-                                    {
-                                        IsAlive = false;
-                                        break;
-                                    }
-                                }
 
-                                if (failed)
-                                {
-                                    IsAlive = false;
-                                    break;
+                                    }
                                 }
                             }
+
+                            #endregion
+
+                            await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                         }
-
-                        #endregion
-
-                        await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                     }
+                }), 0, _peerCancellationToken).Wait();
 
-
-                }), 0, _peerCancellationToken, _peerSocketClient).Wait();
+#if DEBUG
+                Debug.WriteLine("Enable Receive Broadcast transaction MemPool from: " + _peerIpTarget + " done. " + IsAlive);
+#endif
             }
 
             /// <summary>
@@ -1000,34 +737,20 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                     })
                                                 };
 
-                                                packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(_peerDatabase, packetSendObject, _peerIpTarget, _peerUniqueIdTarget, true, _peerNetworkSettingObject, _peerCancellationToken);
 
-                                                if (!await TrySendPacketToPeer(packetSendObject.GetPacketData(), _peerCancellationToken))
+                                                if (!await _peerClientSyncObject.TrySendPacketToPeerTarget(packetSendObject, true, _peerPortTarget, _peerUniqueIdTarget, _peerCancellationToken, ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_VOTE, true, false))
                                                 {
                                                     IsAlive = false;
                                                     break;
                                                 }
 
-                                                using (var listTransactionResult = await TryReceiveMemPoolTransactionVotePacket())
+                                                ClassTranslatePacket<ClassPeerPacketSendMemPoolTransactionVote> packetTranslated = await TranslatePacketReceived<ClassPeerPacketSendMemPoolTransactionVote>(_peerClientSyncObject.PeerPacketReceived, ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_VOTE, _peerCancellationToken);
+
+                                                if (packetTranslated.Status)
                                                 {
-                                                    if (listTransactionResult.Count > 0)
-                                                    {
-                                                        foreach (ClassTransactionObject transactionObject in listTransactionObjectToSend.GetList)
-                                                        {
-                                                            if (listTransactionResult.ContainsKey(transactionObject.TransactionHash))
-                                                            {
-                                                                if (listTransactionResult[transactionObject.TransactionHash] == ClassTransactionEnumStatus.VALID_TRANSACTION)
-                                                                    _memPoolListBlockHeightTransactionSend[blockHeight].Add(transactionObject.TransactionHash);
-                                                            }
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        _memPoolListBlockHeightTransactionSend[blockHeight].Clear();
-                                                        cancelSendingBroadcast = true;
-                                                        IsAlive = false;
-                                                        break;
-                                                    }
+                                                    foreach (ClassTransactionObject transactionObject in listTransactionObjectToSend.GetList)
+                                                        _memPoolListBlockHeightTransactionSend[blockHeight].Add(transactionObject.TransactionHash);
+
                                                 }
                                             }
 
@@ -1051,528 +774,17 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     }
 
 
-                }), 0, _peerCancellationToken, _peerSocketClient).Wait();
-            }
+                }), 0, _peerCancellationToken).Wait();
 
-            /// <summary>
-            /// Enable the check connect task.
-            /// </summary>
-            private void EnableCheckConnect()
-            {
-
-                TaskManager.TaskManager.InsertTask(new Action(async () =>
-                {
-
-                    while (IsAlive)
-                    {
-                        try
-                        {
-                            if (!_peerSocketClient.IsConnected())
-                            {
-                                StopTaskAndDisconnect();
-                                IsAlive = false;
-                                break;
-                            }
-
-                            await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
-                        }
-                        catch
-                        {
-                            StopTaskAndDisconnect();
-                            IsAlive = false;
-                            break;
-                        }
-                    }
-
-                }), 0, _peerCheckConnectionCancellationToken, _peerSocketClient).Wait();
-
+#if DEBUG
+                Debug.WriteLine("Enable Send Broadcast transaction MemPool from: " + _peerIpTarget + " done.");
+#endif
             }
 
             #endregion
 
-            #region Handle packet response
-
-            /// <summary>
-            /// Try receive packet.
-            /// </summary>
-            /// <param name="networkStream"></param>
-            /// <returns></returns>
-            private async Task<ClassPeerPacketRecvObject> TryReceiveMemPoolBlockHeightListPacket()
-            {
-                bool failed = false;
-                bool packetReceived = false;
-                bool taskComplete = false;
-                ClassPeerPacketRecvObject peerPacketRecvObject = null;
-
-
-                CancellationTokenSource cancellationReceiveBlockListPacket = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationToken.Token);
-
-
-                await TaskManager.TaskManager.InsertTask(new Action(async () =>
-                {
-
-                    try
-                    {
-                        using (DisposableList<ClassReadPacketSplitted> listPacketReceived = new DisposableList<ClassReadPacketSplitted>())
-                        {
-                            listPacketReceived.Add(new ClassReadPacketSplitted());
-
-                            while (!packetReceived && IsAlive && !taskComplete)
-                            {
-                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, _peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000, false, cancellationReceiveBlockListPacket))
-                                {
-                                    if (!readPacketData.Status)
-                                        break;
-
-                                    listPacketReceived.GetList = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, cancellationReceiveBlockListPacket).GetList;
-
-                                    if (listPacketReceived.GetList.Count(x => x.Complete) == 0)
-                                        continue;
-
-                                    for (int i = 0; i < listPacketReceived.Count; i++)
-                                    {
-
-                                        if (listPacketReceived[i].Complete && listPacketReceived[i].Packet.Length > 0)
-                                        {
-                                            packetReceived = true;
-
-                                            if (!listPacketReceived[i].Complete || listPacketReceived[i].Used)
-                                                continue;
-
-                                            listPacketReceived[i].Used = true;
-
-                                            byte[] base64Packet = null;
-
-                                            try
-                                            {
-                                                base64Packet = Convert.FromBase64String(listPacketReceived[i].Packet);
-                                            }
-                                            catch
-                                            {
-                                                // Ignored.
-                                            }
-
-
-                                            peerPacketRecvObject = new ClassPeerPacketRecvObject(base64Packet, out bool status);
-
-                                            if (!status)
-                                                failed = true;
-
-                                            if (peerPacketRecvObject.PacketContent.IsNullOrEmpty(false, out _))
-                                                failed = true;
-
-                                            if (peerPacketRecvObject.PacketOrder != ClassPeerEnumPacketResponse.SEND_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE)
-                                                failed = true;
-
-                                            _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken].PeerTimestampSignatureWhitelist = peerPacketRecvObject.PeerLastTimestampSignatureWhitelist;
-
-
-                                            taskComplete = true;
-                                            break;
-                                        }
-                                    }
-
-                                }
-                            }
-
-                        }
-                    }
-                    catch
-                    {
-                        // Ignored, the socket can be closed.
-                    }
-
-                    taskComplete = true;
-
-                }), 0, cancellationReceiveBlockListPacket, null);
-
-
-
-                while (!taskComplete)
-                {
-
-                    if (!IsAlive)
-                        break;
-
-
-                    await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
-                }
-
-                cancellationReceiveBlockListPacket.Cancel();
-
-
-                if (failed)
-                    return null;
-
-                return peerPacketRecvObject;
-            }
-
-            /// <summary>
-            /// Try to receive every transactions sent by the peer target.
-            /// </summary>
-            /// <param name="networkStream"></param>
-            /// <returns></returns>
-            private async Task<bool> TryReceiveMemPoolTransactionPacket(long blockHeight, int countTransactionToSync)
-            {
-                bool receiveStatus = true;
-                bool endBroadcast = false;
-                int txCountReceived = 0;
-
-                using (DisposableDictionary<string, string> listWalletAddressAndPublicKeyCache = new DisposableDictionary<string, string>())
-                {
-
-                    DisposableList<ClassTransactionObject> listTransactionObject = new DisposableList<ClassTransactionObject>();
-
-
-                    CancellationTokenSource cancellationReceiveTransactionPacket = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationToken.Token);
-
-
-                    await TaskManager.TaskManager.InsertTask(new Action(async () =>
-                    {
-
-
-                        using (DisposableList<ClassReadPacketSplitted> listPacketReceived = new DisposableList<ClassReadPacketSplitted>())
-                        {
-                            listPacketReceived.Add(new ClassReadPacketSplitted());
-
-
-                            while (!endBroadcast && receiveStatus && IsAlive)
-                            {
-
-                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, _peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000, false, cancellationReceiveTransactionPacket))
-                                {
-                                    if (!readPacketData.Status)
-                                        break;
-
-                                    listPacketReceived.GetList = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, cancellationReceiveTransactionPacket).GetList;
-
-                                    if (listPacketReceived.GetList.Count(x => x.Complete) == 0)
-                                        continue;
-
-                                    for (int i = 0; i < listPacketReceived.Count; i++)
-                                    {
-                                        try
-                                        {
-                                            if (listPacketReceived[i].Complete && listPacketReceived[i].Packet.Length > 0 && !listPacketReceived[i].Used)
-                                            {
-                                                listPacketReceived[i].Used = true;
-
-                                                byte[] base64Data = null;
-
-                                                try
-                                                {
-                                                    base64Data = Convert.FromBase64String(listPacketReceived[i].Packet);
-                                                }
-                                                catch
-                                                {
-                                                }
-
-                                                listPacketReceived[i].Packet.Clear();
-
-                                                ClassPeerPacketRecvObject peerPacketRecvObject = new ClassPeerPacketRecvObject(base64Data, out bool status);
-
-                                                if (!status)
-                                                {
-                                                    receiveStatus = false;
-                                                    break;
-                                                }
-
-                                                if (peerPacketRecvObject.PacketOrder == ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE ||
-                                                peerPacketRecvObject.PacketOrder == ClassPeerEnumPacketResponse.SEND_MEM_POOL_END_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE)
-                                                {
-                                                    _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken].PeerTimestampSignatureWhitelist = peerPacketRecvObject.PeerLastTimestampSignatureWhitelist;
-
-                                                    // Receive transaction.
-                                                    if (peerPacketRecvObject.PacketOrder == ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE)
-                                                    {
-
-                                                        ClassTranslatePacket<ClassPeerPacketSendMemPoolTransaction> packetTranslated = await TranslatePacketReceived<ClassPeerPacketSendMemPoolTransaction>(peerPacketRecvObject, ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE, cancellationReceiveTransactionPacket);
-
-                                                        if (packetTranslated.Status && packetTranslated.PacketTranslated.ListTransactionObject.Count > 0)
-                                                        {
-
-                                                            foreach (ClassTransactionObject transactionObject in packetTranslated.PacketTranslated.ListTransactionObject)
-                                                            {
-                                                                if (transactionObject != null)
-                                                                {
-                                                                    if (transactionObject.TransactionType != ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION &&
-                                                                    transactionObject.TransactionType != ClassTransactionEnumType.DEV_FEE_TRANSACTION)
-                                                                    {
-
-                                                                        txCountReceived++;
-                                                                        if (!_memPoolListBlockHeightTransactionReceived[blockHeight].Contains(transactionObject.TransactionHash))
-                                                                        {
-                                                                            bool canInsert = false;
-
-                                                                            if (transactionObject.BlockHeightTransaction > ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeight)
-                                                                            {
-                                                                                ClassTransactionEnumStatus checkTxResult = await ClassTransactionUtility.CheckTransactionWithBlockchainData(transactionObject, true, false, true, null, 0, listWalletAddressAndPublicKeyCache, true, _peerCancellationToken);
-
-                                                                                if (checkTxResult == ClassTransactionEnumStatus.VALID_TRANSACTION || checkTxResult == ClassTransactionEnumStatus.DUPLICATE_TRANSACTION_HASH)
-                                                                                    canInsert = true;
-                                                                            }
-
-                                                                            if (canInsert)
-                                                                            {
-                                                                                if (!listWalletAddressAndPublicKeyCache.ContainsKey(transactionObject.WalletAddressSender))
-                                                                                    listWalletAddressAndPublicKeyCache.Add(transactionObject.WalletAddressSender, transactionObject.WalletPublicKeySender);
-
-                                                                                if (transactionObject.TransactionType == ClassTransactionEnumType.TRANSFER_TRANSACTION)
-                                                                                    listWalletAddressAndPublicKeyCache.Add(transactionObject.WalletAddressReceiver, transactionObject.WalletPublicKeyReceiver);
-
-                                                                                listTransactionObject.Add(transactionObject);
-                                                                            }
-                                                                        }
-
-                                                                        if (listTransactionObject.Count >= countTransactionToSync)
-                                                                        {
-                                                                            endBroadcast = true;
-                                                                            break;
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-
-                                                            // Send the confirmation of receive.
-                                                            if (!await TrySendPacketToPeer(new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId,
-                                                            _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken].PeerInternPublicKey,
-                                                            _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken].PeerClientLastTimestampPeerPacketSignatureWhitelist)
-                                                            {
-                                                                PacketOrder = ClassPeerEnumPacketSend.ASK_MEM_POOL_TRANSACTION_BROADCAST_CONFIRMATION_RECEIVED,
-                                                                PacketContent = ClassUtility.SerializeData(new ClassPeerPacketAskMemPoolTransactionBroadcastConfirmationReceived()
-                                                                {
-                                                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
-                                                                })
-                                                            }.GetPacketData(), cancellationReceiveTransactionPacket))
-                                                            {
-                                                                IsAlive = false;
-                                                                endBroadcast = true;
-                                                                break;
-                                                            }
-                                                        }
-                                                    }
-                                                    // End broadcast transaction.
-                                                    else if (peerPacketRecvObject.PacketOrder == ClassPeerEnumPacketResponse.SEND_MEM_POOL_END_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE)
-                                                    {
-                                                        endBroadcast = true;
-                                                        break;
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    receiveStatus = false;
-                                                    break;
-                                                }
-
-
-                                            }
-                                        }
-                                        catch
-                                        {
-                                            // Ignored.
-                                        }
-                                    }
-
-                                    // Clean up.
-                                    listPacketReceived.GetList.RemoveAll(x => x.Complete);
-
-
-
-                                    if (endBroadcast)
-                                        break;
-                                }
-                            }
-
-                        }
-
-                    }), 0, cancellationReceiveTransactionPacket, _peerSocketClient);
-
-
-                    while (!endBroadcast)
-                    {
-
-                        if (!IsAlive)
-                            break;
-
-                        if (endBroadcast)
-                            break;
-
-                        await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
-                    }
-
-                    cancellationReceiveTransactionPacket.Cancel();
-
-
-                    if (listTransactionObject.Count > 0)
-                    {
-                        if (!_memPoolListBlockHeightTransactionReceived.ContainsKey(blockHeight))
-                            _memPoolListBlockHeightTransactionReceived.Add(blockHeight, new HashSet<string>());
-
-                        foreach (ClassTransactionObject transactionObject in listTransactionObject.GetAll)
-                        {
-
-                            if (!_memPoolListBlockHeightTransactionReceived[blockHeight].Contains(transactionObject.TransactionHash))
-                            {
-
-                                if (ClassMemPoolDatabase.InsertTxToMemPool(transactionObject))
-                                    ClassLog.WriteLine("[Client Broadcast] - TX Hash " + transactionObject.TransactionHash + " received from peer: " + _peerIpTarget, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-
-                                _memPoolListBlockHeightTransactionReceived[blockHeight].Add(transactionObject.TransactionHash);
-                            }
-                        }
-                    }
-
-                }
-
-                return endBroadcast;
-            }
-
-            /// <summary>
-            /// Try to receive a transaction vote packet received from the peer target.
-            /// </summary>
-            /// <returns></returns>
-            private async Task<DisposableDictionary<string, ClassTransactionEnumStatus>> TryReceiveMemPoolTransactionVotePacket()
-            {
-                bool voteStatus = false;
-                bool taskDone = false;
-                DisposableDictionary<string, ClassTransactionEnumStatus> listTransactionStatus = new DisposableDictionary<string, ClassTransactionEnumStatus>();
-
-                CancellationTokenSource cancellationReceiveMemPoolTransactionVote = CancellationTokenSource.CreateLinkedTokenSource(_peerCancellationToken.Token);
-
-
-                await TaskManager.TaskManager.InsertTask(new Action(async () =>
-                {
-                    try
-                    {
-                        using (DisposableList<ClassReadPacketSplitted> listPacketReceived = new DisposableList<ClassReadPacketSplitted>())
-                        {
-                            listPacketReceived.Add(new ClassReadPacketSplitted());
-
-
-                            while (IsAlive && !taskDone && !voteStatus)
-                            {
-
-                                using (ReadPacketData readPacketData = await _peerSocketClient.TryReadPacketData(_peerNetworkSettingObject.PeerMaxPacketBufferSize, _peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000, false, cancellationReceiveMemPoolTransactionVote))
-                                {
-                                    if (!readPacketData.Status)
-                                        break;
-
-
-                                    listPacketReceived.GetList = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, cancellationReceiveMemPoolTransactionVote).GetList;
-
-                                    if (listPacketReceived.GetList.Count(x => x.Complete) == 0)
-                                        continue;
-
-                                    for (int i = 0; i < listPacketReceived.Count; i++)
-                                    {
-                                        if (!listPacketReceived[i].Complete || listPacketReceived[i].Used)
-                                            continue;
-
-                                        listPacketReceived[i].Used = true;
-
-                                        bool exceptionBase64 = false;
-                                        byte[] base64Data = null;
-
-                                        try
-                                        {
-                                            base64Data = Convert.FromBase64String(listPacketReceived[0].Packet);
-                                        }
-                                        catch
-                                        {
-                                            exceptionBase64 = true;
-                                        }
-
-                                        listPacketReceived[i].Packet.Clear();
-
-                                        if (!exceptionBase64)
-                                        {
-                                            try
-                                            {
-                                                ClassPeerPacketRecvObject peerPacketRecvObject = new ClassPeerPacketRecvObject(base64Data, out bool status);
-
-                                                if (status)
-                                                {
-                                                    if (peerPacketRecvObject.PacketOrder == ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_VOTE)
-                                                    {
-
-                                                        ClassTranslatePacket<ClassPeerPacketSendMemPoolTransactionVote> packetTranslated = await TranslatePacketReceived<ClassPeerPacketSendMemPoolTransactionVote>(peerPacketRecvObject, ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_VOTE, cancellationReceiveMemPoolTransactionVote);
-
-                                                        if (packetTranslated.Status)
-                                                        {
-                                                            _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken].PeerTimestampSignatureWhitelist = peerPacketRecvObject.PeerLastTimestampSignatureWhitelist;
-
-                                                            listTransactionStatus.GetList = packetTranslated.PacketTranslated.ListTransactionHashResult;
-
-                                                            voteStatus = true;
-                                                        }
-
-                                                        taskDone = true;
-                                                        break;
-                                                    }
-                                                    else
-                                                    {
-                                                        IsAlive = false;
-                                                        break;
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    IsAlive = false;
-                                                    break;
-                                                }
-
-                                            }
-                                            catch
-                                            {
-                                                // Ignored.
-                                            }
-                                        }
-                                    }
-
-                                }
-                            }
-
-                        }
-                    }
-                    catch
-                    {
-                        // Ignored.
-                    }
-
-                    taskDone = true;
-                }), 0, cancellationReceiveMemPoolTransactionVote, null);
-
-
-                while (!taskDone)
-                {
-                    if (voteStatus)
-                        break;
-
-                    if (!IsAlive)
-                        break;
-
-                    await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
-                }
-
-                cancellationReceiveMemPoolTransactionVote.Cancel();
-
-
-                return listTransactionStatus;
-            }
-
-            #endregion
 
             #region Packet management.
-
-            /// <summary>
-            /// Try to send a packet to the peer target.
-            /// </summary>
-            /// <param name="packetData"></param>
-            /// <returns></returns>
-            private async Task<bool> TrySendPacketToPeer(byte[] packetData, CancellationTokenSource cancellation)
-            {
-                return await _peerSocketClient.TrySendSplittedPacket((Convert.ToBase64String(packetData) + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray(), cancellation, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize, false);
-            }
 
 
 
@@ -1616,7 +828,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                             if (packetSignatureStatus)
                             {
-                                if (TryDecryptPacketPeerContent(_peerDatabase, _peerIpTarget, _peerUniqueIdTarget, peerPacketRecvObject.PacketContent, _peerCheckConnectionCancellationToken, out byte[] packetDecrypted))
+                                if (TryDecryptPacketPeerContent(_peerDatabase, _peerIpTarget, _peerUniqueIdTarget, peerPacketRecvObject.PacketContent, _peerCancellationToken, out byte[] packetDecrypted))
                                 {
                                     if (packetDecrypted != null)
                                     {
