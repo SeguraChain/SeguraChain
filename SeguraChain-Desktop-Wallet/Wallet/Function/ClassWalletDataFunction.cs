@@ -15,6 +15,7 @@ using SeguraChain_Lib.Blockchain.Wallet.Object.Wallet;
 using SeguraChain_Lib.Other.Object.SHA3;
 using SeguraChain_Lib.Utility;
 using ZXing;
+using ZXing.Common;
 using ZXing.QrCode;
 
 namespace SeguraChain_Desktop_Wallet.Wallet.Function
@@ -439,7 +440,7 @@ namespace SeguraChain_Desktop_Wallet.Wallet.Function
                     Width = ClassWalletDefaultSetting.DefaultQrCodeLengthWidthSize,
                     Height = ClassWalletDefaultSetting.DefaultQrCodeLengthWidthSize
                 },
-                Format = BarcodeFormat.QR_CODE
+                Format = BarcodeFormat.QR_CODE, 
             }.Write(walletContent.Trim()));
         }
     }

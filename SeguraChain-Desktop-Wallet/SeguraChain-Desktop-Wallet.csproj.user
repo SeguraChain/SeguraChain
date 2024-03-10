@@ -31,6 +31,9 @@
     <Compile Update="InternalForm\SendTransaction\ClassWalletSendTransactionWaitRequestForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="InternalForm\Setting\ClassWalletSettingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="InternalForm\Setup\ClassWalletSetupForm.cs">
       <SubType>Form</SubType>
     </Compile>

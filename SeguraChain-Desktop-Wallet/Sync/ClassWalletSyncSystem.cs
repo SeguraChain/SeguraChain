@@ -40,7 +40,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
         /// <summary>
         /// Internal sync mode node instance.
         /// </summary>
-        private ClassNodeInstance _nodeInstance;
+        public ClassNodeInstance NodeInstance;
         private CancellationTokenSource _cancellationSyncCache;
 
 
@@ -566,17 +566,17 @@ namespace SeguraChain_Desktop_Wallet.Sync
                 case ClassWalletSettingEnumSyncMode.INTERNAL_PEER_SYNC_MODE:
                     {
 
-                        _nodeInstance = new ClassNodeInstance
+                        NodeInstance = new ClassNodeInstance
                         {
                             PeerSettingObject = ClassDesktopWalletCommonData.WalletSettingObject.WalletInternalSyncNodeSetting
                         };
 
-                        return _nodeInstance.NodeStart(true);
+                        return NodeInstance.NodeStart(true);
                     }
                 case ClassWalletSettingEnumSyncMode.EXTERNAL_PEER_SYNC_MODE:
                     {
-                        if (_nodeInstance != null)
-                            await _nodeInstance.NodeStop(false, true);
+                        if (NodeInstance != null)
+                            await NodeInstance.NodeStop(false, true);
 
                         ServicePointManager.DefaultConnectionLimit = 65535;
                         ServicePointManager.Expect100Continue = false;
@@ -599,8 +599,8 @@ namespace SeguraChain_Desktop_Wallet.Sync
             {
                 case ClassWalletSettingEnumSyncMode.INTERNAL_PEER_SYNC_MODE:
                     {
-                        if (_nodeInstance != null)
-                            await _nodeInstance.NodeStop(false, true);
+                        if (NodeInstance != null)
+                            await NodeInstance.NodeStop(false, true);
                     }
                     break;
                 case ClassWalletSettingEnumSyncMode.EXTERNAL_PEER_SYNC_MODE:
@@ -1844,10 +1844,10 @@ namespace SeguraChain_Desktop_Wallet.Sync
                     {
                         case ClassWalletSettingEnumSyncMode.INTERNAL_PEER_SYNC_MODE:
                             {
-                                string nodeLocalIp = _nodeInstance.PeerSettingObject.PeerNetworkSettingObject.ListenIp;
-                                string openNatIp = _nodeInstance.PeerOpenNatPublicIp;
+                                string nodeLocalIp = NodeInstance.PeerSettingObject.PeerNetworkSettingObject.ListenIp;
+                                string openNatIp = NodeInstance.PeerOpenNatPublicIp;
 
-                                using (DisposableDictionary<string, ClassTransactionEnumStatus> sendTransactionResult = await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(_nodeInstance.PeerDatabase, nodeLocalIp, openNatIp, openNatIp, new List<ClassTransactionObject>() { transactionObject }, _nodeInstance.PeerSettingObject.PeerNetworkSettingObject, _nodeInstance.PeerSettingObject.PeerFirewallSettingObject, cancellation, true))
+                                using (DisposableDictionary<string, ClassTransactionEnumStatus> sendTransactionResult = await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(NodeInstance.PeerDatabase, nodeLocalIp, openNatIp, openNatIp, new List<ClassTransactionObject>() { transactionObject }, NodeInstance.PeerSettingObject.PeerNetworkSettingObject, NodeInstance.PeerSettingObject.PeerFirewallSettingObject, cancellation, true))
                                 {
                                     if (sendTransactionResult.Count > 0)
                                     {

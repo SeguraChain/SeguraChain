@@ -21,6 +21,7 @@ namespace SeguraChain_Desktop_Wallet.Language.Object
         public ClassWalletSetupStepOneFormLanguage WalletSetupStepOneFormLanguage;
         public ClassWalletSetupStepFinalFormLanguage WalletSetupStepFinalFormLanguage;
         public ClassWalletTransactionHistoryInformationLoadingFormLanguage WalletTransactionHistoryInformationLoadingFormLanguage;
+        public ClassWalletSettingFormLanguage WalletSettingFormLanguage;
 
         /// <summary>
         /// Default initialization.
@@ -40,6 +41,7 @@ namespace SeguraChain_Desktop_Wallet.Language.Object
             WalletSetupStepOneFormLanguage = new ClassWalletSetupStepOneFormLanguage();
             WalletSetupStepFinalFormLanguage = new ClassWalletSetupStepFinalFormLanguage();
             WalletTransactionHistoryInformationLoadingFormLanguage = new ClassWalletTransactionHistoryInformationLoadingFormLanguage();
+            WalletSettingFormLanguage = new ClassWalletSettingFormLanguage();
         }
     }
 
@@ -404,5 +406,15 @@ namespace SeguraChain_Desktop_Wallet.Language.Object
         public string LABEL_DONATION = "Your wallet has been setup successfully.\nPlease do not hesitate to donate";
         public string LABEL_COPY_ADDRESS_EVENT = "copied.";
         public string TEXT_SPACE = " ";
+    }
+
+    public class ClassWalletSettingFormLanguage
+    {
+        public string TITLE_FORM = "Setting";
+        public string RADIO_BUTTON_INTERNAL_MODE = "Internal mode";
+        public string RADIO_BUTTON_EXTERNAL_MODE = "External mode";
+        public string LABEL_NODE_HOST = "Host:";
+        public string LABEL_NODE_EXTERNAL = "External:";
+        public string BUTTON_CLOSE_SETTING = "Save";
     }
 }

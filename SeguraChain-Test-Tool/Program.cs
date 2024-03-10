@@ -834,6 +834,21 @@ namespace SeguraChain_Test_Tool
 
                 #endregion
 
+
+                #region Cryptocurrency website URL.
+
+                ClassLog.SimpleWriteLine("Please write the website url of your cryptocurrency:");
+
+                string coinUrl = Console.ReadLine();
+
+                while(coinUrl.IsNullOrEmpty(false, out _))
+                {
+                    ClassLog.SimpleWriteLine("The cryptocurrency website url is invalid, please try again: ", ConsoleColor.Red);
+                    coinUrl = Console.ReadLine();
+                }
+
+                #endregion
+
                 #region The decimal amount. Not really usefull, but provide precision, scability of amounts.
 
                 ClassLog.SimpleWriteLine("Please write the decimal amount (default: " + BlockchainSetting.CoinDecimal);
@@ -922,6 +937,7 @@ namespace SeguraChain_Test_Tool
                 ClassBlockchainDatabaseSetting blockchainDatabaseSetting = new ClassBlockchainDatabaseSetting();
                 blockchainDatabaseSetting.DataSetting.DataFormatIsJson = useJson;
                 blockchainDatabaseSetting.DataSetting.EnableCompressDatabase = useCompressedMode;
+
 
 
                 #endregion
@@ -1013,7 +1029,10 @@ namespace SeguraChain_Test_Tool
                                             writer.WriteLine("\t\tpublic const string CoinName = \"" + coinName + "\";");
                                         #endregion
 
-
+                                        #region Cryptocurrency website url.
+                                        else if (blockchainLine.Contains("public const string CoinUrl"))
+                                            writer.WriteLine("\t\tpublic const string CoinUrl = \"" + coinUrl + "\":");
+                                        #endregion
                                         #region Cryptocurrency ticker name.
                                         else if (blockchainLine.Contains("public const string CoinTickerName ="))
                                             writer.WriteLine("\t\tpublic const string CoinTickerName = \"" + coinTicker + "\";");

@@ -166,6 +166,10 @@ namespace SeguraChain_Desktop_Wallet.Language.Database
                     {
                         return (T)Convert.ChangeType(_dictionaryLanguageObjects[_currentLanguage].WalletTransactionHistoryInformationLoadingFormLanguage, typeof(T));
                     }
+                case ClassLanguageEnumType.LANGUAGE_TYPE_WALLET_SETTING_FORM:
+                    {
+                        return (T)Convert.ChangeType(_dictionaryLanguageObjects[_currentLanguage].WalletSettingFormLanguage, typeof(T));
+                    }
             }
 
             return default(T);

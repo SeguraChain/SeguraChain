@@ -36,6 +36,8 @@ using SeguraChain_Lib.Utility;
 using SeguraChain_Desktop_Wallet.InternalForm.Import;
 using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.TaskManager;
+using SeguraChain_Desktop_Wallet.InternalForm.Setting;
+using Gecko;
 
 namespace SeguraChain_Desktop_Wallet
 {
@@ -51,6 +53,8 @@ namespace SeguraChain_Desktop_Wallet
         private ClassWalletMainFormLanguage _walletMainFormLanguageObject;
         private ClassWalletTransactionHistorySystemInstance _walletTransactionHistorySystemInstance;
         private ClassWalletRecentTransactionHistorySystemInstance _walletRecentTransactionHistorySystemInstance;
+        private GeckoWebBrowser _webBrowserStoreNetwork;
+        private Task _storeNetworkUpdateTask;
 
         /// <summary>
         /// Current wallet informations of the wallet opened.
@@ -86,7 +90,9 @@ namespace SeguraChain_Desktop_Wallet
         /// <param name="startupInternalForm"></param>
         public ClassWalletMainInterfaceForm(bool noWalletFile, ClassWalletStartupInternalForm startupInternalForm)
         {
-            _listWalletOpened = new HashSet<string>();
+            Xpcom.Initialize("Firefox64");
+
+           _listWalletOpened = new HashSet<string>();
 
             _cancellationTokenTaskUpdateWalletListOpened = new CancellationTokenSource();
             _noWalletFile = noWalletFile;
@@ -196,7 +202,44 @@ namespace SeguraChain_Desktop_Wallet
             EnableTaskUpdateMenuStripWalletList();
             EnableTaskUpdateBlockchainNetworkStats();
             UpdateRecentTransactionDraw();
+            _webBrowserStoreNetwork = new GeckoWebBrowser();
+            _webBrowserStoreNetwork.Height = panelStoreNetwork.Height;
+            _webBrowserStoreNetwork.Width = panelStoreNetwork.Width;
+            panelStoreNetwork.Controls.Add(_webBrowserStoreNetwork);
+            _webBrowserStoreNetwork.Navigate(BlockchainSetting.CoinUrl);
+            _storeNetworkUpdateTask = new Task(() => UpdateStoreNetworkList(), _cancellationTokenTaskUpdateWalletContentInformations.Token);
+            _storeNetworkUpdateTask.Start();
             Refresh();
+        }
+
+        /// <summary>
+        /// Update the store network list.
+        /// </summary>
+        private async void UpdateStoreNetworkList()
+        {
+            if (ClassDesktopWalletCommonData.WalletSettingObject.WalletSyncMode == ClassWalletSettingEnumSyncMode.INTERNAL_PEER_SYNC_MODE)
+            {
+                while (true)
+                {
+                    try
+                    {
+                        MethodInvoker invokeClean = () => listViewWebNode.Items.Clear();
+                        BeginInvoke(invokeClean);
+
+                        foreach (string peerIp in ClassDesktopWalletCommonData.WalletSyncSystem.NodeInstance.PeerDatabase.Keys)
+                        {
+                            MethodInvoker invoke = () => listViewWebNode.Items.Add(peerIp);
+                            BeginInvoke(invoke);
+                        }
+                    }
+                    catch
+                    {
+                        // Ignored, catch the exception once the task is cancelled.
+                    }
+
+                    await Task.Delay(1000);
+                }
+            }
         }
 
         /// <summary>
@@ -1948,7 +1991,7 @@ namespace SeguraChain_Desktop_Wallet
             }
             catch
             {
-               // e.Graphics.Clear(ClassWalletDefaultSetting.DefaultRecentTransactionBackColor);
+                // e.Graphics.Clear(ClassWalletDefaultSetting.DefaultRecentTransactionBackColor);
             }
         }
 
@@ -2718,10 +2761,58 @@ namespace SeguraChain_Desktop_Wallet
             ClassGraphicsUtility.DrawShadowOnListGraphicContentTarget(this, _listMainInterfaceControlShadow, e.Graphics, 50, 50, _mainInterfaceShadowBitmap, out _mainInterfaceShadowBitmap);
         }
 
-
-
         #endregion
 
+        /// <summary>
+        /// Open the setting form.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (ClassWalletSettingForm walletSettingForm = new ClassWalletSettingForm())
+                walletSettingForm.ShowDialog();
+        }
+
+
+        /// <summary>
+        /// Select a node from the list of public nodes.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void listViewWebNode_ItemChecked(object sender, ItemCheckedEventArgs e)
+        {
+            ListViewItem item = sender as ListViewItem;
+
+            Debug.WriteLine("Test 1.");
+
+            _webBrowserStoreNetwork.Navigate("http://" + item.Text + "/");
+        }
+
+        private void listViewWebNode_ItemCheck(object sender, ItemCheckEventArgs e)
+        {
+            ListViewItem item = sender as ListViewItem;
+
+            Debug.WriteLine("Test 2.");
+
+            _webBrowserStoreNetwork.Navigate("http://" + item.Text + "/");
+        }
+
+        private void listViewWebNode_MouseClick(object sender, MouseEventArgs e)
+        {
+            try
+            {
+                string target = listViewWebNode.SelectedItems[0].Text;
+
+                Debug.WriteLine("Test 3. Target: "+target);
+
+                _webBrowserStoreNetwork.Navigate("http://" + target + "/");
+            }
+            catch
+            {
+                // Ignored, catch the exception if any item is selected.
+            }
+        }
     }
 }
 

@@ -115,6 +115,9 @@ namespace SeguraChain_Desktop_Wallet
             buttonMainInterfaceExportTransactionHistory = new System.Windows.Forms.Button();
             panelTransactionHistory = new ClassCustomPanel();
             tabPageStoreNetwork = new System.Windows.Forms.TabPage();
+            panel1 = new System.Windows.Forms.Panel();
+            listViewWebNode = new System.Windows.Forms.ListView();
+            panelStoreNetwork = new System.Windows.Forms.Panel();
             labelWalletAddressReceiveTransactionTitle = new System.Windows.Forms.Label();
             labelWalletAddressReceiveTransaction = new System.Windows.Forms.Label();
             progressBarMainInterfaceSyncProgress = new ClassCustomProgressBar();
@@ -129,6 +132,8 @@ namespace SeguraChain_Desktop_Wallet
             panelSendTransactionDetails.SuspendLayout();
             tabPageReceiveTransaction.SuspendLayout();
             tabPageTransactionHistory.SuspendLayout();
+            tabPageStoreNetwork.SuspendLayout();
+            panel1.SuspendLayout();
             SuspendLayout();
             // 
             // menuStripGeneralWallet
@@ -197,6 +202,7 @@ namespace SeguraChain_Desktop_Wallet
             settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
             settingsToolStripMenuItem.Size = new System.Drawing.Size(101, 20);
             settingsToolStripMenuItem.Text = "SETTING_TEXT";
+            settingsToolStripMenuItem.Click += settingsToolStripMenuItem_Click;
             // 
             // rescanToolStripMenuItem
             // 
@@ -1149,6 +1155,7 @@ namespace SeguraChain_Desktop_Wallet
             // tabPageStoreNetwork
             // 
             tabPageStoreNetwork.BackColor = System.Drawing.Color.FromArgb(77, 104, 145);
+            tabPageStoreNetwork.Controls.Add(panel1);
             tabPageStoreNetwork.Location = new System.Drawing.Point(4, 34);
             tabPageStoreNetwork.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             tabPageStoreNetwork.Name = "tabPageStoreNetwork";
@@ -1156,6 +1163,36 @@ namespace SeguraChain_Desktop_Wallet
             tabPageStoreNetwork.Size = new System.Drawing.Size(1369, 546);
             tabPageStoreNetwork.TabIndex = 3;
             tabPageStoreNetwork.Text = "TABPAGE_STORE_NETWORK_TEXT";
+            // 
+            // panel1
+            // 
+            panel1.BackColor = System.Drawing.Color.White;
+            panel1.Controls.Add(listViewWebNode);
+            panel1.Controls.Add(panelStoreNetwork);
+            panel1.Location = new System.Drawing.Point(7, 6);
+            panel1.Name = "panel1";
+            panel1.Size = new System.Drawing.Size(1356, 534);
+            panel1.TabIndex = 0;
+            // 
+            // listViewWebNode
+            // 
+            listViewWebNode.Location = new System.Drawing.Point(24, 18);
+            listViewWebNode.Name = "listViewWebNode";
+            listViewWebNode.Size = new System.Drawing.Size(333, 502);
+            listViewWebNode.TabIndex = 2;
+            listViewWebNode.UseCompatibleStateImageBehavior = false;
+            listViewWebNode.View = System.Windows.Forms.View.List;
+            listViewWebNode.ItemCheck += listViewWebNode_ItemCheck;
+            listViewWebNode.ItemChecked += listViewWebNode_ItemChecked;
+            listViewWebNode.MouseClick += listViewWebNode_MouseClick;
+            // 
+            // panelStoreNetwork
+            // 
+            panelStoreNetwork.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            panelStoreNetwork.Location = new System.Drawing.Point(374, 18);
+            panelStoreNetwork.Name = "panelStoreNetwork";
+            panelStoreNetwork.Size = new System.Drawing.Size(963, 502);
+            panelStoreNetwork.TabIndex = 1;
             // 
             // labelWalletAddressReceiveTransactionTitle
             // 
@@ -1241,6 +1278,8 @@ namespace SeguraChain_Desktop_Wallet
             tabPageReceiveTransaction.PerformLayout();
             tabPageTransactionHistory.ResumeLayout(false);
             tabPageTransactionHistory.PerformLayout();
+            tabPageStoreNetwork.ResumeLayout(false);
+            panel1.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -1333,6 +1372,9 @@ namespace SeguraChain_Desktop_Wallet
         private System.Windows.Forms.ToolStripMenuItem languageToolStripMenuItem;
         private System.Windows.Forms.Button buttonMainInterfaceSearchTransactionHistory;
         private System.Windows.Forms.TextBox textBoxTransactionHistorySearch;
+        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel panelStoreNetwork;
+        private System.Windows.Forms.ListView listViewWebNode;
     }
 }
 
