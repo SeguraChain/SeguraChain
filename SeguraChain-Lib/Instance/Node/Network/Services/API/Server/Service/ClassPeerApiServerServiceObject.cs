@@ -4,6 +4,7 @@ using SeguraChain_Lib.Instance.Node.Setting.Object;
 using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Other.Object.Network;
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -12,6 +13,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
 {
     public class ClassPeerApiServerServiceObject : IDisposable
     {
+        private readonly string _peerWebDirectory = AppContext.BaseDirectory + "website";
         public bool NetworkPeerApiServerStatus;
         private TcpListener _tcpListenerPeerApi;
         private CancellationTokenSource _cancellationTokenSourcePeerApiServer;
@@ -71,7 +73,15 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
         /// <returns></returns>
         public bool StartPeerApiServer()
         {
-
+            try
+            {
+                if (!Directory.Exists(_peerWebDirectory))
+                    Directory.CreateDirectory(_peerWebDirectory);
+            }
+            catch
+            {
+                return false;
+            }
 
             try
             {

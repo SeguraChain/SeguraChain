@@ -37,6 +37,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// </summary>
         public string PeerIpTarget;
         public int PeerPortTarget;
+        public int PeerApiPortTarget;
         public string PeerUniqueIdTarget;
      
 

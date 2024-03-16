@@ -1830,9 +1830,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 return ClassPeerNetworkClientServerHandlePacketEnumStatus.INVALID_PACKET_TIMESTAMP;
 
             if (peerObject == null)
-                peerObject = ClassPeerKeysManager.GeneratePeerObject(_peerClientIp, packetSendPeerAuthKeysObject.PeerPort, _peerUniqueId, _cancellationTokenListenPeerPacket);
+                peerObject = ClassPeerKeysManager.GeneratePeerObject(_peerClientIp, packetSendPeerAuthKeysObject.PeerPort, packetSendPeerAuthKeysObject.PeerApiPort, _peerUniqueId, _cancellationTokenListenPeerPacket);
 
-            if (!await ClassPeerKeysManager.UpdatePeerInternalKeys(_peerDatabase, _peerClientIp, packetSendPeerAuthKeysObject.PeerPort, _peerUniqueId, _cancellationTokenListenPeerPacket, _peerNetworkSettingObject, true))
+            if (!await ClassPeerKeysManager.UpdatePeerInternalKeys(_peerDatabase, _peerClientIp, packetSendPeerAuthKeysObject.PeerPort, packetSendPeerAuthKeysObject.PeerApiPort, _peerUniqueId, _cancellationTokenListenPeerPacket, _peerNetworkSettingObject, true))
             {
                 await SendPacketToPeer(new ClassPeerPacketRecvObject(_peerNetworkSettingObject.PeerUniqueId, peerObject.PeerInternPublicKey, peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                 {

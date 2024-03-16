@@ -31,7 +31,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="cancellation"></param>
         /// <param name="peerNetworkSettingObject"></param>
         /// <param name="forceUpdate"></param>
-        public static async Task<bool> UpdatePeerInternalKeys(ClassPeerDatabase peerDatabase, string peerIp, int peerPort, string peerUniqueId, CancellationTokenSource cancellation, ClassPeerNetworkSettingObject peerNetworkSettingObject, bool forceUpdate)
+        public static async Task<bool> UpdatePeerInternalKeys(ClassPeerDatabase peerDatabase, string peerIp, int peerPort, int peerApiPort, string peerUniqueId, CancellationTokenSource cancellation, ClassPeerNetworkSettingObject peerNetworkSettingObject, bool forceUpdate)
         {
             bool result = false;
 
@@ -52,6 +52,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                             peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey = GeneratePeerPrivateKey();
                             peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPublicKey = GeneratePeerPublicKeyFromPrivateKey(peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey);
                             peerDatabase[peerIp, peerUniqueId, cancellation].PeerPort = peerPort;
+                            peerDatabase[peerIp, peerUniqueId, cancellation].PeerApiPort = peerApiPort;
                             peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternTimestampKeyGenerated = currentTimestamp;
 
                             if (peerDatabase[peerIp, peerUniqueId, cancellation].GetInternCryptoStreamObject == null)
@@ -69,6 +70,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                     if (peerDatabase[peerIp, cancellation].TryAdd(peerUniqueId, new ClassPeerObject()
                     {
                         PeerPort = peerPort,
+                        PeerApiPort = peerApiPort,
                         PeerIp = peerIp,
                         PeerUniqueId = peerUniqueId
                     }))
@@ -80,9 +82,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                             peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey = GeneratePeerPrivateKey();
                             peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPublicKey = GeneratePeerPublicKeyFromPrivateKey(peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey);
                             peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternTimestampKeyGenerated = currentTimestamp;
-
-                            peerDatabase[peerIp, peerUniqueId, cancellation].GetInternCryptoStreamObject = new ClassPeerCryptoStreamObject(peerIp, peerUniqueId, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKey, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKeyIv, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPublicKey, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey, cancellation); ;
-
+                            peerDatabase[peerIp, peerUniqueId, cancellation].GetInternCryptoStreamObject = new ClassPeerCryptoStreamObject(peerIp, peerUniqueId, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKey, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPacketEncryptionKeyIv, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPublicKey, peerDatabase[peerIp, peerUniqueId, cancellation].PeerInternPrivateKey, cancellation); 
                             result = true;
                         }
                     }
@@ -104,9 +104,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="peerUniqueId"></param>
         /// 
         /// <returns></returns>
-        public static ClassPeerObject GeneratePeerObject(string peerIp, int peerPort, string peerUniqueId, CancellationTokenSource cancellation)
+        public static ClassPeerObject GeneratePeerObject(string peerIp, int peerPort, int peerApiPort, string peerUniqueId, CancellationTokenSource cancellation)
         {
-            ClassPeerObject peerObject = new ClassPeerObject { PeerIp = peerIp, PeerPort = peerPort, PeerUniqueId = peerUniqueId, PeerStatus = ClassPeerEnumStatus.PEER_ALIVE };
+            ClassPeerObject peerObject = new ClassPeerObject { PeerIp = peerIp, PeerPort = peerPort, PeerApiPort = peerApiPort, PeerUniqueId = peerUniqueId, PeerStatus = ClassPeerEnumStatus.PEER_ALIVE };
 
             if (ClassAes.GenerateKey(ClassUtility.GetRandomWord(RandomWordKeySize).GetByteArray(true), true, out peerObject.PeerInternPacketEncryptionKey))
             {
@@ -145,6 +145,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                         peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientPacketEncryptionKeyIv = sendAskPeerAuthKeysObject.AesEncryptionIv;
                         peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientPublicKey = sendAskPeerAuthKeysObject.PublicKey;
                         peerDatabase[peerIp, peerUniqueId, cancellation].PeerPort = sendAskPeerAuthKeysObject.PeerPort;
+                        peerDatabase[peerIp, peerUniqueId, cancellation].PeerApiPort = sendAskPeerAuthKeysObject.PeerApiPort;
                         peerDatabase[peerIp, peerUniqueId, cancellation].PeerIsPublic = sendAskPeerAuthKeysObject.PeerIsPublic;
                         peerDatabase[peerIp, peerUniqueId, cancellation].PeerUniqueId = peerUniqueId;
                         peerDatabase[peerIp, peerUniqueId, cancellation].PeerNumericPublicKey = sendAskPeerAuthKeysObject.NumericPublicKey;
@@ -173,6 +174,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                             PeerClientPacketEncryptionKeyIv = sendAskPeerAuthKeysObject.AesEncryptionIv,
                             PeerClientPublicKey = sendAskPeerAuthKeysObject.PublicKey,
                             PeerPort = sendAskPeerAuthKeysObject.PeerPort,
+                            PeerApiPort = sendAskPeerAuthKeysObject.PeerApiPort,
                             PeerIp = peerIp,
                             PeerNumericPublicKey = sendAskPeerAuthKeysObject.NumericPublicKey,
                             PeerIsPublic = sendAskPeerAuthKeysObject.PeerIsPublic,
@@ -229,6 +231,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                     peerDatabase[peerIp, peerUniqueId, cancellation].PeerIp = peerIp;
                     peerDatabase[peerIp, peerUniqueId, cancellation].PeerUniqueId = peerUniqueId;
                     peerDatabase[peerIp, peerUniqueId, cancellation].PeerPort = sendPeerAuthKeysObject.PeerPort;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerApiPort = sendPeerAuthKeysObject.PeerApiPort;
                     peerDatabase[peerIp, peerUniqueId, cancellation].PeerNumericPublicKey = sendPeerAuthKeysObject.NumericPublicKey;
                     peerDatabase[peerIp, peerUniqueId, cancellation].PeerLastValidPacket = TaskManager.TaskManager.CurrentTimestampSecond;
 
@@ -253,6 +256,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                     PeerClientPacketEncryptionKeyIv = sendPeerAuthKeysObject.AesEncryptionIv,
                     PeerClientPublicKey = sendPeerAuthKeysObject.PublicKey,
                     PeerPort = sendPeerAuthKeysObject.PeerPort,
+                    PeerApiPort = sendPeerAuthKeysObject.PeerApiPort,
                     PeerNumericPublicKey = sendPeerAuthKeysObject.NumericPublicKey,
                     PeerUniqueId = peerUniqueId,
                     PeerIp = peerIp,

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -38,6 +39,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 {
     public class ClassPeerApiClientObject : IDisposable
     {
+        private readonly string _peerWebDirectory = AppContext.BaseDirectory + "website";
         private readonly ClassPeerDatabase _peerDatabase;
         private readonly ClassPeerNetworkSettingObject _peerNetworkSettingObject;
         private readonly ClassPeerFirewallSettingObject _peerFirewallSettingObject;
@@ -981,8 +983,32 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                         break;
                     default:
                         {
-                            if (!await SendApiResponse(BlockchainSetting.CoinName + " API."))
-                                return false;
+                            if (!packetReceived.IsNullOrEmpty(false, out _))
+                            {
+                                if (File.Exists(_peerWebDirectory + "\\" + packetReceived))
+                                {
+                                    if (!await ReadAndSendWebsiteFile((_peerWebDirectory + "\\" + packetReceived)))
+                                        return false;
+                                }
+                                else
+                                {
+                                    if (!await SendApiResponse("<h1>File not found<</h1>."))
+                                        return false;
+                                }
+                            }
+                            else
+                            {
+                                if (File.Exists(_peerWebDirectory + "\\" + packetReceived + "\\index.html"))
+                                {
+                                    if (!await ReadAndSendWebsiteFile((_peerWebDirectory + "\\" + packetReceived + "\\index.html")))
+                                        return false;
+                                }
+                                else
+                                {
+                                    if (!await SendApiResponse(BlockchainSetting.CoinName + " API."))
+                                        return false;
+                                }
+                            }
                         }
                         break;
                 }
@@ -993,6 +1019,45 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Read and send file content website.
+        /// </summary>
+        /// <param name="filePath"></param>
+        private async Task<bool> ReadAndSendWebsiteFile(string filePath)
+        {
+            using (StreamReader reader = new StreamReader(filePath))
+            {
+                string content = string.Empty;
+                string line;
+
+                while (((line = reader.ReadLine()) != null))
+                    content += line;
+
+
+                if (!await SendApiResponse(content, GeWebsiteTypeDocument(filePath)))
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Get the file content document type.
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        private string GeWebsiteTypeDocument(string filePath)
+        {
+            if (filePath.Contains(".html"))
+                return "text/html; charset=utf-8";
+            else if (filePath.Contains(".js"))
+                return "text/javascript; charset=utf-8";
+            else if (filePath.Contains(".png") || filePath.Contains(".jpg"))
+                return "image/avif,image/webp,*/*";
+
+            return string.Empty;
         }
 
         /// <summary>
