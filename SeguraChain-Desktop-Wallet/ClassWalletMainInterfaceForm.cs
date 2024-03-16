@@ -37,7 +37,8 @@ using SeguraChain_Desktop_Wallet.InternalForm.Import;
 using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.TaskManager;
 using SeguraChain_Desktop_Wallet.InternalForm.Setting;
-using Gecko;
+using EO.WebBrowser;
+using EO.WinForm;
 
 namespace SeguraChain_Desktop_Wallet
 {
@@ -53,7 +54,8 @@ namespace SeguraChain_Desktop_Wallet
         private ClassWalletMainFormLanguage _walletMainFormLanguageObject;
         private ClassWalletTransactionHistorySystemInstance _walletTransactionHistorySystemInstance;
         private ClassWalletRecentTransactionHistorySystemInstance _walletRecentTransactionHistorySystemInstance;
-        private GeckoWebBrowser _webBrowserStoreNetwork;
+        private WebView _webBrowserStoreNetwork;
+        private WebControl _webBrowserControlStoreNetwork;
         private Task _storeNetworkUpdateTask;
 
         /// <summary>
@@ -90,7 +92,6 @@ namespace SeguraChain_Desktop_Wallet
         /// <param name="startupInternalForm"></param>
         public ClassWalletMainInterfaceForm(bool noWalletFile, ClassWalletStartupInternalForm startupInternalForm)
         {
-            Xpcom.Initialize("Firefox64");
 
            _listWalletOpened = new HashSet<string>();
 
@@ -164,10 +165,10 @@ namespace SeguraChain_Desktop_Wallet
         {
 
 #if NET5_0_OR_GREATER
-            this.AutoScaleDimensions = new SizeF(7F, 16F);
-            this.AutoScaleMode = AutoScaleMode.Inherit;
+            AutoScaleDimensions = new SizeF(7F, 16F);
+            AutoScaleMode = AutoScaleMode.Inherit;
 #else
-            this.AutoScaleDimensions = new SizeF(1F, 1F);
+            AutoScaleDimensions = new SizeF(1F, 1F);
 #endif
 
             // Insert language list items.
@@ -202,13 +203,23 @@ namespace SeguraChain_Desktop_Wallet
             EnableTaskUpdateMenuStripWalletList();
             EnableTaskUpdateBlockchainNetworkStats();
             UpdateRecentTransactionDraw();
-            _webBrowserStoreNetwork = new GeckoWebBrowser();
-            _webBrowserStoreNetwork.Height = panelStoreNetwork.Height;
-            _webBrowserStoreNetwork.Width = panelStoreNetwork.Width;
-            panelStoreNetwork.Controls.Add(_webBrowserStoreNetwork);
-            _webBrowserStoreNetwork.Navigate(BlockchainSetting.CoinUrl);
-            _storeNetworkUpdateTask = new Task(() => UpdateStoreNetworkList(), _cancellationTokenTaskUpdateWalletContentInformations.Token);
-            _storeNetworkUpdateTask.Start();
+
+            #region Initialize Store Network browser.
+
+            _webBrowserStoreNetwork = new WebView();
+            _webBrowserControlStoreNetwork = new WebControl
+            {
+                Height = panelStoreNetwork.Height,
+                Width = panelStoreNetwork.Width,
+                WebView = _webBrowserStoreNetwork,
+                Dock = DockStyle.Fill
+            };
+            _webBrowserStoreNetwork.Engine.Options.DisableSpellChecker = true;
+            panelStoreNetwork.Controls.Add(_webBrowserControlStoreNetwork);
+            _webBrowserStoreNetwork.LoadUrl(BlockchainSetting.CoinUrl);
+            UpdateStoreNetworkList();
+
+            #endregion
             Refresh();
         }
 
@@ -221,21 +232,12 @@ namespace SeguraChain_Desktop_Wallet
             {
                 while (true)
                 {
-                    try
-                    {
-                        MethodInvoker invokeClean = () => listViewWebNode.Items.Clear();
-                        BeginInvoke(invokeClean);
 
-                        foreach (string peerIp in ClassDesktopWalletCommonData.WalletSyncSystem.NodeInstance.PeerDatabase.Keys)
-                        {
-                            MethodInvoker invoke = () => listViewWebNode.Items.Add(peerIp);
-                            BeginInvoke(invoke);
-                        }
-                    }
-                    catch
-                    {
-                        // Ignored, catch the exception once the task is cancelled.
-                    }
+                    listViewWebNode.Items.Clear();
+
+                    foreach (string peerIp in ClassDesktopWalletCommonData.WalletSyncSystem.NodeInstance.PeerDatabase.Keys)
+                        listViewWebNode.Items.Add(peerIp);
+
 
                     await Task.Delay(1000);
                 }
@@ -2786,7 +2788,7 @@ namespace SeguraChain_Desktop_Wallet
 
             Debug.WriteLine("Test 1.");
 
-            _webBrowserStoreNetwork.Navigate("http://" + item.Text + "/");
+            _webBrowserStoreNetwork.LoadUrl("http://" + item.Text + "/");
         }
 
         private void listViewWebNode_ItemCheck(object sender, ItemCheckEventArgs e)
@@ -2795,7 +2797,7 @@ namespace SeguraChain_Desktop_Wallet
 
             Debug.WriteLine("Test 2.");
 
-            _webBrowserStoreNetwork.Navigate("http://" + item.Text + "/");
+            _webBrowserStoreNetwork.LoadUrl("http://" + item.Text + "/");
         }
 
         private void listViewWebNode_MouseClick(object sender, MouseEventArgs e)
@@ -2806,7 +2808,7 @@ namespace SeguraChain_Desktop_Wallet
 
                 Debug.WriteLine("Test 3. Target: "+target);
 
-                _webBrowserStoreNetwork.Navigate("http://" + target + "/");
+                _webBrowserStoreNetwork.LoadUrl("http://" + target + "/");
             }
             catch
             {

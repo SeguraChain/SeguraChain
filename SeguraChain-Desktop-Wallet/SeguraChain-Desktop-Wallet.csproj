@@ -12,8 +12,11 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>logo-web-profil.ico</ApplicationIcon>
     <StartupObject>SeguraChain_Desktop_Wallet.Program</StartupObject>
-    <AnalysisLevel>6.0-all</AnalysisLevel>
+    <AnalysisLevel>preview-recommended</AnalysisLevel>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <PackAsTool>True</PackAsTool>
+    <IncludeSymbols>True</IncludeSymbols>
   </PropertyGroup>
 
 	<PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0-windows'">
@@ -44,7 +47,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GeckoFX" Version="1.0.5" />
+    <PackageReference Include="EO.WebBrowser.WinForm" Version="24.0.49" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="8.0.0" />
     <PackageReference Include="ZXing.Net" Version="0.16.6" />
   </ItemGroup>
