@@ -1,5 +1,5 @@
 <h2>SeguraChain is not complete, do not use it in production, until a stable release is complete and available.</h2>
-
+<h2>If you like the project, please provide a Star</h2>
 Summary: SeguraChain (Secured Chain translated from Spanish) is a technology developed mainly in C#,
 it allows to easily create and understand a decentralized blockchain process, it can be configured to support a sovereign update system,
 allowing to include updates on it without editing the content of the Blockchain. 
@@ -49,7 +49,7 @@ Everything has been developed in C#, and support NET5/NET6/NET7, a downgrade to 
 
 > **Complete wallets balance checkpoint disk cache process. [40%]**
 
-> **Complete Desktop Wallet features and options. [90%]**
+> **Complete Desktop Wallet features and options. [95%]**
 
 > **Develop the IO Cache Network mode. [5%]**
 
