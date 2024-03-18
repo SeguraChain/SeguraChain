@@ -143,12 +143,11 @@ namespace SeguraChain_Desktop_Wallet
             menuStripGeneralWallet.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { fileToolStripMenuItem, settingsToolStripMenuItem, rescanToolStripMenuItem, languageToolStripMenuItem });
             menuStripGeneralWallet.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
             menuStripGeneralWallet.Location = new System.Drawing.Point(0, 0);
-            menuStripGeneralWallet.MinimumSize = new System.Drawing.Size(1376, 0);
+            menuStripGeneralWallet.MinimumSize = new System.Drawing.Size(600, 0);
             menuStripGeneralWallet.Name = "menuStripGeneralWallet";
             menuStripGeneralWallet.Padding = new System.Windows.Forms.Padding(7, 2, 7, 2);
             menuStripGeneralWallet.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
-            menuStripGeneralWallet.Size = new System.Drawing.Size(1376, 24);
-            menuStripGeneralWallet.Stretch = false;
+            menuStripGeneralWallet.Size = new System.Drawing.Size(1371, 24);
             menuStripGeneralWallet.TabIndex = 0;
             menuStripGeneralWallet.Text = "menuStripControl";
             // 
@@ -224,7 +223,7 @@ namespace SeguraChain_Desktop_Wallet
             comboBoxListWalletFile.BackColor = System.Drawing.Color.White;
             comboBoxListWalletFile.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             comboBoxListWalletFile.FormattingEnabled = true;
-            comboBoxListWalletFile.Location = new System.Drawing.Point(1234, 68);
+            comboBoxListWalletFile.Location = new System.Drawing.Point(1143, 68);
             comboBoxListWalletFile.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             comboBoxListWalletFile.Name = "comboBoxListWalletFile";
             comboBoxListWalletFile.Size = new System.Drawing.Size(140, 23);
@@ -236,7 +235,7 @@ namespace SeguraChain_Desktop_Wallet
             labelWalletOpened.AutoSize = true;
             labelWalletOpened.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             labelWalletOpened.ForeColor = System.Drawing.Color.Ivory;
-            labelWalletOpened.Location = new System.Drawing.Point(1119, 50);
+            labelWalletOpened.Location = new System.Drawing.Point(1029, 50);
             labelWalletOpened.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             labelWalletOpened.Name = "labelWalletOpened";
             labelWalletOpened.Size = new System.Drawing.Size(254, 15);
@@ -263,8 +262,10 @@ namespace SeguraChain_Desktop_Wallet
             pictureBoxLogo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             pictureBoxLogo.Location = new System.Drawing.Point(630, 27);
             pictureBoxLogo.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            pictureBoxLogo.MinimumSize = new System.Drawing.Size(99, 99);
             pictureBoxLogo.Name = "pictureBoxLogo";
-            pictureBoxLogo.Size = new System.Drawing.Size(99, 83);
+            pictureBoxLogo.Size = new System.Drawing.Size(99, 99);
+            pictureBoxLogo.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             pictureBoxLogo.TabIndex = 4;
             pictureBoxLogo.TabStop = false;
             // 
@@ -284,12 +285,13 @@ namespace SeguraChain_Desktop_Wallet
             tabControlWallet.Controls.Add(tabPageStoreNetwork);
             tabControlWallet.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             tabControlWallet.ItemSize = new System.Drawing.Size(128, 30);
-            tabControlWallet.Location = new System.Drawing.Point(0, 145);
+            tabControlWallet.Location = new System.Drawing.Point(0, 141);
             tabControlWallet.Margin = new System.Windows.Forms.Padding(0);
             tabControlWallet.Name = "tabControlWallet";
             tabControlWallet.Padding = new System.Drawing.Point(0, 0);
             tabControlWallet.SelectedIndex = 0;
-            tabControlWallet.Size = new System.Drawing.Size(1377, 584);
+            tabControlWallet.Size = new System.Drawing.Size(1377, 1000);
+            tabControlWallet.SizeMode = System.Windows.Forms.TabSizeMode.FillToRight;
             tabControlWallet.TabIndex = 1;
             // 
             // tabPageOverview
@@ -307,13 +309,15 @@ namespace SeguraChain_Desktop_Wallet
             tabPageOverview.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             tabPageOverview.Name = "tabPageOverview";
             tabPageOverview.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            tabPageOverview.Size = new System.Drawing.Size(1369, 546);
+            tabPageOverview.Size = new System.Drawing.Size(1369, 962);
             tabPageOverview.TabIndex = 0;
             tabPageOverview.Text = "TABPAG_OVERVIEW_TEXT";
             tabPageOverview.Paint += tabPageOverview_Paint;
             // 
             // panelInternalNetworkStats
             // 
+            panelInternalNetworkStats.AutoSize = true;
+            panelInternalNetworkStats.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             panelInternalNetworkStats.BackColor = System.Drawing.Color.AliceBlue;
             panelInternalNetworkStats.BorderColor = System.Drawing.Color.DarkGray;
             panelInternalNetworkStats.BorderSize = 1F;
@@ -337,7 +341,7 @@ namespace SeguraChain_Desktop_Wallet
             panelInternalNetworkStats.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             panelInternalNetworkStats.Name = "panelInternalNetworkStats";
             panelInternalNetworkStats.Radius = 10;
-            panelInternalNetworkStats.Size = new System.Drawing.Size(830, 402);
+            panelInternalNetworkStats.Size = new System.Drawing.Size(575, 382);
             panelInternalNetworkStats.TabIndex = 11;
             // 
             // labelMainInterfaceNetworkStatsTotalCoinPendingText
@@ -442,11 +446,11 @@ namespace SeguraChain_Desktop_Wallet
             panelSyncInformationsSeperator.BorderColor = System.Drawing.Color.White;
             panelSyncInformationsSeperator.BorderSize = 3F;
             panelSyncInformationsSeperator.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            panelSyncInformationsSeperator.Location = new System.Drawing.Point(114, 162);
+            panelSyncInformationsSeperator.Location = new System.Drawing.Point(21, 160);
             panelSyncInformationsSeperator.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             panelSyncInformationsSeperator.Name = "panelSyncInformationsSeperator";
             panelSyncInformationsSeperator.Radius = 2;
-            panelSyncInformationsSeperator.Size = new System.Drawing.Size(583, 2);
+            panelSyncInformationsSeperator.Size = new System.Drawing.Size(500, 2);
             panelSyncInformationsSeperator.TabIndex = 17;
             // 
             // labelMainInterfaceNetworkStatsInfoSyncText
@@ -454,7 +458,7 @@ namespace SeguraChain_Desktop_Wallet
             labelMainInterfaceNetworkStatsInfoSyncText.AutoSize = true;
             labelMainInterfaceNetworkStatsInfoSyncText.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             labelMainInterfaceNetworkStatsInfoSyncText.ForeColor = System.Drawing.Color.Black;
-            labelMainInterfaceNetworkStatsInfoSyncText.Location = new System.Drawing.Point(124, 167);
+            labelMainInterfaceNetworkStatsInfoSyncText.Location = new System.Drawing.Point(36, 165);
             labelMainInterfaceNetworkStatsInfoSyncText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             labelMainInterfaceNetworkStatsInfoSyncText.Name = "labelMainInterfaceNetworkStatsInfoSyncText";
             labelMainInterfaceNetworkStatsInfoSyncText.Size = new System.Drawing.Size(476, 18);
@@ -526,7 +530,7 @@ namespace SeguraChain_Desktop_Wallet
             labelMainInterfaceNetworkStatsTitleText.AutoSize = true;
             labelMainInterfaceNetworkStatsTitleText.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             labelMainInterfaceNetworkStatsTitleText.ForeColor = System.Drawing.Color.Black;
-            labelMainInterfaceNetworkStatsTitleText.Location = new System.Drawing.Point(149, 9);
+            labelMainInterfaceNetworkStatsTitleText.Location = new System.Drawing.Point(36, 4);
             labelMainInterfaceNetworkStatsTitleText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             labelMainInterfaceNetworkStatsTitleText.Name = "labelMainInterfaceNetworkStatsTitleText";
             labelMainInterfaceNetworkStatsTitleText.Size = new System.Drawing.Size(433, 18);
@@ -535,16 +539,18 @@ namespace SeguraChain_Desktop_Wallet
             // 
             // panelRecentTransactions
             // 
+            panelRecentTransactions.AutoSize = true;
+            panelRecentTransactions.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             panelRecentTransactions.BackColor = System.Drawing.Color.FromArgb(216, 227, 240);
             panelRecentTransactions.BorderColor = System.Drawing.Color.DarkGray;
             panelRecentTransactions.BorderSize = 1F;
             panelRecentTransactions.Controls.Add(panelInternalRecentTransactions);
             panelRecentTransactions.Controls.Add(labelMainInterfaceRecentTransaction);
-            panelRecentTransactions.Location = new System.Drawing.Point(847, 23);
+            panelRecentTransactions.Location = new System.Drawing.Point(764, 47);
             panelRecentTransactions.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             panelRecentTransactions.Name = "panelRecentTransactions";
             panelRecentTransactions.Radius = 10;
-            panelRecentTransactions.Size = new System.Drawing.Size(511, 507);
+            panelRecentTransactions.Size = new System.Drawing.Size(493, 463);
             panelRecentTransactions.TabIndex = 10;
             panelRecentTransactions.Paint += panelRecentTransactions_Paint;
             // 
@@ -653,7 +659,7 @@ namespace SeguraChain_Desktop_Wallet
             tabPageSendTransaction.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             tabPageSendTransaction.Name = "tabPageSendTransaction";
             tabPageSendTransaction.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            tabPageSendTransaction.Size = new System.Drawing.Size(1369, 546);
+            tabPageSendTransaction.Size = new System.Drawing.Size(1369, 962);
             tabPageSendTransaction.TabIndex = 1;
             tabPageSendTransaction.Text = "TABPAGE_SEND_TRANSACTION_TEXT";
             tabPageSendTransaction.Paint += tabPageSendTransaction_Paint;
@@ -674,6 +680,8 @@ namespace SeguraChain_Desktop_Wallet
             // 
             // panelSendTransaction
             // 
+            panelSendTransaction.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            panelSendTransaction.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             panelSendTransaction.BackColor = System.Drawing.Color.AliceBlue;
             panelSendTransaction.BorderColor = System.Drawing.Color.Ivory;
             panelSendTransaction.BorderSize = 2F;
@@ -693,8 +701,8 @@ namespace SeguraChain_Desktop_Wallet
             panelSendTransaction.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             panelSendTransaction.Name = "panelSendTransaction";
             panelSendTransaction.Radius = 10;
-            panelSendTransaction.Size = new System.Drawing.Size(1349, 477);
-            panelSendTransaction.TabIndex = 0;
+            panelSendTransaction.Size = new System.Drawing.Size(1374, 1000);
+            panelSendTransaction.TabIndex = 0;            
             // 
             // panelSendTransactionDetails
             // 
@@ -833,7 +841,7 @@ namespace SeguraChain_Desktop_Wallet
             // 
             textBoxSendTransactionConfirmationsCountTarget.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             textBoxSendTransactionConfirmationsCountTarget.Location = new System.Drawing.Point(19, 267);
-            textBoxSendTransactionConfirmationsCountTarget.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxSendTransactionConfirmationsCountTarget.Margin = new System.Windows.Forms.Padding(22);
             textBoxSendTransactionConfirmationsCountTarget.Multiline = true;
             textBoxSendTransactionConfirmationsCountTarget.Name = "textBoxSendTransactionConfirmationsCountTarget";
             textBoxSendTransactionConfirmationsCountTarget.Size = new System.Drawing.Size(255, 25);
@@ -844,7 +852,7 @@ namespace SeguraChain_Desktop_Wallet
             // labelSendTransactionConfirmationTimeEstimated
             // 
             labelSendTransactionConfirmationTimeEstimated.AutoSize = true;
-            labelSendTransactionConfirmationTimeEstimated.Location = new System.Drawing.Point(15, 301);
+            labelSendTransactionConfirmationTimeEstimated.Location = new System.Drawing.Point(-10, 276);
             labelSendTransactionConfirmationTimeEstimated.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             labelSendTransactionConfirmationTimeEstimated.Name = "labelSendTransactionConfirmationTimeEstimated";
             labelSendTransactionConfirmationTimeEstimated.Size = new System.Drawing.Size(527, 16);
@@ -854,7 +862,7 @@ namespace SeguraChain_Desktop_Wallet
             // labelSendTransactionPaymentId
             // 
             labelSendTransactionPaymentId.AutoSize = true;
-            labelSendTransactionPaymentId.Location = new System.Drawing.Point(15, 363);
+            labelSendTransactionPaymentId.Location = new System.Drawing.Point(-10, 338);
             labelSendTransactionPaymentId.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             labelSendTransactionPaymentId.Name = "labelSendTransactionPaymentId";
             labelSendTransactionPaymentId.Size = new System.Drawing.Size(370, 16);
@@ -865,7 +873,7 @@ namespace SeguraChain_Desktop_Wallet
             // 
             textBoxSendTransactionPaymentId.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             textBoxSendTransactionPaymentId.Location = new System.Drawing.Point(19, 385);
-            textBoxSendTransactionPaymentId.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxSendTransactionPaymentId.Margin = new System.Windows.Forms.Padding(22);
             textBoxSendTransactionPaymentId.Multiline = true;
             textBoxSendTransactionPaymentId.Name = "textBoxSendTransactionPaymentId";
             textBoxSendTransactionPaymentId.Size = new System.Drawing.Size(446, 25);
@@ -877,7 +885,7 @@ namespace SeguraChain_Desktop_Wallet
             // 
             labelSendTransactionAvailableBalanceText.AutoSize = true;
             labelSendTransactionAvailableBalanceText.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            labelSendTransactionAvailableBalanceText.Location = new System.Drawing.Point(15, 13);
+            labelSendTransactionAvailableBalanceText.Location = new System.Drawing.Point(-10, -12);
             labelSendTransactionAvailableBalanceText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             labelSendTransactionAvailableBalanceText.Name = "labelSendTransactionAvailableBalanceText";
             labelSendTransactionAvailableBalanceText.Size = new System.Drawing.Size(466, 18);
@@ -900,7 +908,7 @@ namespace SeguraChain_Desktop_Wallet
             // labelSendTransactionConfirmationCountTarget
             // 
             labelSendTransactionConfirmationCountTarget.AutoSize = true;
-            labelSendTransactionConfirmationCountTarget.Location = new System.Drawing.Point(15, 245);
+            labelSendTransactionConfirmationCountTarget.Location = new System.Drawing.Point(-10, 220);
             labelSendTransactionConfirmationCountTarget.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             labelSendTransactionConfirmationCountTarget.Name = "labelSendTransactionConfirmationCountTarget";
             labelSendTransactionConfirmationCountTarget.Size = new System.Drawing.Size(519, 16);
@@ -910,7 +918,7 @@ namespace SeguraChain_Desktop_Wallet
             // labelSendTransactionAmountSelected
             // 
             labelSendTransactionAmountSelected.AutoSize = true;
-            labelSendTransactionAmountSelected.Location = new System.Drawing.Point(13, 168);
+            labelSendTransactionAmountSelected.Location = new System.Drawing.Point(-12, 143);
             labelSendTransactionAmountSelected.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             labelSendTransactionAmountSelected.Name = "labelSendTransactionAmountSelected";
             labelSendTransactionAmountSelected.Size = new System.Drawing.Size(426, 16);
@@ -921,7 +929,7 @@ namespace SeguraChain_Desktop_Wallet
             // 
             textBoxSendTransactionAmountSelected.Font = new System.Drawing.Font("Microsoft Sans Serif", 11.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             textBoxSendTransactionAmountSelected.Location = new System.Drawing.Point(16, 190);
-            textBoxSendTransactionAmountSelected.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxSendTransactionAmountSelected.Margin = new System.Windows.Forms.Padding(22);
             textBoxSendTransactionAmountSelected.Multiline = true;
             textBoxSendTransactionAmountSelected.Name = "textBoxSendTransactionAmountSelected";
             textBoxSendTransactionAmountSelected.Size = new System.Drawing.Size(446, 25);
@@ -932,7 +940,7 @@ namespace SeguraChain_Desktop_Wallet
             // labelSendTransactionWalletAddressTarget
             // 
             labelSendTransactionWalletAddressTarget.AutoSize = true;
-            labelSendTransactionWalletAddressTarget.Location = new System.Drawing.Point(15, 47);
+            labelSendTransactionWalletAddressTarget.Location = new System.Drawing.Point(-10, 22);
             labelSendTransactionWalletAddressTarget.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             labelSendTransactionWalletAddressTarget.Name = "labelSendTransactionWalletAddressTarget";
             labelSendTransactionWalletAddressTarget.Size = new System.Drawing.Size(485, 16);
@@ -941,12 +949,13 @@ namespace SeguraChain_Desktop_Wallet
             // 
             // textBoxSendTransactionWalletAddressTarget
             // 
+            textBoxSendTransactionWalletAddressTarget.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             textBoxSendTransactionWalletAddressTarget.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            textBoxSendTransactionWalletAddressTarget.Location = new System.Drawing.Point(16, 69);
-            textBoxSendTransactionWalletAddressTarget.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxSendTransactionWalletAddressTarget.Location = new System.Drawing.Point(-9, 44);
+            textBoxSendTransactionWalletAddressTarget.Margin = new System.Windows.Forms.Padding(22);
             textBoxSendTransactionWalletAddressTarget.Multiline = true;
             textBoxSendTransactionWalletAddressTarget.Name = "textBoxSendTransactionWalletAddressTarget";
-            textBoxSendTransactionWalletAddressTarget.Size = new System.Drawing.Size(1328, 25);
+            textBoxSendTransactionWalletAddressTarget.Size = new System.Drawing.Size(524, 25);
             textBoxSendTransactionWalletAddressTarget.TabIndex = 0;
             textBoxSendTransactionWalletAddressTarget.TextChanged += textBoxSendTransactionWalletAddressTarget_TextChanged;
             textBoxSendTransactionWalletAddressTarget.KeyDown += textBoxSendTransactionWalletAddressTarget_KeyDown;
@@ -962,7 +971,7 @@ namespace SeguraChain_Desktop_Wallet
             tabPageReceiveTransaction.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             tabPageReceiveTransaction.Name = "tabPageReceiveTransaction";
             tabPageReceiveTransaction.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            tabPageReceiveTransaction.Size = new System.Drawing.Size(1369, 546);
+            tabPageReceiveTransaction.Size = new System.Drawing.Size(1369, 962);
             tabPageReceiveTransaction.TabIndex = 4;
             tabPageReceiveTransaction.Text = "TABPAGE_RECEIVE_TRANSACTION_TEXT";
             // 
@@ -1007,16 +1016,20 @@ namespace SeguraChain_Desktop_Wallet
             // 
             // panelQrCodeWalletAddress
             // 
+            panelQrCodeWalletAddress.AutoSize = true;
+            panelQrCodeWalletAddress.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             panelQrCodeWalletAddress.BackColor = System.Drawing.Color.White;
             panelQrCodeWalletAddress.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             panelQrCodeWalletAddress.BorderColor = System.Drawing.Color.Ivory;
             panelQrCodeWalletAddress.BorderSize = 1F;
             panelQrCodeWalletAddress.Location = new System.Drawing.Point(512, 74);
             panelQrCodeWalletAddress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            panelQrCodeWalletAddress.MinimumSize = new System.Drawing.Size(350, 350);
             panelQrCodeWalletAddress.Name = "panelQrCodeWalletAddress";
             panelQrCodeWalletAddress.Radius = 30;
-            panelQrCodeWalletAddress.Size = new System.Drawing.Size(350, 346);
+            panelQrCodeWalletAddress.Size = new System.Drawing.Size(350, 350);
             panelQrCodeWalletAddress.TabIndex = 0;
+            panelQrCodeWalletAddress.Tag = "image";
             // 
             // tabPageTransactionHistory
             // 
@@ -1033,7 +1046,7 @@ namespace SeguraChain_Desktop_Wallet
             tabPageTransactionHistory.Location = new System.Drawing.Point(4, 34);
             tabPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             tabPageTransactionHistory.Name = "tabPageTransactionHistory";
-            tabPageTransactionHistory.Size = new System.Drawing.Size(1369, 546);
+            tabPageTransactionHistory.Size = new System.Drawing.Size(1369, 962);
             tabPageTransactionHistory.TabIndex = 2;
             tabPageTransactionHistory.Text = "TABPAGE_TRANSACTION_HISTORY_TEXT";
             tabPageTransactionHistory.Paint += tabPageTransactionHistory_Paint;
@@ -1160,7 +1173,7 @@ namespace SeguraChain_Desktop_Wallet
             tabPageStoreNetwork.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             tabPageStoreNetwork.Name = "tabPageStoreNetwork";
             tabPageStoreNetwork.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            tabPageStoreNetwork.Size = new System.Drawing.Size(1369, 546);
+            tabPageStoreNetwork.Size = new System.Drawing.Size(1369, 962);
             tabPageStoreNetwork.TabIndex = 3;
             tabPageStoreNetwork.Text = "TABPAGE_STORE_NETWORK_TEXT";
             // 
@@ -1170,15 +1183,16 @@ namespace SeguraChain_Desktop_Wallet
             panel1.Controls.Add(listViewWebNode);
             panel1.Controls.Add(panelStoreNetwork);
             panel1.Location = new System.Drawing.Point(7, 6);
+            panel1.MinimumSize = new System.Drawing.Size(800, 1000);
             panel1.Name = "panel1";
-            panel1.Size = new System.Drawing.Size(1356, 534);
+            panel1.Size = new System.Drawing.Size(1356, 1000);
             panel1.TabIndex = 0;
             // 
             // listViewWebNode
             // 
             listViewWebNode.Location = new System.Drawing.Point(24, 18);
             listViewWebNode.Name = "listViewWebNode";
-            listViewWebNode.Size = new System.Drawing.Size(333, 502);
+            listViewWebNode.Size = new System.Drawing.Size(188, 109);
             listViewWebNode.TabIndex = 2;
             listViewWebNode.UseCompatibleStateImageBehavior = false;
             listViewWebNode.View = System.Windows.Forms.View.List;
@@ -1188,10 +1202,13 @@ namespace SeguraChain_Desktop_Wallet
             // 
             // panelStoreNetwork
             // 
+            panelStoreNetwork.AutoSize = true;
+            panelStoreNetwork.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             panelStoreNetwork.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             panelStoreNetwork.Location = new System.Drawing.Point(374, 18);
+            panelStoreNetwork.MinimumSize = new System.Drawing.Size(800, 600);
             panelStoreNetwork.Name = "panelStoreNetwork";
-            panelStoreNetwork.Size = new System.Drawing.Size(963, 502);
+            panelStoreNetwork.Size = new System.Drawing.Size(800, 600);
             panelStoreNetwork.TabIndex = 1;
             // 
             // labelWalletAddressReceiveTransactionTitle
@@ -1221,21 +1238,27 @@ namespace SeguraChain_Desktop_Wallet
             // 
             // progressBarMainInterfaceSyncProgress
             // 
+            progressBarMainInterfaceSyncProgress.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             progressBarMainInterfaceSyncProgress.BackColor = System.Drawing.Color.GhostWhite;
             progressBarMainInterfaceSyncProgress.ForeColor = System.Drawing.Color.Black;
             progressBarMainInterfaceSyncProgress.Location = new System.Drawing.Point(492, 751);
             progressBarMainInterfaceSyncProgress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             progressBarMainInterfaceSyncProgress.Maximum = 10000;
             progressBarMainInterfaceSyncProgress.Name = "progressBarMainInterfaceSyncProgress";
-            progressBarMainInterfaceSyncProgress.Size = new System.Drawing.Size(408, 23);
+            progressBarMainInterfaceSyncProgress.Size = new System.Drawing.Size(6338, 23);
             progressBarMainInterfaceSyncProgress.Step = 1;
             progressBarMainInterfaceSyncProgress.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
             progressBarMainInterfaceSyncProgress.TabIndex = 5;
             // 
             // ClassWalletMainInterfaceForm
             // 
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            AutoScroll = true;
+            AutoSize = true;
+            AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             BackColor = System.Drawing.Color.FromArgb(49, 55, 64);
-            ClientSize = new System.Drawing.Size(1377, 781);
+            ClientSize = new System.Drawing.Size(784, 561);
             Controls.Add(labelMainInterfaceSyncProgress);
             Controls.Add(progressBarMainInterfaceSyncProgress);
             Controls.Add(pictureBoxLogo);
@@ -1251,13 +1274,17 @@ namespace SeguraChain_Desktop_Wallet
             MainMenuStrip = menuStripGeneralWallet;
             Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             MaximizeBox = false;
+            MinimumSize = new System.Drawing.Size(800, 600);
             Name = "ClassWalletMainInterfaceForm";
             Padding = new System.Windows.Forms.Padding(0, 0, 6, 0);
-            StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             Text = "FORM_TITLE_MAIN_INTERFACE_TEXT";
+            WindowState = System.Windows.Forms.FormWindowState.Maximized;
             FormClosing += ClassWalletMainInterfaceForm_FormClosing;
             FormClosed += ClassWalletMainInterfaceForm_FormClosed;
             Load += ClassWalletMainInterfaceForm_Load;
+            ResizeBegin += ClassWalletMainInterfaceForm_ResizeBegin;
+            ResizeEnd += ClassWalletMainInterfaceForm_ResizeEnd;
             Paint += ClassWalletMainInterfaceForm_Paint;
             menuStripGeneralWallet.ResumeLayout(false);
             menuStripGeneralWallet.PerformLayout();
@@ -1280,6 +1307,7 @@ namespace SeguraChain_Desktop_Wallet
             tabPageTransactionHistory.PerformLayout();
             tabPageStoreNetwork.ResumeLayout(false);
             panel1.ResumeLayout(false);
+            panel1.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }

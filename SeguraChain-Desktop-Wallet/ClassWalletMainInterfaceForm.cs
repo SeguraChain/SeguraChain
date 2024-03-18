@@ -39,6 +39,9 @@ using SeguraChain_Lib.TaskManager;
 using SeguraChain_Desktop_Wallet.InternalForm.Setting;
 using EO.WebBrowser;
 using EO.WinForm;
+using Org.BouncyCastle.Asn1.Crmf;
+using SeguraChain_Lib.Blockchain.Database.Memory.Main.Enum;
+using Org.BouncyCastle.Crmf;
 
 namespace SeguraChain_Desktop_Wallet
 {
@@ -84,6 +87,8 @@ namespace SeguraChain_Desktop_Wallet
         private List<Control> _listRecentTransactionHistoryPanelControlShadow;
         private Bitmap _recentTransactionHistoryPanelShadowBitmap;
 
+        private ClassFormControlResponsive _FormControlResponsiveData;
+
 
         /// <summary>
         /// Constructor.
@@ -93,7 +98,7 @@ namespace SeguraChain_Desktop_Wallet
         public ClassWalletMainInterfaceForm(bool noWalletFile, ClassWalletStartupInternalForm startupInternalForm)
         {
 
-           _listWalletOpened = new HashSet<string>();
+            _listWalletOpened = new HashSet<string>();
 
             _cancellationTokenTaskUpdateWalletListOpened = new CancellationTokenSource();
             _noWalletFile = noWalletFile;
@@ -156,11 +161,7 @@ namespace SeguraChain_Desktop_Wallet
 
         #region Main events.
 
-        /// <summary>
-        /// Event started after loading the form.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <summary>Event started after loading the form.</summary>
         private void ClassWalletMainInterfaceForm_Load(object sender, EventArgs e)
         {
 
@@ -221,6 +222,17 @@ namespace SeguraChain_Desktop_Wallet
 
             #endregion
             Refresh();
+
+            try
+            {
+                initDataResponsiveFormControls(this);
+                adaptResponsiveFormControlsToFormSize(this);
+                Refresh();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
         }
 
         /// <summary>
@@ -2806,7 +2818,7 @@ namespace SeguraChain_Desktop_Wallet
             {
                 string target = listViewWebNode.SelectedItems[0].Text;
 
-                Debug.WriteLine("Test 3. Target: "+target);
+                Debug.WriteLine("Test 3. Target: " + target);
 
                 _webBrowserStoreNetwork.LoadUrl("http://" + target + "/");
             }
@@ -2815,6 +2827,128 @@ namespace SeguraChain_Desktop_Wallet
                 // Ignored, catch the exception if any item is selected.
             }
         }
+
+        #region INI Resize Responsive Form .-~^
+
+        private void initDataResponsiveFormControls(Form f1)
+        {
+            if (this.Controls != null && this.Controls.Count > 0)
+            {
+                _FormControlResponsiveData = new ClassFormControlResponsive() { ActualFormH = f1.Height, ActualFormW = f1.Width };
+                List<ClassFormControlsDataLocalization> lCs = new List<ClassFormControlsDataLocalization>();
+                recursiveSearchControlsChilds(f1, lCs, null);
+                _FormControlResponsiveData.ControlsCompData = lCs;
+            }
+        }
+
+        private static void recursiveSearchControlsChilds(Form f1, List<ClassFormControlsDataLocalization> lCD, Control cD_BF)
+        {
+
+            foreach (Control c in cD_BF == null ? f1.Controls : cD_BF.Controls)
+            {
+                //switch (c.GetType().FullName)
+                //{
+                //    case "Button":
+                //        Button cB = (Button)c;
+                //        cB.AutoEllipsis = false;
+                //        cB.AutoSize = true;
+                //        cB.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+                //        break;
+                //    case "Label":
+                //        Label cL = (Label)c;
+                //        cL.AutoEllipsis = false;
+                //        cL.AutoSize = true;
+                //        break;
+                //    case "TextBox":
+                //        TextBox cTB = (TextBox)c;
+                //        cTB.MinimumSize = new Size(Convert.ToInt32(800 * 96 / 100), 25);
+                //        cTB.AutoSize = true;
+                //        break;
+                //}
+
+                ClassFormControlsDataLocalization cD =
+                    new ClassFormControlsDataLocalization()
+                    {
+                        Control = c,
+                        InitLocX = c.Location.X,
+                        InitLocY = c.Location.Y,
+                        InitControlH = c.Height,
+                        InitControlW = c.Width
+                    };
+
+                lCD.Add(cD);
+
+                if (c.Controls != null && c.Controls.Count > 0)
+                {
+                    cD.ChildsControlsData = new List<ClassFormControlsDataLocalization>();
+                    recursiveSearchControlsChilds(f1, cD.ChildsControlsData, c);
+                }
+
+            }
+        }
+
+        /// <summary>Ajusta y ordena los coponentesen base a los valores iniciales, que son los que darán sentido a la nueva composición</summary>
+        /// <param name="f1">Formulario de aplicación</param>
+        private void adaptResponsiveFormControlsToFormSize(Form f1)
+        {
+            if (_FormControlResponsiveData != null && _FormControlResponsiveData.ControlsCompData != null &&
+               _FormControlResponsiveData.ControlsCompData.Count > 0)
+            {
+                recursiveAdaptResponsiveFormControlsToParentSize(
+                    _FormControlResponsiveData.ControlsCompData,
+                    f1.Width);
+            }
+        }
+
+        private void recursiveAdaptResponsiveFormControlsToParentSize(List<ClassFormControlsDataLocalization> controls, Int32 newW)
+        {
+            if (controls != null && controls.Count > 0)
+            {
+                // Centering
+                Int32 centerY = 24;
+                Int32 centerX = newW / 2;
+
+                //List<ClassFormControlsDataLocalization> orderControls =
+                //    controls.OrderBy(x => x.InitLocX).OrderBy(y => y.InitLocY).ToList();
+
+                // Prueba rápida y erróneamente de resultado inesperado
+                foreach (ClassFormControlsDataLocalization c in controls)
+                {
+                    c.Control.Width = (String)c.Control.Tag == "image" || c.Control.GetType().Name == "PictureBox" ?
+                        c.Control.Width : newW * 96 / 100;
+
+                    c.Control.Location = new Point(centerX - (c.Control.Width / 2), centerY);
+
+                    Int32 UPPER_SET_ALL_ = centerY + c.Control.Height
+                        + c.Control.Margin.Bottom + c.Control.Padding.Bottom;
+
+                    // SET Y                    
+                    centerY = UPPER_SET_ALL_;
+                }
+            }
+
+            foreach (ClassFormControlsDataLocalization c in controls)
+            {
+                if (c.HasChildControls)
+                {
+                    recursiveAdaptResponsiveFormControlsToParentSize(
+                    c.ChildsControlsData, c.Control.Width);
+                }
+            }
+
+        }
+
+        private async void ClassWalletMainInterfaceForm_ResizeBegin(object sender, EventArgs e)
+        {
+
+        }
+
+        private async void ClassWalletMainInterfaceForm_ResizeEnd(object sender, EventArgs e)
+        {
+            adaptResponsiveFormControlsToFormSize(this);
+        }
+
+        #endregion
     }
 }
 
