@@ -13,7 +13,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
 {
     public class ClassPeerApiServerServiceObject : IDisposable
     {
-        private readonly string _peerWebDirectory = AppContext.BaseDirectory + "website";
+        private readonly string _peerWebDirectory = AppDomain.CurrentDomain.BaseDirectory + "website";
         public bool NetworkPeerApiServerStatus;
         private TcpListener _tcpListenerPeerApi;
         private CancellationTokenSource _cancellationTokenSourcePeerApiServer;
