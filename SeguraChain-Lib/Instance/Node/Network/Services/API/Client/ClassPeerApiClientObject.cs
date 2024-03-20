@@ -39,7 +39,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
 {
     public class ClassPeerApiClientObject : IDisposable
     {
-        private readonly string _peerWebDirectory = AppContext.BaseDirectory + "website";
+        private readonly string _peerWebDirectory = AppDomain.CurrentDomain.BaseDirectory  + "website";
         private readonly ClassPeerDatabase _peerDatabase;
         private readonly ClassPeerNetworkSettingObject _peerNetworkSettingObject;
         private readonly ClassPeerFirewallSettingObject _peerFirewallSettingObject;
@@ -985,22 +985,22 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                         {
                             if (!packetReceived.IsNullOrEmpty(false, out _))
                             {
-                                if (File.Exists(_peerWebDirectory + "\\" + packetReceived))
+                                if (File.Exists(_peerWebDirectory + "/" + packetReceived))
                                 {
-                                    if (!await ReadAndSendWebsiteFile((_peerWebDirectory + "\\" + packetReceived)))
+                                    if (!await ReadAndSendWebsiteFile((_peerWebDirectory + "/" + packetReceived)))
                                         return false;
                                 }
                                 else
                                 {
-                                    if (!await SendApiResponse("<h1>File not found<</h1>."))
+                                    if (!await SendApiResponse("<h1>File not found</h1>.", "text/html; charset=utf-8"))
                                         return false;
                                 }
                             }
                             else
                             {
-                                if (File.Exists(_peerWebDirectory + "\\" + packetReceived + "\\index.html"))
+                                if (File.Exists(_peerWebDirectory + "/index.html"))
                                 {
-                                    if (!await ReadAndSendWebsiteFile((_peerWebDirectory + "\\" + packetReceived + "\\index.html")))
+                                    if (!await ReadAndSendWebsiteFile((_peerWebDirectory + "/index.html")))
                                         return false;
                                 }
                                 else
