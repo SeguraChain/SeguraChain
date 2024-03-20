@@ -2854,7 +2854,7 @@ namespace SeguraChain_Desktop_Wallet
 
         private async void ClassWalletMainInterfaceForm_ResizeEnd(object sender, EventArgs e)
         {
-            adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.TypeWebSite);
+            //adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.TypeWebSite);
         }
 
         private void typeWebSiteToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2876,7 +2876,7 @@ namespace SeguraChain_Desktop_Wallet
 
         private void pictureBoxLogo_Click(object sender, EventArgs e)
         {
-
+            // TODO: Send user to https://seguraChain.com
         }
 
         private void buttonSendTransactionOpenContactList_Click(object sender, EventArgs e)
