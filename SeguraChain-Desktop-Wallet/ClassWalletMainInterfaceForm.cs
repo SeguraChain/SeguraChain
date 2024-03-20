@@ -87,9 +87,6 @@ namespace SeguraChain_Desktop_Wallet
         private List<Control> _listRecentTransactionHistoryPanelControlShadow;
         private Bitmap _recentTransactionHistoryPanelShadowBitmap;
 
-        private ClassFormControlResponsive _FormControlResponsiveData;
-
-
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -225,9 +222,11 @@ namespace SeguraChain_Desktop_Wallet
 
             try
             {
-                initDataResponsiveFormControls(this);
-                adaptResponsiveFormControlsToFormSize(this);
-                Refresh();
+                ClassDataContextForm DCF = new ClassDataContextForm();
+                DCF.InitDataResponsiveFormControls(this);
+                this.Tag = DCF;
+                //adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.TypeWebSite);
+                //Refresh();
             }
             catch (Exception ex)
             {
@@ -2830,112 +2829,22 @@ namespace SeguraChain_Desktop_Wallet
 
         #region INI Resize Responsive Form .-~^
 
-        private void initDataResponsiveFormControls(Form f1)
-        {
-            if (this.Controls != null && this.Controls.Count > 0)
-            {
-                _FormControlResponsiveData = new ClassFormControlResponsive() { ActualFormH = f1.Height, ActualFormW = f1.Width };
-                List<ClassFormControlsDataLocalization> lCs = new List<ClassFormControlsDataLocalization>();
-                recursiveSearchControlsChilds(f1, lCs, null);
-                _FormControlResponsiveData.ControlsCompData = lCs;
-            }
-        }
-
-        private static void recursiveSearchControlsChilds(Form f1, List<ClassFormControlsDataLocalization> lCD, Control cD_BF)
-        {
-
-            foreach (Control c in cD_BF == null ? f1.Controls : cD_BF.Controls)
-            {
-                //switch (c.GetType().FullName)
-                //{
-                //    case "Button":
-                //        Button cB = (Button)c;
-                //        cB.AutoEllipsis = false;
-                //        cB.AutoSize = true;
-                //        cB.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-                //        break;
-                //    case "Label":
-                //        Label cL = (Label)c;
-                //        cL.AutoEllipsis = false;
-                //        cL.AutoSize = true;
-                //        break;
-                //    case "TextBox":
-                //        TextBox cTB = (TextBox)c;
-                //        cTB.MinimumSize = new Size(Convert.ToInt32(800 * 96 / 100), 25);
-                //        cTB.AutoSize = true;
-                //        break;
-                //}
-
-                ClassFormControlsDataLocalization cD =
-                    new ClassFormControlsDataLocalization()
-                    {
-                        Control = c,
-                        InitLocX = c.Location.X,
-                        InitLocY = c.Location.Y,
-                        InitControlH = c.Height,
-                        InitControlW = c.Width
-                    };
-
-                lCD.Add(cD);
-
-                if (c.Controls != null && c.Controls.Count > 0)
-                {
-                    cD.ChildsControlsData = new List<ClassFormControlsDataLocalization>();
-                    recursiveSearchControlsChilds(f1, cD.ChildsControlsData, c);
-                }
-
-            }
-        }
-
         /// <summary>Ajusta y ordena los coponentesen base a los valores iniciales, que son los que darán sentido a la nueva composición</summary>
         /// <param name="f1">Formulario de aplicación</param>
-        private void adaptResponsiveFormControlsToFormSize(Form f1)
+        private void adaptResponsiveFormControlsToFormSize(Form f1, ClassViewStrategiesEnum strategy)
         {
-            if (_FormControlResponsiveData != null && _FormControlResponsiveData.ControlsCompData != null &&
-               _FormControlResponsiveData.ControlsCompData.Count > 0)
+            if (f1.Tag is ClassDataContextForm)
             {
-                recursiveAdaptResponsiveFormControlsToParentSize(
-                    _FormControlResponsiveData.ControlsCompData,
-                    f1.Width);
-            }
-        }
+                ClassDataContextForm context = (ClassDataContextForm)f1.Tag;
 
-        private void recursiveAdaptResponsiveFormControlsToParentSize(List<ClassFormControlsDataLocalization> controls, Int32 newW)
-        {
-            if (controls != null && controls.Count > 0)
-            {
-                // Centering
-                Int32 centerY = 24;
-                Int32 centerX = newW / 2;
-
-                //List<ClassFormControlsDataLocalization> orderControls =
-                //    controls.OrderBy(x => x.InitLocX).OrderBy(y => y.InitLocY).ToList();
-
-                // Prueba rápida y erróneamente de resultado inesperado
-                foreach (ClassFormControlsDataLocalization c in controls)
+                if (context.FormContainerResponsiveData != null && context.FormContainerResponsiveData.ControlsCompData != null &&
+                   context.FormContainerResponsiveData.ControlsCompData.Count > 0)
                 {
-                    c.Control.Width = (String)c.Control.Tag == "image" || c.Control.GetType().Name == "PictureBox" ?
-                        c.Control.Width : newW * 96 / 100;
-
-                    c.Control.Location = new Point(centerX - (c.Control.Width / 2), centerY);
-
-                    Int32 UPPER_SET_ALL_ = centerY + c.Control.Height
-                        + c.Control.Margin.Bottom + c.Control.Padding.Bottom;
-
-                    // SET Y                    
-                    centerY = UPPER_SET_ALL_;
+                    ClassGraphicsUtility.RecursiveAdaptResponsiveFormControlsToParentSize(
+                        context.FormContainerResponsiveData.ControlsCompData,
+                        f1, strategy, false);
                 }
             }
-
-            foreach (ClassFormControlsDataLocalization c in controls)
-            {
-                if (c.HasChildControls)
-                {
-                    recursiveAdaptResponsiveFormControlsToParentSize(
-                    c.ChildsControlsData, c.Control.Width);
-                }
-            }
-
         }
 
         private async void ClassWalletMainInterfaceForm_ResizeBegin(object sender, EventArgs e)
@@ -2945,10 +2854,35 @@ namespace SeguraChain_Desktop_Wallet
 
         private async void ClassWalletMainInterfaceForm_ResizeEnd(object sender, EventArgs e)
         {
-            adaptResponsiveFormControlsToFormSize(this);
+            adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.TypeWebSite);
+        }
+
+        private void typeWebSiteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.TypeWebSite);
+        }
+
+        private void leftCenterRightToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.LeftCenterRight);
+        }
+
+        private void normalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.Normal);
         }
 
         #endregion
+
+        private void pictureBoxLogo_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void buttonSendTransactionOpenContactList_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
 
