@@ -248,8 +248,11 @@ namespace SeguraChain_Desktop_Wallet
 
                     foreach (string peerIp in ClassDesktopWalletCommonData.WalletSyncSystem.NodeInstance.PeerDatabase.Keys)
                     {
-                        foreach (var peer in ClassDesktopWalletCommonData.WalletSyncSystem.NodeInstance.PeerDatabase[peerIp, _cancellationTokenTaskUpdateWalletContentInformations].Values)
+                        foreach (var peer in ClassDesktopWalletCommonData.WalletSyncSystem.NodeInstance.PeerDatabase[peerIp, _cancellationTokenTaskUpdateWalletListOpened].Values)
                         {
+                            if (peer == null)
+                                continue;
+
                             if (!peer.PeerUniqueId.IsNullOrEmpty(false, out _))
                                 listViewWebNode.Items.Add(peerIp + ":" + peer.PeerApiPort);
                         }
