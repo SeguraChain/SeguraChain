@@ -1027,17 +1027,25 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
         /// <param name="filePath"></param>
         private async Task<bool> ReadAndSendWebsiteFile(string filePath)
         {
-            using (StreamReader reader = new StreamReader(filePath))
+            if (filePath.Contains(".jpg") || filePath.Contains(".bmp") || filePath.Contains(".png") || filePath.Contains(".gif"))
             {
-                string content = string.Empty;
-                string line;
-
-                while (((line = reader.ReadLine()) != null))
-                    content += line;
-
-
-                if (!await SendApiResponse(content, GeWebsiteTypeDocument(filePath)))
+                if (!await SendApiResponseByteArray(File.ReadAllBytes(filePath), GeWebsiteTypeDocument(filePath)))
                     return false;
+            }
+            else
+            {
+                using (StreamReader reader = new StreamReader(filePath))
+                {
+                    string content = string.Empty;
+                    string line;
+
+                    while (((line = reader.ReadLine()) != null))
+                        content += line;
+
+
+                    if (!await SendApiResponse(content, GeWebsiteTypeDocument(filePath)))
+                        return false;
+                }
             }
 
             return true;
@@ -1097,6 +1105,40 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
             byte[] dataToSend = builder.ToString().GetByteArray();
 
             sendResult = await _clientSocket.TrySendSplittedPacket(dataToSend, _cancellationTokenApiClient, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize, true);
+
+            PacketResponseSent = sendResult;
+
+            // Clean up.
+            builder.Clear();
+
+            return sendResult;
+        }
+
+
+        /// <summary>
+        /// Send an API Response to the client.
+        /// </summary>
+        /// <param name="packetToSend"></param>
+        /// <param name="htmlContentType">Html packet content, default json.</param>
+        /// <returns></returns>
+        private async Task<bool> SendApiResponseByteArray(byte[] packetToSend, string htmlContentType = "text/json")
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine(@"HTTP/1.1 200 OK");
+            builder.AppendLine(@"Content-Type: " + htmlContentType);
+            builder.AppendLine(@"Content-Length: " + packetToSend.Length);
+            builder.AppendLine(@"Access-Control-Allow-Origin: *");
+            builder.AppendLine(@"");
+
+
+            bool sendResult;
+
+            byte[] dataToSend = builder.ToString().GetByteArray();
+            byte[] dataCompleted = new byte[dataToSend.Length + packetToSend.Length];
+            Array.Copy(dataToSend, 0, dataCompleted, 0, dataToSend.Length);
+            Array.Copy(packetToSend, 0, dataCompleted, dataToSend.Length, packetToSend.Length);
+
+            sendResult = await _clientSocket.TrySendSplittedPacket(dataCompleted, _cancellationTokenApiClient, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize, true);
 
             PacketResponseSent = sendResult;
 
