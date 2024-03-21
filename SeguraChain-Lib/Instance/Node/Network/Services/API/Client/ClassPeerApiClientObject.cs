@@ -1040,7 +1040,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                     string line;
 
                     while (((line = reader.ReadLine()) != null))
-                        content += line;
+                        content += line +"\n";
 
 
                     if (!await SendApiResponse(content, GeWebsiteTypeDocument(filePath)))
