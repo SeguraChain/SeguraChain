@@ -49,7 +49,7 @@ Everything has been developed in C#, and support NET5/NET6/NET7, a downgrade to 
 
 > **Complete wallets balance checkpoint disk cache process. [40%]**
 
-> **Complete Desktop Wallet features and options. [95%]**
+> **Complete Desktop Wallet features and options. [99%]**
 
 > **Develop the IO Cache Network mode. [5%]**
 
@@ -58,8 +58,6 @@ Everything has been developed in C#, and support NET5/NET6/NET7, a downgrade to 
 > **Develop an example of Mining Pool. [0%]**
 
 > **Finish optimizations. [60%]**
-
-> **Develop a block explorer page inside of the node API. [10%]**
 
 > **Clean up the source code. [5%]**
 
