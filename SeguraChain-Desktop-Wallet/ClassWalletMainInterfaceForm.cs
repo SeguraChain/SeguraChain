@@ -39,6 +39,9 @@ using SeguraChain_Lib.TaskManager;
 using SeguraChain_Desktop_Wallet.InternalForm.Setting;
 using EO.WebBrowser;
 using EO.WinForm;
+using Org.BouncyCastle.Asn1.Crmf;
+using SeguraChain_Lib.Blockchain.Database.Memory.Main.Enum;
+using Org.BouncyCastle.Crmf;
 
 namespace SeguraChain_Desktop_Wallet
 {
@@ -84,7 +87,6 @@ namespace SeguraChain_Desktop_Wallet
         private List<Control> _listRecentTransactionHistoryPanelControlShadow;
         private Bitmap _recentTransactionHistoryPanelShadowBitmap;
 
-
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -93,7 +95,7 @@ namespace SeguraChain_Desktop_Wallet
         public ClassWalletMainInterfaceForm(bool noWalletFile, ClassWalletStartupInternalForm startupInternalForm)
         {
 
-           _listWalletOpened = new HashSet<string>();
+            _listWalletOpened = new HashSet<string>();
 
             _cancellationTokenTaskUpdateWalletListOpened = new CancellationTokenSource();
             _noWalletFile = noWalletFile;
@@ -156,11 +158,7 @@ namespace SeguraChain_Desktop_Wallet
 
         #region Main events.
 
-        /// <summary>
-        /// Event started after loading the form.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <summary>Event started after loading the form.</summary>
         private void ClassWalletMainInterfaceForm_Load(object sender, EventArgs e)
         {
 
@@ -221,6 +219,19 @@ namespace SeguraChain_Desktop_Wallet
 
             #endregion
             Refresh();
+
+            try
+            {
+                ClassDataContextForm DCF = new ClassDataContextForm();
+                DCF.InitDataResponsiveFormControls(this);
+                this.Tag = DCF;
+                //adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.TypeWebSite);
+                //Refresh();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
         }
 
         /// <summary>
@@ -2806,7 +2817,7 @@ namespace SeguraChain_Desktop_Wallet
             {
                 string target = listViewWebNode.SelectedItems[0].Text;
 
-                Debug.WriteLine("Test 3. Target: "+target);
+                Debug.WriteLine("Test 3. Target: " + target);
 
                 _webBrowserStoreNetwork.LoadUrl("http://" + target + "/");
             }
@@ -2814,6 +2825,63 @@ namespace SeguraChain_Desktop_Wallet
             {
                 // Ignored, catch the exception if any item is selected.
             }
+        }
+
+        #region INI Resize Responsive Form .-~^
+
+        /// <summary>Ajusta y ordena los coponentesen base a los valores iniciales, que son los que darán sentido a la nueva composición</summary>
+        /// <param name="f1">Formulario de aplicación</param>
+        private void adaptResponsiveFormControlsToFormSize(Form f1, ClassViewStrategiesEnum strategy)
+        {
+            if (f1.Tag is ClassDataContextForm)
+            {
+                ClassDataContextForm context = (ClassDataContextForm)f1.Tag;
+
+                if (context.FormContainerResponsiveData != null && context.FormContainerResponsiveData.ControlsCompData != null &&
+                   context.FormContainerResponsiveData.ControlsCompData.Count > 0)
+                {
+                    ClassGraphicsUtility.RecursiveAdaptResponsiveFormControlsToParentSize(
+                        context.FormContainerResponsiveData.ControlsCompData,
+                        f1, strategy, false);
+                }
+            }
+        }
+
+        private async void ClassWalletMainInterfaceForm_ResizeBegin(object sender, EventArgs e)
+        {
+
+        }
+
+        private async void ClassWalletMainInterfaceForm_ResizeEnd(object sender, EventArgs e)
+        {
+            //adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.TypeWebSite);
+        }
+
+        private void typeWebSiteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.TypeWebSite);
+        }
+
+        private void leftCenterRightToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.LeftCenterRight);
+        }
+
+        private void normalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.Normal);
+        }
+
+        #endregion
+
+        private void pictureBoxLogo_Click(object sender, EventArgs e)
+        {
+            // TODO: Send user to https://seguraChain.com
+        }
+
+        private void buttonSendTransactionOpenContactList_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
