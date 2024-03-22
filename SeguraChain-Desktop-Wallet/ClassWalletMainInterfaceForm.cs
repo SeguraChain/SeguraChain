@@ -298,6 +298,8 @@ namespace SeguraChain_Desktop_Wallet
             labelWalletOpened.Text = _walletMainFormLanguageObject.LABEL_WALLET_OPENED_LIST_TEXT;
             labelWalletOpened = ClassGraphicsUtility.AutoSetLocationAndResizeControl<Label>(labelWalletOpened, this, 98, false);
             progressBarMainInterfaceSyncProgress = ClassGraphicsUtility.AutoSetLocationAndResizeControl<ClassCustomProgressBar>(progressBarMainInterfaceSyncProgress, this, 50, false);
+            progressBarMainInterfaceCheckSyncProgress = ClassGraphicsUtility.AutoSetLocationAndResizeControl<ClassCustomProgressBar>(progressBarMainInterfaceCheckSyncProgress, this, 50, false);
+
             labelMainInterfaceSyncProgress.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_SYNC_PROGRESS;
             labelMainInterfaceSyncProgress = ClassGraphicsUtility.AutoSetLocationAndResizeControl<Label>(labelMainInterfaceSyncProgress, this, 50, false);
 
@@ -987,6 +989,7 @@ namespace SeguraChain_Desktop_Wallet
                                 try
                                 {
                                     double percentProgress = 100;
+                                    double percentCheckProgress = 100;
 
                                     if (blockchainNetworkStatsObject.LastNetworkBlockHeight >= BlockchainSetting.GenesisBlockHeight)
                                     {
@@ -996,6 +999,13 @@ namespace SeguraChain_Desktop_Wallet
                                         int percentProgressInt = (int)(Math.Round(percentProgress, 2) * 100d);
                                         if (percentProgressInt >= progressBarMainInterfaceSyncProgress.Minimum && percentProgressInt <= progressBarMainInterfaceSyncProgress.Maximum)
                                             progressBarMainInterfaceSyncProgress.Value = percentProgressInt;
+
+                                        if (blockchainNetworkStatsObject.LastBlockHeightUnlocked >= BlockchainSetting.GenesisBlockHeight)
+                                            percentCheckProgress = ((double)blockchainNetworkStatsObject.LastBlockHeightTransactionConfirmationDone / blockchainNetworkStatsObject.LastBlockHeightUnlocked) * 100d;
+
+                                        int percentCheckProgressInt = (int)(Math.Round(percentCheckProgress, 2) * 100d);
+                                        if (percentCheckProgressInt >= progressBarMainInterfaceSyncProgress.Minimum && percentCheckProgressInt <= progressBarMainInterfaceSyncProgress.Maximum)
+                                            progressBarMainInterfaceCheckSyncProgress.Value = percentCheckProgressInt;
                                     }
                                 }
                                 catch

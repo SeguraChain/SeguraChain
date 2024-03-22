@@ -71,6 +71,7 @@ namespace SeguraChain_Desktop_Wallet
             labelMainInterfaceNetworkStatsCurrentDifficultyText = new System.Windows.Forms.Label();
             labelMainInterfaceNetworkStatsTitleText = new System.Windows.Forms.Label();
             progressBarMainInterfaceSyncProgress = new ClassCustomProgressBar();
+            progressBarMainInterfaceCheckSyncProgress = new ClassCustomProgressBar();
             panelRecentTransactions = new ClassCustomPanel();
             panelInternalRecentTransactions = new ClassCustomPanel();
             labelMainInterfaceRecentTransaction = new System.Windows.Forms.Label();
@@ -336,6 +337,7 @@ namespace SeguraChain_Desktop_Wallet
             tabPageOverview.Controls.Add(labelMainInterfaceSyncProgress);
             tabPageOverview.Controls.Add(panelInternalNetworkStats);
             tabPageOverview.Controls.Add(progressBarMainInterfaceSyncProgress);
+            tabPageOverview.Controls.Add(progressBarMainInterfaceCheckSyncProgress);
             tabPageOverview.Controls.Add(panelRecentTransactions);
             tabPageOverview.Controls.Add(labelMainInterfaceTotalBalanceAmountText);
             tabPageOverview.Controls.Add(labelMainInterfacePendingBalanceAmountText);
@@ -588,6 +590,20 @@ namespace SeguraChain_Desktop_Wallet
             progressBarMainInterfaceSyncProgress.Step = 1;
             progressBarMainInterfaceSyncProgress.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
             progressBarMainInterfaceSyncProgress.TabIndex = 5;
+            // 
+            // progressBarMainInterfaceCheckSyncProgress
+            // 
+            progressBarMainInterfaceCheckSyncProgress.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            progressBarMainInterfaceCheckSyncProgress.BackColor = System.Drawing.Color.GhostWhite;
+            progressBarMainInterfaceCheckSyncProgress.ForeColor = System.Drawing.Color.BlueViolet;
+            progressBarMainInterfaceCheckSyncProgress.Location = new System.Drawing.Point(412, 582);
+            progressBarMainInterfaceCheckSyncProgress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            progressBarMainInterfaceCheckSyncProgress.Maximum = 10000;
+            progressBarMainInterfaceCheckSyncProgress.Name = "progressBarMainInterfaceCheckSyncProgress";
+            progressBarMainInterfaceCheckSyncProgress.Size = new System.Drawing.Size(348, 23);
+            progressBarMainInterfaceCheckSyncProgress.Step = 1;
+            progressBarMainInterfaceCheckSyncProgress.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            progressBarMainInterfaceCheckSyncProgress.TabIndex = 5;
             // 
             // panelRecentTransactions
             // 
@@ -1407,6 +1423,7 @@ namespace SeguraChain_Desktop_Wallet
         private System.Windows.Forms.TextBox textBoxMainInterfaceCurrentPageTransactionHistory;
         private ClassCustomPanel panelTransactionHistoryColumns;
         private ClassCustomProgressBar progressBarMainInterfaceSyncProgress;
+        private ClassCustomProgressBar progressBarMainInterfaceCheckSyncProgress;
         private System.Windows.Forms.Label labelMainInterfaceSyncProgress;
         private System.Windows.Forms.Label labelSendTransactionAvailableBalanceText;
         private ClassCustomPanel panelSendTransaction;
