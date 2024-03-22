@@ -121,6 +121,221 @@
     <value>17, 17</value>
   </metadata>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="menuStripGeneralWallet.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9pt, style=Bold</value>
+  </data>
+  <data name="openWalletToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>230, 22</value>
+  </data>
+  <data name="openWalletToolStripMenuItem.Text" xml:space="preserve">
+    <value>OPEN_WALLET_TEXT</value>
+  </data>
+  <data name="closeWalletToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>230, 22</value>
+  </data>
+  <data name="closeWalletToolStripMenuItem.Text" xml:space="preserve">
+    <value>CLOSE_WALLET_TEXT</value>
+  </data>
+  <data name="createWalletToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>230, 22</value>
+  </data>
+  <data name="createWalletToolStripMenuItem.Text" xml:space="preserve">
+    <value>CREATE_WALLET_TEXT</value>
+  </data>
+  <data name="importWalletPrivateKeytoolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>230, 22</value>
+  </data>
+  <data name="importWalletPrivateKeytoolStripMenuItem.Text" xml:space="preserve">
+    <value>IMPORT_PRIVATE_KEY_TEXT</value>
+  </data>
+  <data name="exitToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>230, 22</value>
+  </data>
+  <data name="exitToolStripMenuItem.Text" xml:space="preserve">
+    <value>EXIT_TEXT</value>
+  </data>
+  <data name="fileToolStripMenuItem.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9pt, style=Bold</value>
+  </data>
+  <data name="fileToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>74, 20</value>
+  </data>
+  <data name="fileToolStripMenuItem.Text" xml:space="preserve">
+    <value>FILE_TEXT</value>
+  </data>
+  <data name="settingsToolStripMenuItem.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Segoe UI, 9pt, style=Bold</value>
+  </data>
+  <data name="settingsToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>101, 20</value>
+  </data>
+  <data name="settingsToolStripMenuItem.Text" xml:space="preserve">
+    <value>SETTING_TEXT</value>
+  </data>
+  <data name="rescanToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>97, 20</value>
+  </data>
+  <data name="rescanToolStripMenuItem.Text" xml:space="preserve">
+    <value>RESCAN_TEXT</value>
+  </data>
+  <data name="languageToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>116, 20</value>
+  </data>
+  <data name="languageToolStripMenuItem.Text" xml:space="preserve">
+    <value>LANGUAGE_TEXT</value>
+  </data>
+  <data name="normalToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="normalToolStripMenuItem.Text" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="typeWebSiteToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="typeWebSiteToolStripMenuItem.Text" xml:space="preserve">
+    <value>Type WebSite</value>
+  </data>
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="leftCenterRightToolStripMenuItem.Enabled" type="System.Boolean, mscorlib">
+    <value>False</value>
+  </data>
+  <data name="leftCenterRightToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="leftCenterRightToolStripMenuItem.Text" xml:space="preserve">
+    <value>Left Center Right</value>
+  </data>
+  <data name="vIEWTEXTToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>82, 20</value>
+  </data>
+  <data name="vIEWTEXTToolStripMenuItem.Text" xml:space="preserve">
+    <value>VIEW_TEXT</value>
+  </data>
+  <data name="menuStripGeneralWallet.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="menuStripGeneralWallet.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>600, 0</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="menuStripGeneralWallet.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>7, 2, 7, 2</value>
+  </data>
+  <data name="menuStripGeneralWallet.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1182, 24</value>
+  </data>
+  <data name="menuStripGeneralWallet.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="menuStripGeneralWallet.Text" xml:space="preserve">
+    <value>menuStripControl</value>
+  </data>
+  <data name="&gt;&gt;menuStripGeneralWallet.Name" xml:space="preserve">
+    <value>menuStripGeneralWallet</value>
+  </data>
+  <data name="&gt;&gt;menuStripGeneralWallet.Type" xml:space="preserve">
+    <value>System.Windows.Forms.MenuStrip, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;menuStripGeneralWallet.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;menuStripGeneralWallet.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="comboBoxListWalletFile.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1025, 131</value>
+  </data>
+  <data name="comboBoxListWalletFile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="comboBoxListWalletFile.Size" type="System.Drawing.Size, System.Drawing">
+    <value>140, 23</value>
+  </data>
+  <data name="comboBoxListWalletFile.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="&gt;&gt;comboBoxListWalletFile.Name" xml:space="preserve">
+    <value>comboBoxListWalletFile</value>
+  </data>
+  <data name="&gt;&gt;comboBoxListWalletFile.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ComboBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;comboBoxListWalletFile.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;comboBoxListWalletFile.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="labelWalletOpened.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelWalletOpened.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 9pt, style=Bold</value>
+  </data>
+  <data name="labelWalletOpened.Location" type="System.Drawing.Point, System.Drawing">
+    <value>911, 111</value>
+  </data>
+  <data name="labelWalletOpened.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelWalletOpened.Size" type="System.Drawing.Size, System.Drawing">
+    <value>254, 15</value>
+  </data>
+  <data name="labelWalletOpened.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="labelWalletOpened.Text" xml:space="preserve">
+    <value>LABEL_WALLET_OPENED_LIST_TEXT</value>
+  </data>
+  <data name="labelWalletOpened.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>BottomRight</value>
+  </data>
+  <data name="&gt;&gt;labelWalletOpened.Name" xml:space="preserve">
+    <value>labelWalletOpened</value>
+  </data>
+  <data name="&gt;&gt;labelWalletOpened.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelWalletOpened.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;labelWalletOpened.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="labelMainInterfaceSyncProgress.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceSyncProgress.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 9pt, style=Bold</value>
+  </data>
+  <data name="labelMainInterfaceSyncProgress.Location" type="System.Drawing.Point, System.Drawing">
+    <value>479, 479</value>
+  </data>
+  <data name="labelMainInterfaceSyncProgress.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceSyncProgress.Size" type="System.Drawing.Size, System.Drawing">
+    <value>302, 15</value>
+  </data>
+  <data name="labelMainInterfaceSyncProgress.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="labelMainInterfaceSyncProgress.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_SYNC_PROGRESS</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceSyncProgress.Name" xml:space="preserve">
+    <value>labelMainInterfaceSyncProgress</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceSyncProgress.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceSyncProgress.Parent" xml:space="preserve">
+    <value>tabPageOverview</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceSyncProgress.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
   <data name="pictureBoxLogo.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAA+gAAAPoCAYAAABNo9TkAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
@@ -3103,12 +3318,2368 @@
         6s9pAAAAAAAAAID6+//eLNN3o2XZBgAAAABJRU5ErkJggg==
 </value>
   </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="pictureBoxLogo.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
+    <value>Stretch</value>
+  </data>
+  <data name="pictureBoxLogo.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 27</value>
+  </data>
+  <data name="pictureBoxLogo.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="pictureBoxLogo.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>99, 99</value>
+  </data>
+  <data name="pictureBoxLogo.Size" type="System.Drawing.Size, System.Drawing">
+    <value>99, 99</value>
+  </data>
+  <data name="pictureBoxLogo.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="&gt;&gt;pictureBoxLogo.Name" xml:space="preserve">
+    <value>pictureBoxLogo</value>
+  </data>
+  <data name="&gt;&gt;pictureBoxLogo.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pictureBoxLogo.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;pictureBoxLogo.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
   <metadata name="timerRefreshTransactionHistory.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>201, 17</value>
+  </metadata>
+  <data name="tabControlWallet.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="tabControlWallet.Appearance" type="System.Windows.Forms.TabAppearance, System.Windows.Forms">
+    <value>FlatButtons</value>
+  </data>
+  <data name="panelInternalNetworkStats.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <data name="panelInternalNetworkStats.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinPendingText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinPendingText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Arial, 9.75pt</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinPendingText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>7, 318</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinPendingText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinPendingText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>470, 16</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinPendingText.TabIndex" type="System.Int32, mscorlib">
+    <value>15</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinPendingText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_COIN_PENDING_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalCoinPendingText.Name" xml:space="preserve">
+    <value>labelMainInterfaceNetworkStatsTotalCoinPendingText</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalCoinPendingText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalCoinPendingText.Parent" xml:space="preserve">
+    <value>panelInternalNetworkStats</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalCoinPendingText.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinSpreadText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinSpreadText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Arial, 9.75pt</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinSpreadText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>7, 350</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinSpreadText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinSpreadText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>466, 16</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinSpreadText.TabIndex" type="System.Int32, mscorlib">
+    <value>17</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinSpreadText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_COIN_SPREAD_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalCoinSpreadText.Name" xml:space="preserve">
+    <value>labelMainInterfaceNetworkStatsTotalCoinSpreadText</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalCoinSpreadText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalCoinSpreadText.Parent" xml:space="preserve">
+    <value>panelInternalNetworkStats</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalCoinSpreadText.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalFeeCirculatingText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Arial, 9.75pt</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>7, 334</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>490, 16</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalFeeCirculatingText.TabIndex" type="System.Int32, mscorlib">
+    <value>16</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_FEE_CIRCULATING_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Name" xml:space="preserve">
+    <value>labelMainInterfaceNetworkStatsTotalFeeCirculatingText</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Parent" xml:space="preserve">
+    <value>panelInternalNetworkStats</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalFeeCirculatingText.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinCirculatingText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Arial, 9.75pt</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>7, 302</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>495, 16</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinCirculatingText.TabIndex" type="System.Int32, mscorlib">
+    <value>14</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_COIN_CIRCULATING_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Name" xml:space="preserve">
+    <value>labelMainInterfaceNetworkStatsTotalCoinCirculatingText</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Parent" xml:space="preserve">
+    <value>panelInternalNetworkStats</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalCoinCirculatingText.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Arial, 9.75pt</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>7, 286</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>566, 16</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.TabIndex" type="System.Int32, mscorlib">
+    <value>13</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_BLOCK_UNLOCKED_CHECKED_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Name" xml:space="preserve">
+    <value>labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Parent" xml:space="preserve">
+    <value>panelInternalNetworkStats</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Arial, 9.75pt</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>7, 270</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>548, 16</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.TabIndex" type="System.Int32, mscorlib">
+    <value>12</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_TRANSACTION_CONFIRMED_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Name" xml:space="preserve">
+    <value>labelMainInterfaceNetworkStatsTotalTransactionConfirmedText</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Parent" xml:space="preserve">
+    <value>panelInternalNetworkStats</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Arial, 9.75pt</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>7, 254</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>464, 16</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionText.TabIndex" type="System.Int32, mscorlib">
+    <value>11</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_TRANSACTION_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalTransactionText.Name" xml:space="preserve">
+    <value>labelMainInterfaceNetworkStatsTotalTransactionText</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalTransactionText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalTransactionText.Parent" xml:space="preserve">
+    <value>panelInternalNetworkStats</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalTransactionText.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Arial, 9.75pt</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>7, 238</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>538, 16</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.TabIndex" type="System.Int32, mscorlib">
+    <value>10</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_TRANSACTION_MEMPOOL_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Name" xml:space="preserve">
+    <value>labelMainInterfaceNetworkStatsTotalTransactionMemPoolText</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Parent" xml:space="preserve">
+    <value>panelInternalNetworkStats</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="panelSyncInformationsSeperator.Location" type="System.Drawing.Point, System.Drawing">
+    <value>8, 168</value>
+  </data>
+  <data name="panelSyncInformationsSeperator.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="panelSyncInformationsSeperator.Size" type="System.Drawing.Size, System.Drawing">
+    <value>500, 2</value>
+  </data>
+  <data name="panelSyncInformationsSeperator.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="&gt;&gt;panelSyncInformationsSeperator.Name" xml:space="preserve">
+    <value>panelSyncInformationsSeperator</value>
+  </data>
+  <data name="&gt;&gt;panelSyncInformationsSeperator.Type" xml:space="preserve">
+    <value>SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel, SeguraChain-Desktop-Wallet, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;panelSyncInformationsSeperator.Parent" xml:space="preserve">
+    <value>panelInternalNetworkStats</value>
+  </data>
+  <data name="&gt;&gt;panelSyncInformationsSeperator.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsInfoSyncText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsInfoSyncText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Arial, 11.25pt, style=Bold</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsInfoSyncText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>8, 190</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsInfoSyncText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsInfoSyncText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>476, 18</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsInfoSyncText.TabIndex" type="System.Int32, mscorlib">
+    <value>9</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsInfoSyncText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_NETWORK_STATS_INFO_SYNC_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsInfoSyncText.Name" xml:space="preserve">
+    <value>labelMainInterfaceNetworkStatsInfoSyncText</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsInfoSyncText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsInfoSyncText.Parent" xml:space="preserve">
+    <value>panelInternalNetworkStats</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsInfoSyncText.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Arial, 9.75pt</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>8, 133</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>550, 16</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_NETWORK_STATS_CURRENT_MINING_LUCK_PERCENT_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Name" xml:space="preserve">
+    <value>labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Parent" xml:space="preserve">
+    <value>panelInternalNetworkStats</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Arial, 9.75pt</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>8, 117</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>537, 16</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_NETWORK_STATS_CURRENT_MINING_LUCK_STATUS_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Name" xml:space="preserve">
+    <value>labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Parent" xml:space="preserve">
+    <value>panelInternalNetworkStats</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.ZOrder" xml:space="preserve">
+    <value>11</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentHashrateText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentHashrateText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Arial, 9.75pt</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentHashrateText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>8, 101</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentHashrateText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentHashrateText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>465, 16</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentHashrateText.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentHashrateText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_NETWORK_STATS_CURRENT_HASHRATE_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentHashrateText.Name" xml:space="preserve">
+    <value>labelMainInterfaceNetworkStatsCurrentHashrateText</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentHashrateText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentHashrateText.Parent" xml:space="preserve">
+    <value>panelInternalNetworkStats</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentHashrateText.ZOrder" xml:space="preserve">
+    <value>12</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Arial, 9.75pt</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>8, 69</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>537, 16</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_NETWORK_STATS_CURRENT_BLOCK_HEIGHT_SYNC_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Name" xml:space="preserve">
+    <value>labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Parent" xml:space="preserve">
+    <value>panelInternalNetworkStats</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.ZOrder" xml:space="preserve">
+    <value>13</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentDifficultyText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentDifficultyText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Arial, 9.75pt</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentDifficultyText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>8, 85</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentDifficultyText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentDifficultyText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>467, 16</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentDifficultyText.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentDifficultyText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_NETWORK_STATS_CURRENT_DIFFICULTY_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentDifficultyText.Name" xml:space="preserve">
+    <value>labelMainInterfaceNetworkStatsCurrentDifficultyText</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentDifficultyText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentDifficultyText.Parent" xml:space="preserve">
+    <value>panelInternalNetworkStats</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentDifficultyText.ZOrder" xml:space="preserve">
+    <value>14</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTitleText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTitleText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Arial, 11.25pt, style=Bold</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTitleText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>8, 22</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTitleText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTitleText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>433, 18</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTitleText.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTitleText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_NETWORK_STATS_TITLE_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTitleText.Name" xml:space="preserve">
+    <value>labelMainInterfaceNetworkStatsTitleText</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTitleText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTitleText.Parent" xml:space="preserve">
+    <value>panelInternalNetworkStats</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceNetworkStatsTitleText.ZOrder" xml:space="preserve">
+    <value>15</value>
+  </data>
+  <data name="panelInternalNetworkStats.Location" type="System.Drawing.Point, System.Drawing">
+    <value>27, 105</value>
+  </data>
+  <data name="panelInternalNetworkStats.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="panelInternalNetworkStats.Size" type="System.Drawing.Size, System.Drawing">
+    <value>577, 366</value>
+  </data>
+  <data name="panelInternalNetworkStats.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
+  </data>
+  <data name="&gt;&gt;panelInternalNetworkStats.Name" xml:space="preserve">
+    <value>panelInternalNetworkStats</value>
+  </data>
+  <data name="&gt;&gt;panelInternalNetworkStats.Type" xml:space="preserve">
+    <value>SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel, SeguraChain-Desktop-Wallet, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;panelInternalNetworkStats.Parent" xml:space="preserve">
+    <value>tabPageOverview</value>
+  </data>
+  <data name="&gt;&gt;panelInternalNetworkStats.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="progressBarMainInterfaceSyncProgress.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="progressBarMainInterfaceSyncProgress.Location" type="System.Drawing.Point, System.Drawing">
+    <value>458, 500</value>
+  </data>
+  <data name="progressBarMainInterfaceSyncProgress.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="progressBarMainInterfaceSyncProgress.Size" type="System.Drawing.Size, System.Drawing">
+    <value>348, 23</value>
+  </data>
+  <data name="progressBarMainInterfaceSyncProgress.TabIndex" type="System.Int32, mscorlib">
+    <value>9</value>
+  </data>
+  <data name="&gt;&gt;progressBarMainInterfaceSyncProgress.Name" xml:space="preserve">
+    <value>progressBarMainInterfaceSyncProgress</value>
+  </data>
+  <data name="&gt;&gt;progressBarMainInterfaceSyncProgress.Type" xml:space="preserve">
+    <value>SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomProgressBar, SeguraChain-Desktop-Wallet, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;progressBarMainInterfaceSyncProgress.Parent" xml:space="preserve">
+    <value>tabPageOverview</value>
+  </data>
+  <data name="&gt;&gt;progressBarMainInterfaceSyncProgress.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="panelRecentTransactions.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <data name="panelRecentTransactions.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="panelInternalRecentTransactions.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <data name="panelInternalRecentTransactions.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="panelInternalRecentTransactions.Location" type="System.Drawing.Point, System.Drawing">
+    <value>8, 29</value>
+  </data>
+  <data name="panelInternalRecentTransactions.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="panelInternalRecentTransactions.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>200, 200</value>
+  </data>
+  <data name="panelInternalRecentTransactions.Size" type="System.Drawing.Size, System.Drawing">
+    <value>491, 420</value>
+  </data>
+  <data name="panelInternalRecentTransactions.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;panelInternalRecentTransactions.Name" xml:space="preserve">
+    <value>panelInternalRecentTransactions</value>
+  </data>
+  <data name="&gt;&gt;panelInternalRecentTransactions.Type" xml:space="preserve">
+    <value>SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel, SeguraChain-Desktop-Wallet, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;panelInternalRecentTransactions.Parent" xml:space="preserve">
+    <value>panelRecentTransactions</value>
+  </data>
+  <data name="&gt;&gt;panelInternalRecentTransactions.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="labelMainInterfaceRecentTransaction.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceRecentTransaction.Location" type="System.Drawing.Point, System.Drawing">
+    <value>8, 10</value>
+  </data>
+  <data name="labelMainInterfaceRecentTransaction.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceRecentTransaction.Size" type="System.Drawing.Size, System.Drawing">
+    <value>424, 16</value>
+  </data>
+  <data name="labelMainInterfaceRecentTransaction.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="labelMainInterfaceRecentTransaction.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_RECENT_TRANSACTION_TEXT</value>
+  </data>
+  <data name="labelMainInterfaceRecentTransaction.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>TopCenter</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceRecentTransaction.Name" xml:space="preserve">
+    <value>labelMainInterfaceRecentTransaction</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceRecentTransaction.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceRecentTransaction.Parent" xml:space="preserve">
+    <value>panelRecentTransactions</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceRecentTransaction.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="panelRecentTransactions.Location" type="System.Drawing.Point, System.Drawing">
+    <value>654, 6</value>
+  </data>
+  <data name="panelRecentTransactions.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="panelRecentTransactions.Size" type="System.Drawing.Size, System.Drawing">
+    <value>503, 465</value>
+  </data>
+  <data name="panelRecentTransactions.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
+  </data>
+  <data name="&gt;&gt;panelRecentTransactions.Name" xml:space="preserve">
+    <value>panelRecentTransactions</value>
+  </data>
+  <data name="&gt;&gt;panelRecentTransactions.Type" xml:space="preserve">
+    <value>SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel, SeguraChain-Desktop-Wallet, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;panelRecentTransactions.Parent" xml:space="preserve">
+    <value>tabPageOverview</value>
+  </data>
+  <data name="&gt;&gt;panelRecentTransactions.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="labelMainInterfaceTotalBalanceAmountText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top</value>
+  </data>
+  <data name="labelMainInterfaceTotalBalanceAmountText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceTotalBalanceAmountText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 9pt, style=Bold</value>
+  </data>
+  <data name="labelMainInterfaceTotalBalanceAmountText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>27, 80</value>
+  </data>
+  <data name="labelMainInterfaceTotalBalanceAmountText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceTotalBalanceAmountText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>401, 15</value>
+  </data>
+  <data name="labelMainInterfaceTotalBalanceAmountText.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="labelMainInterfaceTotalBalanceAmountText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_TOTAL_BALANCE_AMOUNT_TEXT</value>
+  </data>
+  <data name="labelMainInterfaceTotalBalanceAmountText.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>TopCenter</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceTotalBalanceAmountText.Name" xml:space="preserve">
+    <value>labelMainInterfaceTotalBalanceAmountText</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceTotalBalanceAmountText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceTotalBalanceAmountText.Parent" xml:space="preserve">
+    <value>tabPageOverview</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceTotalBalanceAmountText.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="labelMainInterfacePendingBalanceAmountText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top</value>
+  </data>
+  <data name="labelMainInterfacePendingBalanceAmountText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfacePendingBalanceAmountText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 9pt, style=Bold</value>
+  </data>
+  <data name="labelMainInterfacePendingBalanceAmountText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>27, 53</value>
+  </data>
+  <data name="labelMainInterfacePendingBalanceAmountText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfacePendingBalanceAmountText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>421, 15</value>
+  </data>
+  <data name="labelMainInterfacePendingBalanceAmountText.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="labelMainInterfacePendingBalanceAmountText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_PENDING_BALANCE_AMOUNT_TEXT</value>
+  </data>
+  <data name="labelMainInterfacePendingBalanceAmountText.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>TopCenter</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfacePendingBalanceAmountText.Name" xml:space="preserve">
+    <value>labelMainInterfacePendingBalanceAmountText</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfacePendingBalanceAmountText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfacePendingBalanceAmountText.Parent" xml:space="preserve">
+    <value>tabPageOverview</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfacePendingBalanceAmountText.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="labelMainInterfaceAvailableBalanceAmountText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top</value>
+  </data>
+  <data name="labelMainInterfaceAvailableBalanceAmountText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceAvailableBalanceAmountText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 9pt, style=Bold</value>
+  </data>
+  <data name="labelMainInterfaceAvailableBalanceAmountText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>27, 32</value>
+  </data>
+  <data name="labelMainInterfaceAvailableBalanceAmountText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceAvailableBalanceAmountText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>429, 15</value>
+  </data>
+  <data name="labelMainInterfaceAvailableBalanceAmountText.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="labelMainInterfaceAvailableBalanceAmountText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_AVAILABLE_BALANCE_AMOUNT_TEXT</value>
+  </data>
+  <data name="labelMainInterfaceAvailableBalanceAmountText.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>TopCenter</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceAvailableBalanceAmountText.Name" xml:space="preserve">
+    <value>labelMainInterfaceAvailableBalanceAmountText</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceAvailableBalanceAmountText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceAvailableBalanceAmountText.Parent" xml:space="preserve">
+    <value>tabPageOverview</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceAvailableBalanceAmountText.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="panelSeperatorBalanceLine.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top</value>
+  </data>
+  <data name="panelSeperatorBalanceLine.Location" type="System.Drawing.Point, System.Drawing">
+    <value>30, 71</value>
+  </data>
+  <data name="panelSeperatorBalanceLine.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="panelSeperatorBalanceLine.Size" type="System.Drawing.Size, System.Drawing">
+    <value>279, 2</value>
+  </data>
+  <data name="panelSeperatorBalanceLine.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="&gt;&gt;panelSeperatorBalanceLine.Name" xml:space="preserve">
+    <value>panelSeperatorBalanceLine</value>
+  </data>
+  <data name="&gt;&gt;panelSeperatorBalanceLine.Type" xml:space="preserve">
+    <value>SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel, SeguraChain-Desktop-Wallet, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;panelSeperatorBalanceLine.Parent" xml:space="preserve">
+    <value>tabPageOverview</value>
+  </data>
+  <data name="&gt;&gt;panelSeperatorBalanceLine.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="labelMainInterfaceCurrentBalanceText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top</value>
+  </data>
+  <data name="labelMainInterfaceCurrentBalanceText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceCurrentBalanceText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 9.75pt, style=Bold</value>
+  </data>
+  <data name="labelMainInterfaceCurrentBalanceText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>27, 12</value>
+  </data>
+  <data name="labelMainInterfaceCurrentBalanceText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelMainInterfaceCurrentBalanceText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>397, 16</value>
+  </data>
+  <data name="labelMainInterfaceCurrentBalanceText.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="labelMainInterfaceCurrentBalanceText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_CURRENT_BALANCE_TEXT</value>
+  </data>
+  <data name="labelMainInterfaceCurrentBalanceText.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>TopCenter</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceCurrentBalanceText.Name" xml:space="preserve">
+    <value>labelMainInterfaceCurrentBalanceText</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceCurrentBalanceText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceCurrentBalanceText.Parent" xml:space="preserve">
+    <value>tabPageOverview</value>
+  </data>
+  <data name="&gt;&gt;labelMainInterfaceCurrentBalanceText.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="tabPageOverview.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 9.75pt, style=Bold</value>
+  </data>
+  <data name="tabPageOverview.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 34</value>
+  </data>
+  <data name="tabPageOverview.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="tabPageOverview.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="tabPageOverview.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1161, 533</value>
+  </data>
+  <data name="tabPageOverview.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="tabPageOverview.Text" xml:space="preserve">
+    <value>TABPAG_OVERVIEW_TEXT</value>
+  </data>
+  <data name="&gt;&gt;tabPageOverview.Name" xml:space="preserve">
+    <value>tabPageOverview</value>
+  </data>
+  <data name="&gt;&gt;tabPageOverview.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPageOverview.Parent" xml:space="preserve">
+    <value>tabControlWallet</value>
+  </data>
+  <data name="&gt;&gt;tabPageOverview.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="buttonSendTransactionDoProcess.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="buttonSendTransactionDoProcess.Location" type="System.Drawing.Point, System.Drawing">
+    <value>336, 462</value>
+  </data>
+  <data name="buttonSendTransactionDoProcess.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="buttonSendTransactionDoProcess.Size" type="System.Drawing.Size, System.Drawing">
+    <value>495, 36</value>
+  </data>
+  <data name="buttonSendTransactionDoProcess.TabIndex" type="System.Int32, mscorlib">
+    <value>13</value>
+  </data>
+  <data name="buttonSendTransactionDoProcess.Text" xml:space="preserve">
+    <value>BUTTON_SEND_TRANSACTION_DO_PROCESS_TEXT</value>
+  </data>
+  <data name="&gt;&gt;buttonSendTransactionDoProcess.Name" xml:space="preserve">
+    <value>buttonSendTransactionDoProcess</value>
+  </data>
+  <data name="&gt;&gt;buttonSendTransactionDoProcess.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonSendTransactionDoProcess.Parent" xml:space="preserve">
+    <value>tabPageSendTransaction</value>
+  </data>
+  <data name="&gt;&gt;buttonSendTransactionDoProcess.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="panelSendTransaction.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <data name="panelSendTransaction.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="panelSendTransactionDetails.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <data name="panelSendTransactionDetails.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="labelSendTransactionAmountToSpend.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelSendTransactionAmountToSpend.Location" type="System.Drawing.Point, System.Drawing">
+    <value>41, 27</value>
+  </data>
+  <data name="labelSendTransactionAmountToSpend.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelSendTransactionAmountToSpend.Size" type="System.Drawing.Size, System.Drawing">
+    <value>428, 16</value>
+  </data>
+  <data name="labelSendTransactionAmountToSpend.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="labelSendTransactionAmountToSpend.Text" xml:space="preserve">
+    <value>LABEL_SEND_TRANSACTION_AMOUNT_TO_SPEND_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionAmountToSpend.Name" xml:space="preserve">
+    <value>labelSendTransactionAmountToSpend</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionAmountToSpend.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionAmountToSpend.Parent" xml:space="preserve">
+    <value>panelSendTransactionDetails</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionAmountToSpend.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="labelSendTransactionFeeSizeCost.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelSendTransactionFeeSizeCost.Location" type="System.Drawing.Point, System.Drawing">
+    <value>41, 163</value>
+  </data>
+  <data name="labelSendTransactionFeeSizeCost.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelSendTransactionFeeSizeCost.Size" type="System.Drawing.Size, System.Drawing">
+    <value>393, 16</value>
+  </data>
+  <data name="labelSendTransactionFeeSizeCost.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="labelSendTransactionFeeSizeCost.Text" xml:space="preserve">
+    <value>LABEL_SEND_TRANSACTION_FEE_SIZE_COST_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionFeeSizeCost.Name" xml:space="preserve">
+    <value>labelSendTransactionFeeSizeCost</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionFeeSizeCost.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionFeeSizeCost.Parent" xml:space="preserve">
+    <value>panelSendTransactionDetails</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionFeeSizeCost.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="textBoxSendTransactionFeeCalculated.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 11.25pt, style=Bold</value>
+  </data>
+  <data name="textBoxSendTransactionFeeCalculated.Location" type="System.Drawing.Point, System.Drawing">
+    <value>44, 317</value>
+  </data>
+  <data name="textBoxSendTransactionFeeCalculated.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="textBoxSendTransactionFeeCalculated.Multiline" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="textBoxSendTransactionFeeCalculated.Size" type="System.Drawing.Size, System.Drawing">
+    <value>474, 25</value>
+  </data>
+  <data name="textBoxSendTransactionFeeCalculated.TabIndex" type="System.Int32, mscorlib">
+    <value>10</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionFeeCalculated.Name" xml:space="preserve">
+    <value>textBoxSendTransactionFeeCalculated</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionFeeCalculated.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionFeeCalculated.Parent" xml:space="preserve">
+    <value>panelSendTransactionDetails</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionFeeCalculated.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="textBoxSendTransactionFeeSizeCost.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 11.25pt, style=Bold</value>
+  </data>
+  <data name="textBoxSendTransactionFeeSizeCost.Location" type="System.Drawing.Point, System.Drawing">
+    <value>44, 185</value>
+  </data>
+  <data name="textBoxSendTransactionFeeSizeCost.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="textBoxSendTransactionFeeSizeCost.Multiline" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="textBoxSendTransactionFeeSizeCost.Size" type="System.Drawing.Size, System.Drawing">
+    <value>474, 25</value>
+  </data>
+  <data name="textBoxSendTransactionFeeSizeCost.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionFeeSizeCost.Name" xml:space="preserve">
+    <value>textBoxSendTransactionFeeSizeCost</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionFeeSizeCost.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionFeeSizeCost.Parent" xml:space="preserve">
+    <value>panelSendTransactionDetails</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionFeeSizeCost.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="labelSendTransactionFeeCalculated.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelSendTransactionFeeCalculated.Location" type="System.Drawing.Point, System.Drawing">
+    <value>41, 295</value>
+  </data>
+  <data name="labelSendTransactionFeeCalculated.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelSendTransactionFeeCalculated.Size" type="System.Drawing.Size, System.Drawing">
+    <value>409, 16</value>
+  </data>
+  <data name="labelSendTransactionFeeCalculated.TabIndex" type="System.Int32, mscorlib">
+    <value>9</value>
+  </data>
+  <data name="labelSendTransactionFeeCalculated.Text" xml:space="preserve">
+    <value>LABEL_SEND_TRANSACTION_FEE_CALCULATED_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionFeeCalculated.Name" xml:space="preserve">
+    <value>labelSendTransactionFeeCalculated</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionFeeCalculated.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionFeeCalculated.Parent" xml:space="preserve">
+    <value>panelSendTransactionDetails</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionFeeCalculated.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="labelSendTransactionFeeConfirmationCost.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelSendTransactionFeeConfirmationCost.Location" type="System.Drawing.Point, System.Drawing">
+    <value>41, 228</value>
+  </data>
+  <data name="labelSendTransactionFeeConfirmationCost.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelSendTransactionFeeConfirmationCost.Size" type="System.Drawing.Size, System.Drawing">
+    <value>474, 16</value>
+  </data>
+  <data name="labelSendTransactionFeeConfirmationCost.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
+  </data>
+  <data name="labelSendTransactionFeeConfirmationCost.Text" xml:space="preserve">
+    <value>LABEL_SEND_TRANSACTION_FEE_CONFIRMATION_COST_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionFeeConfirmationCost.Name" xml:space="preserve">
+    <value>labelSendTransactionFeeConfirmationCost</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionFeeConfirmationCost.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionFeeConfirmationCost.Parent" xml:space="preserve">
+    <value>panelSendTransactionDetails</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionFeeConfirmationCost.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="textBoxSendTransactionAmountToSpend.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 11.25pt, style=Bold</value>
+  </data>
+  <data name="textBoxSendTransactionAmountToSpend.Location" type="System.Drawing.Point, System.Drawing">
+    <value>44, 48</value>
+  </data>
+  <data name="textBoxSendTransactionAmountToSpend.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="textBoxSendTransactionAmountToSpend.Multiline" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="textBoxSendTransactionAmountToSpend.Size" type="System.Drawing.Size, System.Drawing">
+    <value>474, 25</value>
+  </data>
+  <data name="textBoxSendTransactionAmountToSpend.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionAmountToSpend.Name" xml:space="preserve">
+    <value>textBoxSendTransactionAmountToSpend</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionAmountToSpend.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionAmountToSpend.Parent" xml:space="preserve">
+    <value>panelSendTransactionDetails</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionAmountToSpend.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="textBoxSendTransactionFeeConfirmationCost.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 11.25pt, style=Bold</value>
+  </data>
+  <data name="textBoxSendTransactionFeeConfirmationCost.Location" type="System.Drawing.Point, System.Drawing">
+    <value>44, 250</value>
+  </data>
+  <data name="textBoxSendTransactionFeeConfirmationCost.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="textBoxSendTransactionFeeConfirmationCost.Multiline" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="textBoxSendTransactionFeeConfirmationCost.Size" type="System.Drawing.Size, System.Drawing">
+    <value>474, 25</value>
+  </data>
+  <data name="textBoxSendTransactionFeeConfirmationCost.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionFeeConfirmationCost.Name" xml:space="preserve">
+    <value>textBoxSendTransactionFeeConfirmationCost</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionFeeConfirmationCost.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionFeeConfirmationCost.Parent" xml:space="preserve">
+    <value>panelSendTransactionDetails</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionFeeConfirmationCost.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="textBoxSendTransactionTotalAmountSource.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 11.25pt, style=Bold</value>
+  </data>
+  <data name="textBoxSendTransactionTotalAmountSource.Location" type="System.Drawing.Point, System.Drawing">
+    <value>44, 118</value>
+  </data>
+  <data name="textBoxSendTransactionTotalAmountSource.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="textBoxSendTransactionTotalAmountSource.Multiline" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="textBoxSendTransactionTotalAmountSource.Size" type="System.Drawing.Size, System.Drawing">
+    <value>474, 25</value>
+  </data>
+  <data name="textBoxSendTransactionTotalAmountSource.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionTotalAmountSource.Name" xml:space="preserve">
+    <value>textBoxSendTransactionTotalAmountSource</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionTotalAmountSource.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionTotalAmountSource.Parent" xml:space="preserve">
+    <value>panelSendTransactionDetails</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionTotalAmountSource.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="labelSendTransactionTotalAmountSource.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelSendTransactionTotalAmountSource.Location" type="System.Drawing.Point, System.Drawing">
+    <value>41, 96</value>
+  </data>
+  <data name="labelSendTransactionTotalAmountSource.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelSendTransactionTotalAmountSource.Size" type="System.Drawing.Size, System.Drawing">
+    <value>467, 16</value>
+  </data>
+  <data name="labelSendTransactionTotalAmountSource.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="labelSendTransactionTotalAmountSource.Text" xml:space="preserve">
+    <value>LABEL_SEND_TRANSACTION_TOTAL_AMOUNT_SOURCE_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionTotalAmountSource.Name" xml:space="preserve">
+    <value>labelSendTransactionTotalAmountSource</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionTotalAmountSource.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionTotalAmountSource.Parent" xml:space="preserve">
+    <value>panelSendTransactionDetails</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionTotalAmountSource.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="panelSendTransactionDetails.Location" type="System.Drawing.Point, System.Drawing">
+    <value>581, 15</value>
+  </data>
+  <data name="panelSendTransactionDetails.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="panelSendTransactionDetails.Size" type="System.Drawing.Size, System.Drawing">
+    <value>538, 372</value>
+  </data>
+  <data name="panelSendTransactionDetails.TabIndex" type="System.Int32, mscorlib">
+    <value>12</value>
+  </data>
+  <data name="&gt;&gt;panelSendTransactionDetails.Name" xml:space="preserve">
+    <value>panelSendTransactionDetails</value>
+  </data>
+  <data name="&gt;&gt;panelSendTransactionDetails.Type" xml:space="preserve">
+    <value>SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel, SeguraChain-Desktop-Wallet, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;panelSendTransactionDetails.Parent" xml:space="preserve">
+    <value>panelSendTransaction</value>
+  </data>
+  <data name="&gt;&gt;panelSendTransactionDetails.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="textBoxSendTransactionConfirmationsCountTarget.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 11.25pt, style=Bold</value>
+  </data>
+  <data name="textBoxSendTransactionConfirmationsCountTarget.Location" type="System.Drawing.Point, System.Drawing">
+    <value>15, 251</value>
+  </data>
+  <data name="textBoxSendTransactionConfirmationsCountTarget.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>22, 22, 22, 22</value>
+  </data>
+  <data name="textBoxSendTransactionConfirmationsCountTarget.Multiline" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="textBoxSendTransactionConfirmationsCountTarget.Size" type="System.Drawing.Size, System.Drawing">
+    <value>255, 25</value>
+  </data>
+  <data name="textBoxSendTransactionConfirmationsCountTarget.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionConfirmationsCountTarget.Name" xml:space="preserve">
+    <value>textBoxSendTransactionConfirmationsCountTarget</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionConfirmationsCountTarget.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionConfirmationsCountTarget.Parent" xml:space="preserve">
+    <value>panelSendTransaction</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionConfirmationsCountTarget.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="labelSendTransactionConfirmationTimeEstimated.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelSendTransactionConfirmationTimeEstimated.Location" type="System.Drawing.Point, System.Drawing">
+    <value>15, 289</value>
+  </data>
+  <data name="labelSendTransactionConfirmationTimeEstimated.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelSendTransactionConfirmationTimeEstimated.Size" type="System.Drawing.Size, System.Drawing">
+    <value>527, 16</value>
+  </data>
+  <data name="labelSendTransactionConfirmationTimeEstimated.TabIndex" type="System.Int32, mscorlib">
+    <value>9</value>
+  </data>
+  <data name="labelSendTransactionConfirmationTimeEstimated.Text" xml:space="preserve">
+    <value>LABEL_SEND_TRANSACTION_CONFIRMATION_TIME_ESTIMATED_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionConfirmationTimeEstimated.Name" xml:space="preserve">
+    <value>labelSendTransactionConfirmationTimeEstimated</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionConfirmationTimeEstimated.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionConfirmationTimeEstimated.Parent" xml:space="preserve">
+    <value>panelSendTransaction</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionConfirmationTimeEstimated.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="labelSendTransactionPaymentId.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelSendTransactionPaymentId.Location" type="System.Drawing.Point, System.Drawing">
+    <value>15, 318</value>
+  </data>
+  <data name="labelSendTransactionPaymentId.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelSendTransactionPaymentId.Size" type="System.Drawing.Size, System.Drawing">
+    <value>370, 16</value>
+  </data>
+  <data name="labelSendTransactionPaymentId.TabIndex" type="System.Int32, mscorlib">
+    <value>10</value>
+  </data>
+  <data name="labelSendTransactionPaymentId.Text" xml:space="preserve">
+    <value>LABEL_SEND_TRANSACTION_PAYMENT_ID_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionPaymentId.Name" xml:space="preserve">
+    <value>labelSendTransactionPaymentId</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionPaymentId.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionPaymentId.Parent" xml:space="preserve">
+    <value>panelSendTransaction</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionPaymentId.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="textBoxSendTransactionPaymentId.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 11.25pt, style=Bold</value>
+  </data>
+  <data name="textBoxSendTransactionPaymentId.Location" type="System.Drawing.Point, System.Drawing">
+    <value>15, 342</value>
+  </data>
+  <data name="textBoxSendTransactionPaymentId.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>22, 22, 22, 22</value>
+  </data>
+  <data name="textBoxSendTransactionPaymentId.Multiline" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="textBoxSendTransactionPaymentId.Size" type="System.Drawing.Size, System.Drawing">
+    <value>446, 25</value>
+  </data>
+  <data name="textBoxSendTransactionPaymentId.TabIndex" type="System.Int32, mscorlib">
+    <value>11</value>
+  </data>
+  <data name="textBoxSendTransactionPaymentId.Text" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionPaymentId.Name" xml:space="preserve">
+    <value>textBoxSendTransactionPaymentId</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionPaymentId.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionPaymentId.Parent" xml:space="preserve">
+    <value>panelSendTransaction</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionPaymentId.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="labelSendTransactionAvailableBalanceText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelSendTransactionAvailableBalanceText.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 11.25pt, style=Bold</value>
+  </data>
+  <data name="labelSendTransactionAvailableBalanceText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>15, 32</value>
+  </data>
+  <data name="labelSendTransactionAvailableBalanceText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelSendTransactionAvailableBalanceText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>466, 18</value>
+  </data>
+  <data name="labelSendTransactionAvailableBalanceText.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="labelSendTransactionAvailableBalanceText.Text" xml:space="preserve">
+    <value>LABEL_SEND_TRANSACTION_AVAILABLE_BALANCE_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionAvailableBalanceText.Name" xml:space="preserve">
+    <value>labelSendTransactionAvailableBalanceText</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionAvailableBalanceText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionAvailableBalanceText.Parent" xml:space="preserve">
+    <value>panelSendTransaction</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionAvailableBalanceText.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="buttonSendTransactionOpenContactList.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="buttonSendTransactionOpenContactList.Location" type="System.Drawing.Point, System.Drawing">
+    <value>15, 111</value>
+  </data>
+  <data name="buttonSendTransactionOpenContactList.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="buttonSendTransactionOpenContactList.Size" type="System.Drawing.Size, System.Drawing">
+    <value>558, 30</value>
+  </data>
+  <data name="buttonSendTransactionOpenContactList.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="buttonSendTransactionOpenContactList.Text" xml:space="preserve">
+    <value>BUTTON_SEND_TRANSACTION_OPEN_CONTACT_LIST_TEXT</value>
+  </data>
+  <data name="&gt;&gt;buttonSendTransactionOpenContactList.Name" xml:space="preserve">
+    <value>buttonSendTransactionOpenContactList</value>
+  </data>
+  <data name="&gt;&gt;buttonSendTransactionOpenContactList.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonSendTransactionOpenContactList.Parent" xml:space="preserve">
+    <value>panelSendTransaction</value>
+  </data>
+  <data name="&gt;&gt;buttonSendTransactionOpenContactList.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="labelSendTransactionConfirmationCountTarget.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelSendTransactionConfirmationCountTarget.Location" type="System.Drawing.Point, System.Drawing">
+    <value>15, 232</value>
+  </data>
+  <data name="labelSendTransactionConfirmationCountTarget.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelSendTransactionConfirmationCountTarget.Size" type="System.Drawing.Size, System.Drawing">
+    <value>519, 16</value>
+  </data>
+  <data name="labelSendTransactionConfirmationCountTarget.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
+  </data>
+  <data name="labelSendTransactionConfirmationCountTarget.Text" xml:space="preserve">
+    <value>LABEL_SEND_TRANSACTION_CONFIRMATION_COUNT_TARGET_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionConfirmationCountTarget.Name" xml:space="preserve">
+    <value>labelSendTransactionConfirmationCountTarget</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionConfirmationCountTarget.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionConfirmationCountTarget.Parent" xml:space="preserve">
+    <value>panelSendTransaction</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionConfirmationCountTarget.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="labelSendTransactionAmountSelected.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelSendTransactionAmountSelected.Location" type="System.Drawing.Point, System.Drawing">
+    <value>15, 171</value>
+  </data>
+  <data name="labelSendTransactionAmountSelected.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelSendTransactionAmountSelected.Size" type="System.Drawing.Size, System.Drawing">
+    <value>426, 16</value>
+  </data>
+  <data name="labelSendTransactionAmountSelected.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="labelSendTransactionAmountSelected.Text" xml:space="preserve">
+    <value>LABEL_SEND_TRANSACTION_AMOUNT_SELECTED_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionAmountSelected.Name" xml:space="preserve">
+    <value>labelSendTransactionAmountSelected</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionAmountSelected.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionAmountSelected.Parent" xml:space="preserve">
+    <value>panelSendTransaction</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionAmountSelected.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="textBoxSendTransactionAmountSelected.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 11.25pt, style=Bold</value>
+  </data>
+  <data name="textBoxSendTransactionAmountSelected.Location" type="System.Drawing.Point, System.Drawing">
+    <value>15, 192</value>
+  </data>
+  <data name="textBoxSendTransactionAmountSelected.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>22, 22, 22, 22</value>
+  </data>
+  <data name="textBoxSendTransactionAmountSelected.Multiline" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="textBoxSendTransactionAmountSelected.Size" type="System.Drawing.Size, System.Drawing">
+    <value>446, 25</value>
+  </data>
+  <data name="textBoxSendTransactionAmountSelected.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionAmountSelected.Name" xml:space="preserve">
+    <value>textBoxSendTransactionAmountSelected</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionAmountSelected.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionAmountSelected.Parent" xml:space="preserve">
+    <value>panelSendTransaction</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionAmountSelected.ZOrder" xml:space="preserve">
+    <value>9</value>
+  </data>
+  <data name="labelSendTransactionWalletAddressTarget.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelSendTransactionWalletAddressTarget.Location" type="System.Drawing.Point, System.Drawing">
+    <value>15, 64</value>
+  </data>
+  <data name="labelSendTransactionWalletAddressTarget.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelSendTransactionWalletAddressTarget.Size" type="System.Drawing.Size, System.Drawing">
+    <value>485, 16</value>
+  </data>
+  <data name="labelSendTransactionWalletAddressTarget.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="labelSendTransactionWalletAddressTarget.Text" xml:space="preserve">
+    <value>LABEL_SEND_TRANSACTION_WALLET_ADDRESS_TARGET_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionWalletAddressTarget.Name" xml:space="preserve">
+    <value>labelSendTransactionWalletAddressTarget</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionWalletAddressTarget.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionWalletAddressTarget.Parent" xml:space="preserve">
+    <value>panelSendTransaction</value>
+  </data>
+  <data name="&gt;&gt;labelSendTransactionWalletAddressTarget.ZOrder" xml:space="preserve">
+    <value>10</value>
+  </data>
+  <data name="textBoxSendTransactionWalletAddressTarget.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="textBoxSendTransactionWalletAddressTarget.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 9pt, style=Bold</value>
+  </data>
+  <data name="textBoxSendTransactionWalletAddressTarget.Location" type="System.Drawing.Point, System.Drawing">
+    <value>15, 86</value>
+  </data>
+  <data name="textBoxSendTransactionWalletAddressTarget.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>22, 22, 22, 22</value>
+  </data>
+  <data name="textBoxSendTransactionWalletAddressTarget.Multiline" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="textBoxSendTransactionWalletAddressTarget.Size" type="System.Drawing.Size, System.Drawing">
+    <value>558, 25</value>
+  </data>
+  <data name="textBoxSendTransactionWalletAddressTarget.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionWalletAddressTarget.Name" xml:space="preserve">
+    <value>textBoxSendTransactionWalletAddressTarget</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionWalletAddressTarget.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionWalletAddressTarget.Parent" xml:space="preserve">
+    <value>panelSendTransaction</value>
+  </data>
+  <data name="&gt;&gt;textBoxSendTransactionWalletAddressTarget.ZOrder" xml:space="preserve">
+    <value>11</value>
+  </data>
+  <data name="panelSendTransaction.Location" type="System.Drawing.Point, System.Drawing">
+    <value>12, 16</value>
+  </data>
+  <data name="panelSendTransaction.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="panelSendTransaction.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1145, 414</value>
+  </data>
+  <data name="panelSendTransaction.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;panelSendTransaction.Name" xml:space="preserve">
+    <value>panelSendTransaction</value>
+  </data>
+  <data name="&gt;&gt;panelSendTransaction.Type" xml:space="preserve">
+    <value>SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel, SeguraChain-Desktop-Wallet, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;panelSendTransaction.Parent" xml:space="preserve">
+    <value>tabPageSendTransaction</value>
+  </data>
+  <data name="&gt;&gt;panelSendTransaction.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="tabPageSendTransaction.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 9.75pt, style=Bold</value>
+  </data>
+  <data name="tabPageSendTransaction.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 34</value>
+  </data>
+  <data name="tabPageSendTransaction.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="tabPageSendTransaction.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="tabPageSendTransaction.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1161, 533</value>
+  </data>
+  <data name="tabPageSendTransaction.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="tabPageSendTransaction.Text" xml:space="preserve">
+    <value>TABPAGE_SEND_TRANSACTION_TEXT</value>
+  </data>
+  <data name="&gt;&gt;tabPageSendTransaction.Name" xml:space="preserve">
+    <value>tabPageSendTransaction</value>
+  </data>
+  <data name="&gt;&gt;tabPageSendTransaction.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPageSendTransaction.Parent" xml:space="preserve">
+    <value>tabControlWallet</value>
+  </data>
+  <data name="&gt;&gt;tabPageSendTransaction.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="buttonSaveQrCodeReceiveTransactionWalletAddress.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="buttonSaveQrCodeReceiveTransactionWalletAddress.Location" type="System.Drawing.Point, System.Drawing">
+    <value>453, 427</value>
+  </data>
+  <data name="buttonSaveQrCodeReceiveTransactionWalletAddress.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="buttonSaveQrCodeReceiveTransactionWalletAddress.Size" type="System.Drawing.Size, System.Drawing">
+    <value>475, 36</value>
+  </data>
+  <data name="buttonSaveQrCodeReceiveTransactionWalletAddress.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="buttonSaveQrCodeReceiveTransactionWalletAddress.Text" xml:space="preserve">
+    <value>BUTTON_MAIN_INTERFACE_SAVE_QR_CODE_TEXT</value>
+  </data>
+  <data name="&gt;&gt;buttonSaveQrCodeReceiveTransactionWalletAddress.Name" xml:space="preserve">
+    <value>buttonSaveQrCodeReceiveTransactionWalletAddress</value>
+  </data>
+  <data name="&gt;&gt;buttonSaveQrCodeReceiveTransactionWalletAddress.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonSaveQrCodeReceiveTransactionWalletAddress.Parent" xml:space="preserve">
+    <value>tabPageReceiveTransaction</value>
+  </data>
+  <data name="&gt;&gt;buttonSaveQrCodeReceiveTransactionWalletAddress.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="buttonPrintQrCodeReceiveTransactionWalletAddress.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="buttonPrintQrCodeReceiveTransactionWalletAddress.Location" type="System.Drawing.Point, System.Drawing">
+    <value>453, 473</value>
+  </data>
+  <data name="buttonPrintQrCodeReceiveTransactionWalletAddress.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="buttonPrintQrCodeReceiveTransactionWalletAddress.Size" type="System.Drawing.Size, System.Drawing">
+    <value>475, 36</value>
+  </data>
+  <data name="buttonPrintQrCodeReceiveTransactionWalletAddress.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="buttonPrintQrCodeReceiveTransactionWalletAddress.Text" xml:space="preserve">
+    <value>BUTTON_MAIN_INTERFACE_PRINT_QR_CODE_TEXT</value>
+  </data>
+  <data name="&gt;&gt;buttonPrintQrCodeReceiveTransactionWalletAddress.Name" xml:space="preserve">
+    <value>buttonPrintQrCodeReceiveTransactionWalletAddress</value>
+  </data>
+  <data name="&gt;&gt;buttonPrintQrCodeReceiveTransactionWalletAddress.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonPrintQrCodeReceiveTransactionWalletAddress.Parent" xml:space="preserve">
+    <value>tabPageReceiveTransaction</value>
+  </data>
+  <data name="&gt;&gt;buttonPrintQrCodeReceiveTransactionWalletAddress.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="labelWalletReceiveTransactionQrCodeText.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelWalletReceiveTransactionQrCodeText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>455, 36</value>
+  </data>
+  <data name="labelWalletReceiveTransactionQrCodeText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelWalletReceiveTransactionQrCodeText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>441, 16</value>
+  </data>
+  <data name="labelWalletReceiveTransactionQrCodeText.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="labelWalletReceiveTransactionQrCodeText.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_QR_CODE_RECEIVE_TITLE_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelWalletReceiveTransactionQrCodeText.Name" xml:space="preserve">
+    <value>labelWalletReceiveTransactionQrCodeText</value>
+  </data>
+  <data name="&gt;&gt;labelWalletReceiveTransactionQrCodeText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelWalletReceiveTransactionQrCodeText.Parent" xml:space="preserve">
+    <value>tabPageReceiveTransaction</value>
+  </data>
+  <data name="&gt;&gt;labelWalletReceiveTransactionQrCodeText.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="panelQrCodeWalletAddress.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="panelQrCodeWalletAddress.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="panelQrCodeWalletAddress.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
+    <value>Stretch</value>
+  </data>
+  <data name="panelQrCodeWalletAddress.Location" type="System.Drawing.Point, System.Drawing">
+    <value>512, 74</value>
+  </data>
+  <data name="panelQrCodeWalletAddress.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="panelQrCodeWalletAddress.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>350, 350</value>
+  </data>
+  <data name="panelQrCodeWalletAddress.Size" type="System.Drawing.Size, System.Drawing">
+    <value>350, 350</value>
+  </data>
+  <data name="panelQrCodeWalletAddress.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;panelQrCodeWalletAddress.Name" xml:space="preserve">
+    <value>panelQrCodeWalletAddress</value>
+  </data>
+  <data name="&gt;&gt;panelQrCodeWalletAddress.Type" xml:space="preserve">
+    <value>SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel, SeguraChain-Desktop-Wallet, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;panelQrCodeWalletAddress.Parent" xml:space="preserve">
+    <value>tabPageReceiveTransaction</value>
+  </data>
+  <data name="&gt;&gt;panelQrCodeWalletAddress.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="tabPageReceiveTransaction.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 34</value>
+  </data>
+  <data name="tabPageReceiveTransaction.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="tabPageReceiveTransaction.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="tabPageReceiveTransaction.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1161, 533</value>
+  </data>
+  <data name="tabPageReceiveTransaction.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="tabPageReceiveTransaction.Text" xml:space="preserve">
+    <value>TABPAGE_RECEIVE_TRANSACTION_TEXT</value>
+  </data>
+  <data name="&gt;&gt;tabPageReceiveTransaction.Name" xml:space="preserve">
+    <value>tabPageReceiveTransaction</value>
+  </data>
+  <data name="&gt;&gt;tabPageReceiveTransaction.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPageReceiveTransaction.Parent" xml:space="preserve">
+    <value>tabControlWallet</value>
+  </data>
+  <data name="&gt;&gt;tabPageReceiveTransaction.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="buttonMainInterfaceSearchTransactionHistory.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="buttonMainInterfaceSearchTransactionHistory.Location" type="System.Drawing.Point, System.Drawing">
+    <value>824, 493</value>
+  </data>
+  <data name="buttonMainInterfaceSearchTransactionHistory.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="buttonMainInterfaceSearchTransactionHistory.Size" type="System.Drawing.Size, System.Drawing">
+    <value>114, 25</value>
+  </data>
+  <data name="buttonMainInterfaceSearchTransactionHistory.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="buttonMainInterfaceSearchTransactionHistory.Text" xml:space="preserve">
+    <value>BUTTON_MAIN_INTERFACE_SEARCH_TRANSACTION_HISTORY_TEXT</value>
+  </data>
+  <data name="&gt;&gt;buttonMainInterfaceSearchTransactionHistory.Name" xml:space="preserve">
+    <value>buttonMainInterfaceSearchTransactionHistory</value>
+  </data>
+  <data name="&gt;&gt;buttonMainInterfaceSearchTransactionHistory.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonMainInterfaceSearchTransactionHistory.Parent" xml:space="preserve">
+    <value>tabPageTransactionHistory</value>
+  </data>
+  <data name="&gt;&gt;buttonMainInterfaceSearchTransactionHistory.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="textBoxTransactionHistorySearch.Location" type="System.Drawing.Point, System.Drawing">
+    <value>498, 494</value>
+  </data>
+  <data name="textBoxTransactionHistorySearch.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="textBoxTransactionHistorySearch.Size" type="System.Drawing.Size, System.Drawing">
+    <value>318, 22</value>
+  </data>
+  <data name="textBoxTransactionHistorySearch.TabIndex" type="System.Int32, mscorlib">
+    <value>7</value>
+  </data>
+  <data name="&gt;&gt;textBoxTransactionHistorySearch.Name" xml:space="preserve">
+    <value>textBoxTransactionHistorySearch</value>
+  </data>
+  <data name="&gt;&gt;textBoxTransactionHistorySearch.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBoxTransactionHistorySearch.Parent" xml:space="preserve">
+    <value>tabPageTransactionHistory</value>
+  </data>
+  <data name="&gt;&gt;textBoxTransactionHistorySearch.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="panelTransactionHistoryColumns.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <data name="panelTransactionHistoryColumns.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="panelTransactionHistoryColumns.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 3</value>
+  </data>
+  <data name="panelTransactionHistoryColumns.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="panelTransactionHistoryColumns.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>300, 25</value>
+  </data>
+  <data name="panelTransactionHistoryColumns.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1153, 47</value>
+  </data>
+  <data name="panelTransactionHistoryColumns.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;panelTransactionHistoryColumns.Name" xml:space="preserve">
+    <value>panelTransactionHistoryColumns</value>
+  </data>
+  <data name="&gt;&gt;panelTransactionHistoryColumns.Type" xml:space="preserve">
+    <value>SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel, SeguraChain-Desktop-Wallet, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;panelTransactionHistoryColumns.Parent" xml:space="preserve">
+    <value>tabPageTransactionHistory</value>
+  </data>
+  <data name="&gt;&gt;panelTransactionHistoryColumns.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="textBoxMainInterfaceMaxPageTransactionHistory.Location" type="System.Drawing.Point, System.Drawing">
+    <value>328, 495</value>
+  </data>
+  <data name="textBoxMainInterfaceMaxPageTransactionHistory.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="textBoxMainInterfaceMaxPageTransactionHistory.Size" type="System.Drawing.Size, System.Drawing">
+    <value>92, 22</value>
+  </data>
+  <data name="textBoxMainInterfaceMaxPageTransactionHistory.TabIndex" type="System.Int32, mscorlib">
+    <value>6</value>
+  </data>
+  <data name="&gt;&gt;textBoxMainInterfaceMaxPageTransactionHistory.Name" xml:space="preserve">
+    <value>textBoxMainInterfaceMaxPageTransactionHistory</value>
+  </data>
+  <data name="&gt;&gt;textBoxMainInterfaceMaxPageTransactionHistory.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBoxMainInterfaceMaxPageTransactionHistory.Parent" xml:space="preserve">
+    <value>tabPageTransactionHistory</value>
+  </data>
+  <data name="&gt;&gt;textBoxMainInterfaceMaxPageTransactionHistory.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="textBoxMainInterfaceCurrentPageTransactionHistory.Location" type="System.Drawing.Point, System.Drawing">
+    <value>228, 495</value>
+  </data>
+  <data name="textBoxMainInterfaceCurrentPageTransactionHistory.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="textBoxMainInterfaceCurrentPageTransactionHistory.Size" type="System.Drawing.Size, System.Drawing">
+    <value>92, 22</value>
+  </data>
+  <data name="textBoxMainInterfaceCurrentPageTransactionHistory.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="&gt;&gt;textBoxMainInterfaceCurrentPageTransactionHistory.Name" xml:space="preserve">
+    <value>textBoxMainInterfaceCurrentPageTransactionHistory</value>
+  </data>
+  <data name="&gt;&gt;textBoxMainInterfaceCurrentPageTransactionHistory.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;textBoxMainInterfaceCurrentPageTransactionHistory.Parent" xml:space="preserve">
+    <value>tabPageTransactionHistory</value>
+  </data>
+  <data name="&gt;&gt;textBoxMainInterfaceCurrentPageTransactionHistory.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="buttonMainInterfaceNextPageTransactionHistory.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="buttonMainInterfaceNextPageTransactionHistory.Location" type="System.Drawing.Point, System.Drawing">
+    <value>116, 492</value>
+  </data>
+  <data name="buttonMainInterfaceNextPageTransactionHistory.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="buttonMainInterfaceNextPageTransactionHistory.Size" type="System.Drawing.Size, System.Drawing">
+    <value>104, 28</value>
+  </data>
+  <data name="buttonMainInterfaceNextPageTransactionHistory.TabIndex" type="System.Int32, mscorlib">
+    <value>4</value>
+  </data>
+  <data name="buttonMainInterfaceNextPageTransactionHistory.Text" xml:space="preserve">
+    <value>BUTTON_MAIN_INTERFACE_NEXT_PAGE_TRANSACTION_HISTORY_TEXT</value>
+  </data>
+  <data name="&gt;&gt;buttonMainInterfaceNextPageTransactionHistory.Name" xml:space="preserve">
+    <value>buttonMainInterfaceNextPageTransactionHistory</value>
+  </data>
+  <data name="&gt;&gt;buttonMainInterfaceNextPageTransactionHistory.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonMainInterfaceNextPageTransactionHistory.Parent" xml:space="preserve">
+    <value>tabPageTransactionHistory</value>
+  </data>
+  <data name="&gt;&gt;buttonMainInterfaceNextPageTransactionHistory.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="buttonMainInterfaceBackPageTransactionHistory.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="buttonMainInterfaceBackPageTransactionHistory.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 492</value>
+  </data>
+  <data name="buttonMainInterfaceBackPageTransactionHistory.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="buttonMainInterfaceBackPageTransactionHistory.Size" type="System.Drawing.Size, System.Drawing">
+    <value>104, 28</value>
+  </data>
+  <data name="buttonMainInterfaceBackPageTransactionHistory.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="buttonMainInterfaceBackPageTransactionHistory.Text" xml:space="preserve">
+    <value>BUTTON_MAIN_INTERFACE_BACK_PAGE_TRANSACTION_HISTORY_TEXT</value>
+  </data>
+  <data name="&gt;&gt;buttonMainInterfaceBackPageTransactionHistory.Name" xml:space="preserve">
+    <value>buttonMainInterfaceBackPageTransactionHistory</value>
+  </data>
+  <data name="&gt;&gt;buttonMainInterfaceBackPageTransactionHistory.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonMainInterfaceBackPageTransactionHistory.Parent" xml:space="preserve">
+    <value>tabPageTransactionHistory</value>
+  </data>
+  <data name="&gt;&gt;buttonMainInterfaceBackPageTransactionHistory.ZOrder" xml:space="preserve">
+    <value>6</value>
+  </data>
+  <data name="buttonMainInterfaceExportTransactionHistory.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
+    <value>Flat</value>
+  </data>
+  <data name="buttonMainInterfaceExportTransactionHistory.Location" type="System.Drawing.Point, System.Drawing">
+    <value>1021, 491</value>
+  </data>
+  <data name="buttonMainInterfaceExportTransactionHistory.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="buttonMainInterfaceExportTransactionHistory.Size" type="System.Drawing.Size, System.Drawing">
+    <value>136, 28</value>
+  </data>
+  <data name="buttonMainInterfaceExportTransactionHistory.TabIndex" type="System.Int32, mscorlib">
+    <value>9</value>
+  </data>
+  <data name="buttonMainInterfaceExportTransactionHistory.Text" xml:space="preserve">
+    <value>BUTTON_MAIN_INTERFACE_EXPORT_TRANSACTION_HISTORY_TEXT</value>
+  </data>
+  <data name="&gt;&gt;buttonMainInterfaceExportTransactionHistory.Name" xml:space="preserve">
+    <value>buttonMainInterfaceExportTransactionHistory</value>
+  </data>
+  <data name="&gt;&gt;buttonMainInterfaceExportTransactionHistory.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonMainInterfaceExportTransactionHistory.Parent" xml:space="preserve">
+    <value>tabPageTransactionHistory</value>
+  </data>
+  <data name="&gt;&gt;buttonMainInterfaceExportTransactionHistory.ZOrder" xml:space="preserve">
+    <value>7</value>
+  </data>
+  <data name="panelTransactionHistory.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <data name="panelTransactionHistory.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="panelTransactionHistory.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 56</value>
+  </data>
+  <data name="panelTransactionHistory.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="panelTransactionHistory.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>300, 300</value>
+  </data>
+  <data name="panelTransactionHistory.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1153, 418</value>
+  </data>
+  <data name="panelTransactionHistory.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;panelTransactionHistory.Name" xml:space="preserve">
+    <value>panelTransactionHistory</value>
+  </data>
+  <data name="&gt;&gt;panelTransactionHistory.Type" xml:space="preserve">
+    <value>SeguraChain_Desktop_Wallet.InternalForm.Custom.Object.ClassCustomPanel, SeguraChain-Desktop-Wallet, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;panelTransactionHistory.Parent" xml:space="preserve">
+    <value>tabPageTransactionHistory</value>
+  </data>
+  <data name="&gt;&gt;panelTransactionHistory.ZOrder" xml:space="preserve">
+    <value>8</value>
+  </data>
+  <data name="tabPageTransactionHistory.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 34</value>
+  </data>
+  <data name="tabPageTransactionHistory.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="tabPageTransactionHistory.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1161, 533</value>
+  </data>
+  <data name="tabPageTransactionHistory.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="tabPageTransactionHistory.Text" xml:space="preserve">
+    <value>TABPAGE_TRANSACTION_HISTORY_TEXT</value>
+  </data>
+  <data name="&gt;&gt;tabPageTransactionHistory.Name" xml:space="preserve">
+    <value>tabPageTransactionHistory</value>
+  </data>
+  <data name="&gt;&gt;tabPageTransactionHistory.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPageTransactionHistory.Parent" xml:space="preserve">
+    <value>tabControlWallet</value>
+  </data>
+  <data name="&gt;&gt;tabPageTransactionHistory.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="panel1.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="listViewWebNode.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <data name="listViewWebNode.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 3</value>
+  </data>
+  <data name="listViewWebNode.Size" type="System.Drawing.Size, System.Drawing">
+    <value>153, 524</value>
+  </data>
+  <data name="listViewWebNode.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;listViewWebNode.Name" xml:space="preserve">
+    <value>listViewWebNode</value>
+  </data>
+  <data name="&gt;&gt;listViewWebNode.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ListView, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;listViewWebNode.Parent" xml:space="preserve">
+    <value>panel1</value>
+  </data>
+  <data name="&gt;&gt;listViewWebNode.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="panelStoreNetwork.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <data name="panelStoreNetwork.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="panelStoreNetwork.Location" type="System.Drawing.Point, System.Drawing">
+    <value>162, 3</value>
+  </data>
+  <data name="panelStoreNetwork.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>400, 300</value>
+  </data>
+  <data name="panelStoreNetwork.Size" type="System.Drawing.Size, System.Drawing">
+    <value>989, 524</value>
+  </data>
+  <data name="panelStoreNetwork.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="&gt;&gt;panelStoreNetwork.Name" xml:space="preserve">
+    <value>panelStoreNetwork</value>
+  </data>
+  <data name="&gt;&gt;panelStoreNetwork.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;panelStoreNetwork.Parent" xml:space="preserve">
+    <value>panel1</value>
+  </data>
+  <data name="&gt;&gt;panelStoreNetwork.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="panel1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>7, 6</value>
+  </data>
+  <data name="panel1.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>800, 1000</value>
+  </data>
+  <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1356, 1000</value>
+  </data>
+  <data name="panel1.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;panel1.Name" xml:space="preserve">
+    <value>panel1</value>
+  </data>
+  <data name="&gt;&gt;panel1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;panel1.Parent" xml:space="preserve">
+    <value>tabPageStoreNetwork</value>
+  </data>
+  <data name="&gt;&gt;panel1.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="tabPageStoreNetwork.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 34</value>
+  </data>
+  <data name="tabPageStoreNetwork.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="tabPageStoreNetwork.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="tabPageStoreNetwork.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1161, 533</value>
+  </data>
+  <data name="tabPageStoreNetwork.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="tabPageStoreNetwork.Text" xml:space="preserve">
+    <value>TABPAGE_STORE_NETWORK_TEXT</value>
+  </data>
+  <data name="&gt;&gt;tabPageStoreNetwork.Name" xml:space="preserve">
+    <value>tabPageStoreNetwork</value>
+  </data>
+  <data name="&gt;&gt;tabPageStoreNetwork.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPageStoreNetwork.Parent" xml:space="preserve">
+    <value>tabControlWallet</value>
+  </data>
+  <data name="&gt;&gt;tabPageStoreNetwork.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="tabControlWallet.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 9.75pt, style=Bold</value>
+  </data>
+  <data name="tabControlWallet.ItemSize" type="System.Drawing.Size, System.Drawing">
+    <value>128, 30</value>
+  </data>
+  <data name="tabControlWallet.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 157</value>
+  </data>
+  <data name="tabControlWallet.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
+  </data>
+  <data name="tabControlWallet.Padding" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="tabControlWallet.Size" type="System.Drawing.Size, System.Drawing">
+    <value>1169, 571</value>
+  </data>
+  <data name="tabControlWallet.TabIndex" type="System.Int32, mscorlib">
+    <value>5</value>
+  </data>
+  <data name="&gt;&gt;tabControlWallet.Name" xml:space="preserve">
+    <value>tabControlWallet</value>
+  </data>
+  <data name="&gt;&gt;tabControlWallet.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabControl, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabControlWallet.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;tabControlWallet.ZOrder" xml:space="preserve">
+    <value>5</value>
+  </data>
+  <data name="labelWalletAddressReceiveTransactionTitle.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelWalletAddressReceiveTransactionTitle.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 8.25pt, style=Bold</value>
+  </data>
+  <data name="labelWalletAddressReceiveTransactionTitle.Location" type="System.Drawing.Point, System.Drawing">
+    <value>105, 52</value>
+  </data>
+  <data name="labelWalletAddressReceiveTransactionTitle.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelWalletAddressReceiveTransactionTitle.Size" type="System.Drawing.Size, System.Drawing">
+    <value>423, 13</value>
+  </data>
+  <data name="labelWalletAddressReceiveTransactionTitle.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="labelWalletAddressReceiveTransactionTitle.Text" xml:space="preserve">
+    <value>LABEL_MAIN_INTERFACE_WALLET_ADDRESS_RECEIVE_TITLE_TEXT</value>
+  </data>
+  <data name="&gt;&gt;labelWalletAddressReceiveTransactionTitle.Name" xml:space="preserve">
+    <value>labelWalletAddressReceiveTransactionTitle</value>
+  </data>
+  <data name="&gt;&gt;labelWalletAddressReceiveTransactionTitle.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelWalletAddressReceiveTransactionTitle.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;labelWalletAddressReceiveTransactionTitle.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="labelWalletAddressReceiveTransaction.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelWalletAddressReceiveTransaction.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 9pt, style=Bold</value>
+  </data>
+  <data name="labelWalletAddressReceiveTransaction.Location" type="System.Drawing.Point, System.Drawing">
+    <value>105, 70</value>
+  </data>
+  <data name="labelWalletAddressReceiveTransaction.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelWalletAddressReceiveTransaction.Size" type="System.Drawing.Size, System.Drawing">
+    <value>199, 15</value>
+  </data>
+  <data name="labelWalletAddressReceiveTransaction.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="labelWalletAddressReceiveTransaction.Text" xml:space="preserve">
+    <value>WALLET_ADDRESS_RECEIVE</value>
+  </data>
+  <data name="labelWalletAddressReceiveTransaction.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
+    <value>MiddleLeft</value>
+  </data>
+  <data name="&gt;&gt;labelWalletAddressReceiveTransaction.Name" xml:space="preserve">
+    <value>labelWalletAddressReceiveTransaction</value>
+  </data>
+  <data name="&gt;&gt;labelWalletAddressReceiveTransaction.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelWalletAddressReceiveTransaction.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;labelWalletAddressReceiveTransaction.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
   </metadata>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>25</value>
   </metadata>
+  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
+    <value>7, 15</value>
+  </data>
+  <data name="$this.AutoScroll" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="$this.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
+    <value>GrowAndShrink</value>
+  </data>
+  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
+    <value>1188, 729</value>
+  </data>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         AAABAAYAAAAAAAEAIAAAQAAAZgAAAICAAAABACAAKAgBAGZAAABAQAAAAQAgAChCAACOSAEAMDAAAAEA
@@ -5047,5 +7618,110 @@
         AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP//AAD//wAA/n8AAPw/AAD4HwAA9A8AAOAH
         AADAAwAAwAMAAOADAADwBwAA+B8AAPgfAAD8PwAA//8AAP//AAA=
 </value>
+  </data>
+  <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="$this.MinimumSize" type="System.Drawing.Size, System.Drawing">
+    <value>1204, 768</value>
+  </data>
+  <data name="$this.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 6, 0</value>
+  </data>
+  <data name="$this.StartPosition" type="System.Windows.Forms.FormStartPosition, System.Windows.Forms">
+    <value>CenterScreen</value>
+  </data>
+  <data name="$this.Text" xml:space="preserve">
+    <value>FORM_TITLE_MAIN_INTERFACE_TEXT</value>
+  </data>
+  <data name="&gt;&gt;fileToolStripMenuItem.Name" xml:space="preserve">
+    <value>fileToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;fileToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;openWalletToolStripMenuItem.Name" xml:space="preserve">
+    <value>openWalletToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;openWalletToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;closeWalletToolStripMenuItem.Name" xml:space="preserve">
+    <value>closeWalletToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;closeWalletToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;createWalletToolStripMenuItem.Name" xml:space="preserve">
+    <value>createWalletToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;createWalletToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;importWalletPrivateKeytoolStripMenuItem.Name" xml:space="preserve">
+    <value>importWalletPrivateKeytoolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;importWalletPrivateKeytoolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;exitToolStripMenuItem.Name" xml:space="preserve">
+    <value>exitToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;exitToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;settingsToolStripMenuItem.Name" xml:space="preserve">
+    <value>settingsToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;settingsToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;rescanToolStripMenuItem.Name" xml:space="preserve">
+    <value>rescanToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;rescanToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;languageToolStripMenuItem.Name" xml:space="preserve">
+    <value>languageToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;languageToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;vIEWTEXTToolStripMenuItem.Name" xml:space="preserve">
+    <value>vIEWTEXTToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;vIEWTEXTToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;normalToolStripMenuItem.Name" xml:space="preserve">
+    <value>normalToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;normalToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;typeWebSiteToolStripMenuItem.Name" xml:space="preserve">
+    <value>typeWebSiteToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;typeWebSiteToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;leftCenterRightToolStripMenuItem.Name" xml:space="preserve">
+    <value>leftCenterRightToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;leftCenterRightToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;timerRefreshTransactionHistory.Name" xml:space="preserve">
+    <value>timerRefreshTransactionHistory</value>
+  </data>
+  <data name="&gt;&gt;timerRefreshTransactionHistory.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Timer, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;$this.Name" xml:space="preserve">
+    <value>ClassWalletMainInterfaceForm</value>
+  </data>
+  <data name="&gt;&gt;$this.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Form, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

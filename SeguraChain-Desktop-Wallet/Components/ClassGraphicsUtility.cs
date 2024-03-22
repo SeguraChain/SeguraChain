@@ -44,7 +44,7 @@ namespace SeguraChain_Desktop_Wallet.Components
                     case ClassViewStrategiesEnum.TypeWebSite:
 
                         // Prueba rápida y erróneamente de resultado inesperado
-                        ViewStrategy_0_TypeWebSite(controls, f1.Width, applyImages);
+                        f1.Height = ViewStrategy_0_TypeWebSite(controls, f1.Width, applyImages);
 
                         break;
 
@@ -67,8 +67,17 @@ namespace SeguraChain_Desktop_Wallet.Components
         {
             foreach (ClassContainerDataLocalization c in controls)
             {
+                if (c.Control is Panel)
+                {
+                    Panel p = (Panel)c.Control;
+                    p.AutoSizeMode = AutoSizeMode.GrowOnly;
+                    p.AutoSize = false;
+                }
+
                 c.Control.Width = c.InitWidth;
                 c.Control.Height = c.InitHeight;
+                c.Control.Anchor = AnchorStyles.None;
+                c.Control.Dock = DockStyle.None;
                 c.Control.Location = new Point(c.InitX, c.InitY);
 
                 if (c.HasChilds)
@@ -85,31 +94,55 @@ namespace SeguraChain_Desktop_Wallet.Components
         /// <param name="controls">Lista de Controles</param>
         /// <param name="newWidth">Ancho del contenedor</param>
         /// <param name="applyImages">Permite cambiar también las imágenes (true == Sí se cambian)</param>
-        private static void ViewStrategy_0_TypeWebSite(List<ClassContainerDataLocalization> controls, Int32 newWidth, Boolean applyImages)
+        private static Int32 ViewStrategy_0_TypeWebSite(List<ClassContainerDataLocalization> controls, Int32 newWidth, Boolean applyImages)
         {
             // Centering
-            Int32 centerY = 24;
-            Int32 centerX = newWidth / 2;
+            Int32 centerY = 0;
 
-            foreach (ClassContainerDataLocalization c in controls)
+            if (controls != null && controls.Count > 0)
             {
-                c.Control.Width = !applyImages ? (String)c.Control.Tag == "image" || c.Control.GetType().Name == "PictureBox" ?
-                    c.Control.Width : newWidth * 96 / 100 : c.Control.Width;
+                Int32 centerX = newWidth / 2;
 
-                c.Control.Location = new Point(centerX - (c.Control.Width / 2), centerY);
+                controls = controls.OrderBy(x => x.Control.TabIndex).ToList();
 
-                Int32 UPPER_SET_ALL_ = centerY + c.Control.Height
-                    + c.Control.Margin.Bottom + c.Control.Padding.Bottom;
-
-                // SET Y                    
-                centerY = UPPER_SET_ALL_;
-
-                if (c.HasChilds)
+                foreach (ClassContainerDataLocalization c in controls)
                 {
-                    ViewStrategy_0_TypeWebSite(
-                    c.ChildsContainerData, c.Control.Width, applyImages);
+                    c.Control.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom;
+
+                    if (c.Control is Panel)
+                    {
+                        c.Control.Dock = DockStyle.Fill;
+                    }
+                    else
+                    {
+
+                        if (!applyImages)
+                        {
+                            if ((String)c.Control.Tag != "image" && c.Control.GetType().Name != "PictureBox")
+                            {
+                                c.Control.Width = newWidth * 96 / 100;
+                            }
+                        }
+                        else
+                        {
+                            c.Control.Width = newWidth * 96 / 100;
+                        }
+                    }
+
+                    c.Control.Height = c.HasChilds ? c.ChildsContainerData.Sum(s => s.Control.Height) : c.Control.Height;
+
+                    if (c.HasChilds)
+                    {
+                        ViewStrategy_0_TypeWebSite(c.ChildsContainerData, c.Control.Width, applyImages);
+                    }
+
+
+
+                    c.Control.Location = new Point(centerX - (c.Control.Width / 2), centerY);
+                    centerY += c.Control.Height;
                 }
             }
+            return centerY;
         }
 
         /// <summary>

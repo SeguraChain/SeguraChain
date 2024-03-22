@@ -225,6 +225,7 @@ namespace SeguraChain_Desktop_Wallet
                 ClassDataContextForm DCF = new ClassDataContextForm();
                 DCF.InitDataResponsiveFormControls(this);
                 this.Tag = DCF;
+
                 //adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.TypeWebSite);
                 //Refresh();
             }
@@ -2861,8 +2862,8 @@ namespace SeguraChain_Desktop_Wallet
         }
 
         private async void ClassWalletMainInterfaceForm_ResizeEnd(object sender, EventArgs e)
-        {
-            //adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.TypeWebSite);
+        {            
+            adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.Normal);
         }
 
         private void typeWebSiteToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2890,6 +2891,21 @@ namespace SeguraChain_Desktop_Wallet
         private void buttonSendTransactionOpenContactList_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void vIEWTEXTToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ClassWalletMainInterfaceForm_Resize(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ClassWalletMainInterfaceForm_MaximizedBoundsChanged(object sender, EventArgs e)
+        {
+            adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.Normal);
         }
     }
 }
