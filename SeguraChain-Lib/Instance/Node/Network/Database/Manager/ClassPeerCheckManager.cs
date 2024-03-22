@@ -345,6 +345,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="peerUniqueId"></param>
         public static void UpdatePeerClientLastPacketReceived(ClassPeerDatabase peerDatabase, string peerIp, string peerUniqueId, long peerLastTimestampSignatureWhitelist, CancellationTokenSource cancellation)
         {
+            if (peerIp.IsNullOrEmpty(false, out _) || 
+                peerUniqueId.IsNullOrEmpty(false, out _) ||
+                cancellation == null)
+                return;
+
             try
             {
                 peerDatabase[peerIp, peerUniqueId, cancellation].PeerLastPacketReceivedTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
