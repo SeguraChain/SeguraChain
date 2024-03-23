@@ -83,6 +83,7 @@ namespace SeguraChain_Desktop_Wallet
             tabPageSendTransaction = new System.Windows.Forms.TabPage();
             buttonSendTransactionDoProcess = new System.Windows.Forms.Button();
             panelSendTransaction = new ClassCustomPanel();
+            pictureBoxLogoTransaction = new System.Windows.Forms.PictureBox();
             panelSendTransactionDetails = new ClassCustomPanel();
             labelSendTransactionAmountToSpend = new System.Windows.Forms.Label();
             labelSendTransactionFeeSizeCost = new System.Windows.Forms.Label();
@@ -134,6 +135,7 @@ namespace SeguraChain_Desktop_Wallet
             panelRecentTransactions.SuspendLayout();
             tabPageSendTransaction.SuspendLayout();
             panelSendTransaction.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxLogoTransaction).BeginInit();
             panelSendTransactionDetails.SuspendLayout();
             tabPageReceiveTransaction.SuspendLayout();
             tabPageTransactionHistory.SuspendLayout();
@@ -209,9 +211,9 @@ namespace SeguraChain_Desktop_Wallet
             // vIEWTEXTToolStripMenuItem
             // 
             vIEWTEXTToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { normalToolStripMenuItem, typeWebSiteToolStripMenuItem, leftCenterRightToolStripMenuItem });
+            resources.ApplyResources(vIEWTEXTToolStripMenuItem, "vIEWTEXTToolStripMenuItem");
             vIEWTEXTToolStripMenuItem.ForeColor = System.Drawing.Color.GhostWhite;
             vIEWTEXTToolStripMenuItem.Name = "vIEWTEXTToolStripMenuItem";
-            resources.ApplyResources(vIEWTEXTToolStripMenuItem, "vIEWTEXTToolStripMenuItem");
             vIEWTEXTToolStripMenuItem.Click += vIEWTEXTToolStripMenuItem_Click;
             // 
             // normalToolStripMenuItem
@@ -256,8 +258,8 @@ namespace SeguraChain_Desktop_Wallet
             // 
             // pictureBoxLogo
             // 
-            pictureBoxLogo.BackColor = System.Drawing.Color.Transparent;
             resources.ApplyResources(pictureBoxLogo, "pictureBoxLogo");
+            pictureBoxLogo.BackColor = System.Drawing.Color.Transparent;
             pictureBoxLogo.Name = "pictureBoxLogo";
             pictureBoxLogo.TabStop = false;
             pictureBoxLogo.Click += pictureBoxLogo_Click;
@@ -433,17 +435,13 @@ namespace SeguraChain_Desktop_Wallet
             // 
             // progressBarMainInterfaceCheckSyncProgress
             // 
-            progressBarMainInterfaceCheckSyncProgress.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            resources.ApplyResources(progressBarMainInterfaceCheckSyncProgress, "progressBarMainInterfaceCheckSyncProgress");
             progressBarMainInterfaceCheckSyncProgress.BackColor = System.Drawing.Color.GhostWhite;
             progressBarMainInterfaceCheckSyncProgress.ForeColor = System.Drawing.Color.BlueViolet;
-            progressBarMainInterfaceCheckSyncProgress.Location = new System.Drawing.Point(412, 582);
-            progressBarMainInterfaceCheckSyncProgress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             progressBarMainInterfaceCheckSyncProgress.Maximum = 10000;
             progressBarMainInterfaceCheckSyncProgress.Name = "progressBarMainInterfaceCheckSyncProgress";
-            progressBarMainInterfaceCheckSyncProgress.Size = new System.Drawing.Size(348, 23);
             progressBarMainInterfaceCheckSyncProgress.Step = 1;
             progressBarMainInterfaceCheckSyncProgress.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
-            progressBarMainInterfaceCheckSyncProgress.TabIndex = 5;
             // 
             // panelRecentTransactions
             // 
@@ -540,6 +538,7 @@ namespace SeguraChain_Desktop_Wallet
             panelSendTransaction.BackColor = System.Drawing.Color.AliceBlue;
             panelSendTransaction.BorderColor = System.Drawing.Color.Ivory;
             panelSendTransaction.BorderSize = 2F;
+            panelSendTransaction.Controls.Add(pictureBoxLogoTransaction);
             panelSendTransaction.Controls.Add(panelSendTransactionDetails);
             panelSendTransaction.Controls.Add(textBoxSendTransactionConfirmationsCountTarget);
             panelSendTransaction.Controls.Add(labelSendTransactionConfirmationTimeEstimated);
@@ -554,6 +553,13 @@ namespace SeguraChain_Desktop_Wallet
             panelSendTransaction.Controls.Add(textBoxSendTransactionWalletAddressTarget);
             panelSendTransaction.Name = "panelSendTransaction";
             panelSendTransaction.Radius = 10;
+            // 
+            // pictureBoxLogoTransaction
+            // 
+            resources.ApplyResources(pictureBoxLogoTransaction, "pictureBoxLogoTransaction");
+            pictureBoxLogoTransaction.BackColor = System.Drawing.Color.Transparent;
+            pictureBoxLogoTransaction.Name = "pictureBoxLogoTransaction";
+            pictureBoxLogoTransaction.TabStop = false;
             // 
             // panelSendTransactionDetails
             // 
@@ -763,8 +769,8 @@ namespace SeguraChain_Desktop_Wallet
             // 
             // buttonMainInterfaceSearchTransactionHistory
             // 
-            buttonMainInterfaceSearchTransactionHistory.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
             resources.ApplyResources(buttonMainInterfaceSearchTransactionHistory, "buttonMainInterfaceSearchTransactionHistory");
+            buttonMainInterfaceSearchTransactionHistory.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
             buttonMainInterfaceSearchTransactionHistory.ForeColor = System.Drawing.Color.Black;
             buttonMainInterfaceSearchTransactionHistory.Name = "buttonMainInterfaceSearchTransactionHistory";
             buttonMainInterfaceSearchTransactionHistory.UseVisualStyleBackColor = false;
@@ -819,8 +825,8 @@ namespace SeguraChain_Desktop_Wallet
             // 
             // buttonMainInterfaceExportTransactionHistory
             // 
-            buttonMainInterfaceExportTransactionHistory.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
             resources.ApplyResources(buttonMainInterfaceExportTransactionHistory, "buttonMainInterfaceExportTransactionHistory");
+            buttonMainInterfaceExportTransactionHistory.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
             buttonMainInterfaceExportTransactionHistory.ForeColor = System.Drawing.Color.Black;
             buttonMainInterfaceExportTransactionHistory.Name = "buttonMainInterfaceExportTransactionHistory";
             buttonMainInterfaceExportTransactionHistory.UseVisualStyleBackColor = false;
@@ -906,6 +912,7 @@ namespace SeguraChain_Desktop_Wallet
             Load += ClassWalletMainInterfaceForm_Load;
             ResizeBegin += ClassWalletMainInterfaceForm_ResizeBegin;
             ResizeEnd += ClassWalletMainInterfaceForm_ResizeEnd;
+            SizeChanged += ClassWalletMainInterfaceForm_SizeChanged;
             Paint += ClassWalletMainInterfaceForm_Paint;
             Resize += ClassWalletMainInterfaceForm_Resize;
             menuStripGeneralWallet.ResumeLayout(false);
@@ -921,6 +928,7 @@ namespace SeguraChain_Desktop_Wallet
             tabPageSendTransaction.ResumeLayout(false);
             panelSendTransaction.ResumeLayout(false);
             panelSendTransaction.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxLogoTransaction).EndInit();
             panelSendTransactionDetails.ResumeLayout(false);
             panelSendTransactionDetails.PerformLayout();
             tabPageReceiveTransaction.ResumeLayout(false);
@@ -1030,6 +1038,7 @@ namespace SeguraChain_Desktop_Wallet
         private System.Windows.Forms.ToolStripMenuItem typeWebSiteToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem leftCenterRightToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem normalToolStripMenuItem;
+        private System.Windows.Forms.PictureBox pictureBoxLogoTransaction;
     }
 }
 

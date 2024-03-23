@@ -107,36 +107,37 @@ namespace SeguraChain_Desktop_Wallet.Components
 
                 foreach (ClassContainerDataLocalization c in controls)
                 {
+                    //c.Control.Dock = DockStyle.Top;
+
                     c.Control.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom;
 
-                    if (c.Control is Panel)
-                    {
-                        c.Control.Dock = DockStyle.Fill;
-                    }
-                    else
-                    {
+                    //if (c.Control is Panel)
+                    //{
 
-                        if (!applyImages)
-                        {
-                            if ((String)c.Control.Tag != "image" && c.Control.GetType().Name != "PictureBox")
-                            {
-                                c.Control.Width = newWidth * 96 / 100;
-                            }
-                        }
-                        else
+                    //}
+                    //else
+                    //{
+
+                    if (!applyImages)
+                    {
+                        if ((String)c.Control.Tag != "image" && c.Control.GetType().Name != "PictureBox")
                         {
                             c.Control.Width = newWidth * 96 / 100;
                         }
                     }
+                    else
+                    {
+                        c.Control.Width = newWidth * 96 / 100;
+                    }
+                    //}
 
-                    c.Control.Height = c.HasChilds ? c.ChildsContainerData.Sum(s => s.Control.Height) : c.Control.Height;
+
+                    //c.Control.Height = c.HasChilds ? c.ChildsContainerData.Sum(s => s.Control.Height) : c.Control.Height;
 
                     if (c.HasChilds)
                     {
-                        ViewStrategy_0_TypeWebSite(c.ChildsContainerData, c.Control.Width, applyImages);
+                        c.Control.Height = ViewStrategy_0_TypeWebSite(c.ChildsContainerData, c.Control.Width, applyImages);
                     }
-
-
 
                     c.Control.Location = new Point(centerX - (c.Control.Width / 2), centerY);
                     centerY += c.Control.Height;
@@ -173,11 +174,10 @@ namespace SeguraChain_Desktop_Wallet.Components
                 Int32 rightX = 0;
                 List<ClassContainerDataLocalization> rightActualControls = new List<ClassContainerDataLocalization>();
 
-                List<ClassContainerDataLocalization> orderControls =
-                    controls.OrderBy(x => x.InitX).OrderBy(y => y.InitY).ToList();
+                List<ClassContainerDataLocalization> orderControls = controls.OrderBy(t => t.Control.TabIndex).ToList();
 
                 // Prueba rápida y erróneamente de resultado inesperado
-                foreach (ClassContainerDataLocalization c in controls)
+                foreach (ClassContainerDataLocalization c in orderControls)
                 {
                     // Un control que ocupa más del 80 % del tamaño de ancho debería ir al centro y no entraría nada
                     // a sus lados por lo que la componente Y sube en todos los cuadrantes
