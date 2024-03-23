@@ -225,6 +225,7 @@ namespace SeguraChain_Desktop_Wallet
                 ClassDataContextForm DCF = new ClassDataContextForm();
                 DCF.InitDataResponsiveFormControls(this);
                 this.Tag = DCF;
+                this.Location = new System.Drawing.Point(Convert.ToInt32((Screen.PrimaryScreen.Bounds.Width / 2) - this.Width / 2), Convert.ToInt32((Screen.PrimaryScreen.Bounds.Height / 2) - this.Height / 2));
                 //adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.TypeWebSite);
                 //Refresh();
             }
@@ -297,11 +298,12 @@ namespace SeguraChain_Desktop_Wallet
             Text = BlockchainSetting.CoinName + _walletMainFormLanguageObject.FORM_TITLE_MAIN_INTERFACE_TEXT + Assembly.GetExecutingAssembly().GetName().Version;
             labelWalletOpened.Text = _walletMainFormLanguageObject.LABEL_WALLET_OPENED_LIST_TEXT;
             labelWalletOpened = ClassGraphicsUtility.AutoSetLocationAndResizeControl<Label>(labelWalletOpened, this, 98, false);
-            progressBarMainInterfaceSyncProgress = ClassGraphicsUtility.AutoSetLocationAndResizeControl<ClassCustomProgressBar>(progressBarMainInterfaceSyncProgress, this, 50, false);
-            progressBarMainInterfaceCheckSyncProgress = ClassGraphicsUtility.AutoSetLocationAndResizeControl<ClassCustomProgressBar>(progressBarMainInterfaceCheckSyncProgress, this, 50, false);
+            // Testing Views
+            //progressBarMainInterfaceSyncProgress = ClassGraphicsUtility.AutoSetLocationAndResizeControl<ClassCustomProgressBar>(progressBarMainInterfaceSyncProgress, this, 50, false);
+            //progressBarMainInterfaceCheckSyncProgress = ClassGraphicsUtility.AutoSetLocationAndResizeControl<ClassCustomProgressBar>(progressBarMainInterfaceCheckSyncProgress, this, 50, false);
 
             labelMainInterfaceSyncProgress.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_SYNC_PROGRESS;
-            labelMainInterfaceSyncProgress = ClassGraphicsUtility.AutoSetLocationAndResizeControl<Label>(labelMainInterfaceSyncProgress, this, 50, false);
+            //labelMainInterfaceSyncProgress = ClassGraphicsUtility.AutoSetLocationAndResizeControl<Label>(labelMainInterfaceSyncProgress, this, 50, false);
 
             #region MenuStrip
 
@@ -2872,7 +2874,7 @@ namespace SeguraChain_Desktop_Wallet
 
         private async void ClassWalletMainInterfaceForm_ResizeEnd(object sender, EventArgs e)
         {
-            //adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.TypeWebSite);
+            adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.Normal);
         }
 
         private void typeWebSiteToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2900,6 +2902,26 @@ namespace SeguraChain_Desktop_Wallet
         private void buttonSendTransactionOpenContactList_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void vIEWTEXTToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ClassWalletMainInterfaceForm_Resize(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ClassWalletMainInterfaceForm_MaximizedBoundsChanged(object sender, EventArgs e)
+        {
+            adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.Normal);
+        }
+
+        private void ClassWalletMainInterfaceForm_SizeChanged(object sender, EventArgs e)
+        {
+            adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.Normal);
         }
     }
 }
