@@ -10,6 +10,7 @@ namespace SeguraChain_Desktop_Wallet.Enum
     {
         TypeWebSite,
         LeftCenterRight,
-        Normal
+        Normal,
+        PorcentualDimensions
     }
 }

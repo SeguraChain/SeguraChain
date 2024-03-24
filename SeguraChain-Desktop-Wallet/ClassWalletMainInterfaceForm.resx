@@ -120,6 +120,13 @@
   <metadata name="menuStripGeneralWallet.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="menuStripGeneralWallet.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
+  </data>
+  <data name="menuStripGeneralWallet.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>None</value>
+  </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="menuStripGeneralWallet.Font" type="System.Drawing.Font, System.Drawing">
     <value>Segoe UI, 9pt, style=Bold</value>
@@ -190,15 +197,17 @@
   <data name="normalToolStripMenuItem.Text" xml:space="preserve">
     <value>Normal</value>
   </data>
+  <data name="dimensionsToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>171, 22</value>
+  </data>
+  <data name="dimensionsToolStripMenuItem.Text" xml:space="preserve">
+    <value>% Dimensions</value>
+  </data>
   <data name="typeWebSiteToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>171, 22</value>
   </data>
   <data name="typeWebSiteToolStripMenuItem.Text" xml:space="preserve">
     <value>Type WebSite</value>
-  </data>
-  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="leftCenterRightToolStripMenuItem.Enabled" type="System.Boolean, mscorlib">
-    <value>False</value>
   </data>
   <data name="leftCenterRightToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>171, 22</value>
@@ -206,6 +215,7 @@
   <data name="leftCenterRightToolStripMenuItem.Text" xml:space="preserve">
     <value>Left Center Right</value>
   </data>
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="vIEWTEXTToolStripMenuItem.Enabled" type="System.Boolean, mscorlib">
     <value>False</value>
   </data>
@@ -219,7 +229,7 @@
     <value>False</value>
   </data>
   <data name="menuStripGeneralWallet.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 0</value>
+    <value>5, 5</value>
   </data>
   <data name="menuStripGeneralWallet.MinimumSize" type="System.Drawing.Size, System.Drawing">
     <value>600, 0</value>
@@ -229,7 +239,7 @@
     <value>7, 2, 7, 2</value>
   </data>
   <data name="menuStripGeneralWallet.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1002, 24</value>
+    <value>600, 24</value>
   </data>
   <data name="menuStripGeneralWallet.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -247,10 +257,13 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;menuStripGeneralWallet.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>5</value>
+  </data>
+  <data name="comboBoxListWalletFile.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
   </data>
   <data name="comboBoxListWalletFile.Location" type="System.Drawing.Point, System.Drawing">
-    <value>857, 50</value>
+    <value>863, 27</value>
   </data>
   <data name="comboBoxListWalletFile.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -271,7 +284,10 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;comboBoxListWalletFile.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>3</value>
+  </data>
+  <data name="labelWalletOpened.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Right</value>
   </data>
   <data name="labelWalletOpened.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -280,7 +296,7 @@
     <value>Microsoft Sans Serif, 9pt, style=Bold</value>
   </data>
   <data name="labelWalletOpened.Location" type="System.Drawing.Point, System.Drawing">
-    <value>743, 30</value>
+    <value>749, 7</value>
   </data>
   <data name="labelWalletOpened.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -307,22 +323,25 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;labelWalletOpened.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>2</value>
   </data>
-  <data name="labelMainInterfaceSyncProgress.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="labelMainInterfaceSyncProgress.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left, Right</value>
   </data>
   <data name="labelMainInterfaceSyncProgress.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft Sans Serif, 9pt, style=Bold</value>
   </data>
   <data name="labelMainInterfaceSyncProgress.Location" type="System.Drawing.Point, System.Drawing">
-    <value>136, 419</value>
+    <value>4, 495</value>
   </data>
   <data name="labelMainInterfaceSyncProgress.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
   </data>
+  <data name="labelMainInterfaceSyncProgress.RightToLeft" type="System.Windows.Forms.RightToLeft, System.Windows.Forms">
+    <value>No</value>
+  </data>
   <data name="labelMainInterfaceSyncProgress.Size" type="System.Drawing.Size, System.Drawing">
-    <value>302, 15</value>
+    <value>982, 15</value>
   </data>
   <data name="labelMainInterfaceSyncProgress.TabIndex" type="System.Int32, mscorlib">
     <value>8</value>
@@ -331,7 +350,7 @@
     <value>LABEL_MAIN_INTERFACE_SYNC_PROGRESS</value>
   </data>
   <data name="labelMainInterfaceSyncProgress.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
-    <value>MiddleCenter</value>
+    <value>BottomLeft</value>
   </data>
   <data name="&gt;&gt;labelMainInterfaceSyncProgress.Name" xml:space="preserve">
     <value>labelMainInterfaceSyncProgress</value>
@@ -344,10 +363,6 @@
   </data>
   <data name="&gt;&gt;labelMainInterfaceSyncProgress.ZOrder" xml:space="preserve">
     <value>0</value>
-  </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="pictureBoxLogo.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
   </data>
   <data name="pictureBoxLogo.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
@@ -3334,8 +3349,11 @@
   <data name="pictureBoxLogo.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
     <value>Stretch</value>
   </data>
+  <data name="pictureBoxLogo.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
   <data name="pictureBoxLogo.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 23</value>
+    <value>609, 8</value>
   </data>
   <data name="pictureBoxLogo.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -3359,19 +3377,28 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;pictureBoxLogo.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>6</value>
   </data>
   <metadata name="timerRefreshTransactionHistory.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>201, 17</value>
   </metadata>
+  <data name="tabControlWallet.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
+  </data>
   <data name="tabControlWallet.Appearance" type="System.Windows.Forms.TabAppearance, System.Windows.Forms">
     <value>FlatButtons</value>
   </data>
-  <data name="panelInternalNetworkStats.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
+  <data name="tabPageOverview.AutoScroll" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
-  <data name="panelInternalNetworkStats.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
-    <value>GrowAndShrink</value>
+  <data name="panelInternalNetworkStats.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left</value>
+  </data>
+  <data name="panelInternalNetworkStats.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinPendingText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTotalCoinPendingText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -3380,7 +3407,7 @@
     <value>Arial, 9.75pt</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTotalCoinPendingText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 218</value>
+    <value>11, 265</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTotalCoinPendingText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -3406,6 +3433,9 @@
   <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalCoinPendingText.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinSpreadText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
   <data name="labelMainInterfaceNetworkStatsTotalCoinSpreadText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -3413,7 +3443,7 @@
     <value>Arial, 9.75pt</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTotalCoinSpreadText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>7, 350</value>
+    <value>11, 298</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTotalCoinSpreadText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -3439,6 +3469,9 @@
   <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalCoinSpreadText.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
+  <data name="labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
   <data name="labelMainInterfaceNetworkStatsTotalFeeCirculatingText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -3446,7 +3479,7 @@
     <value>Arial, 9.75pt</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 234</value>
+    <value>11, 281</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTotalFeeCirculatingText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -3472,6 +3505,9 @@
   <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalFeeCirculatingText.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
+  <data name="labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
   <data name="labelMainInterfaceNetworkStatsTotalCoinCirculatingText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -3479,7 +3515,7 @@
     <value>Arial, 9.75pt</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 202</value>
+    <value>11, 249</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTotalCoinCirculatingText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -3505,6 +3541,9 @@
   <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalCoinCirculatingText.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
+  <data name="labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
   <data name="labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -3512,7 +3551,7 @@
     <value>Arial, 9.75pt</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 186</value>
+    <value>11, 233</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -3538,6 +3577,9 @@
   <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
   <data name="labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -3545,7 +3587,7 @@
     <value>Arial, 9.75pt</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 170</value>
+    <value>11, 217</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -3571,6 +3613,9 @@
   <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalTransactionConfirmedText.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
   <data name="labelMainInterfaceNetworkStatsTotalTransactionText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -3578,7 +3623,7 @@
     <value>Arial, 9.75pt</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTotalTransactionText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 154</value>
+    <value>11, 201</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTotalTransactionText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -3604,6 +3649,9 @@
   <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalTransactionText.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
+  <data name="labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
   <data name="labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -3611,7 +3659,7 @@
     <value>Arial, 9.75pt</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>9, 138</value>
+    <value>11, 185</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -3637,14 +3685,17 @@
   <data name="&gt;&gt;labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.ZOrder" xml:space="preserve">
     <value>7</value>
   </data>
+  <data name="panelSyncInformationsSeperator.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
   <data name="panelSyncInformationsSeperator.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 113</value>
+    <value>12, 53</value>
   </data>
   <data name="panelSyncInformationsSeperator.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
   </data>
   <data name="panelSyncInformationsSeperator.Size" type="System.Drawing.Size, System.Drawing">
-    <value>500, 2</value>
+    <value>505, 5</value>
   </data>
   <data name="panelSyncInformationsSeperator.TabIndex" type="System.Int32, mscorlib">
     <value>8</value>
@@ -3661,6 +3712,9 @@
   <data name="&gt;&gt;panelSyncInformationsSeperator.ZOrder" xml:space="preserve">
     <value>8</value>
   </data>
+  <data name="labelMainInterfaceNetworkStatsInfoSyncText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
   <data name="labelMainInterfaceNetworkStatsInfoSyncText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -3668,7 +3722,7 @@
     <value>Arial, 11.25pt, style=Bold</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsInfoSyncText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 118</value>
+    <value>10, 165</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsInfoSyncText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -3694,6 +3748,9 @@
   <data name="&gt;&gt;labelMainInterfaceNetworkStatsInfoSyncText.ZOrder" xml:space="preserve">
     <value>9</value>
   </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
   <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -3701,7 +3758,7 @@
     <value>Arial, 9.75pt</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>7, 90</value>
+    <value>9, 137</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -3727,6 +3784,9 @@
   <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText.ZOrder" xml:space="preserve">
     <value>10</value>
   </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
   <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -3734,7 +3794,7 @@
     <value>Arial, 9.75pt</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>7, 74</value>
+    <value>9, 121</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -3760,6 +3820,9 @@
   <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText.ZOrder" xml:space="preserve">
     <value>11</value>
   </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentHashrateText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
   <data name="labelMainInterfaceNetworkStatsCurrentHashrateText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -3767,7 +3830,7 @@
     <value>Arial, 9.75pt</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsCurrentHashrateText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>7, 58</value>
+    <value>9, 105</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsCurrentHashrateText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -3793,6 +3856,9 @@
   <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentHashrateText.ZOrder" xml:space="preserve">
     <value>12</value>
   </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
   <data name="labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -3800,7 +3866,7 @@
     <value>Arial, 9.75pt</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>7, 26</value>
+    <value>9, 73</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -3826,6 +3892,9 @@
   <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText.ZOrder" xml:space="preserve">
     <value>13</value>
   </data>
+  <data name="labelMainInterfaceNetworkStatsCurrentDifficultyText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
   <data name="labelMainInterfaceNetworkStatsCurrentDifficultyText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -3833,7 +3902,7 @@
     <value>Arial, 9.75pt</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsCurrentDifficultyText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>7, 42</value>
+    <value>9, 89</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsCurrentDifficultyText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -3859,20 +3928,20 @@
   <data name="&gt;&gt;labelMainInterfaceNetworkStatsCurrentDifficultyText.ZOrder" xml:space="preserve">
     <value>14</value>
   </data>
-  <data name="labelMainInterfaceNetworkStatsTitleText.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="labelMainInterfaceNetworkStatsTitleText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Left, Right</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTitleText.Font" type="System.Drawing.Font, System.Drawing">
     <value>Arial, 11.25pt, style=Bold</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTitleText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>7, 6</value>
+    <value>8, 31</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTitleText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTitleText.Size" type="System.Drawing.Size, System.Drawing">
-    <value>433, 18</value>
+    <value>584, 18</value>
   </data>
   <data name="labelMainInterfaceNetworkStatsTitleText.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -3893,13 +3962,16 @@
     <value>15</value>
   </data>
   <data name="panelInternalNetworkStats.Location" type="System.Drawing.Point, System.Drawing">
-    <value>7, 100</value>
+    <value>4, 109</value>
   </data>
   <data name="panelInternalNetworkStats.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="panelInternalNetworkStats.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="panelInternalNetworkStats.Size" type="System.Drawing.Size, System.Drawing">
-    <value>579, 258</value>
+    <value>582, 381</value>
   </data>
   <data name="panelInternalNetworkStats.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
@@ -3917,16 +3989,19 @@
     <value>1</value>
   </data>
   <data name="progressBarMainInterfaceSyncProgress.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
+    <value>Bottom, Left, Right</value>
   </data>
   <data name="progressBarMainInterfaceSyncProgress.Location" type="System.Drawing.Point, System.Drawing">
-    <value>110, 437</value>
+    <value>4, 515</value>
   </data>
   <data name="progressBarMainInterfaceSyncProgress.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="progressBarMainInterfaceSyncProgress.RightToLeft" type="System.Windows.Forms.RightToLeft, System.Windows.Forms">
+    <value>No</value>
   </data>
   <data name="progressBarMainInterfaceSyncProgress.Size" type="System.Drawing.Size, System.Drawing">
-    <value>368, 26</value>
+    <value>982, 26</value>
   </data>
   <data name="progressBarMainInterfaceSyncProgress.TabIndex" type="System.Int32, mscorlib">
     <value>9</value>
@@ -3944,16 +4019,16 @@
     <value>2</value>
   </data>
   <data name="progressBarMainInterfaceCheckSyncProgress.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
+    <value>Bottom, Left, Right</value>
   </data>
   <data name="progressBarMainInterfaceCheckSyncProgress.Location" type="System.Drawing.Point, System.Drawing">
-    <value>113, 469</value>
+    <value>4, 549</value>
   </data>
   <data name="progressBarMainInterfaceCheckSyncProgress.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="progressBarMainInterfaceCheckSyncProgress.Size" type="System.Drawing.Size, System.Drawing">
-    <value>365, 24</value>
+    <value>982, 25</value>
   </data>
   <data name="progressBarMainInterfaceCheckSyncProgress.TabIndex" type="System.Int32, mscorlib">
     <value>10</value>
@@ -3971,31 +4046,31 @@
     <value>3</value>
   </data>
   <data name="panelRecentTransactions.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
+    <value>Top, Bottom, Right</value>
   </data>
-  <data name="panelRecentTransactions.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
-    <value>GrowAndShrink</value>
+  <data name="panelRecentTransactions.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
   <data name="panelInternalRecentTransactions.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Bottom, Left, Right</value>
   </data>
-  <data name="panelInternalRecentTransactions.AutoScroll" type="System.Boolean, mscorlib">
+  <data name="panelInternalRecentTransactions.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="panelInternalRecentTransactions.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
-    <value>GrowAndShrink</value>
-  </data>
   <data name="panelInternalRecentTransactions.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 29</value>
+    <value>5, 18</value>
   </data>
   <data name="panelInternalRecentTransactions.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="panelInternalRecentTransactions.MinimumSize" type="System.Drawing.Size, System.Drawing">
     <value>200, 200</value>
   </data>
+  <data name="panelInternalRecentTransactions.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
+  </data>
   <data name="panelInternalRecentTransactions.Size" type="System.Drawing.Size, System.Drawing">
-    <value>379, 520</value>
+    <value>368, 468</value>
   </data>
   <data name="panelInternalRecentTransactions.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -4012,17 +4087,20 @@
   <data name="&gt;&gt;panelInternalRecentTransactions.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
-  <data name="labelMainInterfaceRecentTransaction.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="labelMainInterfaceRecentTransaction.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Right</value>
+  </data>
+  <data name="labelMainInterfaceRecentTransaction.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
   </data>
   <data name="labelMainInterfaceRecentTransaction.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 10</value>
+    <value>3, 2</value>
   </data>
   <data name="labelMainInterfaceRecentTransaction.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
   </data>
   <data name="labelMainInterfaceRecentTransaction.Size" type="System.Drawing.Size, System.Drawing">
-    <value>424, 16</value>
+    <value>369, 25</value>
   </data>
   <data name="labelMainInterfaceRecentTransaction.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -4046,13 +4124,13 @@
     <value>1</value>
   </data>
   <data name="panelRecentTransactions.Location" type="System.Drawing.Point, System.Drawing">
-    <value>590, 6</value>
+    <value>616, 6</value>
   </data>
   <data name="panelRecentTransactions.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
   </data>
   <data name="panelRecentTransactions.Size" type="System.Drawing.Size, System.Drawing">
-    <value>391, 552</value>
+    <value>378, 504</value>
   </data>
   <data name="panelRecentTransactions.TabIndex" type="System.Int32, mscorlib">
     <value>7</value>
@@ -4069,9 +4147,6 @@
   <data name="&gt;&gt;panelRecentTransactions.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
-  <data name="labelMainInterfaceTotalBalanceAmountText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top</value>
-  </data>
   <data name="labelMainInterfaceTotalBalanceAmountText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -4079,13 +4154,16 @@
     <value>Microsoft Sans Serif, 9pt, style=Bold</value>
   </data>
   <data name="labelMainInterfaceTotalBalanceAmountText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 75</value>
+    <value>4, 84</value>
   </data>
   <data name="labelMainInterfaceTotalBalanceAmountText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="labelMainInterfaceTotalBalanceAmountText.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="labelMainInterfaceTotalBalanceAmountText.Size" type="System.Drawing.Size, System.Drawing">
-    <value>401, 15</value>
+    <value>411, 25</value>
   </data>
   <data name="labelMainInterfaceTotalBalanceAmountText.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -4108,9 +4186,6 @@
   <data name="&gt;&gt;labelMainInterfaceTotalBalanceAmountText.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
-  <data name="labelMainInterfacePendingBalanceAmountText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top</value>
-  </data>
   <data name="labelMainInterfacePendingBalanceAmountText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -4118,13 +4193,16 @@
     <value>Microsoft Sans Serif, 9pt, style=Bold</value>
   </data>
   <data name="labelMainInterfacePendingBalanceAmountText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 48</value>
+    <value>4, 59</value>
   </data>
   <data name="labelMainInterfacePendingBalanceAmountText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="labelMainInterfacePendingBalanceAmountText.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="labelMainInterfacePendingBalanceAmountText.Size" type="System.Drawing.Size, System.Drawing">
-    <value>421, 15</value>
+    <value>431, 25</value>
   </data>
   <data name="labelMainInterfacePendingBalanceAmountText.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -4147,9 +4225,6 @@
   <data name="&gt;&gt;labelMainInterfacePendingBalanceAmountText.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
-  <data name="labelMainInterfaceAvailableBalanceAmountText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top</value>
-  </data>
   <data name="labelMainInterfaceAvailableBalanceAmountText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -4157,13 +4232,16 @@
     <value>Microsoft Sans Serif, 9pt, style=Bold</value>
   </data>
   <data name="labelMainInterfaceAvailableBalanceAmountText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 27</value>
+    <value>4, 34</value>
   </data>
   <data name="labelMainInterfaceAvailableBalanceAmountText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="labelMainInterfaceAvailableBalanceAmountText.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="labelMainInterfaceAvailableBalanceAmountText.Size" type="System.Drawing.Size, System.Drawing">
-    <value>429, 15</value>
+    <value>439, 25</value>
   </data>
   <data name="labelMainInterfaceAvailableBalanceAmountText.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -4186,17 +4264,17 @@
   <data name="&gt;&gt;labelMainInterfaceAvailableBalanceAmountText.ZOrder" xml:space="preserve">
     <value>7</value>
   </data>
-  <data name="panelSeperatorBalanceLine.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top</value>
-  </data>
   <data name="panelSeperatorBalanceLine.Location" type="System.Drawing.Point, System.Drawing">
-    <value>15, 66</value>
+    <value>4, 29</value>
   </data>
   <data name="panelSeperatorBalanceLine.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>0, 0, 0, 0</value>
+  </data>
+  <data name="panelSeperatorBalanceLine.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="panelSeperatorBalanceLine.Size" type="System.Drawing.Size, System.Drawing">
-    <value>279, 2</value>
+    <value>401, 5</value>
   </data>
   <data name="panelSeperatorBalanceLine.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -4213,9 +4291,6 @@
   <data name="&gt;&gt;panelSeperatorBalanceLine.ZOrder" xml:space="preserve">
     <value>8</value>
   </data>
-  <data name="labelMainInterfaceCurrentBalanceText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top</value>
-  </data>
   <data name="labelMainInterfaceCurrentBalanceText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
@@ -4223,13 +4298,16 @@
     <value>Microsoft Sans Serif, 9.75pt, style=Bold</value>
   </data>
   <data name="labelMainInterfaceCurrentBalanceText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>12, 7</value>
+    <value>4, 3</value>
   </data>
   <data name="labelMainInterfaceCurrentBalanceText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 0, 4, 0</value>
+    <value>5, 5, 5, 5</value>
+  </data>
+  <data name="labelMainInterfaceCurrentBalanceText.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="labelMainInterfaceCurrentBalanceText.Size" type="System.Drawing.Size, System.Drawing">
-    <value>397, 16</value>
+    <value>407, 26</value>
   </data>
   <data name="labelMainInterfaceCurrentBalanceText.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -4265,7 +4343,7 @@
     <value>4, 3, 4, 3</value>
   </data>
   <data name="tabPageOverview.Size" type="System.Drawing.Size, System.Drawing">
-    <value>985, 564</value>
+    <value>990, 584</value>
   </data>
   <data name="tabPageOverview.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -4285,17 +4363,26 @@
   <data name="&gt;&gt;tabPageOverview.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <data name="panelSendTransaction.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <data name="buttonSendTransactionDoProcess.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left, Right</value>
+  </data>
+  <data name="buttonSendTransactionDoProcess.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
   <data name="buttonSendTransactionDoProcess.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
   <data name="buttonSendTransactionDoProcess.Location" type="System.Drawing.Point, System.Drawing">
-    <value>247, 480</value>
+    <value>0, 540</value>
   </data>
   <data name="buttonSendTransactionDoProcess.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
   </data>
   <data name="buttonSendTransactionDoProcess.Size" type="System.Drawing.Size, System.Drawing">
-    <value>495, 36</value>
+    <value>982, 36</value>
   </data>
   <data name="buttonSendTransactionDoProcess.TabIndex" type="System.Int32, mscorlib">
     <value>13</value>
@@ -4310,16 +4397,10 @@
     <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;buttonSendTransactionDoProcess.Parent" xml:space="preserve">
-    <value>tabPageSendTransaction</value>
+    <value>panelSendTransaction</value>
   </data>
   <data name="&gt;&gt;buttonSendTransactionDoProcess.ZOrder" xml:space="preserve">
     <value>0</value>
-  </data>
-  <data name="panelSendTransaction.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
-  </data>
-  <data name="panelSendTransaction.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
-    <value>GrowAndShrink</value>
   </data>
   <data name="pictureBoxLogoTransaction.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
@@ -7313,16 +7394,22 @@
     <value>NoControl</value>
   </data>
   <data name="pictureBoxLogoTransaction.Location" type="System.Drawing.Point, System.Drawing">
-    <value>481, 0</value>
+    <value>505, 0</value>
   </data>
   <data name="pictureBoxLogoTransaction.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
+  </data>
+  <data name="pictureBoxLogoTransaction.MaximumSize" type="System.Drawing.Size, System.Drawing">
+    <value>50, 50</value>
   </data>
   <data name="pictureBoxLogoTransaction.MinimumSize" type="System.Drawing.Size, System.Drawing">
     <value>50, 50</value>
   </data>
   <data name="pictureBoxLogoTransaction.Size" type="System.Drawing.Size, System.Drawing">
-    <value>59, 50</value>
+    <value>50, 50</value>
+  </data>
+  <data name="pictureBoxLogoTransaction.SizeMode" type="System.Windows.Forms.PictureBoxSizeMode, System.Windows.Forms">
+    <value>CenterImage</value>
   </data>
   <data name="pictureBoxLogoTransaction.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
@@ -7337,19 +7424,19 @@
     <value>panelSendTransaction</value>
   </data>
   <data name="&gt;&gt;pictureBoxLogoTransaction.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="panelSendTransactionDetails.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
+    <value>Top, Bottom, Right</value>
   </data>
-  <data name="panelSendTransactionDetails.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
-    <value>GrowAndShrink</value>
+  <data name="labelSendTransactionAmountToSpend.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
   </data>
   <data name="labelSendTransactionAmountToSpend.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="labelSendTransactionAmountToSpend.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 6</value>
+    <value>6, 98</value>
   </data>
   <data name="labelSendTransactionAmountToSpend.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -7375,11 +7462,14 @@
   <data name="&gt;&gt;labelSendTransactionAmountToSpend.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <data name="labelSendTransactionFeeSizeCost.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
+  </data>
   <data name="labelSendTransactionFeeSizeCost.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="labelSendTransactionFeeSizeCost.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 142</value>
+    <value>6, 234</value>
   </data>
   <data name="labelSendTransactionFeeSizeCost.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -7405,11 +7495,14 @@
   <data name="&gt;&gt;labelSendTransactionFeeSizeCost.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
+  <data name="textBoxSendTransactionFeeCalculated.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
+  </data>
   <data name="textBoxSendTransactionFeeCalculated.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft Sans Serif, 11.25pt, style=Bold</value>
   </data>
   <data name="textBoxSendTransactionFeeCalculated.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 296</value>
+    <value>9, 388</value>
   </data>
   <data name="textBoxSendTransactionFeeCalculated.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -7418,7 +7511,7 @@
     <value>True</value>
   </data>
   <data name="textBoxSendTransactionFeeCalculated.Size" type="System.Drawing.Size, System.Drawing">
-    <value>423, 25</value>
+    <value>410, 25</value>
   </data>
   <data name="textBoxSendTransactionFeeCalculated.TabIndex" type="System.Int32, mscorlib">
     <value>10</value>
@@ -7435,11 +7528,14 @@
   <data name="&gt;&gt;textBoxSendTransactionFeeCalculated.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
+  <data name="textBoxSendTransactionFeeSizeCost.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
+  </data>
   <data name="textBoxSendTransactionFeeSizeCost.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft Sans Serif, 11.25pt, style=Bold</value>
   </data>
   <data name="textBoxSendTransactionFeeSizeCost.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 164</value>
+    <value>9, 256</value>
   </data>
   <data name="textBoxSendTransactionFeeSizeCost.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -7448,7 +7544,7 @@
     <value>True</value>
   </data>
   <data name="textBoxSendTransactionFeeSizeCost.Size" type="System.Drawing.Size, System.Drawing">
-    <value>423, 25</value>
+    <value>410, 25</value>
   </data>
   <data name="textBoxSendTransactionFeeSizeCost.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
@@ -7465,11 +7561,14 @@
   <data name="&gt;&gt;textBoxSendTransactionFeeSizeCost.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
+  <data name="labelSendTransactionFeeCalculated.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
+  </data>
   <data name="labelSendTransactionFeeCalculated.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="labelSendTransactionFeeCalculated.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 274</value>
+    <value>6, 366</value>
   </data>
   <data name="labelSendTransactionFeeCalculated.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -7495,11 +7594,14 @@
   <data name="&gt;&gt;labelSendTransactionFeeCalculated.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
+  <data name="labelSendTransactionFeeConfirmationCost.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
+  </data>
   <data name="labelSendTransactionFeeConfirmationCost.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="labelSendTransactionFeeConfirmationCost.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 207</value>
+    <value>6, 299</value>
   </data>
   <data name="labelSendTransactionFeeConfirmationCost.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -7525,11 +7627,14 @@
   <data name="&gt;&gt;labelSendTransactionFeeConfirmationCost.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
+  <data name="textBoxSendTransactionAmountToSpend.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
+  </data>
   <data name="textBoxSendTransactionAmountToSpend.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft Sans Serif, 11.25pt, style=Bold</value>
   </data>
   <data name="textBoxSendTransactionAmountToSpend.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 27</value>
+    <value>9, 119</value>
   </data>
   <data name="textBoxSendTransactionAmountToSpend.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -7538,7 +7643,7 @@
     <value>True</value>
   </data>
   <data name="textBoxSendTransactionAmountToSpend.Size" type="System.Drawing.Size, System.Drawing">
-    <value>423, 25</value>
+    <value>410, 25</value>
   </data>
   <data name="textBoxSendTransactionAmountToSpend.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -7555,11 +7660,14 @@
   <data name="&gt;&gt;textBoxSendTransactionAmountToSpend.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
+  <data name="textBoxSendTransactionFeeConfirmationCost.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
+  </data>
   <data name="textBoxSendTransactionFeeConfirmationCost.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft Sans Serif, 11.25pt, style=Bold</value>
   </data>
   <data name="textBoxSendTransactionFeeConfirmationCost.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 229</value>
+    <value>9, 321</value>
   </data>
   <data name="textBoxSendTransactionFeeConfirmationCost.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -7568,7 +7676,7 @@
     <value>True</value>
   </data>
   <data name="textBoxSendTransactionFeeConfirmationCost.Size" type="System.Drawing.Size, System.Drawing">
-    <value>423, 25</value>
+    <value>410, 25</value>
   </data>
   <data name="textBoxSendTransactionFeeConfirmationCost.TabIndex" type="System.Int32, mscorlib">
     <value>8</value>
@@ -7585,11 +7693,14 @@
   <data name="&gt;&gt;textBoxSendTransactionFeeConfirmationCost.ZOrder" xml:space="preserve">
     <value>7</value>
   </data>
+  <data name="textBoxSendTransactionTotalAmountSource.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
+  </data>
   <data name="textBoxSendTransactionTotalAmountSource.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft Sans Serif, 11.25pt, style=Bold</value>
   </data>
   <data name="textBoxSendTransactionTotalAmountSource.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 97</value>
+    <value>5, 186</value>
   </data>
   <data name="textBoxSendTransactionTotalAmountSource.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -7598,7 +7709,7 @@
     <value>True</value>
   </data>
   <data name="textBoxSendTransactionTotalAmountSource.Size" type="System.Drawing.Size, System.Drawing">
-    <value>423, 25</value>
+    <value>410, 25</value>
   </data>
   <data name="textBoxSendTransactionTotalAmountSource.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -7615,11 +7726,14 @@
   <data name="&gt;&gt;textBoxSendTransactionTotalAmountSource.ZOrder" xml:space="preserve">
     <value>8</value>
   </data>
+  <data name="labelSendTransactionTotalAmountSource.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
+  </data>
   <data name="labelSendTransactionTotalAmountSource.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="labelSendTransactionTotalAmountSource.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 75</value>
+    <value>6, 167</value>
   </data>
   <data name="labelSendTransactionTotalAmountSource.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -7646,13 +7760,13 @@
     <value>9</value>
   </data>
   <data name="panelSendTransactionDetails.Location" type="System.Drawing.Point, System.Drawing">
-    <value>538, 37</value>
+    <value>557, 0</value>
   </data>
   <data name="panelSendTransactionDetails.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
   </data>
   <data name="panelSendTransactionDetails.Size" type="System.Drawing.Size, System.Drawing">
-    <value>436, 327</value>
+    <value>425, 543</value>
   </data>
   <data name="panelSendTransactionDetails.TabIndex" type="System.Int32, mscorlib">
     <value>12</value>
@@ -7667,13 +7781,16 @@
     <value>panelSendTransaction</value>
   </data>
   <data name="&gt;&gt;panelSendTransactionDetails.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
+  </data>
+  <data name="textBoxSendTransactionConfirmationsCountTarget.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
   </data>
   <data name="textBoxSendTransactionConfirmationsCountTarget.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft Sans Serif, 11.25pt, style=Bold</value>
   </data>
   <data name="textBoxSendTransactionConfirmationsCountTarget.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 248</value>
+    <value>10, 298</value>
   </data>
   <data name="textBoxSendTransactionConfirmationsCountTarget.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>22, 22, 22, 22</value>
@@ -7682,7 +7799,7 @@
     <value>True</value>
   </data>
   <data name="textBoxSendTransactionConfirmationsCountTarget.Size" type="System.Drawing.Size, System.Drawing">
-    <value>255, 25</value>
+    <value>496, 25</value>
   </data>
   <data name="textBoxSendTransactionConfirmationsCountTarget.TabIndex" type="System.Int32, mscorlib">
     <value>8</value>
@@ -7697,13 +7814,16 @@
     <value>panelSendTransaction</value>
   </data>
   <data name="&gt;&gt;textBoxSendTransactionConfirmationsCountTarget.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
+  </data>
+  <data name="labelSendTransactionConfirmationTimeEstimated.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
   </data>
   <data name="labelSendTransactionConfirmationTimeEstimated.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="labelSendTransactionConfirmationTimeEstimated.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 286</value>
+    <value>4, 336</value>
   </data>
   <data name="labelSendTransactionConfirmationTimeEstimated.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -7727,13 +7847,16 @@
     <value>panelSendTransaction</value>
   </data>
   <data name="&gt;&gt;labelSendTransactionConfirmationTimeEstimated.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
+  </data>
+  <data name="labelSendTransactionPaymentId.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
   </data>
   <data name="labelSendTransactionPaymentId.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="labelSendTransactionPaymentId.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 315</value>
+    <value>4, 365</value>
   </data>
   <data name="labelSendTransactionPaymentId.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -7757,13 +7880,16 @@
     <value>panelSendTransaction</value>
   </data>
   <data name="&gt;&gt;labelSendTransactionPaymentId.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
+  </data>
+  <data name="textBoxSendTransactionPaymentId.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
   </data>
   <data name="textBoxSendTransactionPaymentId.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft Sans Serif, 11.25pt, style=Bold</value>
   </data>
   <data name="textBoxSendTransactionPaymentId.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 339</value>
+    <value>10, 389</value>
   </data>
   <data name="textBoxSendTransactionPaymentId.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>22, 22, 22, 22</value>
@@ -7772,7 +7898,7 @@
     <value>True</value>
   </data>
   <data name="textBoxSendTransactionPaymentId.Size" type="System.Drawing.Size, System.Drawing">
-    <value>446, 25</value>
+    <value>496, 25</value>
   </data>
   <data name="textBoxSendTransactionPaymentId.TabIndex" type="System.Int32, mscorlib">
     <value>11</value>
@@ -7790,7 +7916,10 @@
     <value>panelSendTransaction</value>
   </data>
   <data name="&gt;&gt;textBoxSendTransactionPaymentId.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
+  </data>
+  <data name="labelSendTransactionAvailableBalanceText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
   </data>
   <data name="labelSendTransactionAvailableBalanceText.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -7799,7 +7928,7 @@
     <value>Microsoft Sans Serif, 11.25pt, style=Bold</value>
   </data>
   <data name="labelSendTransactionAvailableBalanceText.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 40</value>
+    <value>4, 69</value>
   </data>
   <data name="labelSendTransactionAvailableBalanceText.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -7823,19 +7952,22 @@
     <value>panelSendTransaction</value>
   </data>
   <data name="&gt;&gt;labelSendTransactionAvailableBalanceText.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>7</value>
+  </data>
+  <data name="buttonSendTransactionOpenContactList.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
   </data>
   <data name="buttonSendTransactionOpenContactList.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
   <data name="buttonSendTransactionOpenContactList.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 119</value>
+    <value>4, 176</value>
   </data>
   <data name="buttonSendTransactionOpenContactList.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
   </data>
   <data name="buttonSendTransactionOpenContactList.Size" type="System.Drawing.Size, System.Drawing">
-    <value>527, 30</value>
+    <value>544, 30</value>
   </data>
   <data name="buttonSendTransactionOpenContactList.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -7853,13 +7985,16 @@
     <value>panelSendTransaction</value>
   </data>
   <data name="&gt;&gt;buttonSendTransactionOpenContactList.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>8</value>
+  </data>
+  <data name="labelSendTransactionConfirmationCountTarget.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
   </data>
   <data name="labelSendTransactionConfirmationCountTarget.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="labelSendTransactionConfirmationCountTarget.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 229</value>
+    <value>4, 279</value>
   </data>
   <data name="labelSendTransactionConfirmationCountTarget.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -7883,13 +8018,16 @@
     <value>panelSendTransaction</value>
   </data>
   <data name="&gt;&gt;labelSendTransactionConfirmationCountTarget.ZOrder" xml:space="preserve">
-    <value>8</value>
+    <value>9</value>
+  </data>
+  <data name="labelSendTransactionAmountSelected.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
   </data>
   <data name="labelSendTransactionAmountSelected.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="labelSendTransactionAmountSelected.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 168</value>
+    <value>4, 218</value>
   </data>
   <data name="labelSendTransactionAmountSelected.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -7913,13 +8051,16 @@
     <value>panelSendTransaction</value>
   </data>
   <data name="&gt;&gt;labelSendTransactionAmountSelected.ZOrder" xml:space="preserve">
-    <value>9</value>
+    <value>10</value>
+  </data>
+  <data name="textBoxSendTransactionAmountSelected.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
   </data>
   <data name="textBoxSendTransactionAmountSelected.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft Sans Serif, 11.25pt, style=Bold</value>
   </data>
   <data name="textBoxSendTransactionAmountSelected.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 189</value>
+    <value>10, 239</value>
   </data>
   <data name="textBoxSendTransactionAmountSelected.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>22, 22, 22, 22</value>
@@ -7928,7 +8069,7 @@
     <value>True</value>
   </data>
   <data name="textBoxSendTransactionAmountSelected.Size" type="System.Drawing.Size, System.Drawing">
-    <value>446, 25</value>
+    <value>496, 25</value>
   </data>
   <data name="textBoxSendTransactionAmountSelected.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
@@ -7943,13 +8084,16 @@
     <value>panelSendTransaction</value>
   </data>
   <data name="&gt;&gt;textBoxSendTransactionAmountSelected.ZOrder" xml:space="preserve">
-    <value>10</value>
+    <value>11</value>
+  </data>
+  <data name="labelSendTransactionWalletAddressTarget.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
   </data>
   <data name="labelSendTransactionWalletAddressTarget.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="labelSendTransactionWalletAddressTarget.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 72</value>
+    <value>4, 101</value>
   </data>
   <data name="labelSendTransactionWalletAddressTarget.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -7973,31 +8117,34 @@
     <value>panelSendTransaction</value>
   </data>
   <data name="&gt;&gt;labelSendTransactionWalletAddressTarget.ZOrder" xml:space="preserve">
-    <value>11</value>
+    <value>12</value>
   </data>
   <data name="textBoxSendTransactionWalletAddressTarget.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
+    <value>Left, Right</value>
   </data>
   <data name="textBoxSendTransactionWalletAddressTarget.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft Sans Serif, 9pt, style=Bold</value>
   </data>
   <data name="textBoxSendTransactionWalletAddressTarget.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 94</value>
+    <value>5, 121</value>
   </data>
   <data name="textBoxSendTransactionWalletAddressTarget.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>22, 22, 22, 22</value>
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="textBoxSendTransactionWalletAddressTarget.Multiline" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="textBoxSendTransactionWalletAddressTarget.Size" type="System.Drawing.Size, System.Drawing">
-    <value>527, 25</value>
+    <value>543, 47</value>
   </data>
   <data name="textBoxSendTransactionWalletAddressTarget.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
   </data>
   <data name="textBoxSendTransactionWalletAddressTarget.TextAlign" type="System.Windows.Forms.HorizontalAlignment, System.Windows.Forms">
     <value>Center</value>
+  </data>
+  <data name="textBoxSendTransactionWalletAddressTarget.WordWrap" type="System.Boolean, mscorlib">
+    <value>False</value>
   </data>
   <data name="&gt;&gt;textBoxSendTransactionWalletAddressTarget.Name" xml:space="preserve">
     <value>textBoxSendTransactionWalletAddressTarget</value>
@@ -8009,16 +8156,16 @@
     <value>panelSendTransaction</value>
   </data>
   <data name="&gt;&gt;textBoxSendTransactionWalletAddressTarget.ZOrder" xml:space="preserve">
-    <value>12</value>
+    <value>13</value>
   </data>
   <data name="panelSendTransaction.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 16</value>
+    <value>4, 3</value>
   </data>
   <data name="panelSendTransaction.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
   </data>
   <data name="panelSendTransaction.Size" type="System.Drawing.Size, System.Drawing">
-    <value>978, 491</value>
+    <value>982, 578</value>
   </data>
   <data name="panelSendTransaction.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -8033,7 +8180,7 @@
     <value>tabPageSendTransaction</value>
   </data>
   <data name="&gt;&gt;panelSendTransaction.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>0</value>
   </data>
   <data name="tabPageSendTransaction.Font" type="System.Drawing.Font, System.Drawing">
     <value>Microsoft Sans Serif, 9.75pt, style=Bold</value>
@@ -8048,7 +8195,7 @@
     <value>4, 3, 4, 3</value>
   </data>
   <data name="tabPageSendTransaction.Size" type="System.Drawing.Size, System.Drawing">
-    <value>985, 564</value>
+    <value>990, 584</value>
   </data>
   <data name="tabPageSendTransaction.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -8068,17 +8215,20 @@
   <data name="&gt;&gt;tabPageSendTransaction.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
+  <data name="buttonSaveQrCodeReceiveTransactionWalletAddress.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
+  </data>
   <data name="buttonSaveQrCodeReceiveTransactionWalletAddress.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
   <data name="buttonSaveQrCodeReceiveTransactionWalletAddress.Location" type="System.Drawing.Point, System.Drawing">
-    <value>279, 426</value>
+    <value>277, 477</value>
   </data>
   <data name="buttonSaveQrCodeReceiveTransactionWalletAddress.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
   </data>
   <data name="buttonSaveQrCodeReceiveTransactionWalletAddress.Size" type="System.Drawing.Size, System.Drawing">
-    <value>475, 36</value>
+    <value>471, 32</value>
   </data>
   <data name="buttonSaveQrCodeReceiveTransactionWalletAddress.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -8098,17 +8248,20 @@
   <data name="&gt;&gt;buttonSaveQrCodeReceiveTransactionWalletAddress.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <data name="buttonPrintQrCodeReceiveTransactionWalletAddress.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
+  </data>
   <data name="buttonPrintQrCodeReceiveTransactionWalletAddress.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
   <data name="buttonPrintQrCodeReceiveTransactionWalletAddress.Location" type="System.Drawing.Point, System.Drawing">
-    <value>279, 472</value>
+    <value>277, 529</value>
   </data>
   <data name="buttonPrintQrCodeReceiveTransactionWalletAddress.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
   </data>
   <data name="buttonPrintQrCodeReceiveTransactionWalletAddress.Size" type="System.Drawing.Size, System.Drawing">
-    <value>475, 36</value>
+    <value>471, 31</value>
   </data>
   <data name="buttonPrintQrCodeReceiveTransactionWalletAddress.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -8128,8 +8281,8 @@
   <data name="&gt;&gt;buttonPrintQrCodeReceiveTransactionWalletAddress.ZOrder" xml:space="preserve">
     <value>1</value>
   </data>
-  <data name="labelWalletReceiveTransactionQrCodeText.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="labelWalletReceiveTransactionQrCodeText.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
   </data>
   <data name="labelWalletReceiveTransactionQrCodeText.Location" type="System.Drawing.Point, System.Drawing">
     <value>277, 32</value>
@@ -8138,7 +8291,7 @@
     <value>4, 0, 4, 0</value>
   </data>
   <data name="labelWalletReceiveTransactionQrCodeText.Size" type="System.Drawing.Size, System.Drawing">
-    <value>441, 16</value>
+    <value>441, 18</value>
   </data>
   <data name="labelWalletReceiveTransactionQrCodeText.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -8158,20 +8311,23 @@
   <data name="&gt;&gt;labelWalletReceiveTransactionQrCodeText.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
-  <data name="panelQrCodeWalletAddress.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
+  <data name="panelQrCodeWalletAddress.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left, Right</value>
   </data>
   <data name="panelQrCodeWalletAddress.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
     <value>GrowAndShrink</value>
   </data>
   <data name="panelQrCodeWalletAddress.BackgroundImageLayout" type="System.Windows.Forms.ImageLayout, System.Windows.Forms">
-    <value>Stretch</value>
+    <value>Center</value>
   </data>
   <data name="panelQrCodeWalletAddress.Location" type="System.Drawing.Point, System.Drawing">
     <value>334, 70</value>
   </data>
   <data name="panelQrCodeWalletAddress.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
+  </data>
+  <data name="panelQrCodeWalletAddress.MaximumSize" type="System.Drawing.Size, System.Drawing">
+    <value>350, 350</value>
   </data>
   <data name="panelQrCodeWalletAddress.MinimumSize" type="System.Drawing.Size, System.Drawing">
     <value>350, 350</value>
@@ -8201,7 +8357,7 @@
     <value>0, 0, 0, 0</value>
   </data>
   <data name="tabPageReceiveTransaction.Size" type="System.Drawing.Size, System.Drawing">
-    <value>985, 564</value>
+    <value>990, 584</value>
   </data>
   <data name="tabPageReceiveTransaction.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -8222,16 +8378,16 @@
     <value>2</value>
   </data>
   <data name="buttonMainInterfaceSearchTransactionHistory.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
+    <value>Bottom, Right</value>
   </data>
   <data name="buttonMainInterfaceSearchTransactionHistory.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
   <data name="buttonMainInterfaceSearchTransactionHistory.Location" type="System.Drawing.Point, System.Drawing">
-    <value>846, 451</value>
+    <value>845, 472</value>
   </data>
   <data name="buttonMainInterfaceSearchTransactionHistory.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="buttonMainInterfaceSearchTransactionHistory.Size" type="System.Drawing.Size, System.Drawing">
     <value>136, 28</value>
@@ -8254,11 +8410,14 @@
   <data name="&gt;&gt;buttonMainInterfaceSearchTransactionHistory.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <data name="textBoxTransactionHistorySearch.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Right</value>
+  </data>
   <data name="textBoxTransactionHistorySearch.Location" type="System.Drawing.Point, System.Drawing">
-    <value>527, 455</value>
+    <value>526, 476</value>
   </data>
   <data name="textBoxTransactionHistorySearch.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="textBoxTransactionHistorySearch.Size" type="System.Drawing.Size, System.Drawing">
     <value>318, 22</value>
@@ -8281,11 +8440,8 @@
   <data name="panelTransactionHistoryColumns.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Bottom, Left, Right</value>
   </data>
-  <data name="panelTransactionHistoryColumns.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
-    <value>GrowAndShrink</value>
-  </data>
   <data name="panelTransactionHistoryColumns.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 3</value>
+    <value>4, 0</value>
   </data>
   <data name="panelTransactionHistoryColumns.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -8294,7 +8450,7 @@
     <value>300, 25</value>
   </data>
   <data name="panelTransactionHistoryColumns.Size" type="System.Drawing.Size, System.Drawing">
-    <value>977, 31</value>
+    <value>977, 34</value>
   </data>
   <data name="panelTransactionHistoryColumns.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -8311,11 +8467,14 @@
   <data name="&gt;&gt;panelTransactionHistoryColumns.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
+  <data name="textBoxMainInterfaceMaxPageTransactionHistory.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left</value>
+  </data>
   <data name="textBoxMainInterfaceMaxPageTransactionHistory.Location" type="System.Drawing.Point, System.Drawing">
-    <value>328, 454</value>
+    <value>327, 476</value>
   </data>
   <data name="textBoxMainInterfaceMaxPageTransactionHistory.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="textBoxMainInterfaceMaxPageTransactionHistory.Size" type="System.Drawing.Size, System.Drawing">
     <value>92, 22</value>
@@ -8335,11 +8494,14 @@
   <data name="&gt;&gt;textBoxMainInterfaceMaxPageTransactionHistory.ZOrder" xml:space="preserve">
     <value>3</value>
   </data>
+  <data name="textBoxMainInterfaceCurrentPageTransactionHistory.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left</value>
+  </data>
   <data name="textBoxMainInterfaceCurrentPageTransactionHistory.Location" type="System.Drawing.Point, System.Drawing">
-    <value>228, 454</value>
+    <value>227, 476</value>
   </data>
   <data name="textBoxMainInterfaceCurrentPageTransactionHistory.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="textBoxMainInterfaceCurrentPageTransactionHistory.Size" type="System.Drawing.Size, System.Drawing">
     <value>92, 22</value>
@@ -8359,14 +8521,17 @@
   <data name="&gt;&gt;textBoxMainInterfaceCurrentPageTransactionHistory.ZOrder" xml:space="preserve">
     <value>4</value>
   </data>
+  <data name="buttonMainInterfaceNextPageTransactionHistory.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left</value>
+  </data>
   <data name="buttonMainInterfaceNextPageTransactionHistory.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
   <data name="buttonMainInterfaceNextPageTransactionHistory.Location" type="System.Drawing.Point, System.Drawing">
-    <value>116, 451</value>
+    <value>115, 473</value>
   </data>
   <data name="buttonMainInterfaceNextPageTransactionHistory.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="buttonMainInterfaceNextPageTransactionHistory.Size" type="System.Drawing.Size, System.Drawing">
     <value>104, 28</value>
@@ -8389,14 +8554,17 @@
   <data name="&gt;&gt;buttonMainInterfaceNextPageTransactionHistory.ZOrder" xml:space="preserve">
     <value>5</value>
   </data>
+  <data name="buttonMainInterfaceBackPageTransactionHistory.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Bottom, Left</value>
+  </data>
   <data name="buttonMainInterfaceBackPageTransactionHistory.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
   <data name="buttonMainInterfaceBackPageTransactionHistory.Location" type="System.Drawing.Point, System.Drawing">
-    <value>4, 451</value>
+    <value>3, 473</value>
   </data>
   <data name="buttonMainInterfaceBackPageTransactionHistory.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>4, 3, 4, 3</value>
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="buttonMainInterfaceBackPageTransactionHistory.Size" type="System.Drawing.Size, System.Drawing">
     <value>104, 28</value>
@@ -8419,20 +8587,23 @@
   <data name="&gt;&gt;buttonMainInterfaceBackPageTransactionHistory.ZOrder" xml:space="preserve">
     <value>6</value>
   </data>
+  <metadata name="buttonMainInterfaceExportTransactionHistory.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
   <data name="buttonMainInterfaceExportTransactionHistory.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Left, Right</value>
+    <value>Bottom, Left, Right</value>
   </data>
   <data name="buttonMainInterfaceExportTransactionHistory.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
   <data name="buttonMainInterfaceExportTransactionHistory.Location" type="System.Drawing.Point, System.Drawing">
-    <value>847, 505</value>
+    <value>0, 536</value>
   </data>
   <data name="buttonMainInterfaceExportTransactionHistory.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
   </data>
   <data name="buttonMainInterfaceExportTransactionHistory.Size" type="System.Drawing.Size, System.Drawing">
-    <value>136, 28</value>
+    <value>990, 28</value>
   </data>
   <data name="buttonMainInterfaceExportTransactionHistory.TabIndex" type="System.Int32, mscorlib">
     <value>9</value>
@@ -8455,9 +8626,6 @@
   <data name="panelTransactionHistory.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Bottom, Left, Right</value>
   </data>
-  <data name="panelTransactionHistory.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
-    <value>GrowAndShrink</value>
-  </data>
   <data name="panelTransactionHistory.Location" type="System.Drawing.Point, System.Drawing">
     <value>4, 40</value>
   </data>
@@ -8468,7 +8636,7 @@
     <value>300, 300</value>
   </data>
   <data name="panelTransactionHistory.Size" type="System.Drawing.Size, System.Drawing">
-    <value>977, 408</value>
+    <value>977, 441</value>
   </data>
   <data name="panelTransactionHistory.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -8492,7 +8660,7 @@
     <value>4, 3, 4, 3</value>
   </data>
   <data name="tabPageTransactionHistory.Size" type="System.Drawing.Size, System.Drawing">
-    <value>985, 564</value>
+    <value>990, 584</value>
   </data>
   <data name="tabPageTransactionHistory.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -8516,13 +8684,13 @@
     <value>True</value>
   </data>
   <data name="listViewWebNode.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
+    <value>Top, Bottom, Left</value>
   </data>
   <data name="listViewWebNode.Location" type="System.Drawing.Point, System.Drawing">
-    <value>3, 3</value>
+    <value>-4, 0</value>
   </data>
   <data name="listViewWebNode.Size" type="System.Drawing.Size, System.Drawing">
-    <value>153, 555</value>
+    <value>157, 572</value>
   </data>
   <data name="listViewWebNode.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -8540,19 +8708,16 @@
     <value>0</value>
   </data>
   <data name="panelStoreNetwork.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
-    <value>Top, Bottom, Left, Right</value>
-  </data>
-  <data name="panelStoreNetwork.AutoSizeMode" type="System.Windows.Forms.AutoSizeMode, System.Windows.Forms">
-    <value>GrowAndShrink</value>
+    <value>Top, Bottom, Right</value>
   </data>
   <data name="panelStoreNetwork.Location" type="System.Drawing.Point, System.Drawing">
-    <value>162, 3</value>
+    <value>155, 0</value>
   </data>
   <data name="panelStoreNetwork.MinimumSize" type="System.Drawing.Size, System.Drawing">
     <value>400, 300</value>
   </data>
   <data name="panelStoreNetwork.Size" type="System.Drawing.Size, System.Drawing">
-    <value>820, 556</value>
+    <value>828, 575</value>
   </data>
   <data name="panelStoreNetwork.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -8576,7 +8741,7 @@
     <value>800, 1000</value>
   </data>
   <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>1356, 1000</value>
+    <value>1359, 1003</value>
   </data>
   <data name="panel1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -8603,7 +8768,7 @@
     <value>4, 3, 4, 3</value>
   </data>
   <data name="tabPageStoreNetwork.Size" type="System.Drawing.Size, System.Drawing">
-    <value>985, 564</value>
+    <value>990, 584</value>
   </data>
   <data name="tabPageStoreNetwork.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -8630,7 +8795,7 @@
     <value>128, 30</value>
   </data>
   <data name="tabControlWallet.Location" type="System.Drawing.Point, System.Drawing">
-    <value>6, 127</value>
+    <value>5, 102</value>
   </data>
   <data name="tabControlWallet.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
@@ -8639,7 +8804,7 @@
     <value>0, 0</value>
   </data>
   <data name="tabControlWallet.Size" type="System.Drawing.Size, System.Drawing">
-    <value>993, 602</value>
+    <value>998, 622</value>
   </data>
   <data name="tabControlWallet.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -8654,7 +8819,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;tabControlWallet.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>4</value>
   </data>
   <data name="labelWalletAddressReceiveTransactionTitle.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -8663,7 +8828,7 @@
     <value>Microsoft Sans Serif, 8.25pt, style=Bold</value>
   </data>
   <data name="labelWalletAddressReceiveTransactionTitle.Location" type="System.Drawing.Point, System.Drawing">
-    <value>87, 93</value>
+    <value>8, 74</value>
   </data>
   <data name="labelWalletAddressReceiveTransactionTitle.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -8687,7 +8852,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;labelWalletAddressReceiveTransactionTitle.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>1</value>
   </data>
   <data name="labelWalletAddressReceiveTransaction.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -8696,7 +8861,7 @@
     <value>Microsoft Sans Serif, 9pt, style=Bold</value>
   </data>
   <data name="labelWalletAddressReceiveTransaction.Location" type="System.Drawing.Point, System.Drawing">
-    <value>87, 109</value>
+    <value>8, 87</value>
   </data>
   <data name="labelWalletAddressReceiveTransaction.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 0, 4, 0</value>
@@ -8723,7 +8888,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;labelWalletAddressReceiveTransaction.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>0</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
@@ -10689,7 +10854,7 @@
     <value>1024, 768</value>
   </data>
   <data name="$this.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 6, 0</value>
+    <value>5, 5, 5, 5</value>
   </data>
   <data name="$this.StartPosition" type="System.Windows.Forms.FormStartPosition, System.Windows.Forms">
     <value>CenterScreen</value>
@@ -10761,6 +10926,12 @@
     <value>normalToolStripMenuItem</value>
   </data>
   <data name="&gt;&gt;normalToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;dimensionsToolStripMenuItem.Name" xml:space="preserve">
+    <value>dimensionsToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;dimensionsToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;typeWebSiteToolStripMenuItem.Name" xml:space="preserve">
