@@ -32,20 +32,14 @@ namespace SeguraChain_Desktop_Wallet.Components
                 switch (strategy)
                 {
                     case ClassViewStrategiesEnum.Normal:
-
+                        //f1.AutoSize = true;
                         ViewStrategy_Normal(controls);
 
                         break;
 
                     case ClassViewStrategiesEnum.TypeWebSite:
-
-                        Int32 height = ViewStrategy_0_TypeWebSite(controls, f1.Width, applyImages);
-
-                        if(height != f1.Height)
-                        {
-                            //f1.Height = height;
-                        }
-
+                        //f1.AutoSize = true;
+                        ViewStrategy_0_TypeWebSite(controls, f1.Width, applyImages);
 
                         break;
 
@@ -129,24 +123,23 @@ namespace SeguraChain_Desktop_Wallet.Components
                 // Prueba rápida y erróneamente de resultado inesperado
                 foreach (ClassContainerDataLocalization c in orderControls)
                 {
-                    c.Dock = DockStyle.Top;
-
-                    if (!applyImages)
-                    {
-                        if ((String)c.Control.Tag != "image" && c.Control.GetType().Name != "PictureBox")
-                        {
-                            c.Control.Width = newWidth * 96 / 100;
-                        }
-                    }
-                    else
-                    {
-                        c.Control.Width = newWidth * 96 / 100;
-                    }
+                    c.Control.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+                    
+                    //if (!applyImages)
+                    //{
+                    //    if ((String)c.Control.Tag != "image" && c.Control.GetType().Name != "PictureBox")
+                    //    {
+                    //        c.Control.Width = newWidth * 96 / 100;
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    c.Control.Width = newWidth * 96 / 100;
+                    //}
 
                     if (c.HasChilds)
                     {
-                        Int32 height = ViewStrategy_0_TypeWebSite(c.ChildsContainerData, c.Control.Width, applyImages);
-                        //c.Control.Height = height;
+                        ViewStrategy_0_TypeWebSite(c.ChildsContainerData, c.Control.Width, applyImages);
                     }
 
                     c.Control.Location = new Point(centerX - (c.Control.Width / 2), centerY);
