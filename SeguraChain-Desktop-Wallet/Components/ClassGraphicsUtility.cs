@@ -19,9 +19,8 @@ namespace SeguraChain_Desktop_Wallet.Components
         /// <summary>
         /// Move and adapt Containers or control with an strategy
         /// </summary>
-        /// <param name="controls"></param>
-        /// <param name="newHeight"></param>
-        /// <param name="newWidth"></param>
+        /// <param name="controls">Controles inmersos</param>
+        /// <param name="f1">Formulario</param>        
         /// <param name="strategy"> 0 > WebSite Style > All CentereD in Single row</param>
         /// <param name="applyImages"> ¿Aplica también a imágenes?</param>
         public static void RecursiveAdaptResponsiveFormControlsToParentSize(List<ClassContainerDataLocalization> controls, Form f1, ClassViewStrategiesEnum strategy, Boolean applyImages)
@@ -33,25 +32,34 @@ namespace SeguraChain_Desktop_Wallet.Components
                 switch (strategy)
                 {
                     case ClassViewStrategiesEnum.Normal:
-                        f1.Height = controls[0].InitFormHeight;
-                        f1.Width = controls[0].InitFormWidth;
 
-                        // Prueba rápida y erróneamente de resultado inesperado
                         ViewStrategy_Normal(controls);
 
                         break;
 
                     case ClassViewStrategiesEnum.TypeWebSite:
 
-                        // Prueba rápida y erróneamente de resultado inesperado
-                        f1.Height = ViewStrategy_0_TypeWebSite(controls, f1.Width, applyImages);
+                        Int32 height = ViewStrategy_0_TypeWebSite(controls, f1.Width, applyImages);
+
+                        if(height != f1.Height)
+                        {
+                            //f1.Height = height;
+                        }
+
 
                         break;
 
                     case ClassViewStrategiesEnum.LeftCenterRight:
 
-                        // Prueba rápida y erróneamente de resultado inesperado
                         ViewStrategy_1_LeftCenterRight(controls, f1.Width);
+
+                        break;
+
+                    case ClassViewStrategiesEnum.PorcentualDimensions:
+
+                        float relPorcentualH = controls[0].InitFormHeight / f1.Height;
+                        float relPorcentualW = controls[0].InitFormWidth / f1.Width;
+                        ViewStrategy_2_PorcentualDimensions(controls, relPorcentualH, relPorcentualW);
 
                         break;
                 }
@@ -67,22 +75,35 @@ namespace SeguraChain_Desktop_Wallet.Components
         {
             foreach (ClassContainerDataLocalization c in controls)
             {
-                if (c.Control is Panel)
-                {
-                    Panel p = (Panel)c.Control;
-                    p.AutoSizeMode = AutoSizeMode.GrowOnly;
-                    p.AutoSize = false;
-                }
-
                 c.Control.Width = c.InitWidth;
                 c.Control.Height = c.InitHeight;
-                c.Control.Anchor = AnchorStyles.None;
-                c.Control.Dock = DockStyle.None;
                 c.Control.Location = new Point(c.InitX, c.InitY);
 
                 if (c.HasChilds)
                 {
                     ViewStrategy_Normal(c.ChildsContainerData);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Estrategia que Organiza los controles de un formulario y sus componentes internos dentro del mismo
+        /// de la forma en la que el diseñador establece, tal cual, sin cambios
+        /// </summary>
+        /// <param name="controls">Lista de Controles</param>
+        private static void ViewStrategy_2_PorcentualDimensions(List<ClassContainerDataLocalization> controls, float relPorcentualH, float relPorcentualW)
+        {
+            foreach (ClassContainerDataLocalization c in controls)
+            {
+                c.Control.Width = Convert.ToInt32(c.InitWidth * relPorcentualW);
+                c.Control.Height = Convert.ToInt32(c.InitHeight * relPorcentualH);
+                c.Control.Anchor = AnchorStyles.None;
+                c.Control.Dock = DockStyle.None;
+                c.Control.Location = new Point(Convert.ToInt32(c.InitX * relPorcentualW), Convert.ToInt32(c.InitY * relPorcentualH));
+
+                if (c.HasChilds)
+                {
+                    ViewStrategy_2_PorcentualDimensions(c.ChildsContainerData, relPorcentualH, relPorcentualW);
                 }
             }
         }
@@ -103,20 +124,12 @@ namespace SeguraChain_Desktop_Wallet.Components
             {
                 Int32 centerX = newWidth / 2;
 
-                controls = controls.OrderBy(x => x.Control.TabIndex).ToList();
+                List<ClassContainerDataLocalization> orderControls = controls.OrderBy(t => t.Control.TabIndex).ToList();
 
-                foreach (ClassContainerDataLocalization c in controls)
+                // Prueba rápida y erróneamente de resultado inesperado
+                foreach (ClassContainerDataLocalization c in orderControls)
                 {
-                    //c.Control.Dock = DockStyle.Top;
-
-                    c.Control.Anchor = AnchorStyles.Left | AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom;
-
-                    //if (c.Control is Panel)
-                    //{
-
-                    //}
-                    //else
-                    //{
+                    c.Dock = DockStyle.Top;
 
                     if (!applyImages)
                     {
@@ -129,14 +142,11 @@ namespace SeguraChain_Desktop_Wallet.Components
                     {
                         c.Control.Width = newWidth * 96 / 100;
                     }
-                    //}
-
-
-                    //c.Control.Height = c.HasChilds ? c.ChildsContainerData.Sum(s => s.Control.Height) : c.Control.Height;
 
                     if (c.HasChilds)
                     {
-                        c.Control.Height = ViewStrategy_0_TypeWebSite(c.ChildsContainerData, c.Control.Width, applyImages);
+                        Int32 height = ViewStrategy_0_TypeWebSite(c.ChildsContainerData, c.Control.Width, applyImages);
+                        //c.Control.Height = height;
                     }
 
                     c.Control.Location = new Point(centerX - (c.Control.Width / 2), centerY);
@@ -171,7 +181,7 @@ namespace SeguraChain_Desktop_Wallet.Components
 
                 // Rigthing                
                 Int32 rigthY = 24;
-                Int32 rightX = 0;
+                Int32 rightX = newW;
                 List<ClassContainerDataLocalization> rightActualControls = new List<ClassContainerDataLocalization>();
 
                 List<ClassContainerDataLocalization> orderControls = controls.OrderBy(t => t.Control.TabIndex).ToList();

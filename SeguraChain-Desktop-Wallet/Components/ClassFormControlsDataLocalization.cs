@@ -11,9 +11,6 @@ namespace SeguraChain_Desktop_Wallet.Components
     /// <summary>Añadir al formulario donde aplica > "private ClassFormControlResponsive _FormControlResponsiveData;"</summary>
     public class ClassContainerResponsive
     {
-    //    public int HeigthContainer { get; set; }
-    //    public int WidhtContainer { get; set; }
-
         public List<ClassContainerDataLocalization> ControlsCompData { get; set; }
 
     }
@@ -28,6 +25,8 @@ namespace SeguraChain_Desktop_Wallet.Components
         public int InitY { get; set; }
         public int InitHeight { get; set; }
         public int InitWidth { get; set; }
+        public DockStyle Dock { get; set; }
+        public AnchorStyles Anchor { get; set; }
 
         public List<ClassContainerDataLocalization> ChildsContainerData { get; set; }
 

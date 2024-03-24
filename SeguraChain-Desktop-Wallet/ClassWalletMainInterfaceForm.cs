@@ -161,6 +161,21 @@ namespace SeguraChain_Desktop_Wallet
         /// <summary>Event started after loading the form.</summary>
         private void ClassWalletMainInterfaceForm_Load(object sender, EventArgs e)
         {
+            #region GET Designer initial change Controls parameters before any visual modification
+
+            try
+            {
+                // Guardamos las propiedades iniciales de los controles, por lo que pase,
+                ClassDataContextForm DCF = new ClassDataContextForm();
+                DCF.InitDataResponsiveFormControls(this);
+                this.Tag = DCF;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
+
+            #endregion
 
 #if NET5_0_OR_GREATER
             AutoScaleDimensions = new SizeF(7F, 16F);
@@ -218,16 +233,14 @@ namespace SeguraChain_Desktop_Wallet
             UpdateStoreNetworkList();
 
             #endregion
+
             Refresh();
 
             try
             {
-                ClassDataContextForm DCF = new ClassDataContextForm();
-                DCF.InitDataResponsiveFormControls(this);
-                this.Tag = DCF;
-                this.Location = new System.Drawing.Point(Convert.ToInt32((Screen.PrimaryScreen.Bounds.Width / 2) - this.Width / 2), Convert.ToInt32((Screen.PrimaryScreen.Bounds.Height / 2) - this.Height / 2));
-                //adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.TypeWebSite);
-                //Refresh();
+                this.Height = 768;
+                this.Width = 1024;
+                setStrategy(ClassViewStrategiesEnum.Normal);
             }
             catch (Exception ex)
             {
@@ -2874,22 +2887,83 @@ namespace SeguraChain_Desktop_Wallet
 
         private async void ClassWalletMainInterfaceForm_ResizeEnd(object sender, EventArgs e)
         {
-            adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.Normal);
+            getStrategy();
         }
 
         private void typeWebSiteToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.TypeWebSite);
+            setStrategy(ClassViewStrategiesEnum.TypeWebSite);
         }
 
         private void leftCenterRightToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.LeftCenterRight);
+            setStrategy(ClassViewStrategiesEnum.LeftCenterRight);
         }
 
         private void normalToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            setStrategy(ClassViewStrategiesEnum.Normal);
+        }
+
+        private void dimensionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            setStrategy(ClassViewStrategiesEnum.PorcentualDimensions);
+        }
+
+
+        private void ClassWalletMainInterfaceForm_Resize(object sender, EventArgs e)
+        {
+            getStrategy();
+        }
+
+        private void ClassWalletMainInterfaceForm_MaximizedBoundsChanged(object sender, EventArgs e)
+        {
+            getStrategy();
+        }
+
+        private void ClassWalletMainInterfaceForm_SizeChanged(object sender, EventArgs e)
+        {
+            //progressBarMainInterfaceSyncProgress.Width = this.Width * 96 / 100;
+            //progressBarMainInterfaceCheckSyncProgress.Width = this.Width * 96 / 100;
+            getStrategy();
+        }
+
+        /// <summary>Obtiene la Vista seleccionada actualmente</summary>
+        /// <returns>Vista seleccoinada o en su defecto la normal</returns>
+        private ClassViewStrategiesEnum getStrategy()
+        {
+            if (this.Tag is ClassDataContextForm)
+            {
+                ClassDataContextForm context = (ClassDataContextForm)this.Tag;
+                context.ActualStretegyView = context.ActualStretegyView;
+
+                adaptResponsiveFormControlsToFormSize(this, context.ActualStretegyView);
+                return context.ActualStretegyView;
+            }
+
             adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.Normal);
+            return ClassViewStrategiesEnum.Normal;
+        }
+
+        /// <summary>Obtiene la Vista seleccionada actualmente</summary>
+        /// <returns>Vista seleccoinada o en su defecto la normal</returns>
+        private ClassViewStrategiesEnum setStrategy(ClassViewStrategiesEnum view)
+        {
+            if (this.Tag is ClassDataContextForm)
+            {
+                adaptResponsiveFormControlsToFormSize(this, view);
+                ClassDataContextForm context = (ClassDataContextForm)this.Tag;
+                context.ActualStretegyView = view;
+                return view;
+            }
+
+            adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.Normal);
+            return ClassViewStrategiesEnum.Normal;
+        }
+
+        private void vIEWTEXTToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
 
         #endregion
@@ -2899,30 +2973,6 @@ namespace SeguraChain_Desktop_Wallet
             // TODO: Send user to https://seguraChain.com
         }
 
-        private void buttonSendTransactionOpenContactList_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void vIEWTEXTToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void ClassWalletMainInterfaceForm_Resize(object sender, EventArgs e)
-        {
-
-        }
-
-        private void ClassWalletMainInterfaceForm_MaximizedBoundsChanged(object sender, EventArgs e)
-        {
-            adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.Normal);
-        }
-
-        private void ClassWalletMainInterfaceForm_SizeChanged(object sender, EventArgs e)
-        {
-            adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.Normal);
-        }
     }
 }
 
