@@ -42,6 +42,7 @@ using EO.WinForm;
 using Org.BouncyCastle.Asn1.Crmf;
 using SeguraChain_Lib.Blockchain.Database.Memory.Main.Enum;
 using Org.BouncyCastle.Crmf;
+using EO.WebBrowser.DOM;
 
 namespace SeguraChain_Desktop_Wallet
 {
@@ -238,8 +239,8 @@ namespace SeguraChain_Desktop_Wallet
 
             try
             {
-                this.Height = 768;
-                this.Width = 1024;
+                //this.Height = 768;
+                //this.Width = 1024;
                 setStrategy(ClassViewStrategiesEnum.Normal);
             }
             catch (Exception ex)
@@ -2804,7 +2805,7 @@ namespace SeguraChain_Desktop_Wallet
         /// <param name="e"></param>
         private void ClassWalletMainInterfaceForm_Paint(object sender, PaintEventArgs e)
         {
-            ClassGraphicsUtility.DrawShadowOnListGraphicContentTarget(this, _listMainInterfaceControlShadow, e.Graphics, 50, 50, _mainInterfaceShadowBitmap, out _mainInterfaceShadowBitmap);
+           ClassGraphicsUtility.DrawShadowOnListGraphicContentTarget(this, _listMainInterfaceControlShadow, e.Graphics, 50, 50, _mainInterfaceShadowBitmap, out _mainInterfaceShadowBitmap);
         }
 
         #endregion
@@ -2887,7 +2888,7 @@ namespace SeguraChain_Desktop_Wallet
 
         private async void ClassWalletMainInterfaceForm_ResizeEnd(object sender, EventArgs e)
         {
-            getStrategy();
+            //getStrategy();
         }
 
         private void typeWebSiteToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2913,19 +2914,20 @@ namespace SeguraChain_Desktop_Wallet
 
         private void ClassWalletMainInterfaceForm_Resize(object sender, EventArgs e)
         {
-            getStrategy();
+            //getStrategy();
         }
 
         private void ClassWalletMainInterfaceForm_MaximizedBoundsChanged(object sender, EventArgs e)
         {
-            getStrategy();
+            //getStrategy();
         }
 
         private void ClassWalletMainInterfaceForm_SizeChanged(object sender, EventArgs e)
         {
+            labelWalletAddressReceiveTransactionTitle = ClassGraphicsUtility.AutoSetLocationAndResizeControl<Label>(labelWalletAddressReceiveTransactionTitle, this, 1, false);
             //progressBarMainInterfaceSyncProgress.Width = this.Width * 96 / 100;
             //progressBarMainInterfaceCheckSyncProgress.Width = this.Width * 96 / 100;
-            getStrategy();
+            //getStrategy();
         }
 
         /// <summary>Obtiene la Vista seleccionada actualmente</summary>
