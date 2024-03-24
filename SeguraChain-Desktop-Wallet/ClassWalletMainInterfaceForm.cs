@@ -239,7 +239,7 @@ namespace SeguraChain_Desktop_Wallet
             try
             {
                 this.Height = 768;
-                //this.Width = 1024;
+                this.Width = 1024;
                 setStrategy(ClassViewStrategiesEnum.Normal);
             }
             catch (Exception ex)
@@ -2887,7 +2887,7 @@ namespace SeguraChain_Desktop_Wallet
 
         private async void ClassWalletMainInterfaceForm_ResizeEnd(object sender, EventArgs e)
         {
-            //getStrategy();
+            getStrategy();
         }
 
         private void typeWebSiteToolStripMenuItem_Click(object sender, EventArgs e)
@@ -2913,19 +2913,19 @@ namespace SeguraChain_Desktop_Wallet
 
         private void ClassWalletMainInterfaceForm_Resize(object sender, EventArgs e)
         {
-            //getStrategy();
+            getStrategy();
         }
 
         private void ClassWalletMainInterfaceForm_MaximizedBoundsChanged(object sender, EventArgs e)
         {
-            //getStrategy();
+            getStrategy();
         }
 
         private void ClassWalletMainInterfaceForm_SizeChanged(object sender, EventArgs e)
         {
-            progressBarMainInterfaceSyncProgress.Width = this.Width * 96 / 100;
-            progressBarMainInterfaceCheckSyncProgress.Width = this.Width * 96 / 100;
-            //getStrategy();
+            //progressBarMainInterfaceSyncProgress.Width = this.Width * 96 / 100;
+            //progressBarMainInterfaceCheckSyncProgress.Width = this.Width * 96 / 100;
+            getStrategy();
         }
 
         /// <summary>Obtiene la Vista seleccionada actualmente</summary>
@@ -2973,10 +2973,6 @@ namespace SeguraChain_Desktop_Wallet
             // TODO: Send user to https://seguraChain.com
         }
 
-        private void buttonSendTransactionOpenContactList_Click(object sender, EventArgs e)
-        {
-
-        }
     }
 }
 

@@ -63,7 +63,6 @@ namespace SeguraChain_Desktop_Wallet
             labelMainInterfaceNetworkStatsTotalTransactionConfirmedText = new System.Windows.Forms.Label();
             labelMainInterfaceNetworkStatsTotalTransactionText = new System.Windows.Forms.Label();
             labelMainInterfaceNetworkStatsTotalTransactionMemPoolText = new System.Windows.Forms.Label();
-            panelSyncInformationsSeperator = new ClassCustomPanel();
             labelMainInterfaceNetworkStatsInfoSyncText = new System.Windows.Forms.Label();
             labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText = new System.Windows.Forms.Label();
             labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText = new System.Windows.Forms.Label();
@@ -79,8 +78,8 @@ namespace SeguraChain_Desktop_Wallet
             labelMainInterfaceTotalBalanceAmountText = new System.Windows.Forms.Label();
             labelMainInterfacePendingBalanceAmountText = new System.Windows.Forms.Label();
             labelMainInterfaceAvailableBalanceAmountText = new System.Windows.Forms.Label();
-            panelSeperatorBalanceLine = new ClassCustomPanel();
             labelMainInterfaceCurrentBalanceText = new System.Windows.Forms.Label();
+            panelSeperatorBalanceLine = new System.Windows.Forms.Label();
             tabPageSendTransaction = new System.Windows.Forms.TabPage();
             panelSendTransaction = new ClassCustomPanel();
             buttonSendTransactionDoProcess = new System.Windows.Forms.Button();
@@ -212,9 +211,9 @@ namespace SeguraChain_Desktop_Wallet
             // vIEWTEXTToolStripMenuItem
             // 
             vIEWTEXTToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { normalToolStripMenuItem, dimensionsToolStripMenuItem, typeWebSiteToolStripMenuItem, leftCenterRightToolStripMenuItem });
-            resources.ApplyResources(vIEWTEXTToolStripMenuItem, "vIEWTEXTToolStripMenuItem");
             vIEWTEXTToolStripMenuItem.ForeColor = System.Drawing.Color.GhostWhite;
             vIEWTEXTToolStripMenuItem.Name = "vIEWTEXTToolStripMenuItem";
+            resources.ApplyResources(vIEWTEXTToolStripMenuItem, "vIEWTEXTToolStripMenuItem");
             vIEWTEXTToolStripMenuItem.Click += vIEWTEXTToolStripMenuItem_Click;
             // 
             // normalToolStripMenuItem
@@ -287,7 +286,6 @@ namespace SeguraChain_Desktop_Wallet
             tabControlWallet.Controls.Add(tabPageStoreNetwork);
             tabControlWallet.Name = "tabControlWallet";
             tabControlWallet.SelectedIndex = 0;
-            tabControlWallet.SizeMode = System.Windows.Forms.TabSizeMode.FillToRight;
             // 
             // tabPageOverview
             // 
@@ -301,8 +299,8 @@ namespace SeguraChain_Desktop_Wallet
             tabPageOverview.Controls.Add(labelMainInterfaceTotalBalanceAmountText);
             tabPageOverview.Controls.Add(labelMainInterfacePendingBalanceAmountText);
             tabPageOverview.Controls.Add(labelMainInterfaceAvailableBalanceAmountText);
-            tabPageOverview.Controls.Add(panelSeperatorBalanceLine);
             tabPageOverview.Controls.Add(labelMainInterfaceCurrentBalanceText);
+            tabPageOverview.Controls.Add(panelSeperatorBalanceLine);
             tabPageOverview.Name = "tabPageOverview";
             tabPageOverview.Paint += tabPageOverview_Paint;
             // 
@@ -320,7 +318,6 @@ namespace SeguraChain_Desktop_Wallet
             panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalTransactionConfirmedText);
             panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalTransactionText);
             panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalTransactionMemPoolText);
-            panelInternalNetworkStats.Controls.Add(panelSyncInformationsSeperator);
             panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsInfoSyncText);
             panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText);
             panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText);
@@ -378,16 +375,6 @@ namespace SeguraChain_Desktop_Wallet
             resources.ApplyResources(labelMainInterfaceNetworkStatsTotalTransactionMemPoolText, "labelMainInterfaceNetworkStatsTotalTransactionMemPoolText");
             labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.ForeColor = System.Drawing.Color.Black;
             labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Name = "labelMainInterfaceNetworkStatsTotalTransactionMemPoolText";
-            // 
-            // panelSyncInformationsSeperator
-            // 
-            resources.ApplyResources(panelSyncInformationsSeperator, "panelSyncInformationsSeperator");
-            panelSyncInformationsSeperator.BackColor = System.Drawing.Color.Black;
-            panelSyncInformationsSeperator.BorderColor = System.Drawing.Color.White;
-            panelSyncInformationsSeperator.BorderSize = 3F;
-            panelSyncInformationsSeperator.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            panelSyncInformationsSeperator.Name = "panelSyncInformationsSeperator";
-            panelSyncInformationsSeperator.Radius = 2;
             // 
             // labelMainInterfaceNetworkStatsInfoSyncText
             // 
@@ -505,22 +492,17 @@ namespace SeguraChain_Desktop_Wallet
             labelMainInterfaceAvailableBalanceAmountText.ForeColor = System.Drawing.Color.LimeGreen;
             labelMainInterfaceAvailableBalanceAmountText.Name = "labelMainInterfaceAvailableBalanceAmountText";
             // 
-            // panelSeperatorBalanceLine
-            // 
-            panelSeperatorBalanceLine.BackColor = System.Drawing.Color.Black;
-            panelSeperatorBalanceLine.BorderColor = System.Drawing.Color.White;
-            panelSeperatorBalanceLine.BorderSize = 3F;
-            panelSeperatorBalanceLine.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            resources.ApplyResources(panelSeperatorBalanceLine, "panelSeperatorBalanceLine");
-            panelSeperatorBalanceLine.Name = "panelSeperatorBalanceLine";
-            panelSeperatorBalanceLine.Radius = 2;
-            // 
             // labelMainInterfaceCurrentBalanceText
             // 
             resources.ApplyResources(labelMainInterfaceCurrentBalanceText, "labelMainInterfaceCurrentBalanceText");
             labelMainInterfaceCurrentBalanceText.BackColor = System.Drawing.Color.Transparent;
             labelMainInterfaceCurrentBalanceText.ForeColor = System.Drawing.Color.Ivory;
             labelMainInterfaceCurrentBalanceText.Name = "labelMainInterfaceCurrentBalanceText";
+            // 
+            // panelSeperatorBalanceLine
+            // 
+            resources.ApplyResources(panelSeperatorBalanceLine, "panelSeperatorBalanceLine");
+            panelSeperatorBalanceLine.Name = "panelSeperatorBalanceLine";
             // 
             // tabPageSendTransaction
             // 
@@ -684,7 +666,6 @@ namespace SeguraChain_Desktop_Wallet
             buttonSendTransactionOpenContactList.ForeColor = System.Drawing.Color.Black;
             buttonSendTransactionOpenContactList.Name = "buttonSendTransactionOpenContactList";
             buttonSendTransactionOpenContactList.UseVisualStyleBackColor = false;
-            buttonSendTransactionOpenContactList.Click += buttonSendTransactionOpenContactList_Click;
             // 
             // labelSendTransactionConfirmationCountTarget
             // 
@@ -913,6 +894,7 @@ namespace SeguraChain_Desktop_Wallet
             DoubleBuffered = true;
             MainMenuStrip = menuStripGeneralWallet;
             Name = "ClassWalletMainInterfaceForm";
+            WindowState = System.Windows.Forms.FormWindowState.Maximized;
             MaximizedBoundsChanged += ClassWalletMainInterfaceForm_MaximizedBoundsChanged;
             FormClosing += ClassWalletMainInterfaceForm_FormClosing;
             FormClosed += ClassWalletMainInterfaceForm_FormClosed;
@@ -964,7 +946,6 @@ namespace SeguraChain_Desktop_Wallet
         private System.Windows.Forms.Label labelMainInterfaceRecentTransaction;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.Label labelMainInterfaceCurrentBalanceText;
-        private ClassCustomPanel panelSeperatorBalanceLine;
         private System.Windows.Forms.TabPage tabPageReceiveTransaction;
         private System.Windows.Forms.Button buttonPrintQrCodeReceiveTransactionWalletAddress;
         private System.Windows.Forms.Label labelWalletReceiveTransactionQrCodeText;
@@ -979,7 +960,6 @@ namespace SeguraChain_Desktop_Wallet
         private ClassCustomPanel panelRecentTransactions;
         private ClassCustomPanel panelInternalRecentTransactions;
         private ClassCustomPanel panelInternalNetworkStats;
-        private ClassCustomPanel panelSyncInformationsSeperator;
         private System.Windows.Forms.Label labelMainInterfaceNetworkStatsInfoSyncText;
         private System.Windows.Forms.Label labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText;
         private System.Windows.Forms.Label labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText;
@@ -1046,6 +1026,7 @@ namespace SeguraChain_Desktop_Wallet
         private System.Windows.Forms.ToolStripMenuItem normalToolStripMenuItem;
         private System.Windows.Forms.PictureBox pictureBoxLogoTransaction;
         private System.Windows.Forms.ToolStripMenuItem dimensionsToolStripMenuItem;
+        private System.Windows.Forms.Label panelSeperatorBalanceLine;
     }
 }
 
