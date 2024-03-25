@@ -28,11 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ClassWalletStartupInternalForm));
             labelStartupDesktopWalletLoadingText = new System.Windows.Forms.Label();
             pictureBoxDesktopWalletLogo = new System.Windows.Forms.PictureBox();
-            timerOpenMainInterface = new System.Windows.Forms.Timer(components);
             ((System.ComponentModel.ISupportInitialize)pictureBoxDesktopWalletLogo).BeginInit();
             SuspendLayout();
             // 
@@ -59,12 +57,6 @@
             pictureBoxDesktopWalletLogo.Size = new System.Drawing.Size(314, 325);
             pictureBoxDesktopWalletLogo.TabIndex = 0;
             pictureBoxDesktopWalletLogo.TabStop = false;
-            // 
-            // timerOpenMainInterface
-            // 
-            timerOpenMainInterface.Enabled = true;
-            timerOpenMainInterface.Interval = 1000;
-            timerOpenMainInterface.Tick += timerOpenMainInterface_Tick;
             // 
             // ClassWalletStartupInternalForm
             // 
@@ -93,6 +85,5 @@
 
         private System.Windows.Forms.PictureBox pictureBoxDesktopWalletLogo;
         private System.Windows.Forms.Label labelStartupDesktopWalletLoadingText;
-        private System.Windows.Forms.Timer timerOpenMainInterface;
     }
 }

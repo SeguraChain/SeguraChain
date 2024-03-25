@@ -897,7 +897,6 @@ namespace SeguraChain_Desktop_Wallet
             WindowState = System.Windows.Forms.FormWindowState.Maximized;
             MaximizedBoundsChanged += ClassWalletMainInterfaceForm_MaximizedBoundsChanged;
             FormClosing += ClassWalletMainInterfaceForm_FormClosing;
-            FormClosed += ClassWalletMainInterfaceForm_FormClosed;
             Load += ClassWalletMainInterfaceForm_Load;
             ResizeBegin += ClassWalletMainInterfaceForm_ResizeBegin;
             ResizeEnd += ClassWalletMainInterfaceForm_ResizeEnd;

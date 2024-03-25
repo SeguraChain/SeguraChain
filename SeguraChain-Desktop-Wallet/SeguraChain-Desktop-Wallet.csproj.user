@@ -7,6 +7,9 @@
     <Compile Update="ClassWalletMainInterfaceForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="InternalForm\Close\ClassWalletCloseForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="InternalForm\Create\ClassWalletCreateInternalForm.cs">
       <SubType>Form</SubType>
     </Compile>

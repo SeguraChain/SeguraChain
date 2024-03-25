@@ -285,22 +285,16 @@ namespace SeguraChain_Desktop_Wallet
         /// <param name="e"></param>
         private void ClassWalletMainInterfaceForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            e.Cancel = true;
+
             if (!_cancellationTokenTaskUpdateWalletListFilesFound.IsCancellationRequested)
                 _cancellationTokenTaskUpdateWalletListFilesFound.Cancel();
 
             _walletRecentTransactionHistorySystemInstance.ClearRecentTransactionHistory();
             StopTaskUpdateWallet();
+            _startupInternalForm.OnCloseDesktopWallet();
         }
 
-        /// <summary>
-        /// Event executed on closing the desktop wallet main interface.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ClassWalletMainInterfaceForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            _startupInternalForm.OnCloseDesktopWallet(this);
-        }
 
         /// <summary>
         /// Function who update every languages.
@@ -481,7 +475,7 @@ namespace SeguraChain_Desktop_Wallet
             else
             {
                 MessageBox.Show(@"Failed to generate your first wallet, ensure to have propertly install the desktop wallet", @"Failed to create wallet.", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                _startupInternalForm.OnCloseDesktopWallet(this);
+                _startupInternalForm.OnCloseDesktopWallet();
             }
         }
 
@@ -1344,7 +1338,7 @@ namespace SeguraChain_Desktop_Wallet
         /// <param name="e"></param>
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            _startupInternalForm.OnCloseDesktopWallet(this);
+            _startupInternalForm.OnCloseDesktopWallet();
         }
 
         /// <summary>
