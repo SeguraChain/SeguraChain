@@ -102,8 +102,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Startup
                 
                 await Task.Delay(1000);
 
-                MethodInvoker invoke =() => Close();
-                BeginInvoke(invoke);
+                Process.GetCurrentProcess().Kill();
             }).Wait();
 
         }
