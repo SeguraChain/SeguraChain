@@ -892,9 +892,10 @@ namespace SeguraChain_Desktop_Wallet
             Controls.Add(menuStripGeneralWallet);
             Controls.Add(pictureBoxLogo);
             DoubleBuffered = true;
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             MainMenuStrip = menuStripGeneralWallet;
+            MaximizeBox = false;
             Name = "ClassWalletMainInterfaceForm";
-            WindowState = System.Windows.Forms.FormWindowState.Maximized;
             MaximizedBoundsChanged += ClassWalletMainInterfaceForm_MaximizedBoundsChanged;
             FormClosing += ClassWalletMainInterfaceForm_FormClosing;
             Load += ClassWalletMainInterfaceForm_Load;
