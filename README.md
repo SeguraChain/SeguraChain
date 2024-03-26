@@ -4,7 +4,8 @@ Summary: SeguraChain (Secured Chain translated from Spanish) is a technology dev
 it allows to easily create and understand a decentralized blockchain process, it can be configured to support a sovereign update system,
 allowing to include updates on it without editing the content of the Blockchain. 
 
-![desktop-wallet](https://github.com/SeguraChain/SeguraChain/assets/96837446/006136ff-92c2-4d5d-a0f4-e22dfcb48ea1)
+![image](https://github.com/SeguraChain/SeguraChain/assets/96837446/81c40937-47cf-4f4d-8981-6ee94617b141)
+
 
 
 <h3>Please follow this wikipage to setup your own blockchain:</h3>
