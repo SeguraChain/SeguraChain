@@ -92,19 +92,24 @@ namespace SeguraChain_Lib.Instance.Node
 
                     if (ClassMemPoolDatabase.LoadMemPoolDatabase(encryptionKey, PeerSettingObject.PeerBlockchainDatabaseSettingObject))
                     {
-                        if (ClassBlockchainDatabase.LoadBlockchainDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject, encryptionKey, false, fromWallet).Result)
+                        if (!ClassBlockchainDatabase.LoadBlockchainDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject, encryptionKey, false, fromWallet).Result)
                         {
-                            #region Enable public peer mode. (If enabled and possible to enable).
 
-                            if (PeerSettingObject.PeerNetworkSettingObject.PublicPeer)
+                            ClassLog.WriteLine("Can't load Blockchain database. Cleaning up.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                            ClassBlockchainDatabase.BlockchainMemoryManagement.Clear().Wait();
+                        }
+
+                        #region Enable public peer mode. (If enabled and possible to enable).
+
+                        if (PeerSettingObject.PeerNetworkSettingObject.PublicPeer)
+                        {
+                            if (!PeerSettingObject.PeerNetworkSettingObject.IsDedicatedServer)
                             {
-                                if (!PeerSettingObject.PeerNetworkSettingObject.IsDedicatedServer)
-                                {
 #if NET5_0_OR_GREATER
-                                    ClassLog.WriteLine("Your setting indicate it's not a dedicated server.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
-                                    ClassLog.WriteLine("Remember to open the P2P port " + PeerSettingObject.PeerNetworkSettingObject.ListenApiPort + " and target the host IP: " + PeerSettingObject.PeerNetworkSettingObject.ListenIp + " to your router.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
+                                ClassLog.WriteLine("Your setting indicate it's not a dedicated server.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
+                                ClassLog.WriteLine("Remember to open the P2P port " + PeerSettingObject.PeerNetworkSettingObject.ListenApiPort + " and target the host IP: " + PeerSettingObject.PeerNetworkSettingObject.ListenIp + " to your router.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
 
-                                    PeerOpenNatPublicIp = PeerSettingObject.PeerNetworkSettingObject.ListenIp;
+                                PeerOpenNatPublicIp = PeerSettingObject.PeerNetworkSettingObject.ListenIp;
 #else
                                     Task<bool> openNatTask = PeerOpenNatPort();
                                     openNatTask.Wait();
@@ -120,79 +125,72 @@ namespace SeguraChain_Lib.Instance.Node
                                         ClassLog.WriteLine("Can't open peer port with OpenNAT to the public network. Disable public mode.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                                     }
 #endif
-                                }
-                                else
-                                    PeerOpenNatPublicIp = PeerSettingObject.PeerNetworkSettingObject.ListenIp;
                             }
+                            else
+                                PeerOpenNatPublicIp = PeerSettingObject.PeerNetworkSettingObject.ListenIp;
+                        }
+
+                        #endregion
+
+                        ClassLog.WriteLine("Start peer network server..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+
+                        PeerNetworkServerObject = new ClassPeerNetworkSyncServerObject(PeerDatabase, PeerOpenNatPublicIp, PeerSettingObject.PeerNetworkSettingObject, PeerSettingObject.PeerFirewallSettingObject);
+
+                        if (PeerNetworkServerObject.StartPeerServer())
+                        {
+                            ClassLog.WriteLine("Peer server started.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+
+                            #region Peer sync network task.
+
+                            ClassLog.WriteLine("Enable Peer Sync Network Task(s)..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+
+                            PeerNetworkClientSyncObject = new ClassPeerNetworkSyncServiceObject(PeerDatabase, PeerOpenNatPublicIp, PeerSettingObject.PeerNetworkSettingObject, PeerSettingObject.PeerFirewallSettingObject);
+                            PeerNetworkClientSyncObject.EnablePeerSyncTask();
+
+                            ClassLog.WriteLine("Peer Sync Task(s) enabled.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
                             #endregion
 
-                            ClassLog.WriteLine("Start peer network server..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                            ClassLog.WriteLine("Start peer API server..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                            PeerApiServerObject = new ClassPeerApiServerServiceObject(PeerDatabase, PeerOpenNatPublicIp, PeerSettingObject.PeerNetworkSettingObject, PeerSettingObject.PeerFirewallSettingObject);
 
-                            PeerNetworkServerObject = new ClassPeerNetworkSyncServerObject(PeerDatabase, PeerOpenNatPublicIp, PeerSettingObject.PeerNetworkSettingObject, PeerSettingObject.PeerFirewallSettingObject);
-
-                            if (PeerNetworkServerObject.StartPeerServer())
+                            if (PeerApiServerObject.StartPeerApiServer())
                             {
-                                ClassLog.WriteLine("Peer server started.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                                #region Peer Update tasks.
 
-                                #region Peer sync network task.
+                                _peerUpdateTask.StartPeerUpdateTasks();
 
-                                ClassLog.WriteLine("Enable Peer Sync Network Task(s)..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-
-                                PeerNetworkClientSyncObject = new ClassPeerNetworkSyncServiceObject(PeerDatabase, PeerOpenNatPublicIp, PeerSettingObject.PeerNetworkSettingObject, PeerSettingObject.PeerFirewallSettingObject);
-                                PeerNetworkClientSyncObject.EnablePeerSyncTask();
-
-                                ClassLog.WriteLine("Peer Sync Task(s) enabled.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                                ClassLog.WriteLine("Peer Update Task(s) system started.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
                                 #endregion
 
-                                ClassLog.WriteLine("Start peer API server..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                                PeerApiServerObject = new ClassPeerApiServerServiceObject(PeerDatabase, PeerOpenNatPublicIp, PeerSettingObject.PeerNetworkSettingObject, PeerSettingObject.PeerFirewallSettingObject);
+                                PeerNetworkBroadcastInstanceMemPoolObject = new ClassPeerNetworkBroadcastInstanceMemPool(PeerDatabase, PeerSettingObject.PeerNetworkSettingObject, PeerSettingObject.PeerFirewallSettingObject, PeerOpenNatPublicIp);
+                                PeerNetworkBroadcastInstanceMemPoolObject.RunNetworkBroadcastMemPoolInstanceTask();
 
-                                if (PeerApiServerObject.StartPeerApiServer())
-                                {
-                                    #region Peer Update tasks.
+                                return true;
+                            }
 
-                                    _peerUpdateTask.StartPeerUpdateTasks();
-
-                                    ClassLog.WriteLine("Peer Update Task(s) system started.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-
-                                    #endregion
-
-                                    PeerNetworkBroadcastInstanceMemPoolObject = new ClassPeerNetworkBroadcastInstanceMemPool(PeerDatabase, PeerSettingObject.PeerNetworkSettingObject, PeerSettingObject.PeerFirewallSettingObject, PeerOpenNatPublicIp);
-                                    PeerNetworkBroadcastInstanceMemPoolObject.RunNetworkBroadcastMemPoolInstanceTask();
-
-                                    return true;
-                                }
-
-                                PeerApiServerObject.Dispose();
+                            PeerApiServerObject.Dispose();
 #if !NET5_0_OR_GREATER
                                 if (PeerSettingObject.PeerNetworkSettingObject.PublicPeer)
                                     ClosePortOpenNat();
 #endif
 
-                                ClassLog.WriteLine("Can't start peer api server. Press a key to exit.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                            ClassLog.WriteLine("Can't start peer api server. Press a key to exit.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-                                if (!fromWallet)
-                                    Console.ReadLine();
-                            }
-                            else
-                            {
-                                PeerNetworkServerObject.Dispose();
-#if !NET5_0_OR_GREATER
-                                if (PeerSettingObject.PeerNetworkSettingObject.PublicPeer)
-                                    ClosePortOpenNat();
-#endif
-
-                                ClassLog.WriteLine("Can't start peer network server. Press a key to exit.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-
-                                if (!fromWallet)
-                                    Console.ReadLine();
-                            }
+                            if (!fromWallet)
+                                Console.ReadLine();
                         }
                         else
                         {
-                            ClassLog.WriteLine("Can't load Blockchain database. Press a key to exit.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                            PeerNetworkServerObject.Dispose();
+#if !NET5_0_OR_GREATER
+                                if (PeerSettingObject.PeerNetworkSettingObject.PublicPeer)
+                                    ClosePortOpenNat();
+#endif
+
+                            ClassLog.WriteLine("Can't start peer network server. Press a key to exit.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+
                             if (!fromWallet)
                                 Console.ReadLine();
                         }

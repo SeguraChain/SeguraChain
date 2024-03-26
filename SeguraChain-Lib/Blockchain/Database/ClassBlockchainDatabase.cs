@@ -49,6 +49,7 @@ namespace SeguraChain_Lib.Blockchain.Database
         public static ConcurrentDictionary<ClassCheckpointEnumType, List<ClassCheckpointObject>> DictionaryCheckpointObjects;
         private static long _blockchainLoadTransactionCount;
 
+
         /// <summary>
         /// Encryptions key/IV data
         /// </summary>
@@ -398,8 +399,9 @@ namespace SeguraChain_Lib.Blockchain.Database
 
             if (BlockchainMemoryManagement.Count > 0)
             {
+                bool cancel = false;
 
-                while (true)
+                while (!cancel)
                 {
                     long countBlock = BlockchainMemoryManagement.Count;
                     totalBlockSaved = 0;
@@ -425,6 +427,23 @@ namespace SeguraChain_Lib.Blockchain.Database
                         {
                             ClassBlockObject blockObjectInformation = await BlockchainMemoryManagement.GetBlockInformationDataStrategy(blockHeight, _cancellationTokenStopBlockchain);
 
+
+
+                            if (blockObjectInformation.BlockHeight > BlockchainSetting.GenesisBlockHeight)
+                            {
+                                ClassBlockObject previousBlockObjectInformation = await BlockchainMemoryManagement.GetBlockInformationDataStrategy(blockHeight - 1, _cancellationTokenStopBlockchain);
+
+                                ClassBlockEnumCheckStatus blockCheckStatus = ClassBlockUtility.CheckBlockHash(blockObjectInformation.BlockHash, blockObjectInformation.BlockHeight, blockObjectInformation.BlockDifficulty, previousBlockObjectInformation.TotalTransaction, previousBlockObjectInformation.BlockFinalHashTransaction);
+
+                                if (blockCheckStatus != ClassBlockEnumCheckStatus.VALID_BLOCK_HASH)
+                                {
+                                    ClassLog.WriteLine("Invalid block data at block height: " + blockObjectInformation.BlockHeight, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                                    cancel = true;
+                                    break;
+                                }
+                            }
+
+
                             while (blockObjectInformation == null)
                                 blockObjectInformation = await BlockchainMemoryManagement.GetBlockInformationDataStrategy(blockHeight, _cancellationTokenStopBlockchain);
 
@@ -435,6 +454,7 @@ namespace SeguraChain_Lib.Blockchain.Database
                             blockObject?.BlockTransactions?.Count != blockObject?.TotalTransaction ||
                             blockObject?.TotalTransaction != blockObjectInformation.TotalTransaction)
                                 blockObject = await BlockchainMemoryManagement.GetBlockDataStrategy(blockHeight, true, true, _cancellationTokenStopBlockchain);
+
 
 
                             foreach (string blockDataLine in ClassBlockUtility.BlockObjectToStringBlockData(blockObject, blockchainDatabaseSetting.DataSetting.DataFormatIsJson))
