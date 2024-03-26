@@ -2799,7 +2799,7 @@ namespace SeguraChain_Desktop_Wallet
         /// <param name="e"></param>
         private void ClassWalletMainInterfaceForm_Paint(object sender, PaintEventArgs e)
         {
-           ClassGraphicsUtility.DrawShadowOnListGraphicContentTarget(this, _listMainInterfaceControlShadow, e.Graphics, 50, 50, _mainInterfaceShadowBitmap, out _mainInterfaceShadowBitmap);
+            ClassGraphicsUtility.DrawShadowOnListGraphicContentTarget(this, _listMainInterfaceControlShadow, e.Graphics, 50, 50, _mainInterfaceShadowBitmap, out _mainInterfaceShadowBitmap);
         }
 
         #endregion
@@ -2969,6 +2969,24 @@ namespace SeguraChain_Desktop_Wallet
             // TODO: Send user to https://seguraChain.com
         }
 
+        /// <summary>Clear/Reset TransactionHistoryTab when focus them// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void buttonClearAndUpdateTransitionHistoryTab_Click(object sender, EventArgs e)
+        {
+            if (_walletRecentTransactionHistorySystemInstance != null && !_onDrawingTransactionHistory)
+            {
+                _walletRecentTransactionHistorySystemInstance.ClearRecentTransactionHistory();
+            }
+        }
+
+        private void tabControlWallet_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (tabControlWallet.SelectedTab == tabPageTransactionHistory && _walletRecentTransactionHistorySystemInstance != null && !_onDrawingTransactionHistory)
+            {
+                _walletRecentTransactionHistorySystemInstance.ClearRecentTransactionHistory();
+            }
+        }
     }
 }
 

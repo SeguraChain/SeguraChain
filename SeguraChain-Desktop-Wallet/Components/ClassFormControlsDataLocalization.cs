@@ -25,8 +25,11 @@ namespace SeguraChain_Desktop_Wallet.Components
         public int InitY { get; set; }
         public int InitHeight { get; set; }
         public int InitWidth { get; set; }
-        public DockStyle Dock { get; set; }
-        public AnchorStyles Anchor { get; set; }
+        public DockStyle InitialDock { get; set; }
+        public AnchorStyles InitialAnchor { get; set; }
+        public int InitialLeft { get; set; }
+        public int InitialTop{ get; set; }
+
 
         public List<ClassContainerDataLocalization> ChildsContainerData { get; set; }
 

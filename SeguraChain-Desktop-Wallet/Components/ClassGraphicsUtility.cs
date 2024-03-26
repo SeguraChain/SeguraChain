@@ -9,6 +9,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace SeguraChain_Desktop_Wallet.Components
@@ -32,14 +33,18 @@ namespace SeguraChain_Desktop_Wallet.Components
                 switch (strategy)
                 {
                     case ClassViewStrategiesEnum.Normal:
-                        //f1.AutoSize = true;
+
+                        f1.AutoScroll = false;
+                        f1.Height = 768; // xDDDDDD
+
                         ViewStrategy_Normal(controls);
 
                         break;
 
                     case ClassViewStrategiesEnum.TypeWebSite:
-                        //f1.AutoSize = true;
-                        ViewStrategy_0_TypeWebSite(controls, f1.Width, applyImages);
+
+                        f1.AutoScroll = true;
+                        f1.Height = ViewStrategy_0_TypeWebSite(controls, f1.Width, applyImages);
 
                         break;
 
@@ -71,7 +76,15 @@ namespace SeguraChain_Desktop_Wallet.Components
             {
                 c.Control.Width = c.InitWidth;
                 c.Control.Height = c.InitHeight;
+                c.Control.Dock = c.InitialDock;
+                c.Control.Anchor = c.InitialAnchor;
                 c.Control.Location = new Point(c.InitX, c.InitY);
+
+                if (c.Control is TabPage)
+                {
+                    TabPage tP = (TabPage)c.Control;
+                    tP.AutoScroll = false;
+                }
 
                 if (c.HasChilds)
                 {
@@ -118,31 +131,37 @@ namespace SeguraChain_Desktop_Wallet.Components
             {
                 Int32 centerX = newWidth / 2;
 
-                List<ClassContainerDataLocalization> orderControls = controls.OrderBy(t => t.Control.TabIndex).ToList();
+                List<ClassContainerDataLocalization> orderControls = controls.OrderBy(x => x.InitX).OrderBy(y => y.InitY).ToList();
 
                 // Prueba rápida y erróneamente de resultado inesperado
                 foreach (ClassContainerDataLocalization c in orderControls)
                 {
-                    c.Control.Anchor = AnchorStyles.Left | AnchorStyles.Right;
-                    
-                    //if (!applyImages)
-                    //{
-                    //    if ((String)c.Control.Tag != "image" && c.Control.GetType().Name != "PictureBox")
-                    //    {
-                    //        c.Control.Width = newWidth * 96 / 100;
-                    //    }
-                    //}
+                    c.Control.Anchor = AnchorStyles.None;
+                    c.Control.Width = newWidth * 96 / 100;
+
+                    if (c.Control is TabPage)
+                    {
+                        TabPage tP = (TabPage)c.Control;
+                        tP.AutoScroll = true;
+                        //tP.Dock = DockStyle.Fill;
+                    }
                     //else
                     //{
-                    //    c.Control.Width = newWidth * 96 / 100;
+                        c.Control.Dock = DockStyle.Top;
                     //}
 
                     if (c.HasChilds)
                     {
-                        ViewStrategy_0_TypeWebSite(c.ChildsContainerData, c.Control.Width, applyImages);
+                        Int32 heihtItems = ViewStrategy_0_TypeWebSite(c.ChildsContainerData, c.Control.Width, applyImages);
+                        if (c.Control is Panel)
+                        {
+                            Panel p = (Panel)c.Control;
+                            p.Height = heihtItems;
+                        }
                     }
 
                     c.Control.Location = new Point(centerX - (c.Control.Width / 2), centerY);
+
                     centerY += c.Control.Height;
                 }
             }

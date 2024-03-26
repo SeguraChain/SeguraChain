@@ -112,6 +112,7 @@ namespace SeguraChain_Desktop_Wallet
             labelWalletReceiveTransactionQrCodeText = new System.Windows.Forms.Label();
             panelQrCodeWalletAddress = new ClassCustomPanel();
             tabPageTransactionHistory = new System.Windows.Forms.TabPage();
+            buttonClearAndUpdateTransitionHistoryTab = new System.Windows.Forms.Button();
             buttonMainInterfaceSearchTransactionHistory = new System.Windows.Forms.Button();
             textBoxTransactionHistorySearch = new System.Windows.Forms.TextBox();
             textBoxMainInterfaceMaxPageTransactionHistory = new System.Windows.Forms.TextBox();
@@ -211,9 +212,9 @@ namespace SeguraChain_Desktop_Wallet
             // vIEWTEXTToolStripMenuItem
             // 
             vIEWTEXTToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { normalToolStripMenuItem, dimensionsToolStripMenuItem, typeWebSiteToolStripMenuItem, leftCenterRightToolStripMenuItem });
-            resources.ApplyResources(vIEWTEXTToolStripMenuItem, "vIEWTEXTToolStripMenuItem");
             vIEWTEXTToolStripMenuItem.ForeColor = System.Drawing.Color.GhostWhite;
             vIEWTEXTToolStripMenuItem.Name = "vIEWTEXTToolStripMenuItem";
+            resources.ApplyResources(vIEWTEXTToolStripMenuItem, "vIEWTEXTToolStripMenuItem");
             vIEWTEXTToolStripMenuItem.Click += vIEWTEXTToolStripMenuItem_Click;
             // 
             // normalToolStripMenuItem
@@ -224,8 +225,8 @@ namespace SeguraChain_Desktop_Wallet
             // 
             // dimensionsToolStripMenuItem
             // 
-            dimensionsToolStripMenuItem.Name = "dimensionsToolStripMenuItem";
             resources.ApplyResources(dimensionsToolStripMenuItem, "dimensionsToolStripMenuItem");
+            dimensionsToolStripMenuItem.Name = "dimensionsToolStripMenuItem";
             dimensionsToolStripMenuItem.Click += dimensionsToolStripMenuItem_Click;
             // 
             // typeWebSiteToolStripMenuItem
@@ -236,8 +237,8 @@ namespace SeguraChain_Desktop_Wallet
             // 
             // leftCenterRightToolStripMenuItem
             // 
-            leftCenterRightToolStripMenuItem.Name = "leftCenterRightToolStripMenuItem";
             resources.ApplyResources(leftCenterRightToolStripMenuItem, "leftCenterRightToolStripMenuItem");
+            leftCenterRightToolStripMenuItem.Name = "leftCenterRightToolStripMenuItem";
             leftCenterRightToolStripMenuItem.Click += leftCenterRightToolStripMenuItem_Click;
             // 
             // comboBoxListWalletFile
@@ -286,6 +287,7 @@ namespace SeguraChain_Desktop_Wallet
             tabControlWallet.Controls.Add(tabPageStoreNetwork);
             tabControlWallet.Name = "tabControlWallet";
             tabControlWallet.SelectedIndex = 0;
+            tabControlWallet.SelectedIndexChanged += tabControlWallet_SelectedIndexChanged;
             // 
             // tabPageOverview
             // 
@@ -743,6 +745,7 @@ namespace SeguraChain_Desktop_Wallet
             // tabPageTransactionHistory
             // 
             tabPageTransactionHistory.BackColor = System.Drawing.Color.FromArgb(77, 104, 145);
+            tabPageTransactionHistory.Controls.Add(buttonClearAndUpdateTransitionHistoryTab);
             tabPageTransactionHistory.Controls.Add(buttonMainInterfaceSearchTransactionHistory);
             tabPageTransactionHistory.Controls.Add(textBoxTransactionHistorySearch);
             tabPageTransactionHistory.Controls.Add(textBoxMainInterfaceMaxPageTransactionHistory);
@@ -755,6 +758,15 @@ namespace SeguraChain_Desktop_Wallet
             resources.ApplyResources(tabPageTransactionHistory, "tabPageTransactionHistory");
             tabPageTransactionHistory.Name = "tabPageTransactionHistory";
             tabPageTransactionHistory.Paint += tabPageTransactionHistory_Paint;
+            // 
+            // buttonClearAndUpdateTransitionHistoryTab
+            // 
+            resources.ApplyResources(buttonClearAndUpdateTransitionHistoryTab, "buttonClearAndUpdateTransitionHistoryTab");
+            buttonClearAndUpdateTransitionHistoryTab.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
+            buttonClearAndUpdateTransitionHistoryTab.ForeColor = System.Drawing.Color.Black;
+            buttonClearAndUpdateTransitionHistoryTab.Name = "buttonClearAndUpdateTransitionHistoryTab";
+            buttonClearAndUpdateTransitionHistoryTab.UseVisualStyleBackColor = false;
+            buttonClearAndUpdateTransitionHistoryTab.Click += buttonClearAndUpdateTransitionHistoryTab_Click;
             // 
             // buttonMainInterfaceSearchTransactionHistory
             // 
@@ -1027,6 +1039,7 @@ namespace SeguraChain_Desktop_Wallet
         private System.Windows.Forms.PictureBox pictureBoxLogoTransaction;
         private System.Windows.Forms.ToolStripMenuItem dimensionsToolStripMenuItem;
         private System.Windows.Forms.Label panelSeperatorBalanceLine;
+        private System.Windows.Forms.Button buttonClearAndUpdateTransitionHistoryTab;
     }
 }
 
