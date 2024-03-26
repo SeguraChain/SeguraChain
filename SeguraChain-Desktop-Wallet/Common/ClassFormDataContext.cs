@@ -56,8 +56,10 @@ namespace SeguraChain_Desktop_Wallet.Common
                         InitY = c.Location.Y,
                         InitHeight = c.Height,
                         InitWidth = c.Width,
-                        Dock = c.Dock,
-                        Anchor = c.Anchor
+                        InitialDock = c.Dock,
+                        InitialAnchor = c.Anchor,
+                        InitialLeft = c.Left,
+                        InitialTop = c.Top
                     };
                 lCD.Add(cD);
 
