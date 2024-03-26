@@ -503,6 +503,22 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         }
 
         /// <summary>
+        /// Clear everything from the blockchain database and the cache system.
+        /// </summary>
+        public async Task Clear()
+        {
+            _dictionaryBlockObjectMemory.Clear();
+            switch (_blockchainDatabaseSetting.BlockchainCacheSetting.CacheName)
+            {
+                case CacheEnumName.IO_CACHE:
+                    {
+                        await _cacheIoSystem.CleanCacheIoSystem();
+                    }
+                    break;
+            }
+        }
+
+        /// <summary>
         /// Check if the block height data is cached and removed from the active memory.
         /// </summary>
         /// <param name="blockHeight"></param>
