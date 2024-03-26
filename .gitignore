@@ -1,3 +1,7 @@
 [Bb]in
 [Oo]bj
 .vs
+/Output/Windows/x64/Release/Desktop-Wallet/Net5
+/Output/Windows/x64/Release/Desktop-Wallet/Net6
+/Output/Windows/x64
+/.gitignore
