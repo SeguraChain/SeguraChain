@@ -75,7 +75,7 @@ namespace SeguraChain_Lib.TaskManager
                 while (TaskManagerEnabled)
                 {
                     ManageTask(false);
-                    await Task.Delay(1000);
+                    await Task.Delay(60 * 1000);
                 }
 
             }), 0, _cancelTaskManager).Wait();
