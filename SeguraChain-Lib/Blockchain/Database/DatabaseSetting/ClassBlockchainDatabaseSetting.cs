@@ -21,6 +21,7 @@ namespace SeguraChain_Lib.Blockchain.Database.DatabaseSetting
         public const string CheckpointDatabaseFileName = "checkpoint.dat";
         public static readonly string BlockchainCacheDirectoryPath = ClassUtility.ConvertPath(DefaultBlockchainDirectoryPath + "\\Cache\\").Replace("\\\\", "\\");
         public static readonly string WalletIndexCacheDirectoryPath = ClassUtility.ConvertPath(DefaultBlockchainDirectoryPath + "\\WalletIndexCache\\").Replace("\\\\", "\\");
+        public const int MaxBlockTaskSave = 10;
 
         /// <summary>
         /// Default paths of the MemPool database.
