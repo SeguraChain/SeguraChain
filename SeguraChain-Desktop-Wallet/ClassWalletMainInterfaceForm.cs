@@ -127,7 +127,8 @@ namespace SeguraChain_Desktop_Wallet
             _listSendTransactionDetailsPanelControlShadow.Add(textBoxSendTransactionFeeConfirmationCost);
             _listSendTransactionDetailsPanelControlShadow.Add(textBoxSendTransactionFeeCalculated);
             _listRecentTransactionHistoryPanelControlShadow.Add(panelInternalRecentTransactions);
-
+            timerRefreshTransactionHistory.Interval = 100;
+            timerRefreshTransactionHistory.Start();
             #endregion
         }
 
@@ -217,6 +218,7 @@ namespace SeguraChain_Desktop_Wallet
             EnableTaskUpdateMenuStripWalletList();
             EnableTaskUpdateBlockchainNetworkStats();
             UpdateRecentTransactionDraw();
+
 
             #region Initialize Store Network browser.
 
@@ -418,22 +420,22 @@ namespace SeguraChain_Desktop_Wallet
 
             buttonMainInterfaceExportTransactionHistory.Text = _walletMainFormLanguageObject.BUTTON_MAIN_INTERFACE_EXPORT_TRANSACTION_HISTORY_TEXT;
             buttonMainInterfaceExportTransactionHistory = ClassGraphicsUtility.AutoResizeControlFromText<Button>(buttonMainInterfaceExportTransactionHistory);
-            buttonMainInterfaceExportTransactionHistory.Location = new Point(panelTransactionHistory.Location.X + panelTransactionHistory.Width - buttonMainInterfaceExportTransactionHistory.Width, buttonMainInterfaceExportTransactionHistory.Location.Y);
+            //buttonMainInterfaceExportTransactionHistory.Location = new Point(panelTransactionHistory.Location.X + panelTransactionHistory.Width - buttonMainInterfaceExportTransactionHistory.Width, buttonMainInterfaceExportTransactionHistory.Location.Y);
 
             buttonMainInterfaceBackPageTransactionHistory.Text = _walletMainFormLanguageObject.BUTTON_MAIN_INTERFACE_BACK_PAGE_TRANSACTION_HISTORY_TEXT;
             buttonMainInterfaceBackPageTransactionHistory = ClassGraphicsUtility.AutoResizeControlFromText<Button>(buttonMainInterfaceBackPageTransactionHistory);
 
             buttonMainInterfaceNextPageTransactionHistory.Text = _walletMainFormLanguageObject.BUTTON_MAIN_INTERFACE_NEXT_PAGE_TRANSACTION_HISTORY_TEXT;
             buttonMainInterfaceNextPageTransactionHistory = ClassGraphicsUtility.AutoResizeControlFromText<Button>(buttonMainInterfaceNextPageTransactionHistory);
-            buttonMainInterfaceNextPageTransactionHistory.Location = new Point(buttonMainInterfaceBackPageTransactionHistory.Location.X + buttonMainInterfaceBackPageTransactionHistory.Width, buttonMainInterfaceNextPageTransactionHistory.Location.Y);
+            //buttonMainInterfaceNextPageTransactionHistory.Location = new Point(buttonMainInterfaceBackPageTransactionHistory.Location.X + buttonMainInterfaceBackPageTransactionHistory.Width, buttonMainInterfaceNextPageTransactionHistory.Location.Y);
 
             buttonMainInterfaceSearchTransactionHistory.Text = _walletMainFormLanguageObject.BUTTON_MAIN_INTERFACE_SEARCH_TRANSACTION_HISTORY_TEXT;
             buttonMainInterfaceSearchTransactionHistory = ClassGraphicsUtility.AutoResizeControlFromText<Button>(buttonMainInterfaceSearchTransactionHistory);
-            buttonMainInterfaceSearchTransactionHistory.Location = new Point(textBoxTransactionHistorySearch.Location.X + textBoxTransactionHistorySearch.Width, buttonMainInterfaceSearchTransactionHistory.Location.Y);
+            //buttonMainInterfaceSearchTransactionHistory.Location = new Point(textBoxTransactionHistorySearch.Location.X + textBoxTransactionHistorySearch.Width, buttonMainInterfaceSearchTransactionHistory.Location.Y);
 
 
-            textBoxMainInterfaceCurrentPageTransactionHistory.Location = new Point(buttonMainInterfaceNextPageTransactionHistory.Location.X + buttonMainInterfaceNextPageTransactionHistory.Width, textBoxMainInterfaceCurrentPageTransactionHistory.Location.Y);
-            textBoxMainInterfaceMaxPageTransactionHistory.Location = new Point(textBoxMainInterfaceCurrentPageTransactionHistory.Location.X + textBoxMainInterfaceCurrentPageTransactionHistory.Width, textBoxMainInterfaceMaxPageTransactionHistory.Location.Y);
+            //textBoxMainInterfaceCurrentPageTransactionHistory.Location = new Point(buttonMainInterfaceNextPageTransactionHistory.Location.X + buttonMainInterfaceNextPageTransactionHistory.Width, textBoxMainInterfaceCurrentPageTransactionHistory.Location.Y);
+            //textBoxMainInterfaceMaxPageTransactionHistory.Location = new Point(textBoxMainInterfaceCurrentPageTransactionHistory.Location.X + textBoxMainInterfaceCurrentPageTransactionHistory.Width, textBoxMainInterfaceMaxPageTransactionHistory.Location.Y);
 
             #endregion
         }
@@ -1658,6 +1660,7 @@ namespace SeguraChain_Desktop_Wallet
                     {
                         _walletTransactionHistorySystemInstance.NextPageTransactionHistory(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations, out int currentPage);
                         textBoxMainInterfaceCurrentPageTransactionHistory.Text = currentPage.ToString();
+                        RefreshTransactionsHistoryPanel();
                     }
                 }
             }
@@ -1678,6 +1681,7 @@ namespace SeguraChain_Desktop_Wallet
                     {
                         _walletTransactionHistorySystemInstance.BackPageTransactionHistory(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations, out int currentPage);
                         textBoxMainInterfaceCurrentPageTransactionHistory.Text = currentPage.ToString();
+                        RefreshTransactionsHistoryPanel();
                     }
                 }
             }
@@ -1699,6 +1703,7 @@ namespace SeguraChain_Desktop_Wallet
                         MouseEventArgs mouseEventArgs = (MouseEventArgs)e;
 
                         _walletTransactionHistorySystemInstance.SetOrderTypeTransactionHistory(_currentWalletFilename, mouseEventArgs.Location, panelTransactionHistoryColumns, _walletMainFormLanguageObject, _cancellationTokenTaskUpdateWalletContentInformations);
+                        RefreshTransactionsHistoryPanel();
                     }
                 }
             }
@@ -1718,7 +1723,7 @@ namespace SeguraChain_Desktop_Wallet
                     Point currentCursorPosition = Cursor.Current != null ? Cursor.Position : new Point(0, 0);
 
                     if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out _))
-                        _walletTransactionHistorySystemInstance.EnableTransactionHoverByClick(_currentWalletFilename, panelTransactionHistory.PointToClient(currentCursorPosition), _cancellationTokenTaskUpdateWalletContentInformations, out string _, out Rectangle _);
+                        _walletTransactionHistorySystemInstance.EnableTransactionHoverByClick(_currentWalletFilename, panelTransactionHistory.PointToClient(currentCursorPosition), _cancellationTokenTaskUpdateWalletContentInformations, out string _, out Rectangle _);                    
                 }
             }
         }
@@ -1808,7 +1813,10 @@ namespace SeguraChain_Desktop_Wallet
                                 int maxPage = _walletTransactionHistorySystemInstance.MaxPageTransactionHistory(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations);
 
                                 if (inputPage <= maxPage)
+                                {
                                     _walletTransactionHistorySystemInstance.SetPageTransactionHistory(_currentWalletFilename, inputPage, _cancellationTokenTaskUpdateWalletContentInformations);
+                                    Application.DoEvents();
+                                }
                                 else
                                     error = true;
                             }
@@ -1816,6 +1824,7 @@ namespace SeguraChain_Desktop_Wallet
                             {
                                 int currentPage = _walletTransactionHistorySystemInstance.CurrentPageTransactionHistory(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations);
                                 textBoxMainInterfaceCurrentPageTransactionHistory.Text = currentPage.ToString();
+                                Application.DoEvents();
                             }
                         }
                     }
@@ -1834,6 +1843,7 @@ namespace SeguraChain_Desktop_Wallet
             {
                 panelTransactionHistory.Invalidate(false);
                 panelTransactionHistory.Update();
+                RefreshTransactionsHistoryPanel();
             }
         }
 
@@ -1903,6 +1913,26 @@ namespace SeguraChain_Desktop_Wallet
         {
             DoTransactionHistoryResearch();
         }
+
+        private async void RefreshTransactionsHistoryPanel()
+        {
+            try
+            {
+                Task.Factory.StartNew(async () =>
+                {
+                    tabPageTransactionHistory.Hide();
+                    Application.DoEvents();
+                    Thread.Sleep(100);
+                    tabPageTransactionHistory.Show();
+                }).ConfigureAwait(false);
+                
+            }
+            catch (Exception ex)
+            {
+                // =P Throw or Show Exception
+            }
+        }
+
 
         /// <summary>
         /// Try to research transaction inside of the transaction history.
@@ -2974,17 +3004,18 @@ namespace SeguraChain_Desktop_Wallet
         /// <param name="e"></param>
         private void buttonClearAndUpdateTransitionHistoryTab_Click(object sender, EventArgs e)
         {
-            if (_walletRecentTransactionHistorySystemInstance != null && !_onDrawingTransactionHistory)
-            {
-                _walletRecentTransactionHistorySystemInstance.ClearRecentTransactionHistory();
-            }
+            RefreshTransactionsHistoryPanel();
+            //if (_walletRecentTransactionHistorySystemInstance != null && !_onDrawingTransactionHistory)
+            //{
+            //    _walletRecentTransactionHistorySystemInstance.ClearRecentTransactionHistory();
+            //}
         }
 
         private void tabControlWallet_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (tabControlWallet.SelectedTab == tabPageTransactionHistory && _walletRecentTransactionHistorySystemInstance != null && !_onDrawingTransactionHistory)
             {
-                _walletRecentTransactionHistorySystemInstance.ClearRecentTransactionHistory();
+                RefreshTransactionsHistoryPanel();
             }
         }
     }
