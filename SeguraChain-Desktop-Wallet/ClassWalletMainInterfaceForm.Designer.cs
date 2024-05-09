@@ -112,16 +112,14 @@ namespace SeguraChain_Desktop_Wallet
             labelWalletReceiveTransactionQrCodeText = new System.Windows.Forms.Label();
             panelQrCodeWalletAddress = new ClassCustomPanel();
             tabPageTransactionHistory = new System.Windows.Forms.TabPage();
+            dataGridViewTransactions = new System.Windows.Forms.DataGridView();
             buttonClearAndUpdateTransitionHistoryTab = new System.Windows.Forms.Button();
-            panelTransactionHistory = new ClassCustomPanel();
             buttonMainInterfaceSearchTransactionHistory = new System.Windows.Forms.Button();
             textBoxTransactionHistorySearch = new System.Windows.Forms.TextBox();
             textBoxMainInterfaceMaxPageTransactionHistory = new System.Windows.Forms.TextBox();
             textBoxMainInterfaceCurrentPageTransactionHistory = new System.Windows.Forms.TextBox();
             buttonMainInterfaceNextPageTransactionHistory = new System.Windows.Forms.Button();
             buttonMainInterfaceBackPageTransactionHistory = new System.Windows.Forms.Button();
-            panelTransactionHistoryColumns = new ClassCustomPanel();
-            panelTransactionHistory = new ClassCustomPanel();
             buttonMainInterfaceExportTransactionHistory = new System.Windows.Forms.Button();
             tabPageStoreNetwork = new System.Windows.Forms.TabPage();
             panel1 = new System.Windows.Forms.Panel();
@@ -141,6 +139,7 @@ namespace SeguraChain_Desktop_Wallet
             panelSendTransactionDetails.SuspendLayout();
             tabPageReceiveTransaction.SuspendLayout();
             tabPageTransactionHistory.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridViewTransactions).BeginInit();
             tabPageStoreNetwork.SuspendLayout();
             panel1.SuspendLayout();
             SuspendLayout();
@@ -746,20 +745,28 @@ namespace SeguraChain_Desktop_Wallet
             // tabPageTransactionHistory
             // 
             tabPageTransactionHistory.BackColor = System.Drawing.Color.FromArgb(77, 104, 145);
+            tabPageTransactionHistory.Controls.Add(dataGridViewTransactions);
             tabPageTransactionHistory.Controls.Add(buttonClearAndUpdateTransitionHistoryTab);
-            tabPageTransactionHistory.Controls.Add(panelTransactionHistory);
             tabPageTransactionHistory.Controls.Add(buttonMainInterfaceSearchTransactionHistory);
             tabPageTransactionHistory.Controls.Add(textBoxTransactionHistorySearch);
             tabPageTransactionHistory.Controls.Add(textBoxMainInterfaceMaxPageTransactionHistory);
             tabPageTransactionHistory.Controls.Add(textBoxMainInterfaceCurrentPageTransactionHistory);
             tabPageTransactionHistory.Controls.Add(buttonMainInterfaceNextPageTransactionHistory);
             tabPageTransactionHistory.Controls.Add(buttonMainInterfaceBackPageTransactionHistory);
-            tabPageTransactionHistory.Controls.Add(panelTransactionHistoryColumns);
-            tabPageTransactionHistory.Controls.Add(panelTransactionHistory);
             tabPageTransactionHistory.Controls.Add(buttonMainInterfaceExportTransactionHistory);
             resources.ApplyResources(tabPageTransactionHistory, "tabPageTransactionHistory");
             tabPageTransactionHistory.Name = "tabPageTransactionHistory";
             tabPageTransactionHistory.Paint += tabPageTransactionHistory_Paint;
+            // 
+            // dataGridViewTransactions
+            // 
+            dataGridViewTransactions.AllowUserToAddRows = false;
+            dataGridViewTransactions.AllowUserToDeleteRows = false;
+            resources.ApplyResources(dataGridViewTransactions, "dataGridViewTransactions");
+            dataGridViewTransactions.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridViewTransactions.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridViewTransactions.Name = "dataGridViewTransactions";
+            dataGridViewTransactions.RowTemplate.Height = 25;
             // 
             // buttonClearAndUpdateTransitionHistoryTab
             // 
@@ -769,20 +776,6 @@ namespace SeguraChain_Desktop_Wallet
             buttonClearAndUpdateTransitionHistoryTab.Name = "buttonClearAndUpdateTransitionHistoryTab";
             buttonClearAndUpdateTransitionHistoryTab.UseVisualStyleBackColor = false;
             buttonClearAndUpdateTransitionHistoryTab.Click += buttonClearAndUpdateTransitionHistoryTab_Click;
-            // 
-            // panelTransactionHistory
-            // 
-            resources.ApplyResources(panelTransactionHistory, "panelTransactionHistory");
-            panelTransactionHistory.BackColor = System.Drawing.Color.FromArgb(70, 90, 120);
-            panelTransactionHistory.BorderColor = System.Drawing.Color.Transparent;
-            panelTransactionHistory.BorderSize = 1F;
-            panelTransactionHistory.Name = "panelTransactionHistory";
-            panelTransactionHistory.Radius = 10;
-            panelTransactionHistory.Click += panelTransactionHistory_Click;
-            panelTransactionHistory.Paint += panelTransactionHistory_Paint;
-            panelTransactionHistory.DoubleClick += panelTransactionHistory_DoubleClick;
-            panelTransactionHistory.MouseLeave += panelTransactionHistory_MouseLeave;
-            panelTransactionHistory.MouseMove += panelTransactionHistory_MouseMove;
             // 
             // buttonMainInterfaceSearchTransactionHistory
             // 
@@ -828,31 +821,6 @@ namespace SeguraChain_Desktop_Wallet
             buttonMainInterfaceBackPageTransactionHistory.Name = "buttonMainInterfaceBackPageTransactionHistory";
             buttonMainInterfaceBackPageTransactionHistory.UseVisualStyleBackColor = false;
             buttonMainInterfaceBackPageTransactionHistory.Click += buttonMainInterfaceBackPageTransactionHistory_Click;
-            // 
-            // panelTransactionHistoryColumns
-            // 
-            resources.ApplyResources(panelTransactionHistoryColumns, "panelTransactionHistoryColumns");
-            panelTransactionHistoryColumns.BackColor = System.Drawing.Color.FromArgb(70, 90, 120);
-            panelTransactionHistoryColumns.BorderColor = System.Drawing.Color.Transparent;
-            panelTransactionHistoryColumns.BorderSize = 1F;
-            panelTransactionHistoryColumns.Name = "panelTransactionHistoryColumns";
-            panelTransactionHistoryColumns.Radius = 10;
-            panelTransactionHistoryColumns.Click += panelMainInterfaceTransactionHistoryColumns_Click;
-            panelTransactionHistoryColumns.Paint += panelMainInterfaceTransactionHistoryColumns_Paint;
-            // 
-            // panelTransactionHistory
-            // 
-            resources.ApplyResources(panelTransactionHistory, "panelTransactionHistory");
-            panelTransactionHistory.BackColor = System.Drawing.Color.FromArgb(70, 90, 120);
-            panelTransactionHistory.BorderColor = System.Drawing.Color.Transparent;
-            panelTransactionHistory.BorderSize = 1F;
-            panelTransactionHistory.Name = "panelTransactionHistory";
-            panelTransactionHistory.Radius = 10;
-            panelTransactionHistory.Click += panelTransactionHistory_Click;
-            panelTransactionHistory.Paint += panelTransactionHistory_Paint;
-            panelTransactionHistory.DoubleClick += panelTransactionHistory_DoubleClick;
-            panelTransactionHistory.MouseLeave += panelTransactionHistory_MouseLeave;
-            panelTransactionHistory.MouseMove += panelTransactionHistory_MouseMove;
             // 
             // buttonMainInterfaceExportTransactionHistory
             // 
@@ -951,6 +919,7 @@ namespace SeguraChain_Desktop_Wallet
             tabPageReceiveTransaction.ResumeLayout(false);
             tabPageTransactionHistory.ResumeLayout(false);
             tabPageTransactionHistory.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)dataGridViewTransactions).EndInit();
             tabPageStoreNetwork.ResumeLayout(false);
             tabPageStoreNetwork.PerformLayout();
             panel1.ResumeLayout(false);
@@ -1006,12 +975,10 @@ namespace SeguraChain_Desktop_Wallet
         private System.Windows.Forms.Label labelMainInterfaceNetworkStatsTotalTransactionMemPoolText;
         private System.Windows.Forms.Label labelMainInterfaceNetworkStatsTotalCoinPendingText;
         private System.Windows.Forms.Button buttonSaveQrCodeReceiveTransactionWalletAddress;
-        private ClassCustomPanel panelTransactionHistory;
         private System.Windows.Forms.Button buttonMainInterfaceNextPageTransactionHistory;
         private System.Windows.Forms.Button buttonMainInterfaceBackPageTransactionHistory;
         private System.Windows.Forms.TextBox textBoxMainInterfaceMaxPageTransactionHistory;
         private System.Windows.Forms.TextBox textBoxMainInterfaceCurrentPageTransactionHistory;
-        private ClassCustomPanel panelTransactionHistoryColumns;
         private ClassCustomProgressBar progressBarMainInterfaceSyncProgress;
         private ClassCustomProgressBar progressBarMainInterfaceCheckSyncProgress;
         private System.Windows.Forms.Label labelMainInterfaceSyncProgress;
@@ -1056,6 +1023,7 @@ namespace SeguraChain_Desktop_Wallet
         private System.Windows.Forms.ToolStripMenuItem dimensionsToolStripMenuItem;
         private System.Windows.Forms.Label panelSeperatorBalanceLine;
         private System.Windows.Forms.Button buttonClearAndUpdateTransitionHistoryTab;
+        private System.Windows.Forms.DataGridView dataGridViewTransactions;
     }
 }
 
