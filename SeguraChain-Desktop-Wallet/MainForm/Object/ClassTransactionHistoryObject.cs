@@ -25,6 +25,11 @@ namespace SeguraChain_Desktop_Wallet.MainForm.Object
         public ConcurrentDictionary<string, TransactionHistoryInformationShowedObject> DictionaryTransactionHistoryHashListedShowed;
         public long LastBlockTransactionShowTimestampUpdate;
 
+        /// <summary>
+        /// Transaction history graphics content.
+        /// </summary>
+        public Graphics GraphicsTransactionHistory;
+        public Bitmap BitmapTransactionHistory;
 
         /// <summary>
         /// Transaction history draw & pages progress.
@@ -33,17 +38,35 @@ namespace SeguraChain_Desktop_Wallet.MainForm.Object
         public bool EnableEventDrawPage;
         public bool OnLoad;
         public int TotalTransactionShowed;
-        public int CurrentTransactionHistoryPage;        
+        public int CurrentTransactionHistoryPage;
+        public int Width;
+        public int Height;
         public string TransactionInformationSelectedByClick;
         public string TransactionInformationSelectedByPosition;
+
+        /// <summary>
+        /// Columns properties calculated on initilization of the graphics content.
+        /// </summary>
+        public int ColumnDateMaxWidth { get; }
+        public int ColumnTypeMaxWidth { get; }
+        public int ColumnWalletAddressMaxWidth { get; }
+        public int ColumnHashMaxWidth { get;  }
+        public int ColumnAmountMaxWidth { get; }
 
         /// <summary>
         /// Constructor.
         /// </summary>
         /// <param name="width"></param>
         /// <param name="height"></param>
-        public ClassTransactionHistoryObject()
+        public ClassTransactionHistoryObject(int width, int height)
         {
+            Width = width;
+            Height = height;
+            ColumnDateMaxWidth = Width / 5;
+            ColumnTypeMaxWidth = ColumnDateMaxWidth * 2;
+            ColumnWalletAddressMaxWidth = ColumnDateMaxWidth * 3;
+            ColumnHashMaxWidth = ColumnDateMaxWidth * 4;
+            ColumnAmountMaxWidth = ColumnDateMaxWidth * 5;
             OnLoad = true;
             DictionaryTransactionHistoryHashListed = new Dictionary<string ,TransactionHistoryInformationObject>();
             DictionaryTransactionHistoryHashListedShowed = new ConcurrentDictionary<string, TransactionHistoryInformationShowedObject>();
@@ -51,6 +74,56 @@ namespace SeguraChain_Desktop_Wallet.MainForm.Object
             TransactionHistoryColumnOrdering = ClassEnumTransactionHistoryColumnType.TRANSACTION_HISTORY_COLUMN_TRANSACTION_DATE;
             TransactionInformationSelectedByClick = string.Empty;
             TransactionInformationSelectedByPosition = string.Empty;
+        }
+
+        /// <summary>
+        /// Clear/Initialize the panel transaction history graphics content.
+        /// </summary>
+        public void InitializeOrClearPanelTransactionHistoryGraphicsContent()
+        {
+            if (GraphicsTransactionHistory == null)
+            {
+                BitmapTransactionHistory = new Bitmap(Width, Height);
+                GraphicsTransactionHistory = Graphics.FromImage(BitmapTransactionHistory);
+            }
+
+            lock (GraphicsTransactionHistory)
+            {
+                GraphicsTransactionHistory.Clear(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryBackgroundColorOnClear);
+
+                GraphicsTransactionHistory.SmoothingMode = SmoothingMode.HighQuality;
+                GraphicsTransactionHistory.CompositingQuality = CompositingQuality.HighQuality;
+
+                GraphicsTransactionHistory.FillRectangle(new SolidBrush(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryBackgroundColorOnClear), new Rectangle(0, 0, BitmapTransactionHistory.Width, BitmapTransactionHistory.Height));
+
+
+                // Column date.
+                GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, ColumnDateMaxWidth, Height, ColumnDateMaxWidth, 0);
+                // Column type.
+                GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, ColumnTypeMaxWidth, Height, ColumnTypeMaxWidth, 0);
+                // Column wallet address.
+                GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, ColumnWalletAddressMaxWidth, Height, ColumnWalletAddressMaxWidth, 0);
+                // Column hash.
+                GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, ColumnHashMaxWidth, Height, ColumnHashMaxWidth, 0);
+                // Column amount.
+                GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, ColumnAmountMaxWidth, Height, ColumnAmountMaxWidth, 0);
+
+                Rectangle rectangleBorderTransaction;
+                int height = Height / ClassWalletDefaultSetting.DefaultWalletMaxTransactionInHistoryPerPage;
+
+                for (int i = 0; i < ClassWalletDefaultSetting.DefaultWalletMaxTransactionInHistoryPerPage; i++)
+                {
+                    int positionY = height * i;
+
+                    rectangleBorderTransaction = new Rectangle(0, positionY, Width - 1, Height);
+
+                    GraphicsTransactionHistory.DrawRectangle(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryCellLinesPen, rectangleBorderTransaction);
+                }
+
+                rectangleBorderTransaction = new Rectangle(0, Height, Width - 1, Height);
+
+                GraphicsTransactionHistory.DrawRectangle(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryCellLinesPen, rectangleBorderTransaction);
+            }
         }
 
         /// <summary>
@@ -93,6 +166,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.Object
     {
         public bool IsMemPool;
         public ClassBlockTransaction BlockTransaction;
-        public TransactionHistoryInformationObject TransactionHistoryInformationObject;        
+        public TransactionHistoryInformationObject TransactionHistoryInformationObject;
+        public Rectangle RectangleTransaction;
     }
 }

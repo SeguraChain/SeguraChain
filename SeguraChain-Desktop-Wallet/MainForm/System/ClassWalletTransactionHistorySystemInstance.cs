@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -55,13 +54,48 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
             _semaphoreTransactionHistoryAccess = new SemaphoreSlim(1, 1);
         }
 
+        /// <summary>
+        /// Get the drawed bitmap content of the transaction history target by wallet filename.
+        /// </summary>
+        /// <param name="walletFileOpened"></param>
+        /// <returns></returns>
+        public Bitmap this[string walletFileOpened, CancellationTokenSource cancellation]
+        {
+            get
+            {
+                bool semaphoreUsed = false;
+
+                try
+                {
+                    try
+                    {
+                        _semaphoreTransactionHistoryAccess.Wait(cancellation.Token);
+                        semaphoreUsed = true;
+
+                        return _dictionaryTransactionHistory[walletFileOpened].BitmapTransactionHistory;
+                    }
+                    catch
+                    {
+                        // Ignored, catch the exception once the cancellation token is cancelled.
+                    }
+                }
+                finally
+                {
+                    if (semaphoreUsed)
+                        _semaphoreTransactionHistoryAccess.Release();
+                }
+
+
+                return null;
+            }
+        }
 
         /// <summary>
         /// Update the transaction history of a wallet file opened.
         /// </summary>
         /// <param name="walletFileOpened"></param>
         /// <param name="cancellation"></param>
-        public async Task<bool> UpdateTransactionHistoryOfWalletFileOpened(string walletFileOpened, CancellationTokenSource cancellation, DataGridView dataGrid)
+        public async Task<bool> UpdateTransactionHistoryOfWalletFileOpened(string walletFileOpened, CancellationTokenSource cancellation)
         {
             bool doClean = false;
             bool updated = false;
@@ -79,9 +113,15 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                         semaphoreUsed = true;
 
                         if (!_dictionaryTransactionHistory.ContainsKey(walletFileOpened))
-                            RemoveTransactionHistoryFromWalletFileOpenedTarget(walletFileOpened, dataGrid);
+                            RemoveTransactionHistoryFromWalletFileOpenedTarget(walletFileOpened);
                         else
                         {
+
+                            if (_dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory == null || _dictionaryTransactionHistory[walletFileOpened].BitmapTransactionHistory == null)
+                            {
+                                _dictionaryTransactionHistory[walletFileOpened].InitializeOrClearPanelTransactionHistoryGraphicsContent();
+                                _dictionaryTransactionHistory[walletFileOpened].ClearTransactionHistoryContent();
+                            }
 
                             ClassWalletDataObject walletDataObject = ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFileOpened];
 
@@ -244,6 +284,9 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                         {
                                             try
                                             {
+                                                if (_dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory != null)
+                                                    _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.Clear(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryBackgroundColorOnClear);
+
                                                 _dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListedShowed.Clear();
                                                 _dictionaryTransactionHistory[walletFileOpened].TotalTransactionShowed = 0;
 
@@ -266,7 +309,10 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
 
                                                         if (_dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListed.Count >= totalToSkip + totalToTake)
                                                         {
-                                                                                                                        
+
+                                                            _dictionaryTransactionHistory[walletFileOpened].InitializeOrClearPanelTransactionHistoryGraphicsContent();
+
+
                                                             foreach (TransactionHistoryInformationObject transactionHistoryInformationObject in GetTransactionHistoryInformationObjectOrdered(walletFileOpened, totalToSkip, totalToTake))
                                                             {
                                                                 if (cancellation.IsCancellationRequested)
@@ -304,7 +350,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                                                     }
                                                                 }
 
-                                                                if (PaintTransactionObjectToTransactionHistory(walletFileOpened, transactionHistoryInformationObject, _dictionaryTransactionHistory[walletFileOpened].TotalTransactionShowed, blockTransaction, true, dataGrid))
+                                                                if (PaintTransactionObjectToTransactionHistory(walletFileOpened, transactionHistoryInformationObject, _dictionaryTransactionHistory[walletFileOpened].TotalTransactionShowed, blockTransaction, true))
                                                                 {
                                                                     updated = true;
                                                                     _dictionaryTransactionHistory[walletFileOpened].TotalTransactionShowed++;
@@ -327,7 +373,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
 
                                                                 for (int i = 0; i < left; i++)
                                                                 {
-                                                                    if (PaintTransactionObjectToTransactionHistory(walletFileOpened, null, _dictionaryTransactionHistory[walletFileOpened].TotalTransactionShowed, null, false, dataGrid))
+                                                                    if (PaintTransactionObjectToTransactionHistory(walletFileOpened, null, _dictionaryTransactionHistory[walletFileOpened].TotalTransactionShowed, null, false))
                                                                     {
                                                                         updated = true;
                                                                         _dictionaryTransactionHistory[walletFileOpened].TotalTransactionShowed++;
@@ -468,7 +514,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         /// </summary>
         /// <param name="walletFileOpened"></param>
         /// <returns></returns>
-        public bool ContainsTransactionHistoryToWalletFileOpened(string walletFileOpened, DataGridView dataGrid)
+        public bool ContainsTransactionHistoryToWalletFileOpened(string walletFileOpened)
         {
             bool exist = false;
 
@@ -477,7 +523,7 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                 if (_dictionaryTransactionHistory.ContainsKey(walletFileOpened))
                     exist = true;
                 else
-                    RemoveTransactionHistoryFromWalletFileOpenedTarget(walletFileOpened, dataGrid);
+                    RemoveTransactionHistoryFromWalletFileOpenedTarget(walletFileOpened);
             }
 
             return exist;
@@ -488,10 +534,10 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         /// </summary>
         /// <param name="walletFileOpened"></param>
         /// <returns></returns>
-        public void ClearTransactionHistoryOfWalletFileOpened(string walletFileOpened, DataGridView dataGrid)
+        public void ClearTransactionHistoryOfWalletFileOpened(string walletFileOpened)
         {
             if (!walletFileOpened.IsNullOrEmpty(false, out _))
-                RemoveTransactionHistoryFromWalletFileOpenedTarget(walletFileOpened, dataGrid);
+                RemoveTransactionHistoryFromWalletFileOpenedTarget(walletFileOpened);
         }
 
         /// <summary>
@@ -501,10 +547,10 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         /// <param name="height"></param>
         /// <param name="cancellation"></param>
         /// <param name="width"></param>
-        public void InsertTransactionHistoryToWalletFileOpened(string walletFileOpened, DataGridView dataGrid)
+        public void InsertTransactionHistoryToWalletFileOpened(string walletFileOpened, int width, int height)
         {
-            if (!_dictionaryTransactionHistory.TryAdd(walletFileOpened, new ClassTransactionHistoryObject()))
-                RemoveTransactionHistoryFromWalletFileOpenedTarget(walletFileOpened, dataGrid);
+            if (!_dictionaryTransactionHistory.TryAdd(walletFileOpened, new ClassTransactionHistoryObject(width, height)))
+                RemoveTransactionHistoryFromWalletFileOpenedTarget(walletFileOpened);
             else
             {
                 _dictionaryTransactionHistory[walletFileOpened].OnLoad = true;
@@ -516,17 +562,26 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         /// Remove a wallet file opened indexed on the transaction history.
         /// </summary>
         /// <param name="walletFileOpened"></param>
-        public void RemoveTransactionHistoryFromWalletFileOpenedTarget(string walletFileOpened, DataGridView dataGrid)
+        public void RemoveTransactionHistoryFromWalletFileOpenedTarget(string walletFileOpened)
         {
             if (_dictionaryTransactionHistory.ContainsKey(walletFileOpened))
             {
                 try
                 {
                     _dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListed.Clear();
-                    _dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListedShowed.Clear();                    
-
-                    dataGrid.Rows.Clear();
-
+                    _dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListedShowed.Clear();
+                    if (_dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory != null && _dictionaryTransactionHistory[walletFileOpened].BitmapTransactionHistory != null)
+                    {
+                        try
+                        {
+                            _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.Dispose();
+                            _dictionaryTransactionHistory[walletFileOpened].BitmapTransactionHistory.Dispose();
+                        }
+                        catch
+                        {
+                            // Ignored.
+                        }
+                    }
                     _dictionaryTransactionHistory.TryRemove(walletFileOpened, out _);
                 }
                 catch
@@ -808,15 +863,14 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                     {
                         foreach (var rectangleTransaction in _dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListedShowed.ToArray())
                         {
-                            //TODO: DATAGRIDVIEW
-                            //if (rectangleTransaction.Value.RectangleTransaction.Contains(mouseClickPoint))
-                            //{
-                            //    _dictionaryTransactionHistory[walletFileOpened].TransactionInformationSelectedByClick = rectangleTransaction.Key;
-                            //    transactionHash = rectangleTransaction.Key;
-                            //    containsPosition = true;
-                            //    rectangleTransactionPosition = rectangleTransaction.Value.RectangleTransaction;
-                            //    break;
-                            //}
+                            if (rectangleTransaction.Value.RectangleTransaction.Contains(mouseClickPoint))
+                            {
+                                _dictionaryTransactionHistory[walletFileOpened].TransactionInformationSelectedByClick = rectangleTransaction.Key;
+                                transactionHash = rectangleTransaction.Key;
+                                containsPosition = true;
+                                rectangleTransactionPosition = rectangleTransaction.Value.RectangleTransaction;
+                                break;
+                            }
                         }
                     }
                 }
@@ -859,15 +913,14 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                     {
                         foreach (var rectangleTransaction in _dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListedShowed.ToArray())
                         {
-                            //TODO: DATAGRIDVIEW
-                            ////if (rectangleTransaction.Value.RectangleTransaction.Contains(mouseClickPoint))
-                            ////{
-                            ////    _dictionaryTransactionHistory[walletFileOpened].TransactionInformationSelectedByPosition = rectangleTransaction.Key;
-                            ////    transactionHash = rectangleTransaction.Key;
-                            ////    containsPosition = true;
-                            ////    rectangleTransactionPosition = rectangleTransaction.Value.RectangleTransaction;
-                            ////    break;
-                            ////}
+                            if (rectangleTransaction.Value.RectangleTransaction.Contains(mouseClickPoint))
+                            {
+                                _dictionaryTransactionHistory[walletFileOpened].TransactionInformationSelectedByPosition = rectangleTransaction.Key;
+                                transactionHash = rectangleTransaction.Key;
+                                containsPosition = true;
+                                rectangleTransactionPosition = rectangleTransaction.Value.RectangleTransaction;
+                                break;
+                            }
                         }
                     }
                 }
@@ -937,17 +990,16 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
                                     if (cancellation.IsCancellationRequested)
                                         break;
 
-                                    //TODO: DATAGRIDVIEW
-                                    //if (rectangleTransaction.Value.RectangleTransaction.Contains(mouseClickPoint))
-                                    //{
-                                    //    _dictionaryTransactionHistory[walletFileOpened].TransactionInformationSelectedByClick = rectangleTransaction.Key;
-                                    //    blockTransaction = rectangleTransaction.Value.BlockTransaction;
-                                    //    isMemPool = rectangleTransaction.Value.IsMemPool;
-                                    //    if (blockTransaction != null)
-                                    //        found = true;
+                                    if (rectangleTransaction.Value.RectangleTransaction.Contains(mouseClickPoint))
+                                    {
+                                        _dictionaryTransactionHistory[walletFileOpened].TransactionInformationSelectedByClick = rectangleTransaction.Key;
+                                        blockTransaction = rectangleTransaction.Value.BlockTransaction;
+                                        isMemPool = rectangleTransaction.Value.IsMemPool;
+                                        if (blockTransaction != null)
+                                            found = true;
                                         
-                                    //    break;
-                                    //}
+                                        break;
+                                    }
                                 }
                             }
                             catch
@@ -969,6 +1021,74 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
 
         #endregion
 
+        #region Transaction history manage order functions.
+
+        /// <summary>
+        /// Set the order type of the transaction history.
+        /// </summary>
+        /// <param name="walletFileOpened"></param>
+        /// <param name="mouseClickPosition"></param>
+        /// <param name="walletMainFormLanguage"></param>
+        /// <param name="cancellation"></param>
+        /// <param name="panelTransactionHistoryColumns"></param>
+        public void SetOrderTypeTransactionHistory(string walletFileOpened, Point mouseClickPosition, Panel panelTransactionHistoryColumns, ClassWalletMainFormLanguage walletMainFormLanguage, CancellationTokenSource cancellation)
+        {
+            if (!walletFileOpened.IsNullOrEmpty(false, out _))
+            {
+                bool useSemaphore = false;
+
+                try
+                {
+                    _semaphoreTransactionHistoryAccess.Wait(cancellation.Token);
+
+                    useSemaphore = true;
+
+                    if (_dictionaryTransactionHistory.ContainsKey(walletFileOpened))
+                    {
+                        if (!_dictionaryTransactionHistory[walletFileOpened].OnLoad && !_dictionaryTransactionHistory[walletFileOpened].EnableEventDrawPage)
+                        {
+                            ClassEnumTransactionHistoryColumnType typeSelected = ClassEnumTransactionHistoryColumnType.TRANSACTION_HISTORY_COLUMN_TRANSACTION_DATE;
+                            bool typeFound = false;
+
+                            foreach (var typePair in _dictionaryTransactionHistoryOrderType.ToArray())
+                            {
+                                if (typePair.Value.RectangleOrderTypeLocation.Contains(mouseClickPosition.X, mouseClickPosition.Y))
+                                {
+                                    typeSelected = typePair.Key;
+                                    typeFound = true;
+                                    break;
+                                }
+                            }
+
+                            if (typeFound)
+                            {
+                                if (_dictionaryTransactionHistoryOrderType[typeSelected].OrderByDescending)
+                                {
+                                    _dictionaryTransactionHistoryOrderType[typeSelected].OrderByDescending = false;
+                                }
+                                else
+                                {
+                                    _dictionaryTransactionHistoryOrderType[typeSelected].OrderByDescending = true;
+                                }
+                                _dictionaryTransactionHistory[walletFileOpened].TransactionHistoryColumnOrdering = typeSelected;
+
+                                DrawTransactionHistoryColumns(panelTransactionHistoryColumns, walletMainFormLanguage, typeSelected);
+                                _dictionaryTransactionHistory[walletFileOpened].EnableEventDrawPage = true;
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    if (useSemaphore)
+                    {
+                        _semaphoreTransactionHistoryAccess.Release();
+                    }
+                }
+            }
+        }
+
+        #endregion
 
         #region Transaction history data functions.
 
@@ -1162,92 +1282,317 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         /// <param name="blockTransaction"></param>
         /// <param name="containTransactionData"></param>
         /// <returns></returns>
-        private bool PaintTransactionObjectToTransactionHistory(string walletFileOpened, TransactionHistoryInformationObject transactionHistoryInformationObject, int totalShowedVirtually, ClassBlockTransaction blockTransaction, bool containTransactionData, DataGridView dataGrid)
+        private bool PaintTransactionObjectToTransactionHistory(string walletFileOpened, TransactionHistoryInformationObject transactionHistoryInformationObject, int totalShowedVirtually, ClassBlockTransaction blockTransaction, bool containTransactionData)
         {
 
             if (!_dictionaryTransactionHistory.ContainsKey(walletFileOpened))
                 return false;
 
+            int height = _dictionaryTransactionHistory[walletFileOpened].Height / ClassWalletDefaultSetting.DefaultWalletMaxTransactionInHistoryPerPage;
+
+            int positionTextY = height * (totalShowedVirtually + 1);
+
+            if (_dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory == null || _dictionaryTransactionHistory[walletFileOpened].BitmapTransactionHistory == null)
+            {
+#if DEBUG
+                Debug.WriteLine("Graphics panel content is empty.");
+#endif
+                return false;
+            }
+
+            if (transactionHistoryInformationObject == null && containTransactionData)
+            {
+#if DEBUG
+                Debug.WriteLine("Transaction object is empty.");
+#endif
+                return false;
+            }
+
+
+            Rectangle rectangleTransaction = new Rectangle(0, height * totalShowedVirtually, _dictionaryTransactionHistory[walletFileOpened].Width, height);
+
             if (containTransactionData)
             {
-                ////TODO: DataGridView Different background color on mem pool transaction to draw.
-                //if (transactionHistoryInformationObject.IsMemPool)
-                //{
-                //    if (!blockTransaction.TransactionStatus)
-                //        _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.FillRectangle(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryBackgroundColorInvalidMemPoolTransactionSolidBrush, rectangleTransaction);
-                //    else
-                //        _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.FillRectangle(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryBackgroundColorMemPoolTransactionSolidBrush, rectangleTransaction);
+                // Different background color on mem pool transaction to draw.
+                if (transactionHistoryInformationObject.IsMemPool)
+                {
+                    if (!blockTransaction.TransactionStatus)
+                        _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.FillRectangle(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryBackgroundColorInvalidMemPoolTransactionSolidBrush, rectangleTransaction);
+                    else
+                        _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.FillRectangle(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryBackgroundColorMemPoolTransactionSolidBrush, rectangleTransaction);
 
-                //    // Redraw column lines.
-                //    _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnDateMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnDateMaxWidth, 0);
-                //    _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnTypeMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnTypeMaxWidth, 0);
-                //    _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnWalletAddressMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnWalletAddressMaxWidth, 0);
-                //    _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnHashMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnHashMaxWidth, 0);
-                //    _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnAmountMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnAmountMaxWidth, 0);
-                //}
-                //else
-                //{
-                //    if (!blockTransaction.TransactionStatus)
-                //    {
-                //        _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.FillRectangle(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryBackgroundColorInvalidTransactionSolidBrush, rectangleTransaction);
+                    // Redraw column lines.
+                    _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnDateMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnDateMaxWidth, 0);
+                    _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnTypeMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnTypeMaxWidth, 0);
+                    _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnWalletAddressMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnWalletAddressMaxWidth, 0);
+                    _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnHashMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnHashMaxWidth, 0);
+                    _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnAmountMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnAmountMaxWidth, 0);
+                }
+                else
+                {
+                    if (!blockTransaction.TransactionStatus)
+                    {
+                        _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.FillRectangle(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryBackgroundColorInvalidTransactionSolidBrush, rectangleTransaction);
 
-                //        // Redraw column lines.
-                //        _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnDateMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnDateMaxWidth, 0);
-                //        _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnTypeMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnTypeMaxWidth, 0);
-                //        _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnWalletAddressMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnWalletAddressMaxWidth, 0);
-                //        _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnHashMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnHashMaxWidth, 0);
-                //        _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnAmountMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnAmountMaxWidth, 0);
-                //    }
-                //}
+                        // Redraw column lines.
+                        _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnDateMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnDateMaxWidth, 0);
+                        _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnTypeMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnTypeMaxWidth, 0);
+                        _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnWalletAddressMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnWalletAddressMaxWidth, 0);
+                        _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnHashMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnHashMaxWidth, 0);
+                        _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnAmountMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnAmountMaxWidth, 0);
+                    }
+                }
+
+
+                float middlePositionX = (float)_dictionaryTransactionHistory[walletFileOpened].ColumnDateMaxWidth / 2;
+                float positionBaseX = 0;
+
+                float positionBaseY = (positionTextY - (height / 2f)) - (_dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.MeasureString(@"test", ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont).Height / 2);
 
                 // Draw transaction date sent.
-                string dateToShow = transactionHistoryInformationObject.DateSent.ToString(CultureInfo.CurrentUICulture);
+                string dateToShow = ClassGraphicsUtility.GetMeasureStringToDraw(transactionHistoryInformationObject.DateSent.ToString(CultureInfo.CurrentUICulture), positionBaseX, _dictionaryTransactionHistory[walletFileOpened].ColumnDateMaxWidth, _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, middlePositionX, out float widthText);
 
-                string typeToShow = transactionHistoryInformationObject.TransactionType;
+                positionBaseX = (positionBaseX + middlePositionX) - (widthText / 2);
 
-                string addressToShow = transactionHistoryInformationObject.WalletAddress;
+                _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawString(dateToShow, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, ClassWalletDefaultSetting.DefaultPanelTransactionHistorySolidBrush, positionBaseX, positionBaseY);
 
-                string hashToShow = transactionHistoryInformationObject.TransactionHash;
+                // Draw transaction type.
+                positionBaseX = _dictionaryTransactionHistory[walletFileOpened].ColumnDateMaxWidth;
 
-                string amountToShow = ClassTransactionUtility.GetFormattedAmountFromBigInteger(transactionHistoryInformationObject.Amount) + @" " + BlockchainSetting.CoinTickerName;
+                string typeToShow = ClassGraphicsUtility.GetMeasureStringToDraw(transactionHistoryInformationObject.TransactionType, positionBaseX, _dictionaryTransactionHistory[walletFileOpened].ColumnTypeMaxWidth, _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, middlePositionX, out widthText);
+
+                positionBaseX = (positionBaseX + middlePositionX) - (widthText / 2);
+
+                _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawString(typeToShow, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, ClassWalletDefaultSetting.DefaultPanelTransactionHistorySolidBrush, positionBaseX, positionBaseY);
+
+                // Draw transaction wallet address.
+                positionBaseX = _dictionaryTransactionHistory[walletFileOpened].ColumnTypeMaxWidth;
+
+                string addressToShow = ClassGraphicsUtility.GetMeasureStringToDraw(transactionHistoryInformationObject.WalletAddress, positionBaseX, _dictionaryTransactionHistory[walletFileOpened].ColumnWalletAddressMaxWidth, _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, middlePositionX, out widthText);
+
+
+                positionBaseX = (positionBaseX + middlePositionX) - (widthText / 2);
+
+                _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawString(addressToShow, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, ClassWalletDefaultSetting.DefaultPanelTransactionHistorySolidBrush, positionBaseX, positionBaseY);
+
+                // Draw transaction hash.
+                positionBaseX = _dictionaryTransactionHistory[walletFileOpened].ColumnWalletAddressMaxWidth;
+
+                string hashToShow = ClassGraphicsUtility.GetMeasureStringToDraw(transactionHistoryInformationObject.TransactionHash, positionBaseX, _dictionaryTransactionHistory[walletFileOpened].ColumnHashMaxWidth, _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, middlePositionX, out widthText);
+
+
+                positionBaseX = (positionBaseX + middlePositionX) - (widthText / 2);
+
+                _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawString(hashToShow, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, ClassWalletDefaultSetting.DefaultPanelTransactionHistorySolidBrush, positionBaseX, positionBaseY);
+
+                // Draw transaction amount.
+                positionBaseX = _dictionaryTransactionHistory[walletFileOpened].ColumnHashMaxWidth;
+
+                string amountToShow = ClassGraphicsUtility.GetMeasureStringToDraw((ClassTransactionUtility.GetFormattedAmountFromBigInteger(transactionHistoryInformationObject.Amount) + @" " + BlockchainSetting.CoinTickerName), positionBaseX, _dictionaryTransactionHistory[walletFileOpened].ColumnAmountMaxWidth, _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, middlePositionX, out widthText);
+
+                positionBaseX = (positionBaseX + middlePositionX) - (widthText / 2);
+
+                _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawString(amountToShow, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, ClassWalletDefaultSetting.DefaultPanelTransactionHistorySolidBrush, positionBaseX, positionBaseY);
 
                 if (!_dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListedShowed.TryAdd(transactionHistoryInformationObject.TransactionHash, new TransactionHistoryInformationShowedObject()
                 {
                     TransactionHistoryInformationObject = transactionHistoryInformationObject,
                     BlockTransaction = blockTransaction,
+                    RectangleTransaction = rectangleTransaction,
                     IsMemPool = transactionHistoryInformationObject.IsMemPool
-
                 }))
                 {
                     return false;
                 }
-
-                DataTable table;
-                if (dataGrid.DataSource != null) {
-                    table = (DataTable)dataGrid.DataSource;
-                }
-                else
-                {
-                    table = new DataTable();
-                    table.Columns.Add("Date");
-                    table.Columns.Add("Type");
-                    table.Columns.Add("Wallet");
-                    table.Columns.Add("Hash");
-                    table.Columns.Add("Amount");
-                }
-
-                DataRow dr = table.NewRow();
-                dr["Date"] = dateToShow;
-                dr["Type"] = typeToShow;
-                dr["Wallet"] = addressToShow;
-                dr["Hash"] = hashToShow;
-                dr["Amount"] = amountToShow;
-                table.Rows.Add(dr);
-                dataGrid.DataSource = table;
-
+            }
+            else
+            {
+                // Redraw column lines.
+                _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnDateMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnDateMaxWidth, 0);
+                _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnTypeMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnTypeMaxWidth, 0);
+                _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnWalletAddressMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnWalletAddressMaxWidth, 0);
+                _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnHashMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnHashMaxWidth, 0);
+                _dictionaryTransactionHistory[walletFileOpened].GraphicsTransactionHistory.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen, _dictionaryTransactionHistory[walletFileOpened].ColumnAmountMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnAmountMaxWidth, 0);
             }
 
+
             return true;
+        }
+
+        /// <summary>
+        /// Draw columns of the transaction history depending of the language selected.
+        /// </summary>
+        /// <param name="panelTransactionHistoryColumns"></param>
+        /// <param name="walletMainFormLanguage"></param>
+        /// <param name="orderType"></param>
+        /// 
+        public void DrawTransactionHistoryColumns(Panel panelTransactionHistoryColumns, ClassWalletMainFormLanguage walletMainFormLanguage, ClassEnumTransactionHistoryColumnType orderType)
+        {
+            Bitmap bitmapColumns = new Bitmap(panelTransactionHistoryColumns.Width, panelTransactionHistoryColumns.Height);
+
+            using (Graphics graphicsColumns = Graphics.FromImage(bitmapColumns))
+            {
+                graphicsColumns.SmoothingMode = SmoothingMode.HighQuality;
+                graphicsColumns.CompositingQuality = CompositingQuality.HighQuality;
+
+                bool initializeOrderType = _dictionaryTransactionHistoryOrderType.Count == 0;
+
+                graphicsColumns.FillRectangle(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnsBackgroundColorOnClearSolidBrush, new Rectangle(0, 0, bitmapColumns.Width, bitmapColumns.Height));
+
+                int columnDateMaxWidth = bitmapColumns.Width / 5;
+                int columnTypeMaxWidth = columnDateMaxWidth * 2;
+                int columnWalletAddressMaxWidth = columnDateMaxWidth * 3;
+                int columnHashMaxWidth = columnDateMaxWidth * 4;
+                int columnAmountMaxWidth = columnDateMaxWidth * 5;
+
+                float middlePositionX = (float)columnDateMaxWidth / 2;
+                float positionBaseY = (bitmapColumns.Height - (bitmapColumns.Height / 2f)) - (graphicsColumns.MeasureString(@"test", ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont).Height / 2);
+
+                float positionBaseX = 0;
+
+                #region Column date.
+
+                graphicsColumns.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColummBorderPen, columnDateMaxWidth, bitmapColumns.Height, columnDateMaxWidth, 0);
+
+                string dateToShow = ClassGraphicsUtility.GetMeasureStringToDraw(walletMainFormLanguage.COLUMN_TRANSACTION_DATE, positionBaseX, columnDateMaxWidth, graphicsColumns, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, middlePositionX, out float widthText);
+
+                positionBaseX = (positionBaseX + middlePositionX) - (widthText / 2);
+
+                graphicsColumns.DrawString(dateToShow, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnForeColorSolidBrush, positionBaseX, positionBaseY);
+
+                bool orderSelected = orderType == ClassEnumTransactionHistoryColumnType.TRANSACTION_HISTORY_COLUMN_TRANSACTION_DATE;
+
+                if (initializeOrderType)
+                {
+
+                    _dictionaryTransactionHistoryOrderType.TryAdd(ClassEnumTransactionHistoryColumnType.TRANSACTION_HISTORY_COLUMN_TRANSACTION_DATE, new ClassTransactionHistoryOrderObject()
+                    {
+                        OrderByDescending = true,
+                        RectangleOrderTypeLocation = new Rectangle(0, 0, columnDateMaxWidth, bitmapColumns.Height),
+                    });
+                }
+
+                DrawOrderColumnButton(graphicsColumns, positionBaseX, positionBaseY, widthText, columnDateMaxWidth, bitmapColumns.Height, _dictionaryTransactionHistoryOrderType[ClassEnumTransactionHistoryColumnType.TRANSACTION_HISTORY_COLUMN_TRANSACTION_DATE].OrderByDescending, orderSelected);
+
+                #endregion
+
+                #region Column type.
+
+                positionBaseX = columnDateMaxWidth;
+
+                graphicsColumns.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColummBorderPen, columnTypeMaxWidth, bitmapColumns.Height, columnTypeMaxWidth, 0);
+
+                string typeToShow = ClassGraphicsUtility.GetMeasureStringToDraw(walletMainFormLanguage.COLUMN_TRANSACTION_TYPE, positionBaseX, columnTypeMaxWidth, graphicsColumns, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, middlePositionX, out widthText);
+
+                positionBaseX = (positionBaseX + middlePositionX) - (widthText / 2);
+
+                graphicsColumns.DrawString(typeToShow, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnForeColorSolidBrush, positionBaseX, positionBaseY);
+
+                orderSelected = orderType == ClassEnumTransactionHistoryColumnType.TRANSACTION_HISTORY_COLUMN_TRANSACTION_TYPE;
+
+                if (initializeOrderType)
+                {
+                    _dictionaryTransactionHistoryOrderType.TryAdd(ClassEnumTransactionHistoryColumnType.TRANSACTION_HISTORY_COLUMN_TRANSACTION_TYPE, new ClassTransactionHistoryOrderObject()
+                    {
+                        OrderByDescending = true,
+                        RectangleOrderTypeLocation = new Rectangle(columnDateMaxWidth, 0, columnDateMaxWidth, bitmapColumns.Height),
+                    });
+                }
+
+                DrawOrderColumnButton(graphicsColumns, positionBaseX, positionBaseY, widthText, columnDateMaxWidth, bitmapColumns.Height, _dictionaryTransactionHistoryOrderType[ClassEnumTransactionHistoryColumnType.TRANSACTION_HISTORY_COLUMN_TRANSACTION_TYPE].OrderByDescending, orderSelected);
+
+                #endregion
+
+                #region Column wallet address.
+
+                positionBaseX = columnTypeMaxWidth;
+
+                graphicsColumns.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColummBorderPen, columnWalletAddressMaxWidth, bitmapColumns.Height, columnWalletAddressMaxWidth, 0);
+
+                string walletAddressToShow = ClassGraphicsUtility.GetMeasureStringToDraw(walletMainFormLanguage.COLUMN_TRANSACTION_WALLET_ADDRESS, positionBaseX, columnWalletAddressMaxWidth, graphicsColumns, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, middlePositionX, out widthText);
+
+                positionBaseX = (positionBaseX + middlePositionX) - (widthText / 2);
+
+                graphicsColumns.DrawString(walletAddressToShow, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnForeColorSolidBrush, positionBaseX, positionBaseY);
+
+                orderSelected = orderType == ClassEnumTransactionHistoryColumnType.TRANSACTION_HISTORY_COLUMN_TRANSACTION_WALLET_ADDRESS;
+
+                if (initializeOrderType)
+                {
+                    _dictionaryTransactionHistoryOrderType.TryAdd(ClassEnumTransactionHistoryColumnType.TRANSACTION_HISTORY_COLUMN_TRANSACTION_WALLET_ADDRESS, new ClassTransactionHistoryOrderObject()
+                    {
+                        OrderByDescending = true,
+                        RectangleOrderTypeLocation = new Rectangle(columnTypeMaxWidth, 0, columnDateMaxWidth, bitmapColumns.Height)
+                    });
+                }
+
+                DrawOrderColumnButton(graphicsColumns, positionBaseX, positionBaseY, widthText, columnDateMaxWidth, bitmapColumns.Height, _dictionaryTransactionHistoryOrderType[ClassEnumTransactionHistoryColumnType.TRANSACTION_HISTORY_COLUMN_TRANSACTION_WALLET_ADDRESS].OrderByDescending, orderSelected);
+
+                #endregion
+
+                #region Column hash.
+
+                positionBaseX = columnWalletAddressMaxWidth;
+
+                graphicsColumns.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColummBorderPen, columnHashMaxWidth, bitmapColumns.Height, columnHashMaxWidth, 0);
+
+                string hashToShow = ClassGraphicsUtility.GetMeasureStringToDraw(walletMainFormLanguage.COLUMN_TRANSACTION_HASH, positionBaseX, columnHashMaxWidth, graphicsColumns, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, middlePositionX, out widthText);
+
+                positionBaseX = (positionBaseX + middlePositionX) - (widthText / 2);
+
+                graphicsColumns.DrawString(hashToShow, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnForeColorSolidBrush, positionBaseX, positionBaseY);
+
+                orderSelected = orderType == ClassEnumTransactionHistoryColumnType.TRANSACTION_HISTORY_COLUMN_TRANSACTION_HASH;
+
+                if (initializeOrderType)
+                {
+                    _dictionaryTransactionHistoryOrderType.TryAdd(ClassEnumTransactionHistoryColumnType.TRANSACTION_HISTORY_COLUMN_TRANSACTION_HASH, new ClassTransactionHistoryOrderObject()
+                    {
+                        OrderByDescending = true,
+                        RectangleOrderTypeLocation = new Rectangle(columnWalletAddressMaxWidth, 0, columnDateMaxWidth, bitmapColumns.Height)
+                    });
+                }
+
+                DrawOrderColumnButton(graphicsColumns, positionBaseX, positionBaseY, widthText, columnDateMaxWidth, bitmapColumns.Height, _dictionaryTransactionHistoryOrderType[ClassEnumTransactionHistoryColumnType.TRANSACTION_HISTORY_COLUMN_TRANSACTION_HASH].OrderByDescending, orderSelected);
+
+                #endregion
+
+                #region Column amount.
+
+                positionBaseX = columnHashMaxWidth;
+
+                graphicsColumns.DrawLine(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColummBorderPen, columnAmountMaxWidth, bitmapColumns.Height, columnAmountMaxWidth, 0);
+
+                string amountToShow = ClassGraphicsUtility.GetMeasureStringToDraw(walletMainFormLanguage.COLUMN_TRANSACTION_AMOUNT, positionBaseX, columnAmountMaxWidth, graphicsColumns, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, middlePositionX, out widthText);
+
+                positionBaseX = (positionBaseX + middlePositionX) - (widthText / 2);
+
+                graphicsColumns.DrawString(amountToShow, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnForeColorSolidBrush, positionBaseX, positionBaseY);
+
+                orderSelected = orderType == ClassEnumTransactionHistoryColumnType.TRANSACTION_HISTORY_COLUMN_TRANSACTION_AMOUNT;
+
+                if (initializeOrderType)
+                {
+                    _dictionaryTransactionHistoryOrderType.TryAdd(ClassEnumTransactionHistoryColumnType.TRANSACTION_HISTORY_COLUMN_TRANSACTION_AMOUNT, new ClassTransactionHistoryOrderObject()
+                    {
+                        OrderByDescending = true,
+                        RectangleOrderTypeLocation = new Rectangle(columnHashMaxWidth, 0, columnDateMaxWidth, bitmapColumns.Height)
+                    });
+                }
+
+                DrawOrderColumnButton(graphicsColumns, positionBaseX, positionBaseY, widthText, columnDateMaxWidth, bitmapColumns.Height, _dictionaryTransactionHistoryOrderType[ClassEnumTransactionHistoryColumnType.TRANSACTION_HISTORY_COLUMN_TRANSACTION_AMOUNT].OrderByDescending, orderSelected);
+
+                #endregion
+
+                // Complete borders
+                Rectangle rectangleBorderTransaction = new Rectangle(0, bitmapColumns.Height, bitmapColumns.Width - 1, bitmapColumns.Height);
+
+                graphicsColumns.DrawRectangle(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColummBorderPen, rectangleBorderTransaction);
+
+                panelTransactionHistoryColumns.BackgroundImage = bitmapColumns;
+                panelTransactionHistoryColumns.Refresh();
+            }
+
         }
 
         /// <summary>
@@ -1300,46 +1645,143 @@ namespace SeguraChain_Desktop_Wallet.MainForm.System
         /// <param name="walletFileOpened"></param>
         /// <param name="graphicsTarget"></param>
         /// <param name="byClick"></param>
-        public void PaintTransactionHoverToTransactionHistory(string walletFileOpened, bool byClick)
+        public void PaintTransactionHoverToTransactionHistory(string walletFileOpened, Graphics graphicsTarget, bool byClick)
         {
             try
             {
-                //string transactionHashSelected;
+                graphicsTarget.SmoothingMode = SmoothingMode.HighQuality;
+                graphicsTarget.CompositingQuality = CompositingQuality.HighQuality;
 
-                //if (_dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListedShowed.ContainsKey(transactionHashSelected))
-                //{
-                //    TransactionHistoryInformationObject transactionHistoryInformationObject = _dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListedShowed[transactionHashSelected].TransactionHistoryInformationObject;
+                string transactionHashSelected;
+                SolidBrush solidBrushTextSelected;
+                SolidBrush solidBrushBackgroundSelected;
+                Pen penBorderSelected = ClassWalletDefaultSetting.DefaultPanelTransactionHistoryColumnLinesPen;
 
-                //    // Draw transaction date sent.
-                //    string dateToShow = transactionHistoryInformationObject.DateSent.ToString(CultureInfo.CurrentUICulture);
+                if (_dictionaryTransactionHistory[walletFileOpened].TransactionInformationSelectedByClick == _dictionaryTransactionHistory[walletFileOpened].TransactionInformationSelectedByPosition)
+                    byClick = true;
 
-                //    string typeToShow = transactionHistoryInformationObject.TransactionType;
+                if (byClick)
+                {
+                    transactionHashSelected = _dictionaryTransactionHistory[walletFileOpened].TransactionInformationSelectedByClick;
+                    solidBrushTextSelected = ClassWalletDefaultSetting.DefaultPanelTransactionHistorySolidBrush;
+                    solidBrushBackgroundSelected = ClassWalletDefaultSetting.DefaultPanelTransactionHistoryBackgroundColorSelectedTransactionSolidBrushByClick;
+                }
+                else
+                {
+                    transactionHashSelected = _dictionaryTransactionHistory[walletFileOpened].TransactionInformationSelectedByPosition;
+                    solidBrushTextSelected = ClassWalletDefaultSetting.DefaultPanelTransactionHistorySolidBrushPosition;
+                    solidBrushBackgroundSelected = ClassWalletDefaultSetting.DefaultPanelTransactionHistoryBackgroundColorSelectedTransactionSolidBrushByPosition;
+                }
 
-                //    string addressToShow = transactionHistoryInformationObject.WalletAddress;
+                if (_dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListedShowed.ContainsKey(transactionHashSelected))
+                {
+                    Rectangle rectangleTransaction = _dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListedShowed[transactionHashSelected].RectangleTransaction;
+                    TransactionHistoryInformationObject transactionHistoryInformationObject = _dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListedShowed[transactionHashSelected].TransactionHistoryInformationObject;
 
-                //    string hashToShow = transactionHistoryInformationObject.TransactionHash;
+                    // Draw the background color of the selected transaction.
+                    graphicsTarget.FillRectangle(solidBrushBackgroundSelected, rectangleTransaction);
 
-                //    string amountToShow = ClassTransactionUtility.GetFormattedAmountFromBigInteger(transactionHistoryInformationObject.Amount) + @" " + BlockchainSetting.CoinTickerName;
+                    // Redraw column lines.
+                    graphicsTarget.DrawLine(penBorderSelected, _dictionaryTransactionHistory[walletFileOpened].ColumnDateMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnDateMaxWidth, 0);
+                    graphicsTarget.DrawLine(penBorderSelected, _dictionaryTransactionHistory[walletFileOpened].ColumnTypeMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnTypeMaxWidth, 0);
+                    graphicsTarget.DrawLine(penBorderSelected, _dictionaryTransactionHistory[walletFileOpened].ColumnWalletAddressMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnWalletAddressMaxWidth, 0);
+                    graphicsTarget.DrawLine(penBorderSelected, _dictionaryTransactionHistory[walletFileOpened].ColumnHashMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnHashMaxWidth, 0);
+                    graphicsTarget.DrawLine(penBorderSelected, _dictionaryTransactionHistory[walletFileOpened].ColumnAmountMaxWidth, _dictionaryTransactionHistory[walletFileOpened].Height, _dictionaryTransactionHistory[walletFileOpened].ColumnAmountMaxWidth, 0);
 
-                //    DataTable table = new DataTable();
-                //    table.Columns.Add("Date");
-                //    table.Columns.Add("Type");
-                //    table.Columns.Add("Wallet");
-                //    table.Columns.Add("Hash");
-                //    table.Columns.Add("Amount");
-                //    DataRow dr = table.NewRow();
-                //    dr["Date"] = dateToShow;
-                //    dr["Type"] = typeToShow;
-                //    dr["Wallet"] = addressToShow;
-                //    dr["Hash"] = hashToShow;
-                //    dr["Amount"] = amountToShow;
+                    // Draw borders of the selected transaction.
+                    graphicsTarget.DrawRectangle(ClassWalletDefaultSetting.DefaultPanelTransactionHistorySelectClickBorderPen, rectangleTransaction.X, rectangleTransaction.Y, rectangleTransaction.Width, rectangleTransaction.Height - 0.5f);
 
-                //    dataGrid.Rows.Add(dr);
-                //}
+                    int height = _dictionaryTransactionHistory[walletFileOpened].Height / ClassWalletDefaultSetting.DefaultWalletMaxTransactionInHistoryPerPage;
+
+                    int positionTextY = rectangleTransaction.Y + (height);
+
+                    float middlePositionX = (float)_dictionaryTransactionHistory[walletFileOpened].ColumnDateMaxWidth / 2;
+                    float positionBaseX = 0;
+
+                    float positionBaseY = (positionTextY - (height / 2f)) - (graphicsTarget.MeasureString(@"test", ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont).Height / 2);
+
+                    // Draw transaction date sent.
+                    string dateToShow = ClassGraphicsUtility.GetMeasureStringToDraw(transactionHistoryInformationObject.DateSent.ToString(CultureInfo.CurrentUICulture), positionBaseX, _dictionaryTransactionHistory[walletFileOpened].ColumnDateMaxWidth, graphicsTarget, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, middlePositionX, out float widthText);
+
+                    positionBaseX = (positionBaseX + middlePositionX) - (widthText / 2);
+
+                    graphicsTarget.DrawString(dateToShow, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, solidBrushTextSelected, positionBaseX, positionBaseY);
+
+                    // Draw transaction type.
+                    positionBaseX = _dictionaryTransactionHistory[walletFileOpened].ColumnDateMaxWidth;
+
+                    string typeToShow = ClassGraphicsUtility.GetMeasureStringToDraw(transactionHistoryInformationObject.TransactionType, positionBaseX, _dictionaryTransactionHistory[walletFileOpened].ColumnTypeMaxWidth, graphicsTarget, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, middlePositionX, out widthText);
+
+                    positionBaseX = (positionBaseX + middlePositionX) - (widthText / 2);
+
+                    graphicsTarget.DrawString(typeToShow, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, solidBrushTextSelected, positionBaseX, positionBaseY);
+
+                    // Draw transaction wallet address.
+                    positionBaseX = _dictionaryTransactionHistory[walletFileOpened].ColumnTypeMaxWidth;
+
+                    string addressToShow = ClassGraphicsUtility.GetMeasureStringToDraw(transactionHistoryInformationObject.WalletAddress, positionBaseX, _dictionaryTransactionHistory[walletFileOpened].ColumnWalletAddressMaxWidth, graphicsTarget, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, middlePositionX, out widthText);
+
+                    positionBaseX = (positionBaseX + middlePositionX) - (widthText / 2);
+
+                    graphicsTarget.DrawString(addressToShow, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, solidBrushTextSelected, positionBaseX, positionBaseY);
+
+                    // Draw transaction hash.
+                    positionBaseX = _dictionaryTransactionHistory[walletFileOpened].ColumnWalletAddressMaxWidth;
+
+                    string hashToShow = ClassGraphicsUtility.GetMeasureStringToDraw(transactionHistoryInformationObject.TransactionHash, positionBaseX, _dictionaryTransactionHistory[walletFileOpened].ColumnHashMaxWidth, graphicsTarget, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, middlePositionX, out widthText);
+
+                    positionBaseX = (positionBaseX + middlePositionX) - (widthText / 2);
+
+                    graphicsTarget.DrawString(hashToShow, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, solidBrushTextSelected, positionBaseX, positionBaseY);
+
+                    // Draw transaction amount.
+                    positionBaseX = _dictionaryTransactionHistory[walletFileOpened].ColumnHashMaxWidth;
+
+                    string amountToShow = ClassGraphicsUtility.GetMeasureStringToDraw((ClassTransactionUtility.GetFormattedAmountFromBigInteger(transactionHistoryInformationObject.Amount) + @" " + BlockchainSetting.CoinTickerName), positionBaseX, _dictionaryTransactionHistory[walletFileOpened].ColumnAmountMaxWidth, graphicsTarget, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, middlePositionX, out widthText);
+
+                    positionBaseX = (positionBaseX + middlePositionX) - (widthText / 2);
+
+                    graphicsTarget.DrawString(amountToShow, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryFont, solidBrushTextSelected, positionBaseX, positionBaseY);
+                }
             }
             catch
             {
                 // Ignored.
+            }
+        }
+
+        /// <summary>
+        /// Paint the loading animation to the transaction history panel.
+        /// </summary>
+        /// <param name="walletFileOpened"></param>
+        /// <param name="loadText"></param>
+        /// <param name="percentProgress"></param>
+        /// <param name="graphicsTarget"></param>
+        /// <param name="panelTransactionHistory"></param>
+        /// <param name="cancellation"></param>
+        public void PaintTransactionLoadingAnimationToTransactionHistory(string walletFileOpened, string loadText, double percentProgress, Graphics graphicsTarget, ClassCustomPanel panelTransactionHistory, bool noTransaction)
+        {
+            graphicsTarget.SmoothingMode = SmoothingMode.HighQuality;
+
+            string text = loadText + (!noTransaction ? percentProgress.ToString("N2") + @"%" : string.Empty);
+            if (!noTransaction)
+            {
+                float positionY = (float)panelTransactionHistory.Height / 2;
+                SizeF sizeText = graphicsTarget.MeasureString(text, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryOnLoadFont);
+                float positionBaseY = (positionY - (sizeText.Height / 2));
+                float middlePosition = (float)panelTransactionHistory.Width / 2;
+                float positionX = 0;
+
+                positionX = (positionX + middlePosition) - (sizeText.Width / 2);
+
+                string textCountTx = _dictionaryTransactionHistory[walletFileOpened].DictionaryTransactionHistoryHashListed.Count + @"/" + _dictionaryTransactionHistory[walletFileOpened].LastTransactionCountOnRead;
+
+                SizeF sizeTextCountTx = graphicsTarget.MeasureString(textCountTx, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryOnLoadFont);
+                float positionCountTxY = positionBaseY + sizeTextCountTx.Height;
+                float positionCountTxX = middlePosition - (sizeTextCountTx.Width / 2);
+
+                graphicsTarget.DrawString(text, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryOnLoadFont, new SolidBrush(Color.Ivory), new RectangleF(positionX, positionBaseY, panelTransactionHistory.Width, panelTransactionHistory.Height));
+                graphicsTarget.DrawString(textCountTx, ClassWalletDefaultSetting.DefaultPanelTransactionHistoryOnLoadFont, new SolidBrush(Color.Ivory), new RectangleF(positionCountTxX, positionCountTxY, panelTransactionHistory.Width, panelTransactionHistory.Height));
             }
         }
 
