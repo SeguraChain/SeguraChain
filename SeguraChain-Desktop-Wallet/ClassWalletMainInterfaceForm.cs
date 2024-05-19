@@ -43,7 +43,6 @@ using Org.BouncyCastle.Asn1.Crmf;
 using SeguraChain_Lib.Blockchain.Database.Memory.Main.Enum;
 using Org.BouncyCastle.Crmf;
 using EO.WebBrowser.DOM;
-using System.Data;
 
 namespace SeguraChain_Desktop_Wallet
 {
@@ -120,9 +119,8 @@ namespace SeguraChain_Desktop_Wallet
             _listOverviewPanelControlShadow.Add(panelInternalNetworkStats);
             _listOverviewPanelControlShadow.Add(panelRecentTransactions);
             _listSendTransactionPanelControlShadow.Add(panelSendTransaction);
-            // DATAGRIDVIEW>
-            //_listTransactionHistoryPanelControlShadow.Add(panelTransactionHistory);
-            //_listTransactionHistoryPanelControlShadow.Add(panelTransactionHistoryColumns);
+            _listTransactionHistoryPanelControlShadow.Add(panelTransactionHistory);
+            _listTransactionHistoryPanelControlShadow.Add(panelTransactionHistoryColumns);
             _listSendTransactionDetailsPanelControlShadow.Add(textBoxSendTransactionAmountToSpend);
             _listSendTransactionDetailsPanelControlShadow.Add(textBoxSendTransactionTotalAmountSource);
             _listSendTransactionDetailsPanelControlShadow.Add(textBoxSendTransactionFeeSizeCost);
@@ -243,29 +241,9 @@ namespace SeguraChain_Desktop_Wallet
 
             try
             {
+                //this.Height = 768;
+                //this.Width = 1024;
                 setStrategy(ClassViewStrategiesEnum.Normal);
-                DataTable table = new DataTable();
-                table.Columns.Add("Date");
-                table.Columns.Add("Type");
-                table.Columns.Add("Wallet");
-                table.Columns.Add("Hash");
-                table.Columns.Add("Amount");
-                dataGridViewTransactions.DataSource = table;
-
-                // INI TEMP TRY
-
-                DataRow dr = table.NewRow();
-                dr["Date"] = DateTime.Now.ToShortDateString();
-                dr["Type"] = "m";
-                dr["Wallet"] = "777";
-                dr["Hash"] = "hashToShow";
-                dr["Amount"] = "25.000";
-                table.Rows.Add(dr);
-
-                dataGridViewTransactions.DataSource = table;
-
-                // END TEMP TRY
-
             }
             catch (Exception ex)
             {
@@ -438,8 +416,7 @@ namespace SeguraChain_Desktop_Wallet
             #region Transaction history.
 
             // Draw columns of the transaction history.
-            // DATAGRIDVIEW>
-            //_walletTransactionHistorySystemInstance.DrawTransactionHistoryColumns(panelTransactionHistoryColumns, _walletMainFormLanguageObject, columnOrderType);
+            _walletTransactionHistorySystemInstance.DrawTransactionHistoryColumns(panelTransactionHistoryColumns, _walletMainFormLanguageObject, columnOrderType);
 
             buttonMainInterfaceExportTransactionHistory.Text = _walletMainFormLanguageObject.BUTTON_MAIN_INTERFACE_EXPORT_TRANSACTION_HISTORY_TEXT;
             buttonMainInterfaceExportTransactionHistory = ClassGraphicsUtility.AutoResizeControlFromText<Button>(buttonMainInterfaceExportTransactionHistory);
@@ -567,8 +544,8 @@ namespace SeguraChain_Desktop_Wallet
 
                     if (_walletTransactionHistorySystemInstance != null)
                     {
-                        if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename, dataGridViewTransactions))
-                            _walletTransactionHistorySystemInstance.ClearTransactionHistoryOfWalletFileOpened(_currentWalletFilename, dataGridViewTransactions);
+                        if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
+                            _walletTransactionHistorySystemInstance.ClearTransactionHistoryOfWalletFileOpened(_currentWalletFilename);
                     }
                 }
 
@@ -1261,11 +1238,11 @@ namespace SeguraChain_Desktop_Wallet
 
                             if (!ClassDesktopWalletCommonData.WalletDatabase.GetWalletRescanStatus(_currentWalletFilename))
                             {
-                                if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename, dataGridViewTransactions))
+                                if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
                                 {
                                     bool complete = false;
 
-                                    if (await _walletTransactionHistorySystemInstance.UpdateTransactionHistoryOfWalletFileOpened(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations, dataGridViewTransactions))
+                                    if (await _walletTransactionHistorySystemInstance.UpdateTransactionHistoryOfWalletFileOpened(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations))
                                     {
                                         int maxPage = _walletTransactionHistorySystemInstance.MaxPageTransactionHistory(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations);
 
@@ -1289,10 +1266,7 @@ namespace SeguraChain_Desktop_Wallet
                                 {
                                     bool complete = false;
 
-                                    // DATAGRIDVIEW>
-                                    //_walletTransactionHistorySystemInstance.InsertTransactionHistoryToWalletFileOpened(_currentWalletFilename, panelTransactionHistory.Width, panelTransactionHistory.Height);
-                                    _walletTransactionHistorySystemInstance.InsertTransactionHistoryToWalletFileOpened(_currentWalletFilename, dataGridViewTransactions);
-
+                                    _walletTransactionHistorySystemInstance.InsertTransactionHistoryToWalletFileOpened(_currentWalletFilename, panelTransactionHistory.Width, panelTransactionHistory.Height);
                                     MethodInvoker invoke = () =>
                                     {
                                         textBoxMainInterfaceCurrentPageTransactionHistory.Text = @"1";
@@ -1460,7 +1434,7 @@ namespace SeguraChain_Desktop_Wallet
 
             string walletAddress = ClassDesktopWalletCommonData.WalletDatabase.GetWalletAddressFromWalletFileName(_currentWalletFilename);
 
-            _walletTransactionHistorySystemInstance.RemoveTransactionHistoryFromWalletFileOpenedTarget(_currentWalletFilename, dataGridViewTransactions);
+            _walletTransactionHistorySystemInstance.RemoveTransactionHistoryFromWalletFileOpenedTarget(_currentWalletFilename);
 
             ClassDesktopWalletCommonData.WalletSyncSystem.CleanSyncCacheOfWalletAddressTarget(walletAddress, new CancellationTokenSource());
 
@@ -1623,42 +1597,52 @@ namespace SeguraChain_Desktop_Wallet
 
                     try
                     {
-                        if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename, dataGridViewTransactions))
+                        if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
                         {
                             long countTransaction = _walletTransactionHistorySystemInstance.GetTransactionHistoryCountOfWalletFileOpened(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations);
 
                             if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out double percentProgress))
                             {
-                                //if (countTransaction == 0)
-                                //    _walletTransactionHistorySystemInstance.PaintTransactionLoadingAnimationToTransactionHistory(_currentWalletFilename,
-                                //         _walletMainFormLanguageObject.PANEL_TRANSACTION_HISTORY_NO_TRANSACTION_TEXT, 0, e.Graphics, dataGridViewTransactions, true);
-                                //else
-                                //{
-                                //Bitmap transactionHistoryBitmap = _walletTransactionHistorySystemInstance[_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations];
+                                if (countTransaction == 0)
+                                    _walletTransactionHistorySystemInstance.PaintTransactionLoadingAnimationToTransactionHistory(_currentWalletFilename,
+                                         _walletMainFormLanguageObject.PANEL_TRANSACTION_HISTORY_NO_TRANSACTION_TEXT, 0, e.Graphics, panelTransactionHistory, true);
+                                else
+                                {
+                                    Bitmap transactionHistoryBitmap = _walletTransactionHistorySystemInstance[_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations];
 
-                                //if (transactionHistoryBitmap != null)
-                                //    e.Graphics.DrawImageUnscaled(transactionHistoryBitmap, 0, 0);
+                                    if (transactionHistoryBitmap != null)
+                                        e.Graphics.DrawImageUnscaled(transactionHistoryBitmap, 0, 0);
 
-                                //_walletTransactionHistorySystemInstance.PaintTransactionHoverToTransactionHistory(_currentWalletFilename, false);
-                                //_walletTransactionHistorySystemInstance.PaintTransactionHoverToTransactionHistory(_currentWalletFilename, true);
-                                //}
+                                    _walletTransactionHistorySystemInstance.PaintTransactionHoverToTransactionHistory(_currentWalletFilename, e.Graphics, false);
+                                    _walletTransactionHistorySystemInstance.PaintTransactionHoverToTransactionHistory(_currentWalletFilename, e.Graphics, true);
+                                }
 
                             }
-                            //else
-                            //    _walletTransactionHistorySystemInstance.PaintTransactionLoadingAnimationToTransactionHistory(_currentWalletFilename,
-                            //        countTransaction > 0 ? _walletMainFormLanguageObject.PANEL_TRANSACTION_HISTORY_ON_LOAD_TEXT : _walletMainFormLanguageObject.PANEL_TRANSACTION_HISTORY_NO_TRANSACTION_TEXT, percentProgress, e.Graphics, panelTransactionHistory, countTransaction == 0);
+                            else
+                                _walletTransactionHistorySystemInstance.PaintTransactionLoadingAnimationToTransactionHistory(_currentWalletFilename,
+                                    countTransaction > 0 ? _walletMainFormLanguageObject.PANEL_TRANSACTION_HISTORY_ON_LOAD_TEXT : _walletMainFormLanguageObject.PANEL_TRANSACTION_HISTORY_NO_TRANSACTION_TEXT, percentProgress, e.Graphics, panelTransactionHistory, countTransaction == 0);
                         }
-                    //    else
-                    //        _walletTransactionHistorySystemInstance.PaintTransactionLoadingAnimationToTransactionHistory(_currentWalletFilename, _walletMainFormLanguageObject.PANEL_TRANSACTION_HISTORY_NO_TRANSACTION_TEXT, 0, e.Graphics, panelTransactionHistory, true);
+                        else
+                            _walletTransactionHistorySystemInstance.PaintTransactionLoadingAnimationToTransactionHistory(_currentWalletFilename, _walletMainFormLanguageObject.PANEL_TRANSACTION_HISTORY_NO_TRANSACTION_TEXT, 0, e.Graphics, panelTransactionHistory, true);
                     }
                     catch
                     {
-                        //e.Graphics.Clear(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryBackgroundColorOnClear);
+                        e.Graphics.Clear(ClassWalletDefaultSetting.DefaultPanelTransactionHistoryBackgroundColorOnClear);
                     }
                 }
             }
 
             _onDrawingTransactionHistory = false;
+        }
+
+        /// <summary>
+        /// Draw borders on transaction history panel dedicated to columns.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void panelMainInterfaceTransactionHistoryColumns_Paint(object sender, PaintEventArgs e)
+        {
+            ClassGraphicsUtility.DrawBorderOnControl(e.Graphics, Color.DarkGray, panelTransactionHistoryColumns.Width, panelTransactionHistoryColumns.Height, 1f);
         }
 
         /// <summary>
@@ -1670,7 +1654,7 @@ namespace SeguraChain_Desktop_Wallet
         {
             if (_walletTransactionHistorySystemInstance != null)
             {
-                if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename, dataGridViewTransactions))
+                if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
                 {
                     if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out _))
                     {
@@ -1691,13 +1675,117 @@ namespace SeguraChain_Desktop_Wallet
         {
             if (_walletTransactionHistorySystemInstance != null)
             {
-                if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename, dataGridViewTransactions))
+                if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
                 {
                     if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out _))
                     {
                         _walletTransactionHistorySystemInstance.BackPageTransactionHistory(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations, out int currentPage);
                         textBoxMainInterfaceCurrentPageTransactionHistory.Text = currentPage.ToString();
                         RefreshTransactionsHistoryPanel();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Change the order by type of the transaction history.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void panelMainInterfaceTransactionHistoryColumns_Click(object sender, EventArgs e)
+        {
+            if (_walletTransactionHistorySystemInstance != null)
+            {
+                if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
+                {
+                    if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out _))
+                    {
+                        MouseEventArgs mouseEventArgs = (MouseEventArgs)e;
+
+                        _walletTransactionHistorySystemInstance.SetOrderTypeTransactionHistory(_currentWalletFilename, mouseEventArgs.Location, panelTransactionHistoryColumns, _walletMainFormLanguageObject, _cancellationTokenTaskUpdateWalletContentInformations);
+                        RefreshTransactionsHistoryPanel();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Enable an hover effect depending of the click location on a transaction showed.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void panelTransactionHistory_Click(object sender, EventArgs e)
+        {
+            if (_walletTransactionHistorySystemInstance != null)
+            {
+                if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
+                {
+                    Point currentCursorPosition = Cursor.Current != null ? Cursor.Position : new Point(0, 0);
+
+                    if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out _))
+                        _walletTransactionHistorySystemInstance.EnableTransactionHoverByClick(_currentWalletFilename, panelTransactionHistory.PointToClient(currentCursorPosition), _cancellationTokenTaskUpdateWalletContentInformations, out string _, out Rectangle _);                    
+                }
+            }
+        }
+
+        /// <summary>
+        /// Enable a transaction hover depending the mouse position inside of the transaction history.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void panelTransactionHistory_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (_walletTransactionHistorySystemInstance != null)
+            {
+                if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
+                {
+                    Point currentCursorPosition = Cursor.Current != null ? Cursor.Position : new Point(0, 0);
+
+                    if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out _))
+                        _walletTransactionHistorySystemInstance.EnableTransactionHoverByPosition(_currentWalletFilename, panelTransactionHistory.PointToClient(currentCursorPosition), _cancellationTokenTaskUpdateWalletContentInformations, out _, out _);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Disable the transaction hover position inside of the transaction history once the mouse leave the transaction history.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void panelTransactionHistory_MouseLeave(object sender, EventArgs e)
+        {
+            if (_walletTransactionHistorySystemInstance != null)
+            {
+                if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
+                {
+                    if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out _))
+                        _walletTransactionHistorySystemInstance.DisableTransactionHoverByPosition(_currentWalletFilename);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Try to show a transaction informations drawed.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void panelTransactionHistory_DoubleClick(object sender, EventArgs e)
+        {
+            if (_walletTransactionHistorySystemInstance != null)
+            {
+                if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
+                {
+                    if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out _))
+                    {
+                        MouseEventArgs mouseEventArgs = (MouseEventArgs)e;
+
+                        ClassBlockTransaction blockTransactionToShow = _walletTransactionHistorySystemInstance.GetBlockTransactionShowedFromClick(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations, mouseEventArgs.Location, out bool found, out bool isMemPool);
+
+                        if (found && blockTransactionToShow != null)
+                        {
+                            using (ClassWalletTransactionHistoryInformationInternalForm walletTransactionHistoryInformationInternalForm = new ClassWalletTransactionHistoryInformationInternalForm(new List<Tuple<bool, ClassBlockTransaction>>() { new Tuple<bool, ClassBlockTransaction>(isMemPool, blockTransactionToShow) }))
+                                walletTransactionHistoryInformationInternalForm.ShowDialog(this);
+                        }
                     }
                 }
             }
@@ -1714,32 +1802,32 @@ namespace SeguraChain_Desktop_Wallet
             {
                 if (_walletTransactionHistorySystemInstance != null)
                 {
-                    //if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
-                    //{
-                    //    if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out _))
-                    //    {
-                    //        bool error = !int.TryParse(textBoxMainInterfaceCurrentPageTransactionHistory.Text, out int inputPage);
+                    if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
+                    {
+                        if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out _))
+                        {
+                            bool error = !int.TryParse(textBoxMainInterfaceCurrentPageTransactionHistory.Text, out int inputPage);
 
-                    //        if (!error)
-                    //        {
-                    //            int maxPage = _walletTransactionHistorySystemInstance.MaxPageTransactionHistory(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations);
+                            if (!error)
+                            {
+                                int maxPage = _walletTransactionHistorySystemInstance.MaxPageTransactionHistory(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations);
 
-                    //            if (inputPage <= maxPage)
-                    //            {
-                    //                _walletTransactionHistorySystemInstance.SetPageTransactionHistory(_currentWalletFilename, inputPage, _cancellationTokenTaskUpdateWalletContentInformations);
-                    //                Application.DoEvents();
-                    //            }
-                    //            else
-                    //                error = true;
-                    //        }
-                    //        if (error)
-                    //        {
-                    //            int currentPage = _walletTransactionHistorySystemInstance.CurrentPageTransactionHistory(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations);
-                    //            textBoxMainInterfaceCurrentPageTransactionHistory.Text = currentPage.ToString();
-                    //            Application.DoEvents();
-                    //        }
-                    //    }
-                    //}
+                                if (inputPage <= maxPage)
+                                {
+                                    _walletTransactionHistorySystemInstance.SetPageTransactionHistory(_currentWalletFilename, inputPage, _cancellationTokenTaskUpdateWalletContentInformations);
+                                    Application.DoEvents();
+                                }
+                                else
+                                    error = true;
+                            }
+                            if (error)
+                            {
+                                int currentPage = _walletTransactionHistorySystemInstance.CurrentPageTransactionHistory(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations);
+                                textBoxMainInterfaceCurrentPageTransactionHistory.Text = currentPage.ToString();
+                                Application.DoEvents();
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -1753,6 +1841,8 @@ namespace SeguraChain_Desktop_Wallet
         {
             if (tabControlWallet.SelectedTab == tabPageTransactionHistory && !_onDrawingTransactionHistory)
             {
+                panelTransactionHistory.Invalidate(false);
+                panelTransactionHistory.Update();
                 RefreshTransactionsHistoryPanel();
             }
         }
@@ -1765,42 +1855,42 @@ namespace SeguraChain_Desktop_Wallet
         /// <param name="e"></param>
         private void buttonMainInterfaceExportTransactionHistory_Click(object sender, EventArgs e)
         {
-            //if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
-            //{
-            //    if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out _))
-            //    {
-            //        bool allTransaction = MessageBox.Show(_walletMainFormLanguageObject.MESSAGEBOX_TRANSACTION_HISTORY_EXPORT_TEXT, _walletMainFormLanguageObject.MESSAGEBOX_TRANSACTION_HISTORY_EXPORT_TITLE_TEXT, MessageBoxButtons.YesNo) == DialogResult.No;
+            if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
+            {
+                if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out _))
+                {
+                    bool allTransaction = MessageBox.Show(_walletMainFormLanguageObject.MESSAGEBOX_TRANSACTION_HISTORY_EXPORT_TEXT, _walletMainFormLanguageObject.MESSAGEBOX_TRANSACTION_HISTORY_EXPORT_TITLE_TEXT, MessageBoxButtons.YesNo) == DialogResult.No;
 
-            //        bool continueExport = true;
+                    bool continueExport = true;
 
-            //        if (allTransaction)
-            //            continueExport = MessageBox.Show(_walletMainFormLanguageObject.MESSAGEBOX_TRANSACTION_HISTORY_EXPORT_ALL_NOTICE_TEXT, _walletMainFormLanguageObject.MESSAGEBOX_TRANSACTION_HISTORY_EXPORT_TITLE_TEXT, MessageBoxButtons.YesNo) == DialogResult.Yes;
+                    if (allTransaction)
+                        continueExport = MessageBox.Show(_walletMainFormLanguageObject.MESSAGEBOX_TRANSACTION_HISTORY_EXPORT_ALL_NOTICE_TEXT, _walletMainFormLanguageObject.MESSAGEBOX_TRANSACTION_HISTORY_EXPORT_TITLE_TEXT, MessageBoxButtons.YesNo) == DialogResult.Yes;
 
-            //        if (continueExport)
-            //        {
-            //            using (SaveFileDialog saveTransactionExportFileDialog = new SaveFileDialog()
-            //            {
-            //                InitialDirectory = AppDomain.CurrentDomain.BaseDirectory,
-            //                Filter = _walletMainFormLanguageObject.SAVEFILEDIALOG_TRANSACTION_HISTORY_EXPORT_TEXT,
-            //                FilterIndex = 1,
-            //                RestoreDirectory = true,
-            //                FileName = _currentWalletFilename + @"-transaction-history-export-" + ClassUtility.GetCurrentTimestampInSecond() + @".csv",
-            //            })
-            //            {
-            //                if (saveTransactionExportFileDialog.ShowDialog(this) == DialogResult.OK)
-            //                {
-            //                    if (!saveTransactionExportFileDialog.FileName.IsNullOrEmpty(false, out _))
-            //                    {
-            //                        if (_walletTransactionHistorySystemInstance.TryExportTransactionHistory(_currentWalletFilename, saveTransactionExportFileDialog.FileName, allTransaction, _walletMainFormLanguageObject, _cancellationTokenTaskUpdateWalletContentInformations))
-            //                            MessageBox.Show(_walletMainFormLanguageObject.MESSAGEBOX_TRANSACTION_HISTORY_EXPORT_DONE_TEXT, _walletMainFormLanguageObject.MESSAGEBOX_TRANSACTION_HISTORY_EXPORT_TITLE_TEXT);
-            //                        else
-            //                            MessageBox.Show(_walletMainFormLanguageObject.MESSAGEBOX_TRANSACTION_HISTORY_EXPORT_FAILED_TEXT, _walletMainFormLanguageObject.MESSAGEBOX_TRANSACTION_HISTORY_EXPORT_TITLE_TEXT, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            //                    }
-            //                }
-            //            }
-            //        }
-            //    }
-            //}
+                    if (continueExport)
+                    {
+                        using (SaveFileDialog saveTransactionExportFileDialog = new SaveFileDialog()
+                        {
+                            InitialDirectory = AppDomain.CurrentDomain.BaseDirectory,
+                            Filter = _walletMainFormLanguageObject.SAVEFILEDIALOG_TRANSACTION_HISTORY_EXPORT_TEXT,
+                            FilterIndex = 1,
+                            RestoreDirectory = true,
+                            FileName = _currentWalletFilename + @"-transaction-history-export-" + ClassUtility.GetCurrentTimestampInSecond() + @".csv",
+                        })
+                        {
+                            if (saveTransactionExportFileDialog.ShowDialog(this) == DialogResult.OK)
+                            {
+                                if (!saveTransactionExportFileDialog.FileName.IsNullOrEmpty(false, out _))
+                                {
+                                    if (_walletTransactionHistorySystemInstance.TryExportTransactionHistory(_currentWalletFilename, saveTransactionExportFileDialog.FileName, allTransaction, _walletMainFormLanguageObject, _cancellationTokenTaskUpdateWalletContentInformations))
+                                        MessageBox.Show(_walletMainFormLanguageObject.MESSAGEBOX_TRANSACTION_HISTORY_EXPORT_DONE_TEXT, _walletMainFormLanguageObject.MESSAGEBOX_TRANSACTION_HISTORY_EXPORT_TITLE_TEXT);
+                                    else
+                                        MessageBox.Show(_walletMainFormLanguageObject.MESSAGEBOX_TRANSACTION_HISTORY_EXPORT_FAILED_TEXT, _walletMainFormLanguageObject.MESSAGEBOX_TRANSACTION_HISTORY_EXPORT_TITLE_TEXT, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -2919,31 +3009,6 @@ namespace SeguraChain_Desktop_Wallet
             //{
             //    _walletRecentTransactionHistorySystemInstance.ClearRecentTransactionHistory();
             //}
-
-            DataTable table;
-            if (dataGridViewTransactions.DataSource != null)
-            {
-                table = (DataTable)dataGridViewTransactions.DataSource;
-            }
-            else
-            {
-                table = new DataTable();
-                table.Columns.Add("Date");
-                table.Columns.Add("Type");
-                table.Columns.Add("Wallet");
-                table.Columns.Add("Hash");
-                table.Columns.Add("Amount");
-            }
-
-            DataRow dr = table.NewRow();
-            dr["Date"] = "DUE";
-            dr["Type"] = "typeToShow";
-            dr["Wallet"] = "addressToShow";
-            dr["Hash"] = "hashToShow";
-            dr["Amount"] = "amountToShow";
-            table.Rows.Add(dr);
-            dataGridViewTransactions.DataSource = table;
-
         }
 
         private void tabControlWallet_SelectedIndexChanged(object sender, EventArgs e)
