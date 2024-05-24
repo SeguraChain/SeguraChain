@@ -33,19 +33,21 @@
             labelNodeHost = new System.Windows.Forms.Label();
             textBoxNodePort = new System.Windows.Forms.TextBox();
             textBoxNodeHost = new System.Windows.Forms.TextBox();
+            radioButtonExternalMode = new System.Windows.Forms.RadioButton();
+            radioButtonInternalMode = new System.Windows.Forms.RadioButton();
             buttonCloseSettingForm = new System.Windows.Forms.Button();
-            comboBoxSyncMode = new System.Windows.Forms.ComboBox();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
             // panel1
             // 
             panel1.BackColor = System.Drawing.Color.FromArgb(77, 104, 145);
-            panel1.Controls.Add(comboBoxSyncMode);
             panel1.Controls.Add(labelNodePort);
             panel1.Controls.Add(labelNodeHost);
             panel1.Controls.Add(textBoxNodePort);
             panel1.Controls.Add(textBoxNodeHost);
+            panel1.Controls.Add(radioButtonExternalMode);
+            panel1.Controls.Add(radioButtonInternalMode);
             panel1.Location = new System.Drawing.Point(23, 26);
             panel1.Name = "panel1";
             panel1.Size = new System.Drawing.Size(331, 197);
@@ -85,6 +87,32 @@
             textBoxNodeHost.Size = new System.Drawing.Size(168, 23);
             textBoxNodeHost.TabIndex = 2;
             // 
+            // radioButtonExternalMode
+            // 
+            radioButtonExternalMode.AutoSize = true;
+            radioButtonExternalMode.ForeColor = System.Drawing.SystemColors.ButtonFace;
+            radioButtonExternalMode.Location = new System.Drawing.Point(95, 75);
+            radioButtonExternalMode.Name = "radioButtonExternalMode";
+            radioButtonExternalMode.Size = new System.Drawing.Size(208, 19);
+            radioButtonExternalMode.TabIndex = 1;
+            radioButtonExternalMode.TabStop = true;
+            radioButtonExternalMode.Text = "RADIO_BUTTON_EXTERNAL_MODE";
+            radioButtonExternalMode.UseVisualStyleBackColor = true;
+            radioButtonExternalMode.CheckedChanged += radioButtonExternalMode_CheckedChanged;
+            // 
+            // radioButtonInternalMode
+            // 
+            radioButtonInternalMode.AutoSize = true;
+            radioButtonInternalMode.ForeColor = System.Drawing.SystemColors.ButtonFace;
+            radioButtonInternalMode.Location = new System.Drawing.Point(95, 40);
+            radioButtonInternalMode.Name = "radioButtonInternalMode";
+            radioButtonInternalMode.Size = new System.Drawing.Size(207, 19);
+            radioButtonInternalMode.TabIndex = 0;
+            radioButtonInternalMode.TabStop = true;
+            radioButtonInternalMode.Text = "RADIO_BUTTON_INTERNAL_MODE";
+            radioButtonInternalMode.UseVisualStyleBackColor = true;
+            radioButtonInternalMode.CheckedChanged += radioButtonInternalMode_CheckedChanged;
+            // 
             // buttonCloseSettingForm
             // 
             buttonCloseSettingForm.Location = new System.Drawing.Point(142, 232);
@@ -94,16 +122,6 @@
             buttonCloseSettingForm.Text = "BUTTON_CLOSE_SETTING_FORM";
             buttonCloseSettingForm.UseVisualStyleBackColor = true;
             buttonCloseSettingForm.Click += buttonCloseSettingForm_Click;
-            // 
-            // comboBoxSyncMode
-            // 
-            comboBoxSyncMode.FormattingEnabled = true;
-            comboBoxSyncMode.Items.AddRange(new object[] { "INTERNAL", "EXTERNAL" });
-            comboBoxSyncMode.Location = new System.Drawing.Point(95, 62);
-            comboBoxSyncMode.Name = "comboBoxSyncMode";
-            comboBoxSyncMode.Size = new System.Drawing.Size(168, 23);
-            comboBoxSyncMode.TabIndex = 6;
-            comboBoxSyncMode.SelectedIndexChanged += comboBoxSyncMode_SelectedIndexChanged;
             // 
             // ClassWalletSettingForm
             // 
@@ -130,11 +148,12 @@
         #endregion
 
         private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.RadioButton radioButtonExternalMode;
+        private System.Windows.Forms.RadioButton radioButtonInternalMode;
         private System.Windows.Forms.Button buttonCloseSettingForm;
         private System.Windows.Forms.Label labelNodePort;
         private System.Windows.Forms.Label labelNodeHost;
         private System.Windows.Forms.TextBox textBoxNodePort;
         private System.Windows.Forms.TextBox textBoxNodeHost;
-        private System.Windows.Forms.ComboBox comboBoxSyncMode;
     }
 }

@@ -67,7 +67,7 @@ namespace SeguraChain_Desktop_Wallet.Settings.Enum
 
         public static readonly Font DefaultPanelRecentTransactionHistoryFont = new Font("Arial", 10, FontStyle.Bold);
         public const int DefaultTaskUpdateWalletRecentTransactionsInterval = 100;
-        public const int DefaultWalletMaxRecentTransactionToShow = 6;
+        public const int DefaultWalletMaxRecentTransactionToShow = 5;
         public const int DefaultWalletRecentTransactionLogoSize = 50;
         public static readonly Color DefaultRecentTransactionBackColor = Color.FromArgb(245, 249, 252);
         public static readonly Color DefaultLabelTransactionInMemPoolForeColor = Color.SlateGray;

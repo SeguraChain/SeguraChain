@@ -42,6 +42,29 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Setting
             Close();
         }
 
+        /// <summary>
+        /// Change the setting into Internal Mode.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void radioButtonInternalMode_CheckedChanged(object sender, EventArgs e)
+        {
+            radioButtonInternalMode.Checked = true;
+            ClassDesktopWalletCommonData.WalletSettingObject.WalletSyncMode = ClassWalletSettingEnumSyncMode.INTERNAL_PEER_SYNC_MODE;
+            radioButtonExternalMode.Checked = false;
+        }
+
+        /// <summary>
+        /// Change the setting into External Mode.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void radioButtonExternalMode_CheckedChanged(object sender, EventArgs e)
+        {
+            radioButtonExternalMode.Checked = true;
+            ClassDesktopWalletCommonData.WalletSettingObject.WalletSyncMode = ClassWalletSettingEnumSyncMode.EXTERNAL_PEER_SYNC_MODE;
+            radioButtonInternalMode.Checked = false;
+        }
 
         /// <summary>
         /// Load every settins like the language setting.
@@ -53,35 +76,22 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Setting
             ClassWalletSettingFormLanguage walletStartupFormLanguageObject = ClassDesktopWalletCommonData.LanguageDatabase.GetLanguageContentObject<ClassWalletSettingFormLanguage>(ClassLanguageEnumType.LANGUAGE_TYPE_WALLET_SETTING_FORM);
 
             Text = walletStartupFormLanguageObject.TITLE_FORM;
+            radioButtonExternalMode.Text = walletStartupFormLanguageObject.RADIO_BUTTON_EXTERNAL_MODE;
+            radioButtonInternalMode.Text = walletStartupFormLanguageObject.RADIO_BUTTON_INTERNAL_MODE;
             labelNodeHost.Text = walletStartupFormLanguageObject.LABEL_NODE_HOST;
             buttonCloseSettingForm.Text = walletStartupFormLanguageObject.BUTTON_CLOSE_SETTING;
             switch (ClassDesktopWalletCommonData.WalletSettingObject.WalletSyncMode)
             {
                 case ClassWalletSettingEnumSyncMode.INTERNAL_PEER_SYNC_MODE:
                     {
-                        comboBoxSyncMode.SelectedIndex = 0;
+                        radioButtonExternalMode.Checked = false;
+                        radioButtonInternalMode.Checked = true;
                     }
                     break;
                 case ClassWalletSettingEnumSyncMode.EXTERNAL_PEER_SYNC_MODE:
                     {
-                        comboBoxSyncMode.SelectedIndex = 1;
-                    }
-                    break;
-            }
-        }
-
-        private void comboBoxSyncMode_SelectedIndexChanged(object sender, EventArgs e)
-        {
-             switch(comboBoxSyncMode.SelectedIndex)
-            {
-                case 0:
-                    {
-                        ClassDesktopWalletCommonData.WalletSettingObject.WalletSyncMode = ClassWalletSettingEnumSyncMode.INTERNAL_PEER_SYNC_MODE;
-                    }
-                    break;
-                case 1:
-                    {
-                        ClassDesktopWalletCommonData.WalletSettingObject.WalletSyncMode = ClassWalletSettingEnumSyncMode.EXTERNAL_PEER_SYNC_MODE;
+                        radioButtonExternalMode.Checked = true;
+                        radioButtonInternalMode.Checked = false;
                     }
                     break;
             }

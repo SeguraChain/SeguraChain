@@ -18,7 +18,7 @@
     <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
     <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
     <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
-    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing"">Blue</data>
     <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
         <value>[base64 mime encoded serialized .NET Framework object]</value>
     </data>
@@ -121,7 +121,7 @@
   <data name="pictureBoxDesktopWalletLogo.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAA+gAAAPoCAYAAABNo9TkAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1
-        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACxEAAAsRAX9kX5EAAP+WSURBVHhe7N0HgNzWYSZ+sKj3
+        MAAA6mAAADqYAAAXb5JfxUYAAAAJcEhZcwAACxIAAAsSAdLdfvwAAP+WSURBVHhe7N0HgNzWYSZ+sKj3
         SlKFFHuRWCU2kWKv6oWiRIlUYZVk2bKK1SXbcol7EieXxClOdUn5J7mWy+VySc65xJeeXNrFjotsNfZl
         3V1uwf/7XsE8YN7uzg53Z3eG38o/P+ABgzYAiG8eBpOkaSoiIiIiIiIiAyxaKSIiIiIiIiK1Fa0UERER
         ERERkdqKVoqIiIiIiIhIbUUrRURERERERKS2opUiIiIiIiIiUlvRShERERERERGprWiliIiIiIiIiNRW
@@ -3169,6 +3169,9 @@
         rkJggg==
 </value>
   </data>
+  <metadata name="timerOpenMainInterface.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
   <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         AAABAAYAAAAAAAEAIAAAQAAAZgAAAICAAAABACAAKAgBAGZAAABAQAAAAQAgAChCAACOSAEAMDAAAAEA
