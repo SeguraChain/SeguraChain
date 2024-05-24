@@ -110,11 +110,6 @@ namespace SeguraChain_Desktop_Wallet
             labelWalletReceiveTransactionQrCodeText = new System.Windows.Forms.Label();
             panelQrCodeWalletAddress = new ClassCustomPanel();
             tabPageTransactionHistory = new System.Windows.Forms.TabPage();
-<<<<<<< Updated upstream
-            buttonClearAndUpdateTransitionHistoryTab = new System.Windows.Forms.Button();
-            panelTransactionHistory = new ClassCustomPanel();
-=======
->>>>>>> Stashed changes
             buttonMainInterfaceSearchTransactionHistory = new System.Windows.Forms.Button();
             textBoxTransactionHistorySearch = new System.Windows.Forms.TextBox();
             panelTransactionHistoryColumns = new ClassCustomPanel();
@@ -122,8 +117,6 @@ namespace SeguraChain_Desktop_Wallet
             textBoxMainInterfaceCurrentPageTransactionHistory = new System.Windows.Forms.TextBox();
             buttonMainInterfaceNextPageTransactionHistory = new System.Windows.Forms.Button();
             buttonMainInterfaceBackPageTransactionHistory = new System.Windows.Forms.Button();
-            panelTransactionHistoryColumns = new ClassCustomPanel();
-            panelTransactionHistory = new ClassCustomPanel();
             buttonMainInterfaceExportTransactionHistory = new System.Windows.Forms.Button();
             panelTransactionHistory = new ClassCustomPanel();
             tabPageStoreNetwork = new System.Windows.Forms.TabPage();
@@ -1094,11 +1087,6 @@ namespace SeguraChain_Desktop_Wallet
             // tabPageTransactionHistory
             // 
             tabPageTransactionHistory.BackColor = System.Drawing.Color.FromArgb(77, 104, 145);
-<<<<<<< Updated upstream
-            tabPageTransactionHistory.Controls.Add(buttonClearAndUpdateTransitionHistoryTab);
-            tabPageTransactionHistory.Controls.Add(panelTransactionHistory);
-=======
->>>>>>> Stashed changes
             tabPageTransactionHistory.Controls.Add(buttonMainInterfaceSearchTransactionHistory);
             tabPageTransactionHistory.Controls.Add(textBoxTransactionHistorySearch);
             tabPageTransactionHistory.Controls.Add(panelTransactionHistoryColumns);
@@ -1106,8 +1094,6 @@ namespace SeguraChain_Desktop_Wallet
             tabPageTransactionHistory.Controls.Add(textBoxMainInterfaceCurrentPageTransactionHistory);
             tabPageTransactionHistory.Controls.Add(buttonMainInterfaceNextPageTransactionHistory);
             tabPageTransactionHistory.Controls.Add(buttonMainInterfaceBackPageTransactionHistory);
-            tabPageTransactionHistory.Controls.Add(panelTransactionHistoryColumns);
-            tabPageTransactionHistory.Controls.Add(panelTransactionHistory);
             tabPageTransactionHistory.Controls.Add(buttonMainInterfaceExportTransactionHistory);
             tabPageTransactionHistory.Controls.Add(panelTransactionHistory);
             tabPageTransactionHistory.Location = new System.Drawing.Point(4, 34);
@@ -1118,32 +1104,6 @@ namespace SeguraChain_Desktop_Wallet
             tabPageTransactionHistory.Text = "TABPAGE_TRANSACTION_HISTORY_TEXT";
             tabPageTransactionHistory.Paint += tabPageTransactionHistory_Paint;
             // 
-<<<<<<< Updated upstream
-            // buttonClearAndUpdateTransitionHistoryTab
-            // 
-            resources.ApplyResources(buttonClearAndUpdateTransitionHistoryTab, "buttonClearAndUpdateTransitionHistoryTab");
-            buttonClearAndUpdateTransitionHistoryTab.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
-            buttonClearAndUpdateTransitionHistoryTab.ForeColor = System.Drawing.Color.Black;
-            buttonClearAndUpdateTransitionHistoryTab.Name = "buttonClearAndUpdateTransitionHistoryTab";
-            buttonClearAndUpdateTransitionHistoryTab.UseVisualStyleBackColor = false;
-            buttonClearAndUpdateTransitionHistoryTab.Click += buttonClearAndUpdateTransitionHistoryTab_Click;
-            // 
-            // panelTransactionHistory
-            // 
-            resources.ApplyResources(panelTransactionHistory, "panelTransactionHistory");
-            panelTransactionHistory.BackColor = System.Drawing.Color.FromArgb(70, 90, 120);
-            panelTransactionHistory.BorderColor = System.Drawing.Color.Transparent;
-            panelTransactionHistory.BorderSize = 1F;
-            panelTransactionHistory.Name = "panelTransactionHistory";
-            panelTransactionHistory.Radius = 10;
-            panelTransactionHistory.Click += panelTransactionHistory_Click;
-            panelTransactionHistory.Paint += panelTransactionHistory_Paint;
-            panelTransactionHistory.DoubleClick += panelTransactionHistory_DoubleClick;
-            panelTransactionHistory.MouseLeave += panelTransactionHistory_MouseLeave;
-            panelTransactionHistory.MouseMove += panelTransactionHistory_MouseMove;
-            // 
-=======
->>>>>>> Stashed changes
             // buttonMainInterfaceSearchTransactionHistory
             // 
             buttonMainInterfaceSearchTransactionHistory.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
@@ -1228,31 +1188,6 @@ namespace SeguraChain_Desktop_Wallet
             buttonMainInterfaceBackPageTransactionHistory.Text = "BUTTON_MAIN_INTERFACE_BACK_PAGE_TRANSACTION_HISTORY_TEXT";
             buttonMainInterfaceBackPageTransactionHistory.UseVisualStyleBackColor = false;
             buttonMainInterfaceBackPageTransactionHistory.Click += buttonMainInterfaceBackPageTransactionHistory_Click;
-            // 
-            // panelTransactionHistoryColumns
-            // 
-            resources.ApplyResources(panelTransactionHistoryColumns, "panelTransactionHistoryColumns");
-            panelTransactionHistoryColumns.BackColor = System.Drawing.Color.FromArgb(70, 90, 120);
-            panelTransactionHistoryColumns.BorderColor = System.Drawing.Color.Transparent;
-            panelTransactionHistoryColumns.BorderSize = 1F;
-            panelTransactionHistoryColumns.Name = "panelTransactionHistoryColumns";
-            panelTransactionHistoryColumns.Radius = 10;
-            panelTransactionHistoryColumns.Click += panelMainInterfaceTransactionHistoryColumns_Click;
-            panelTransactionHistoryColumns.Paint += panelMainInterfaceTransactionHistoryColumns_Paint;
-            // 
-            // panelTransactionHistory
-            // 
-            resources.ApplyResources(panelTransactionHistory, "panelTransactionHistory");
-            panelTransactionHistory.BackColor = System.Drawing.Color.FromArgb(70, 90, 120);
-            panelTransactionHistory.BorderColor = System.Drawing.Color.Transparent;
-            panelTransactionHistory.BorderSize = 1F;
-            panelTransactionHistory.Name = "panelTransactionHistory";
-            panelTransactionHistory.Radius = 10;
-            panelTransactionHistory.Click += panelTransactionHistory_Click;
-            panelTransactionHistory.Paint += panelTransactionHistory_Paint;
-            panelTransactionHistory.DoubleClick += panelTransactionHistory_DoubleClick;
-            panelTransactionHistory.MouseLeave += panelTransactionHistory_MouseLeave;
-            panelTransactionHistory.MouseMove += panelTransactionHistory_MouseMove;
             // 
             // buttonMainInterfaceExportTransactionHistory
             // 
@@ -1510,13 +1445,6 @@ namespace SeguraChain_Desktop_Wallet
         private System.Windows.Forms.ToolStripMenuItem typeWebSiteToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem leftCenterRightToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem normalToolStripMenuItem;
-<<<<<<< Updated upstream
-        private System.Windows.Forms.PictureBox pictureBoxLogoTransaction;
-        private System.Windows.Forms.ToolStripMenuItem dimensionsToolStripMenuItem;
-        private System.Windows.Forms.Label panelSeperatorBalanceLine;
-        private System.Windows.Forms.Button buttonClearAndUpdateTransitionHistoryTab;
-=======
->>>>>>> Stashed changes
     }
 }
 

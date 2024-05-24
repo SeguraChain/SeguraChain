@@ -42,10 +42,6 @@ using EO.WinForm;
 using Org.BouncyCastle.Asn1.Crmf;
 using SeguraChain_Lib.Blockchain.Database.Memory.Main.Enum;
 using Org.BouncyCastle.Crmf;
-<<<<<<< Updated upstream
-using EO.WebBrowser.DOM;
-=======
->>>>>>> Stashed changes
 
 namespace SeguraChain_Desktop_Wallet
 {
@@ -226,17 +222,11 @@ namespace SeguraChain_Desktop_Wallet
 
             try
             {
-<<<<<<< Updated upstream
-                //this.Height = 768;
-                //this.Width = 1024;
-                setStrategy(ClassViewStrategiesEnum.Normal);
-=======
                 ClassDataContextForm DCF = new ClassDataContextForm();
                 DCF.InitDataResponsiveFormControls(this);
                 this.Tag = DCF;
                 //adaptResponsiveFormControlsToFormSize(this, ClassViewStrategiesEnum.TypeWebSite);
                 //Refresh();
->>>>>>> Stashed changes
             }
             catch (Exception ex)
             {
@@ -1777,110 +1767,6 @@ namespace SeguraChain_Desktop_Wallet
         }
 
         /// <summary>
-        /// Change the order by type of the transaction history.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void panelMainInterfaceTransactionHistoryColumns_Click(object sender, EventArgs e)
-        {
-            if (_walletTransactionHistorySystemInstance != null)
-            {
-                if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
-                {
-                    if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out _))
-                    {
-                        MouseEventArgs mouseEventArgs = (MouseEventArgs)e;
-
-                        _walletTransactionHistorySystemInstance.SetOrderTypeTransactionHistory(_currentWalletFilename, mouseEventArgs.Location, panelTransactionHistoryColumns, _walletMainFormLanguageObject, _cancellationTokenTaskUpdateWalletContentInformations);
-                        RefreshTransactionsHistoryPanel();
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Enable an hover effect depending of the click location on a transaction showed.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void panelTransactionHistory_Click(object sender, EventArgs e)
-        {
-            if (_walletTransactionHistorySystemInstance != null)
-            {
-                if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
-                {
-                    Point currentCursorPosition = Cursor.Current != null ? Cursor.Position : new Point(0, 0);
-
-                    if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out _))
-                        _walletTransactionHistorySystemInstance.EnableTransactionHoverByClick(_currentWalletFilename, panelTransactionHistory.PointToClient(currentCursorPosition), _cancellationTokenTaskUpdateWalletContentInformations, out string _, out Rectangle _);                    
-                }
-            }
-        }
-
-        /// <summary>
-        /// Enable a transaction hover depending the mouse position inside of the transaction history.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void panelTransactionHistory_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (_walletTransactionHistorySystemInstance != null)
-            {
-                if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
-                {
-                    Point currentCursorPosition = Cursor.Current != null ? Cursor.Position : new Point(0, 0);
-
-                    if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out _))
-                        _walletTransactionHistorySystemInstance.EnableTransactionHoverByPosition(_currentWalletFilename, panelTransactionHistory.PointToClient(currentCursorPosition), _cancellationTokenTaskUpdateWalletContentInformations, out _, out _);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Disable the transaction hover position inside of the transaction history once the mouse leave the transaction history.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void panelTransactionHistory_MouseLeave(object sender, EventArgs e)
-        {
-            if (_walletTransactionHistorySystemInstance != null)
-            {
-                if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
-                {
-                    if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out _))
-                        _walletTransactionHistorySystemInstance.DisableTransactionHoverByPosition(_currentWalletFilename);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Try to show a transaction informations drawed.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void panelTransactionHistory_DoubleClick(object sender, EventArgs e)
-        {
-            if (_walletTransactionHistorySystemInstance != null)
-            {
-                if (_walletTransactionHistorySystemInstance.ContainsTransactionHistoryToWalletFileOpened(_currentWalletFilename))
-                {
-                    if (!_walletTransactionHistorySystemInstance.GetLoadStatus(_currentWalletFilename, out _))
-                    {
-                        MouseEventArgs mouseEventArgs = (MouseEventArgs)e;
-
-                        ClassBlockTransaction blockTransactionToShow = _walletTransactionHistorySystemInstance.GetBlockTransactionShowedFromClick(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations, mouseEventArgs.Location, out bool found, out bool isMemPool);
-
-                        if (found && blockTransactionToShow != null)
-                        {
-                            using (ClassWalletTransactionHistoryInformationInternalForm walletTransactionHistoryInformationInternalForm = new ClassWalletTransactionHistoryInformationInternalForm(new List<Tuple<bool, ClassBlockTransaction>>() { new Tuple<bool, ClassBlockTransaction>(isMemPool, blockTransactionToShow) }))
-                                walletTransactionHistoryInformationInternalForm.ShowDialog(this);
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         /// Set the current page of the transaction history to draw.
         /// </summary>
         /// <param name="sender"></param>
@@ -1902,14 +1788,7 @@ namespace SeguraChain_Desktop_Wallet
                                 int maxPage = _walletTransactionHistorySystemInstance.MaxPageTransactionHistory(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations);
 
                                 if (inputPage <= maxPage)
-<<<<<<< Updated upstream
-                                {
                                     _walletTransactionHistorySystemInstance.SetPageTransactionHistory(_currentWalletFilename, inputPage, _cancellationTokenTaskUpdateWalletContentInformations);
-                                    Application.DoEvents();
-                                }
-=======
-                                    _walletTransactionHistorySystemInstance.SetPageTransactionHistory(_currentWalletFilename, inputPage, _cancellationTokenTaskUpdateWalletContentInformations);
->>>>>>> Stashed changes
                                 else
                                     error = true;
                             }
@@ -1917,10 +1796,6 @@ namespace SeguraChain_Desktop_Wallet
                             {
                                 int currentPage = _walletTransactionHistorySystemInstance.CurrentPageTransactionHistory(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations);
                                 textBoxMainInterfaceCurrentPageTransactionHistory.Text = currentPage.ToString();
-<<<<<<< Updated upstream
-                                Application.DoEvents();
-=======
->>>>>>> Stashed changes
                             }
                         }
                     }
@@ -1939,10 +1814,6 @@ namespace SeguraChain_Desktop_Wallet
             {
                 panelTransactionHistory.Invalidate(false);
                 panelTransactionHistory.Update();
-<<<<<<< Updated upstream
-                RefreshTransactionsHistoryPanel();
-=======
->>>>>>> Stashed changes
             }
         }
 
@@ -3018,23 +2889,7 @@ namespace SeguraChain_Desktop_Wallet
 
         private void buttonSendTransactionOpenContactList_Click(object sender, EventArgs e)
         {
-<<<<<<< Updated upstream
-            RefreshTransactionsHistoryPanel();
-            //if (_walletRecentTransactionHistorySystemInstance != null && !_onDrawingTransactionHistory)
-            //{
-            //    _walletRecentTransactionHistorySystemInstance.ClearRecentTransactionHistory();
-            //}
-        }
 
-        private void tabControlWallet_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (tabControlWallet.SelectedTab == tabPageTransactionHistory && _walletRecentTransactionHistorySystemInstance != null && !_onDrawingTransactionHistory)
-            {
-                RefreshTransactionsHistoryPanel();
-            }
-=======
-
->>>>>>> Stashed changes
         }
     }
 }
