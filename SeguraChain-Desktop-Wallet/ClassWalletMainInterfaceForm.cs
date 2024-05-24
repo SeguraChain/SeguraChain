@@ -114,6 +114,7 @@ namespace SeguraChain_Desktop_Wallet
             _listRecentTransactionHistoryPanelControlShadow = new List<Control>();
             _listMainInterfaceControlShadow.Add(menuStripGeneralWallet);
             _listMainInterfaceControlShadow.Add(progressBarMainInterfaceSyncProgress);
+            _listMainInterfaceControlShadow.Add(progressBarMainInterfaceConfirmProgress);
             _listMainInterfaceControlShadow.Add(comboBoxListWalletFile);
             _listOverviewPanelControlShadow.Add(panelInternalNetworkStats);
             _listOverviewPanelControlShadow.Add(panelRecentTransactions);
@@ -300,6 +301,9 @@ namespace SeguraChain_Desktop_Wallet
             progressBarMainInterfaceSyncProgress = ClassGraphicsUtility.AutoSetLocationAndResizeControl<ClassCustomProgressBar>(progressBarMainInterfaceSyncProgress, this, 50, false);
             labelMainInterfaceSyncProgress.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_SYNC_PROGRESS;
             labelMainInterfaceSyncProgress = ClassGraphicsUtility.AutoSetLocationAndResizeControl<Label>(labelMainInterfaceSyncProgress, this, 50, false);
+
+            progressBarMainInterfaceConfirmProgress = ClassGraphicsUtility.AutoSetLocationAndResizeControl<ClassCustomProgressBar>(progressBarMainInterfaceConfirmProgress, this, 50, false);
+
 
             #region MenuStrip
 
@@ -987,7 +991,7 @@ namespace SeguraChain_Desktop_Wallet
                                 try
                                 {
                                     double percentProgress = 100;
-
+                                    double percentConfirmProgress = 100;
                                     if (blockchainNetworkStatsObject.LastNetworkBlockHeight >= BlockchainSetting.GenesisBlockHeight)
                                     {
                                         if (blockchainNetworkStatsObject.LastNetworkBlockHeight >= blockchainNetworkStatsObject.LastBlockHeight)
@@ -996,6 +1000,14 @@ namespace SeguraChain_Desktop_Wallet
                                         int percentProgressInt = (int)(Math.Round(percentProgress, 2) * 100d);
                                         if (percentProgressInt >= progressBarMainInterfaceSyncProgress.Minimum && percentProgressInt <= progressBarMainInterfaceSyncProgress.Maximum)
                                             progressBarMainInterfaceSyncProgress.Value = percentProgressInt;
+
+
+                                        if (blockchainNetworkStatsObject.LastNetworkBlockHeight >= blockchainNetworkStatsObject.LastBlockHeightUnlocked)
+                                            percentConfirmProgress = ((double)blockchainNetworkStatsObject.LastBlockHeightTransactionConfirmationDone / blockchainNetworkStatsObject.LastBlockHeightUnlocked) * 100d;
+
+                                        int progressConfirm = (int)(Math.Round(percentConfirmProgress, 2) * 100d);
+                                        if (progressConfirm >= progressBarMainInterfaceConfirmProgress.Minimum && progressConfirm <= progressBarMainInterfaceConfirmProgress.Maximum)
+                                            progressBarMainInterfaceConfirmProgress.Value = progressConfirm;
                                     }
                                 }
                                 catch

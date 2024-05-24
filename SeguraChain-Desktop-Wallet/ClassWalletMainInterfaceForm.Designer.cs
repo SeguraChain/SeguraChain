@@ -71,6 +71,7 @@ namespace SeguraChain_Desktop_Wallet
             labelMainInterfaceNetworkStatsCurrentDifficultyText = new System.Windows.Forms.Label();
             labelMainInterfaceNetworkStatsTitleText = new System.Windows.Forms.Label();
             progressBarMainInterfaceSyncProgress = new ClassCustomProgressBar();
+            progressBarMainInterfaceConfirmProgress = new ClassCustomProgressBar();
             panelRecentTransactions = new ClassCustomPanel();
             panelInternalRecentTransactions = new ClassCustomPanel();
             labelMainInterfaceRecentTransaction = new System.Windows.Forms.Label();
@@ -235,21 +236,21 @@ namespace SeguraChain_Desktop_Wallet
             // normalToolStripMenuItem
             // 
             normalToolStripMenuItem.Name = "normalToolStripMenuItem";
-            normalToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            normalToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             normalToolStripMenuItem.Text = "Normal";
             normalToolStripMenuItem.Click += normalToolStripMenuItem_Click;
             // 
             // typeWebSiteToolStripMenuItem
             // 
             typeWebSiteToolStripMenuItem.Name = "typeWebSiteToolStripMenuItem";
-            typeWebSiteToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            typeWebSiteToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             typeWebSiteToolStripMenuItem.Text = "Type WebSite";
             typeWebSiteToolStripMenuItem.Click += typeWebSiteToolStripMenuItem_Click;
             // 
             // leftCenterRightToolStripMenuItem
             // 
             leftCenterRightToolStripMenuItem.Name = "leftCenterRightToolStripMenuItem";
-            leftCenterRightToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            leftCenterRightToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             leftCenterRightToolStripMenuItem.Text = "Left Center Right";
             leftCenterRightToolStripMenuItem.Click += leftCenterRightToolStripMenuItem_Click;
             // 
@@ -336,6 +337,7 @@ namespace SeguraChain_Desktop_Wallet
             tabPageOverview.Controls.Add(labelMainInterfaceSyncProgress);
             tabPageOverview.Controls.Add(panelInternalNetworkStats);
             tabPageOverview.Controls.Add(progressBarMainInterfaceSyncProgress);
+            tabPageOverview.Controls.Add(progressBarMainInterfaceConfirmProgress);
             tabPageOverview.Controls.Add(panelRecentTransactions);
             tabPageOverview.Controls.Add(labelMainInterfaceTotalBalanceAmountText);
             tabPageOverview.Controls.Add(labelMainInterfacePendingBalanceAmountText);
@@ -588,6 +590,21 @@ namespace SeguraChain_Desktop_Wallet
             progressBarMainInterfaceSyncProgress.Step = 1;
             progressBarMainInterfaceSyncProgress.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
             progressBarMainInterfaceSyncProgress.TabIndex = 5;
+
+            // 
+            // progressBarMainInterfaceConfirmProgress
+            // 
+            progressBarMainInterfaceConfirmProgress.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            progressBarMainInterfaceConfirmProgress.BackColor = System.Drawing.Color.GhostWhite;
+            progressBarMainInterfaceConfirmProgress.ForeColor = System.Drawing.Color.Black;
+            progressBarMainInterfaceConfirmProgress.Location = new System.Drawing.Point(412, 582);
+            progressBarMainInterfaceConfirmProgress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            progressBarMainInterfaceConfirmProgress.Maximum = 10000;
+            progressBarMainInterfaceConfirmProgress.Name = "progressBarMainInterfaceConfirmProgress";
+            progressBarMainInterfaceConfirmProgress.Size = new System.Drawing.Size(348, 23);
+            progressBarMainInterfaceConfirmProgress.Step = 1;
+            progressBarMainInterfaceConfirmProgress.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
+            progressBarMainInterfaceConfirmProgress.TabIndex = 5;
             // 
             // panelRecentTransactions
             // 
@@ -602,7 +619,7 @@ namespace SeguraChain_Desktop_Wallet
             panelRecentTransactions.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             panelRecentTransactions.Name = "panelRecentTransactions";
             panelRecentTransactions.Radius = 10;
-            panelRecentTransactions.Size = new System.Drawing.Size(493, 463);
+            panelRecentTransactions.Size = new System.Drawing.Size(494, 423);
             panelRecentTransactions.TabIndex = 10;
             panelRecentTransactions.Paint += panelRecentTransactions_Paint;
             // 
@@ -611,11 +628,11 @@ namespace SeguraChain_Desktop_Wallet
             panelInternalRecentTransactions.BackColor = System.Drawing.Color.FromArgb(245, 249, 252);
             panelInternalRecentTransactions.BorderColor = System.Drawing.Color.FromArgb(91, 106, 128);
             panelInternalRecentTransactions.BorderSize = 2F;
-            panelInternalRecentTransactions.Location = new System.Drawing.Point(22, 85);
+            panelInternalRecentTransactions.Location = new System.Drawing.Point(10, 30);
             panelInternalRecentTransactions.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             panelInternalRecentTransactions.Name = "panelInternalRecentTransactions";
             panelInternalRecentTransactions.Radius = 10;
-            panelInternalRecentTransactions.Size = new System.Drawing.Size(467, 375);
+            panelInternalRecentTransactions.Size = new System.Drawing.Size(480, 390);
             panelInternalRecentTransactions.TabIndex = 2;
             panelInternalRecentTransactions.Click += panelInternalRecentTransactions_Click;
             panelInternalRecentTransactions.Paint += panelInternalRecentTransactions_Paint;
@@ -1407,6 +1424,8 @@ namespace SeguraChain_Desktop_Wallet
         private System.Windows.Forms.TextBox textBoxMainInterfaceCurrentPageTransactionHistory;
         private ClassCustomPanel panelTransactionHistoryColumns;
         private ClassCustomProgressBar progressBarMainInterfaceSyncProgress;
+        private ClassCustomProgressBar progressBarMainInterfaceConfirmProgress;
+
         private System.Windows.Forms.Label labelMainInterfaceSyncProgress;
         private System.Windows.Forms.Label labelSendTransactionAvailableBalanceText;
         private ClassCustomPanel panelSendTransaction;
