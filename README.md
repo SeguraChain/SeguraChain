@@ -6,6 +6,14 @@ allowing to include updates on it without editing the content of the Blockchain.
 
 ![desktop-wallet](https://github.com/SeguraChain/SeguraChain/assets/96837446/a4342db7-d4d3-4798-bee2-28202ba77f31)
 
+  
+  
+<h3>If you want to donate to the project:</h3>
+<h4>just to tracking them, if possible please put the note: Donation</h4>
+
+> BTC: 39mUsJFhjU6GDrchCkQ4iJsmdvD8S2jpzU | Explorer: https://btc.com/39mUsJFhjU6GDrchCkQ4iJsmdvD8S2jpzU
+
+> Curecoin: B6V6mSNRDFzmDgiPcQKYhBer6GgbM5XJeR | Explorer: https://chainz.cryptoid.info/cure/address.dws?B6V6mSNRDFzmDgiPcQKYhBer6GgbM5XJeR.htm
 
 
 <h3>Please follow this wikipage to setup your own blockchain:</h3>
@@ -86,13 +94,5 @@ https://github.com/SeguraChain/SeguraChain/wiki/Compilation-Platform-Target
 Discord: https://discord.gg/mvc7v9FDyJ
   
 Every devs and potential users can send me their returns about the project, potential fix, issues and more.
-  
-  
-<h3>If you want to donate to the project:</h3>
-<h4>just to tracking them, if possible please put the note: Donation</h4>
-
-> BTC: 39mUsJFhjU6GDrchCkQ4iJsmdvD8S2jpzU | Explorer: https://btc.com/39mUsJFhjU6GDrchCkQ4iJsmdvD8S2jpzU
-
-> Curecoin: B6V6mSNRDFzmDgiPcQKYhBer6GgbM5XJeR | Explorer: https://chainz.cryptoid.info/cure/address.dws?B6V6mSNRDFzmDgiPcQKYhBer6GgbM5XJeR.htm
 
 
