@@ -106,7 +106,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int BlockDifficultyPrecision = 100_000; // The precision put on the difficulty factor calculated.
         public const int GenesisBlockHeight = 1; // The genesis block height.
 		public static readonly BigInteger GenesisBlockAmount = 2_000_000 * CoinDecimal; // The genesis block amount reward has pre-mining.
-		public const string GenesisBlockFinalTransactionHash ="791BB3DC69208073071C524E2628B8F9C8C216EBDF1DC9A622DCEB11D36970536304499DBAAC9EB72530888A4E37E49B2BD753DE3538842353E1AF002AED4504";
+		public const string GenesisBlockFinalTransactionHash ="F8EBDF074A14A24DEE55D2ECED87DAFF43A0463FADA096E95C42E381DED6E1C8E6092FD54C05A1308001A733994525E88AF21053B87F346B5A97B0DBAD7B1568";
         public const int GenesisBlockTransactionCount = 1; // The maximum of transaction inserted on the genesis block.
         public const int BlockAmountNetworkConfirmations = 1; // The minimum amount of network checks on blocks to do with peers, before to enable the task of confirmations on the block.
         public const int BlockAmountSlowNetworkConfirmations = 1; // This amount increment another amount of network checks, once this one is reach, the network counter increment and this one return back to 0.
@@ -122,7 +122,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const string BlockchainVersion = "01"; // Version of the blockchain used on Base58.
         public static readonly byte[] BlockchainVersionByteArray = ClassUtility.GetByteArrayFromHexString(BlockchainVersion);
         public const int BlockchainChecksum = 16; // Checksum size used on Base58.
-		public const bool BlockchainDefaultEnableCompressingDatabase = true;
+		public const bool BlockchainDefaultEnableCompressingDatabase = false;
 		public const bool BlockchainDefaultDataFormatIsJson = false;
 
         /// <summary>
@@ -202,7 +202,6 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public static readonly Dictionary<string, Dictionary<string, int>> BlockchainStaticPeerList = new Dictionary<string, Dictionary<string, int>>()
         {
 			{ "51.222.207.219", new Dictionary<string, int>() { { "D0BFF4A56F062828939E40E6DFD8A5EF58E28A10CB69E9E281C90802632D0345618CB5DA20736C2BAAC458A1EB5239F012621847B40F76C0CD10EA05CC4FD184", 2400} }},
-            { "2001:41d0:404:200::256c", new Dictionary<string, int>() { { "D0BFF4A56F062828939E40E6DFD8A5EF58E28A10CB69E9E281C90802632D0345618CB5DA20736C2BAAC458A1EB5239F012621847B40F76C0CD10EA05CC4FD184", 2400} }},
         }; // This is a static peer list who can't be updated, it's usually used once a peer don't have any peer list saved.
 
         /// <summary>
