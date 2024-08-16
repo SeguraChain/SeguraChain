@@ -1031,7 +1031,7 @@ namespace SeguraChain_Test_Tool
 
                                         #region Cryptocurrency website url.
                                         else if (blockchainLine.Contains("public const string CoinUrl"))
-                                            writer.WriteLine("\t\tpublic const string CoinUrl = \"" + coinUrl + "\":");
+                                            writer.WriteLine("\t\tpublic const string CoinUrl = \"" + coinUrl + "\";");
                                         #endregion
                                         #region Cryptocurrency ticker name.
                                         else if (blockchainLine.Contains("public const string CoinTickerName ="))

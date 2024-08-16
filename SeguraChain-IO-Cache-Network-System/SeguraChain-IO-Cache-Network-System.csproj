@@ -2,10 +2,14 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net7.0;net6.0;net5.0;net48</TargetFrameworks>
+    <TargetFrameworks>net8.0;net7.0;net6.0;net5.0;net48</TargetFrameworks>
     <RootNamespace>SeguraChain_IO_Cache_Network_System</RootNamespace>
   </PropertyGroup>
 
+	<PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0'">
+        <DefineConstant>NET8</DefineConstant>
+    </PropertyGroup>
+	
 	<PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0'">
         <DefineConstant>NET7</DefineConstant>
     </PropertyGroup>

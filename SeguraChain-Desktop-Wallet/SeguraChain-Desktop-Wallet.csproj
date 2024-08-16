@@ -7,7 +7,7 @@
   
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>net7.0-windows;net6.0-windows;net5.0-windows;net48</TargetFrameworks>
+    <TargetFrameworks>net8.0-windows;net7.0-windows;net6.0-windows;net5.0-windows;net48</TargetFrameworks>
     <RootNamespace>SeguraChain_Desktop_Wallet</RootNamespace>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>logo-web-profil.ico</ApplicationIcon>
@@ -19,6 +19,10 @@
     <IncludeSymbols>True</IncludeSymbols>
   </PropertyGroup>
 
+	<PropertyGroup Condition=" '$(TargetFramework)' == 'net8.0-windows'">
+        <DefineConstant>NET8</DefineConstant>
+    </PropertyGroup>
+	
 	<PropertyGroup Condition=" '$(TargetFramework)' == 'net7.0-windows'">
         <DefineConstant>NET7</DefineConstant>
     </PropertyGroup>
