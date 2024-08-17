@@ -81,7 +81,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Startup
             Task.Factory.StartNew(async () =>
             {
                 ClassWalletStartupFormLanguage walletStartupFormLanguageObject = ClassDesktopWalletCommonData.LanguageDatabase.GetLanguageContentObject<ClassWalletStartupFormLanguage>(ClassLanguageEnumType.LANGUAGE_TYPE_STARTUP_FORM);
-                MethodInvoker invoke = Show;
+                System.Windows.Forms.MethodInvoker invoke = Show;
                 BeginInvoke(invoke);
 
                 invoke = () => Text = BlockchainSetting.CoinName + walletStartupFormLanguageObject.FORM_TITLE_CLOSING_TEXT;
@@ -101,7 +101,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Startup
 
                 if (onCloseResult)
                 {
-                    MethodInvoker invokeClose = Close;
+                    System.Windows.Forms.MethodInvoker invokeClose = Close;
                     BeginInvoke(invokeClose);
                 }
                 // Force to close.
@@ -115,7 +115,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Startup
 
         private void UpdateLabelStartupText(string text)
         {
-            MethodInvoker invoke = () =>
+            System.Windows.Forms.MethodInvoker invoke = () =>
             {
                 labelStartupDesktopWalletLoadingText.Text = text;
                 labelStartupDesktopWalletLoadingText = ClassGraphicsUtility.AutoSetLocationAndResizeControl<Label>(labelStartupDesktopWalletLoadingText, this, 50d, false);

@@ -74,7 +74,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Setup.StepForm
                 {
                     bool complete = false;
 
-                    MethodInvoker invoke = async () =>
+                    System.Windows.Forms.MethodInvoker invoke = async () =>
                     {
 
                         // This copy permit to ensure to not link text edited to the object wallet address string to show.

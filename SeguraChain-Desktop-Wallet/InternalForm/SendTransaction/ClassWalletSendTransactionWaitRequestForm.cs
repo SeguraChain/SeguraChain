@@ -112,7 +112,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.SendTransaction
 
                         if (!buttonExit.Visible && _timestampStart + ClassWalletDefaultSetting.DefaultAwaitInvokeDesktopWalletFormDelay <= ClassUtility.GetCurrentTimestampInMillisecond())
                         {
-                            MethodInvoker showExit = () =>  buttonExit.Visible = true;
+                            System.Windows.Forms.MethodInvoker showExit = () =>  buttonExit.Visible = true;
                             BeginInvoke(showExit);
                         }
 
@@ -121,7 +121,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.SendTransaction
 
                     _formClosed = true;
 
-                    MethodInvoker closeForm = Close;
+                    System.Windows.Forms.MethodInvoker closeForm = Close;
 
                     BeginInvoke(closeForm);
 

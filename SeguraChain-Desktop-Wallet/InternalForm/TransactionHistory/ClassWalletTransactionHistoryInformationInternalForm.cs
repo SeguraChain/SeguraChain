@@ -122,7 +122,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.TransactionHistory
             // Show the loading form.
             Task.Factory.StartNew(() =>
             {
-                MethodInvoker invoke = () =>
+                System.Windows.Forms.MethodInvoker invoke = () =>
                 {
                     walletTransactionHistoryInformationsLoadingForm.ShowDialog(this);
                 };
@@ -164,7 +164,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.TransactionHistory
                 }
 
 
-                MethodInvoker invoke = () =>
+                System.Windows.Forms.MethodInvoker invoke = () =>
                 {
                     richTextBoxTransactionInformations.Text = contentBlockInformations;
                     walletTransactionHistoryInformationsLoadingForm.Close();

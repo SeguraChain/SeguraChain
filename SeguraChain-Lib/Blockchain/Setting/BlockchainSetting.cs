@@ -118,7 +118,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         /// </summary>
 		public const string CoinName = "XENOPHYTE";
 		public const string CoinTickerName = "XENOP";
-		public const string CoinUrl = "https://xenophyte.com/":
+        public const string CoinUrl = "https://xenophyte.com/";
         public const string BlockchainVersion = "01"; // Version of the blockchain used on Base58.
         public static readonly byte[] BlockchainVersionByteArray = ClassUtility.GetByteArrayFromHexString(BlockchainVersion);
         public const int BlockchainChecksum = 16; // Checksum size used on Base58.

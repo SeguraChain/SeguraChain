@@ -542,7 +542,7 @@ namespace SeguraChain_Desktop_Wallet
 #endif
                     _currentWalletFilename = walletFilename;
 
-                    MethodInvoker invokeSwitch = () =>
+                    System.Windows.Forms.MethodInvoker invokeSwitch = () =>
                     {
                         if (!_listWalletOpened.Contains(walletFilename))
                         {
@@ -560,7 +560,7 @@ namespace SeguraChain_Desktop_Wallet
                             long lastBlockHeightUnlocked = await ClassDesktopWalletCommonData.WalletSyncSystem.GetLastBlockHeightUnlockedSynced(cancellation, true);
                             if (ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFilename].WalletLastBlockHeightSynced < lastBlockHeightUnlocked || ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFilename].WalletLastBlockHeightSynced > lastBlockHeightUnlocked || ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[walletFilename].WalletEnableRescan)
                             {
-                                MethodInvoker invoke = () =>
+                                System.Windows.Forms.MethodInvoker invoke = () =>
                                 {
                                     using (ClassWalletRescanInternalForm walletRescanInternalForm = new ClassWalletRescanInternalForm(walletFilename, false))
                                         walletRescanInternalForm.ShowDialog(this);
@@ -589,7 +589,7 @@ namespace SeguraChain_Desktop_Wallet
         /// </summary>
         private void UpdateWalletAddressQrCodeShowed()
         {
-            MethodInvoker invoke = () =>
+            System.Windows.Forms.MethodInvoker invoke = () =>
             {
                 if (ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData.ContainsKey(_currentWalletFilename))
                 {
@@ -646,7 +646,7 @@ namespace SeguraChain_Desktop_Wallet
 
                                         bool complete = false;
 
-                                        MethodInvoker invoke = () =>
+                                        System.Windows.Forms.MethodInvoker invoke = () =>
                                         {
                                             openWalletToolStripMenuItem.DropDownItems.Add(walletFileItem);
                                             complete = true;
@@ -726,7 +726,7 @@ namespace SeguraChain_Desktop_Wallet
 #endif
                                     bool complete = false;
 
-                                    MethodInvoker invoke = () =>
+                                    System.Windows.Forms.MethodInvoker invoke = () =>
                                     {
                                         comboBoxListWalletFile.Items.Add(walletOpened);
                                         complete = true;
@@ -762,7 +762,7 @@ namespace SeguraChain_Desktop_Wallet
                                         if (!_listWalletOpened.Contains(walletComboBoxText))
                                         {
                                             bool removed = false;
-                                            MethodInvoker invoke = () =>
+                                            System.Windows.Forms.MethodInvoker invoke = () =>
                                             {
 
                                                 comboBoxListWalletFile.Items.Remove(
@@ -803,7 +803,7 @@ namespace SeguraChain_Desktop_Wallet
                                     bool complete = false;
 
                                     var i1 = i;
-                                    MethodInvoker invokeText = () =>
+                                    System.Windows.Forms.MethodInvoker invokeText = () =>
                                     {
                                         walletComboBoxText = comboBoxListWalletFile.GetItemText(comboBoxListWalletFile.Items[i1]);
                                         complete = true;
@@ -840,7 +840,7 @@ namespace SeguraChain_Desktop_Wallet
                                             if (foundTime > 1)
                                             {
                                                 bool removed = false;
-                                                MethodInvoker invoke = () =>
+                                                System.Windows.Forms.MethodInvoker invoke = () =>
                                                 {
 
                                                     comboBoxListWalletFile.Items.Remove(
@@ -883,7 +883,7 @@ namespace SeguraChain_Desktop_Wallet
 
                             string walletComboBoxSelected = string.Empty;
                             bool completeInvoke = false;
-                            MethodInvoker invokeSelected = () =>
+                            System.Windows.Forms.MethodInvoker invokeSelected = () =>
                             {
                                 walletComboBoxSelected = comboBoxListWalletFile.SelectedText;
                                 completeInvoke = true;
@@ -934,7 +934,7 @@ namespace SeguraChain_Desktop_Wallet
                             bool complete = false;
 
                             // Clean up on exception.
-                            MethodInvoker invoke = () =>
+                            System.Windows.Forms.MethodInvoker invoke = () =>
                             {
                                 comboBoxListWalletFile.Items.Clear();
                                 complete = true;
@@ -982,7 +982,7 @@ namespace SeguraChain_Desktop_Wallet
                         {
                             long totalMemPoolTransaction = await ClassDesktopWalletCommonData.WalletSyncSystem.GetTotalMemPoolTransactionFromSyncAsync(_cancellationTokenTaskUpdateWalletContentInformations, true);
 
-                            MethodInvoker invoke = () =>
+                            System.Windows.Forms.MethodInvoker invoke = () =>
                             {
                                 try
                                 {
@@ -1069,7 +1069,7 @@ namespace SeguraChain_Desktop_Wallet
 
                             bool complete = false;
 
-                            MethodInvoker invoke = () =>
+                            System.Windows.Forms.MethodInvoker invoke = () =>
                             {
                                 try
                                 {
@@ -1224,7 +1224,7 @@ namespace SeguraChain_Desktop_Wallet
                                     {
                                         int maxPage = _walletTransactionHistorySystemInstance.MaxPageTransactionHistory(_currentWalletFilename, _cancellationTokenTaskUpdateWalletContentInformations);
 
-                                        MethodInvoker invokePageUpdate = () =>
+                                        System.Windows.Forms.MethodInvoker invokePageUpdate = () =>
                                         {
                                             textBoxMainInterfaceMaxPageTransactionHistory.Text = maxPage.ToString();
                                             complete = true;
@@ -1245,7 +1245,7 @@ namespace SeguraChain_Desktop_Wallet
                                     bool complete = false;
 
                                     _walletTransactionHistorySystemInstance.InsertTransactionHistoryToWalletFileOpened(_currentWalletFilename, panelTransactionHistory.Width, panelTransactionHistory.Height);
-                                    MethodInvoker invoke = () =>
+                                    System.Windows.Forms.MethodInvoker invoke = () =>
                                     {
                                         textBoxMainInterfaceCurrentPageTransactionHistory.Text = @"1";
                                         textBoxMainInterfaceMaxPageTransactionHistory.Text = @"0";
@@ -1521,7 +1521,7 @@ namespace SeguraChain_Desktop_Wallet
         /// </summary>
         private void LockWalletTabs()
         {
-            MethodInvoker invoke = () =>
+            System.Windows.Forms.MethodInvoker invoke = () =>
             {
                 tabPageOverview.Enabled = false;
                 tabPageReceiveTransaction.Enabled = false;
@@ -1538,7 +1538,7 @@ namespace SeguraChain_Desktop_Wallet
         /// </summary>
         private void EnableWalletTabs()
         {
-            MethodInvoker invoke = () =>
+            System.Windows.Forms.MethodInvoker invoke = () =>
             {
                 tabPageOverview.Enabled = true;
                 tabPageReceiveTransaction.Enabled = true;
@@ -1917,7 +1917,7 @@ namespace SeguraChain_Desktop_Wallet
 
                                 if (listBlockTransaction.Count > 0)
                                 {
-                                    MethodInvoker invoke = () =>
+                                    System.Windows.Forms.MethodInvoker invoke = () =>
                                     {
                                         using (ClassWalletTransactionHistoryInformationInternalForm walletTransactionHistoryInformationInternalForm = new ClassWalletTransactionHistoryInformationInternalForm(listBlockTransaction.GetList))
                                             walletTransactionHistoryInformationInternalForm.ShowDialog(this);
@@ -1930,7 +1930,7 @@ namespace SeguraChain_Desktop_Wallet
                             }
                             else
                             {
-                                MethodInvoker invoke = () =>
+                                System.Windows.Forms.MethodInvoker invoke = () =>
                                 {
                                     MessageBox.Show(this, _walletMainFormLanguageObject.MESSAGEBOX_TRANSACTION_HISTORY_SEARCH_NOTHING_FOUND_TEXT.Replace("%s", textBoxTransactionHistorySearch.Text));
                                 };
@@ -2265,7 +2265,7 @@ namespace SeguraChain_Desktop_Wallet
                     BigInteger walletAvailableBalanceBigInteger = ClassDesktopWalletCommonData.WalletSyncSystem.GetWalletAvailableBalanceFromSyncedData(_currentWalletFilename);
 
                     decimal walletAvailableBalance = (decimal)walletAvailableBalanceBigInteger / BlockchainSetting.CoinDecimal;
-                    MethodInvoker invoke = () =>
+                    System.Windows.Forms.MethodInvoker invoke = () =>
                     {
 
                         if (amountSelected < walletAvailableBalance)
@@ -2335,7 +2335,7 @@ namespace SeguraChain_Desktop_Wallet
                 }
                 else
                 {
-                    MethodInvoker invoke = () =>
+                    System.Windows.Forms.MethodInvoker invoke = () =>
                     {
                         CleanAmountAndFeeEstimations(false);
                         textBoxSendTransactionConfirmationsCountTarget.ForeColor = Color.Red;
@@ -2345,7 +2345,7 @@ namespace SeguraChain_Desktop_Wallet
             }
             else
             {
-                MethodInvoker invoke = () =>
+                System.Windows.Forms.MethodInvoker invoke = () =>
                 {
                     CleanAmountAndFeeEstimations(false);
                     textBoxSendTransactionConfirmationsCountTarget.ForeColor = Color.Red;
@@ -2616,7 +2616,7 @@ namespace SeguraChain_Desktop_Wallet
                 Task.Factory.StartNew(async () =>
                 {
 
-                    MethodInvoker invoke = async () =>
+                    System.Windows.Forms.MethodInvoker invoke = async () =>
                     {
                         // This copy permit to ensure to not link text edited to the object wallet address string to show.
                         string walletAddressCopy = walletAddress.CopyBase58String(true);

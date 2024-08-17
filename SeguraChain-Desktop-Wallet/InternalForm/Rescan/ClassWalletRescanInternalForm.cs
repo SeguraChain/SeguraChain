@@ -128,7 +128,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Rescan
                     UpdateWalletRescanPercentProgress();
                     await Task.Delay(1000);
 
-                    BeginInvoke((MethodInvoker)Close);
+                    BeginInvoke((System.Windows.Forms.MethodInvoker)Close);
 
                 }, _walletRescanCancellationToken.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
             }
@@ -147,7 +147,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Rescan
                 _walletRescanProgressPercent = ((double)ClassDesktopWalletCommonData.WalletDatabase.DictionaryWalletData[_walletFilename].WalletLastBlockHeightSynced / _lastBlockHeightSynced) * 100d;
 
 
-            MethodInvoker invoke = () =>
+            System.Windows.Forms.MethodInvoker invoke = () =>
             {
                 labelWalletRescanProgressText.Text = _walletRescanProgressPercent <= 100 ? _walletRescanProgressPercent.ToString("N" + 2) : 100.ToString("N" + 2);
                 labelWalletRescanProgressText.Text += _walletRescanFormLanguageObject.LABEL_WALLET_RESCAN_PROGRESS_TEXT;
