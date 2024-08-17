@@ -432,56 +432,61 @@ namespace SeguraChain_Lib.Blockchain.Database
                             {
                                 ClassBlockObject blockObjectInformation = await BlockchainMemoryManagement.GetBlockInformationDataStrategy(blockHeight, _cancellationTokenStopBlockchain);
 
-
-
-                                if (blockObjectInformation.BlockHeight > BlockchainSetting.GenesisBlockHeight)
+                                if (blockObjectInformation != null)
                                 {
-                                    ClassBlockObject previousBlockObjectInformation = await BlockchainMemoryManagement.GetBlockInformationDataStrategy(blockHeight - 1, _cancellationTokenStopBlockchain);
 
-                                    ClassBlockEnumCheckStatus blockCheckStatus = ClassBlockUtility.CheckBlockHash(blockObjectInformation.BlockHash, blockObjectInformation.BlockHeight, blockObjectInformation.BlockDifficulty, previousBlockObjectInformation.TotalTransaction, previousBlockObjectInformation.BlockFinalHashTransaction);
-
-                                    if (blockCheckStatus != ClassBlockEnumCheckStatus.VALID_BLOCK_HASH)
+                                    if (blockObjectInformation.BlockHeight > BlockchainSetting.GenesisBlockHeight)
                                     {
-                                        ClassLog.WriteLine("Invalid block data at block height: " + blockObjectInformation.BlockHeight, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
-                                        cancel = true;
-                                        return;
+                                        ClassBlockObject previousBlockObjectInformation = await BlockchainMemoryManagement.GetBlockInformationDataStrategy(blockHeight - 1, _cancellationTokenStopBlockchain);
+
+                                        ClassBlockEnumCheckStatus blockCheckStatus = ClassBlockUtility.CheckBlockHash(blockObjectInformation.BlockHash, blockObjectInformation.BlockHeight, blockObjectInformation.BlockDifficulty, previousBlockObjectInformation.TotalTransaction, previousBlockObjectInformation.BlockFinalHashTransaction);
+
+                                        if (blockCheckStatus != ClassBlockEnumCheckStatus.VALID_BLOCK_HASH)
+                                        {
+                                            ClassLog.WriteLine("Invalid block data at block height: " + blockObjectInformation.BlockHeight, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                                            cancel = true;
+                                            return;
+                                        }
+                                    }
+
+
+                                    while (blockObjectInformation == null)
+                                        blockObjectInformation = await BlockchainMemoryManagement.GetBlockInformationDataStrategy(blockHeight, _cancellationTokenStopBlockchain);
+
+                                    if (blockObjectInformation != null)
+                                    {
+
+                                        ClassBlockObject blockObject = await BlockchainMemoryManagement.GetBlockDataStrategy(blockHeight, true, true, _cancellationTokenStopBlockchain);
+
+                                        while (blockObject == null ||
+                                        blockObject?.BlockTransactions == null ||
+                                        blockObject?.BlockTransactions?.Count != blockObject?.TotalTransaction ||
+                                        blockObject?.TotalTransaction != blockObjectInformation.TotalTransaction)
+                                            blockObject = await BlockchainMemoryManagement.GetBlockDataStrategy(blockHeight, true, true, _cancellationTokenStopBlockchain);
+
+
+
+                                        foreach (string blockDataLine in ClassBlockUtility.BlockObjectToStringBlockData(blockObject, blockchainDatabaseSetting.DataSetting.DataFormatIsJson))
+                                        {
+
+                                            byte[] blockDataLineCopy = Encoding.UTF8.GetBytes(blockDataLine);
+
+                                            if (blockchainDatabaseSetting.DataSetting.EnableEncryptionDatabase)
+                                                ClassAes.EncryptionProcess(blockDataLineCopy, _blockchainDataStandardEncryptionKey, _blockchainDataStandardEncryptionKeyIv, out blockDataLineCopy);
+
+                                            await writerBlock.WriteLineAsync(Encoding.UTF8.GetString(blockDataLineCopy));
+                                            await writerBlock.FlushAsync();
+                                        }
+
+                                        totalTxSaved += blockObject.BlockTransactions.Count;
+                                        totalBlockSaved++;
                                     }
                                 }
-
-
-                                while (blockObjectInformation == null)
-                                    blockObjectInformation = await BlockchainMemoryManagement.GetBlockInformationDataStrategy(blockHeight, _cancellationTokenStopBlockchain);
-
-                                ClassBlockObject blockObject = await BlockchainMemoryManagement.GetBlockDataStrategy(blockHeight, true, true, _cancellationTokenStopBlockchain);
-
-                                while (blockObject == null ||
-                                blockObject?.BlockTransactions == null ||
-                                blockObject?.BlockTransactions?.Count != blockObject?.TotalTransaction ||
-                                blockObject?.TotalTransaction != blockObjectInformation.TotalTransaction)
-                                    blockObject = await BlockchainMemoryManagement.GetBlockDataStrategy(blockHeight, true, true, _cancellationTokenStopBlockchain);
-
-
-
-                                foreach (string blockDataLine in ClassBlockUtility.BlockObjectToStringBlockData(blockObject, blockchainDatabaseSetting.DataSetting.DataFormatIsJson))
-                                {
-
-                                    byte[] blockDataLineCopy = Encoding.UTF8.GetBytes(blockDataLine);
-
-                                    if (blockchainDatabaseSetting.DataSetting.EnableEncryptionDatabase)
-                                        ClassAes.EncryptionProcess(blockDataLineCopy, _blockchainDataStandardEncryptionKey, _blockchainDataStandardEncryptionKeyIv, out blockDataLineCopy);
-
-                                    await writerBlock.WriteLineAsync(Encoding.UTF8.GetString(blockDataLineCopy));
-                                    await writerBlock.FlushAsync();
-                                }
-
-                                totalTxSaved += blockObject.BlockTransactions.Count;
-                                totalBlockSaved++;
-
 
                             }
 
                             totalTaskDone++;
-                        }, _cancellationTokenStopBlockchain.Token);
+                        }, _cancellationTokenStopBlockchain.Token).ConfigureAwait(false);
                     }
 
                     while (totalTaskDone < ClassBlockchainDatabaseDefaultSetting.MaxBlockTaskSave && !cancel)

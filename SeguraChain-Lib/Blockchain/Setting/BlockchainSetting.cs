@@ -106,7 +106,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int BlockDifficultyPrecision = 100_000; // The precision put on the difficulty factor calculated.
         public const int GenesisBlockHeight = 1; // The genesis block height.
 		public static readonly BigInteger GenesisBlockAmount = 2_000_000 * CoinDecimal; // The genesis block amount reward has pre-mining.
-		public const string GenesisBlockFinalTransactionHash ="74FBF2A33374CE951B79264232B823D027E9C09892A705D851886916052F37F285EC675DA0D006073A577A6109E98C98A568DC312112750CC6627D1EC46A52DA";
+		public const string GenesisBlockFinalTransactionHash ="ABC10970B5CDC5EE5E8354EF8616C3471BDAC71909A2EFAD58413B5C0D15D62D10F718970E6D36B4E866249302702667052311D02B585CF656135DE99E84C2ED";
         public const int GenesisBlockTransactionCount = 1; // The maximum of transaction inserted on the genesis block.
         public const int BlockAmountNetworkConfirmations = 1; // The minimum amount of network checks on blocks to do with peers, before to enable the task of confirmations on the block.
         public const int BlockAmountSlowNetworkConfirmations = 1; // This amount increment another amount of network checks, once this one is reach, the network counter increment and this one return back to 0.
@@ -118,7 +118,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         /// </summary>
 		public const string CoinName = "XENOPHYTE";
 		public const string CoinTickerName = "XENOP";
-        public const string CoinUrl = "https://xenophyte.com/";
+		public const string CoinUrl = "https://xenophyte.com/";
         public const string BlockchainVersion = "01"; // Version of the blockchain used on Base58.
         public static readonly byte[] BlockchainVersionByteArray = ClassUtility.GetByteArrayFromHexString(BlockchainVersion);
         public const int BlockchainChecksum = 16; // Checksum size used on Base58.
