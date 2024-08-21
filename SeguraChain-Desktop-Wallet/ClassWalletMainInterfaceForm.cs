@@ -263,29 +263,6 @@ namespace SeguraChain_Desktop_Wallet
             }
         }
 
-        /// <summary>
-        /// Event executed once the desktop wallet is on closing state, stop every tasks who update the wallet.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ClassWalletMainInterfaceForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (!_cancellationTokenTaskUpdateWalletListFilesFound.IsCancellationRequested)
-                _cancellationTokenTaskUpdateWalletListFilesFound.Cancel();
-
-            _walletRecentTransactionHistorySystemInstance.ClearRecentTransactionHistory();
-            StopTaskUpdateWallet();
-        }
-
-        /// <summary>
-        /// Event executed on closing the desktop wallet main interface.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ClassWalletMainInterfaceForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            _startupInternalForm.OnCloseDesktopWallet(this);
-        }
 
         /// <summary>
         /// Function who update every languages.
@@ -298,6 +275,8 @@ namespace SeguraChain_Desktop_Wallet
             labelWalletOpened.Text = _walletMainFormLanguageObject.LABEL_WALLET_OPENED_LIST_TEXT;
             labelWalletOpened = ClassGraphicsUtility.AutoSetLocationAndResizeControl<Label>(labelWalletOpened, this, 98, false);
             progressBarMainInterfaceSyncProgress = ClassGraphicsUtility.AutoSetLocationAndResizeControl<ClassCustomProgressBar>(progressBarMainInterfaceSyncProgress, this, 50, false);
+            progressBarMainInterfaceConfirmProgress = ClassGraphicsUtility.AutoSetLocationAndResizeControl<ClassCustomProgressBar>(progressBarMainInterfaceConfirmProgress, this, 50, false);
+
             labelMainInterfaceSyncProgress.Text = _walletMainFormLanguageObject.LABEL_MAIN_INTERFACE_SYNC_PROGRESS;
             labelMainInterfaceSyncProgress = ClassGraphicsUtility.AutoSetLocationAndResizeControl<Label>(labelMainInterfaceSyncProgress, this, 50, false);
 
@@ -463,7 +442,7 @@ namespace SeguraChain_Desktop_Wallet
             else
             {
                 MessageBox.Show(@"Failed to generate your first wallet, ensure to have propertly install the desktop wallet", @"Failed to create wallet.", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                _startupInternalForm.OnCloseDesktopWallet(this);
+                _startupInternalForm.OnCloseDesktopWallet();
             }
         }
 
@@ -996,6 +975,13 @@ namespace SeguraChain_Desktop_Wallet
                                         int percentProgressInt = (int)(Math.Round(percentProgress, 2) * 100d);
                                         if (percentProgressInt >= progressBarMainInterfaceSyncProgress.Minimum && percentProgressInt <= progressBarMainInterfaceSyncProgress.Maximum)
                                             progressBarMainInterfaceSyncProgress.Value = percentProgressInt;
+
+                                        double percentConfirmProgress = ((double)blockchainNetworkStatsObject.LastBlockHeightTransactionConfirmationDone / blockchainNetworkStatsObject.LastBlockHeight) * 100d;
+
+                                        percentProgressInt = (int)(Math.Round(percentConfirmProgress, 2) * 100d);
+                                        if (percentProgressInt >= progressBarMainInterfaceConfirmProgress.Minimum && percentProgressInt <= progressBarMainInterfaceConfirmProgress.Maximum)
+                                            progressBarMainInterfaceConfirmProgress.Value = percentProgressInt;
+
                                     }
                                 }
                                 catch
@@ -1318,7 +1304,8 @@ namespace SeguraChain_Desktop_Wallet
         /// <param name="e"></param>
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            _startupInternalForm.OnCloseDesktopWallet(this);
+            Hide();
+            _startupInternalForm.OnCloseDesktopWallet();
         }
 
         /// <summary>
@@ -2889,6 +2876,18 @@ namespace SeguraChain_Desktop_Wallet
 
         private void buttonSendTransactionOpenContactList_Click(object sender, EventArgs e)
         {
+
+        }
+
+        private void ClassWalletMainInterfaceForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            if (!_cancellationTokenTaskUpdateWalletListFilesFound.IsCancellationRequested)
+                _cancellationTokenTaskUpdateWalletListFilesFound.Cancel();
+
+            _walletRecentTransactionHistorySystemInstance.ClearRecentTransactionHistory();
+            Hide();
+            StopTaskUpdateWallet();
+            _startupInternalForm.OnCloseDesktopWallet();
 
         }
     }

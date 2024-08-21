@@ -174,8 +174,20 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
 
                         string ioFilePath = _blockchainDatabaseSetting.GetBlockchainCacheDirectoryPath + ioFileName;
                         _dictionaryCacheIoIndexObject[ioFileName].CloseLockStream();
+
+                        try
+                        {
+                            if (File.Exists(ioFilePath))
+                                File.Delete(ioFilePath);
+                        }
+                        catch (Exception error)
+                        {
+#if DEBUG
+                            Debug.WriteLine("Failed to delete the IO Cache file: " + ioFileName + "\n Exception: " + error.Message);
+#endif
+                        }
+
                         _dictionaryCacheIoIndexObject.Remove(ioFilePath);
-                        File.Delete(ioFilePath);
 
                     }
 
