@@ -9,7 +9,7 @@ using Org.BouncyCastle.Security;
 using SeguraChain_Lib.Algorithm;
 using SeguraChain_Lib.Blockchain.Setting;
 using SeguraChain_Lib.Blockchain.Wallet.Function;
-
+using SeguraChain_Lib.TaskManager;
 using SeguraChain_Lib.Utility;
 
 namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
@@ -222,30 +222,46 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         public async Task<string> DoSignatureProcess(string hash, string privateKey, CancellationTokenSource cancellation)
         {
             string result = string.Empty;
+            bool completed = false;
 
-
-            return await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
+            await TaskManager.TaskManager.InsertTask(async () =>
             {
-                try
+                result = await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
                 {
-                    var _signerDoSignature = SignerUtilities.GetSigner(BlockchainSetting.SignerNameNetwork);
+                    try
+                    {
+                        var _signerDoSignature = SignerUtilities.GetSigner(BlockchainSetting.SignerNameNetwork);
 
-                    if (_ecPrivateKeyParameters == null)
-                        _ecPrivateKeyParameters = new ECPrivateKeyParameters(new BigInteger(ClassBase58.DecodeWithCheckSum(privateKey, true)), ClassWalletUtility.ECDomain);
+                        if (_ecPrivateKeyParameters == null)
+                            _ecPrivateKeyParameters = new ECPrivateKeyParameters(new BigInteger(ClassBase58.DecodeWithCheckSum(privateKey, true)), ClassWalletUtility.ECDomain);
 
-                    _signerDoSignature.Init(true, _ecPrivateKeyParameters);
+                        _signerDoSignature.Init(true, _ecPrivateKeyParameters);
 
-                    _signerDoSignature.BlockUpdate(ClassUtility.GetByteArrayFromHexString(hash), 0, hash.Length / 2);
+                        _signerDoSignature.BlockUpdate(ClassUtility.GetByteArrayFromHexString(hash), 0, hash.Length / 2);
 
-                    result = Convert.ToBase64String(_signerDoSignature.GenerateSignature());
+                        result = Convert.ToBase64String(_signerDoSignature.GenerateSignature());
 
-                    // Reset.
-                    _signerDoSignature.Reset();
-                }
-                catch
-                {
-                }
-            }, cancellation) ? result : string.Empty;
+                        // Reset.
+                        _signerDoSignature.Reset();
+                    }
+                    catch
+                    {
+                    }
+
+                }, cancellation).ConfigureAwait(true) ? result : string.Empty;
+
+                completed = true;
+
+            }, 0, cancellation);
+
+            while (!completed)
+            {
+                if (cancellation.IsCancellationRequested)
+                    break;
+
+                await Task.Delay(1);
+            }
+            return result;
         }
 
         /// <summary>
@@ -259,51 +275,68 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         {
 
             bool result = false;
+            bool completed = false;
 
-            return await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
+            await TaskManager.TaskManager.InsertTask(async () =>
             {
-                try
+                result = await _semaphoreCryptoObject.TryWaitExecuteActionAsync(() =>
                 {
+                    try
+                    {
 
-                    double byteSize = hash.Length / 2;
+                        double byteSize = hash.Length / 2;
 
-                    // Slow.
-                    if (!_initialized || publicKey.IsNullOrEmpty(false, out _) || signature.IsNullOrEmpty(false, out _) ||
-                    byteSize.ToString().Contains(",") || publicKey == "empty" && signature == "empty" || !ClassUtility.CheckBase64String(signature)) // If the size is not an integer, return false immediatly.
-                        return;
+                        // Slow.
+                        if (!_initialized || publicKey.IsNullOrEmpty(false, out _) || signature.IsNullOrEmpty(false, out _) ||
+                        byteSize.ToString().Contains(",") || publicKey == "empty" && signature == "empty" || !ClassUtility.CheckBase64String(signature)) // If the size is not an integer, return false immediatly.
+                            return;
 
-                    byte[] decodedPublicKey = ClassBase58.DecodeWithCheckSum(publicKey, false);
+                        byte[] decodedPublicKey = ClassBase58.DecodeWithCheckSum(publicKey, false);
 
-                    if (decodedPublicKey == null)
-                        return;
+                        if (decodedPublicKey == null)
+                            return;
 
-                    var _signerCheckSignature = SignerUtilities.GetSigner(BlockchainSetting.SignerNameNetwork);
+                        var _signerCheckSignature = SignerUtilities.GetSigner(BlockchainSetting.SignerNameNetwork);
 
-                    if (_ecPublicKeyParameters == null)
-                        _ecPublicKeyParameters = new ECPublicKeyParameters(ClassWalletUtility.ECParameters.Curve.DecodePoint(decodedPublicKey), ClassWalletUtility.ECDomain);
-
-
-                    _signerCheckSignature.Init(false, _ecPublicKeyParameters);
-
+                        if (_ecPublicKeyParameters == null)
+                            _ecPublicKeyParameters = new ECPublicKeyParameters(ClassWalletUtility.ECParameters.Curve.DecodePoint(decodedPublicKey), ClassWalletUtility.ECDomain);
 
 
-                    // Do not contain the hash converted into a byte array inside of the memory.
-                    _signerCheckSignature.BlockUpdate(ClassUtility.GetByteArrayFromHexString(hash), 0, (int)byteSize);
+                        _signerCheckSignature.Init(false, _ecPublicKeyParameters);
 
-                    result = _signerCheckSignature.VerifySignature(Convert.FromBase64String(signature));
 
-                    // Reset.
-                    _signerCheckSignature.Reset();
 
-                }
-                catch
-                {
+                        // Do not contain the hash converted into a byte array inside of the memory.
+                        _signerCheckSignature.BlockUpdate(ClassUtility.GetByteArrayFromHexString(hash), 0, (int)byteSize);
+
+                        result = _signerCheckSignature.VerifySignature(Convert.FromBase64String(signature));
+
+                        // Reset.
+                        _signerCheckSignature.Reset();
+
+                    }
+                    catch
+                    {
 #if DEBUG
-                    Debug.WriteLine("hash size: " + hash.Length);
+                        Debug.WriteLine("hash size: " + hash.Length);
 #endif
-                    result = false;
-                }
-            }, cancellation) && result ? true : false;
+                        result = false;
+                    }
+                }, cancellation).ConfigureAwait(true) && result ? true : false;
+
+                completed = true;
+
+            }, 0, cancellation);
+
+            while(!completed)
+            {
+                if (cancellation.IsCancellationRequested)
+                    break;
+
+                await Task.Delay(1);
+            }
+
+            return result;
         }
     }
 }

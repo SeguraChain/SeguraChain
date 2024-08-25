@@ -67,7 +67,9 @@ namespace SeguraChain_Lib.Algorithm
         public static bool EncryptionProcess(byte[] content, byte[] key, byte[] iv, out byte[] result)
         {
 
-            if (content != null)
+            if (content != null && 
+                key != null && 
+                iv != null)
             {
                 using (RijndaelManaged aesObject = new RijndaelManaged())
                 {

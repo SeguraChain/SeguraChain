@@ -58,10 +58,10 @@ namespace SeguraChain_Desktop_Wallet.Common
         /// Initialize every common data.
         /// </summary>
         /// <returns></returns>
-        public static bool InitializeDesktopWalletCommonData()
+        public static async Task<bool> InitializeDesktopWalletCommonData()
         {
 
-            if (!InitializeWalletSyncSystem().Result)
+            if (!await InitializeWalletSyncSystem())
             {
                 MessageBox.Show("Error on start wallet sync system.", "Wallet sync system", MessageBoxButtons.OK);
                 Process.GetCurrentProcess().Kill();

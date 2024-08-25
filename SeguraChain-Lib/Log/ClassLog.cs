@@ -441,46 +441,44 @@ namespace SeguraChain_Lib.Log
             {
                 if (LogWriterInitialized)
                 {
-                    TaskManager.TaskManager.InsertTask(() =>
+
+
+                    bool locked = false;
+
+                    try
                     {
-
-                        bool locked = false;
-
                         try
                         {
-                            try
+                            locked = Monitor.TryEnter(_logListOnCollect[logLevelType]);
+                            if (locked)
                             {
-                                locked = Monitor.TryEnter(_logListOnCollect[logLevelType]);
-                                if (locked)
+                                if (_logListOnCollect.ContainsKey(logLevelType))
                                 {
-                                    if (_logListOnCollect.ContainsKey(logLevelType))
+
+                                    _logListOnCollect[logLevelType].Add(new ClassLogObject()
                                     {
+                                        LogContent = logLine,
+                                        Written = false,
+                                        Timestamp = TaskManager.TaskManager.CurrentTimestampSecond
+                                    });
 
-                                        _logListOnCollect[logLevelType].Add(new ClassLogObject()
-                                        {
-                                            LogContent = logLine,
-                                            Written = false,
-                                            Timestamp = TaskManager.TaskManager.CurrentTimestampSecond
-                                        });
+                                    Monitor.PulseAll(_logListOnCollect[logLevelType]);
 
-                                        Monitor.PulseAll(_logListOnCollect[logLevelType]);
-
-                                    }
                                 }
                             }
-                            catch(Exception error)
-                            {
-                                if (error is ArgumentOutOfRangeException)
-                                    _logListOnCollect[logLevelType].Clear();
-                            }
                         }
-                        finally
+                        catch (Exception error)
                         {
-                            if (locked)
-                                Monitor.Exit(_logListOnCollect[logLevelType]);
+                            if (error is ArgumentOutOfRangeException)
+                                _logListOnCollect[logLevelType].Clear();
                         }
+                    }
+                    finally
+                    {
+                        if (locked)
+                            Monitor.Exit(_logListOnCollect[logLevelType]);
+                    }
 
-                    }, 0, null, null).ConfigureAwait(false);
                 }
             }
         }

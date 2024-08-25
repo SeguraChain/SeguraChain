@@ -147,7 +147,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                     packetSendObject.PublicKey.IsNullOrEmpty(false, out _))
                 {
 #if DEBUG
-                    Debug.WriteLine("Failed, to sign packet data target" + PeerIpTarget + " | Type: " + System.Enum.GetName(typeof(ClassPeerEnumPacketSend), PacketResponseExpected));
+                    Debug.WriteLine("Failed, to sign packet data target " + PeerIpTarget + " | Type: " + System.Enum.GetName(typeof(ClassPeerEnumPacketSend), PacketResponseExpected));
 #endif
                     return false;
                 }

@@ -3,14 +3,12 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Microsoft.Win32;
 using SeguraChain_Desktop_Wallet.Common;
 using SeguraChain_Desktop_Wallet.Components;
 using SeguraChain_Desktop_Wallet.Language.Enum;
 using SeguraChain_Desktop_Wallet.Language.Object;
 using SeguraChain_Lib.Blockchain.Setting;
-using static System.Net.Mime.MediaTypeNames;
-using Timer = System.Windows.Forms.Timer;
+
 
 namespace SeguraChain_Desktop_Wallet.InternalForm.Startup
 {
@@ -55,7 +53,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Startup
 
             Task.Factory.StartNew(async () =>
             {
-                if (ClassDesktopWalletCommonData.InitializeDesktopWalletCommonData())
+                if (await ClassDesktopWalletCommonData.InitializeDesktopWalletCommonData())
                 {
                     UpdateLabelStartupText(walletStartupFormLanguageObject.LABEL_STARTUP_DESKTOP_WALLET_LOADING_SUCCESS_TEXT);
 
@@ -87,9 +85,10 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Startup
             labelStartupDesktopWalletLoadingText.Text = walletStartupFormLanguageObject.LABEL_ON_CLOSE_DESKTOP_WALLET_PENDING_TEXT;
             labelStartupDesktopWalletLoadingText = ClassGraphicsUtility.AutoSetLocationAndResizeControl<Label>(labelStartupDesktopWalletLoadingText, this, 50d, false);
 
+
             bool saveResult = ClassDesktopWalletCommonData.CloseDesktopWalletCommonData().Result;
 
-            labelStartupDesktopWalletLoadingText.Text = saveResult ? walletStartupFormLanguageObject.LABEL_ON_CLOSE_DESKTOP_WALLET_SUCCESS_TEXT : walletStartupFormLanguageObject.LABEL_ON_CLOSE_DESKTOP_WALLET_FAILED_TEXT;
+            labelStartupDesktopWalletLoadingText.Text = saveResult ? walletStartupFormLanguageObject.LABEL_ON_CLOSE_DESKTOP_WALLET_SUCCESS_TEXT : walletStartupFormLanguageObject.LABEL_ON_CLOSE_DESKTOP_WALLET_SUCCESS_TEXT;
             labelStartupDesktopWalletLoadingText = ClassGraphicsUtility.AutoSetLocationAndResizeControl<Label>(labelStartupDesktopWalletLoadingText, this, 50d, false);
             Process.GetCurrentProcess().Kill();
         }
@@ -114,7 +113,11 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Startup
                 timerOpenMainInterface.Stop();
                 _canOpenMainInterface = false;
                 _walletMainInterfaceForm = new ClassWalletMainInterfaceForm(_noWalletFile, this);
-                _walletMainInterfaceForm.ShowDialog(this);
+                new Thread(() =>
+                {
+                    MethodInvoker invoke = () => _walletMainInterfaceForm.ShowDialog(this);
+                    BeginInvoke(invoke);
+                }).Start();
             }
         }
     }
