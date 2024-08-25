@@ -21,7 +21,7 @@ Please read the whitepaper document, the document is not yet complete but most o
 
 Once the whitepaper is complete, I will make the translation of this one into english.
 
-Everything has been developed in C#, and support NET5/NET6/NET7, a downgrade to NetFramework 4.8 is available too, you can then use
+Everything has been developed in C#, and support NET5/NET6/NET7/NET8, a downgrade to NetFramework 4.8.1 is available too, you can then use
 **Monodevelop**
 
 <b>Visual Studio 2022 is required.</b>
