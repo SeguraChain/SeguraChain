@@ -408,9 +408,7 @@ namespace SeguraChain_Lib.Blockchain.Database
                 while (!cancel)
                 {
 
-
                     int totalTaskDone = 0;
-
 
                     for (int k = 0; k < ClassBlockchainDatabaseDefaultSetting.MaxBlockTaskSave; k++)
                     {
@@ -480,6 +478,10 @@ namespace SeguraChain_Lib.Blockchain.Database
 
                                         totalTxSaved += blockObject.BlockTransactions.Count;
                                         totalBlockSaved++;
+
+#if DEBUG
+                                        Debug.WriteLine("Block Height: " + blockObject.BlockHeight + " successfully saved.");
+#endif
                                     }
                                 }
 
@@ -490,7 +492,12 @@ namespace SeguraChain_Lib.Blockchain.Database
                     }
 
                     while (totalTaskDone < ClassBlockchainDatabaseDefaultSetting.MaxBlockTaskSave && !cancel)
+                    {
+                        if (totalBlockSaved >= countBlock)
+                            break;
+
                         await Task.Delay(1);
+                    }
 
                     if (cancel)
                         break;
@@ -532,6 +539,9 @@ namespace SeguraChain_Lib.Blockchain.Database
             {
                 ClassLog.WriteLine("Close and clear blockchain database cache..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                 await BlockchainMemoryManagement.CloseCache();
+#if DEBUG
+                Debug.WriteLine("Blockchain database cache cleaned and closed.");
+#endif
                 ClassLog.WriteLine("Blockchain database cache cleaned and closed.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
             }
 
@@ -547,7 +557,15 @@ namespace SeguraChain_Lib.Blockchain.Database
                     InsertCheckpoint(ClassCheckpointEnumType.WALLET_CHECKPOINT, listCheckpoint.Key, tupleWalletIndexCached.Item1, listCheckpoint.Value.LastWalletBalance, listCheckpoint.Value.LastWalletPendingBalance);
             }
 
+#if DEBUG
+            Debug.WriteLine("Save wallet memory index successfully done.");
+#endif
+
             SaveCheckpointData(blockchainDatabaseSetting);
+
+#if DEBUG
+            Debug.WriteLine("Checkpoint succesfully saved.");
+#endif
 
             BlockchainMemoryManagement.BlockchainWalletIndexMemoryCacheObject.Clear();
 

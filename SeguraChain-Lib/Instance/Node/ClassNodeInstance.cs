@@ -223,133 +223,161 @@ namespace SeguraChain_Lib.Instance.Node
         /// <summary>
         /// Peer tool closed.
         /// </summary>
-        public async Task NodeStop(bool forceClose = false, bool isWallet = false)
+        public void NodeStop(bool forceClose = false, bool isWallet = false)
         {
-            TaskManager.TaskManager.StopTaskManager();
 
-            ClassLog.WriteLine("Close Peer Tool, please wait a moment..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+            bool closeCompleted = false;
 
+            Task.Factory.StartNew(async () =>
+            {
 
-            #region Close OpenNAT port.
+                ClassLog.WriteLine("Close Peer Tool, please wait a moment..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+
+                #region Close OpenNAT port.
 
 #if !NET5_0_OR_GREATER
             ClosePortOpenNat();
 #endif
 
-            #endregion
+                #endregion
 
-            #region Stop peer task client broadcast mempool.
+                #region Stop peer task client broadcast mempool.
 
-            PeerNetworkBroadcastInstanceMemPoolObject?.StopNetworkBroadcastMemPoolInstance();
+                PeerNetworkBroadcastInstanceMemPoolObject?.StopNetworkBroadcastMemPoolInstance();
 
-            #endregion
+                #endregion
 
-            #region Stop peer task sync.
+                #region Stop peer task sync.
 
-            ClassLog.WriteLine("Stop Peer Sync Task Network..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-            PeerNetworkClientSyncObject?.StopPeerSyncTask();
-            PeerNetworkClientSyncObject?.Dispose();
-            ClassLog.WriteLine("Peer Sync Task Network stopped.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                ClassLog.WriteLine("Stop Peer Sync Task Network..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                PeerNetworkClientSyncObject?.StopPeerSyncTask();
+                PeerNetworkClientSyncObject?.Dispose();
+                ClassLog.WriteLine("Peer Sync Task Network stopped.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-            #endregion
+                #endregion
 
-            #region Stop peer network server.
+                #region Stop peer network server.
 
-            ClassLog.WriteLine("Stop Peer Network Server..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-            PeerNetworkServerObject?.StopPeerServer();
-            PeerNetworkServerObject?.Dispose();
-            ClassLog.WriteLine("Peer Network Server stoped.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                ClassLog.WriteLine("Stop Peer Network Server..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                PeerNetworkServerObject?.StopPeerServer();
+                PeerNetworkServerObject?.Dispose();
+                ClassLog.WriteLine("Peer Network Server stoped.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-            #endregion
+                #endregion
 
-            #region Stop api network server.
+                #region Stop api network server.
 
-            ClassLog.WriteLine("Stop Peer API Server..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-            PeerApiServerObject?.StopPeerApiServer();
-            PeerApiServerObject?.Dispose();
-            ClassLog.WriteLine("Peer API Server stopped.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                ClassLog.WriteLine("Stop Peer API Server..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                PeerApiServerObject?.StopPeerApiServer();
+                PeerApiServerObject?.Dispose();
+                ClassLog.WriteLine("Peer API Server stopped.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-            #endregion
+                #endregion
 
-            #region Stop the task of blockchain transaction confirmation.
-            /*
-            try
-            {
-                await _peerUpdateTask?.StopAutomaticBlockTransactionConfirmation();
-            }
-            catch (Exception error)
-            {
-                ClassLog.WriteLine("Error on closing the automatic block transaction confirmation task. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
-            }
-            */
-            #endregion
+                #region Stop the task of blockchain transaction confirmation.
+                /*
+                try
+                {
+                    await _peerUpdateTask?.StopAutomaticBlockTransactionConfirmation();
+                }
+                catch (Exception error)
+                {
+                    ClassLog.WriteLine("Error on closing the automatic block transaction confirmation task. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                }
+                */
+                #endregion
 
-            #region Stop automatic peer tasks.
+                #region Stop automatic peer tasks.
 
-            _peerUpdateTask?.StopAutomaticUpdateTask();
+                _peerUpdateTask?.StopAutomaticUpdateTask();
 
-            #endregion
+                #endregion
 
-            #region Save peer list.
+                #region Save peer list.
 
-            ClassLog.WriteLine("Save peer list..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                ClassLog.WriteLine("Save peer list..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-            if (PeerDatabase.SavePeers(string.Empty, true))
-                ClassLog.WriteLine("Peer list saved.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-            else
-                ClassLog.WriteLine("Peer list saved failed.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                if (PeerDatabase.SavePeers(string.Empty, true))
+                    ClassLog.WriteLine("Peer list saved.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                else
+                    ClassLog.WriteLine("Peer list saved failed.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
 
-            #endregion
+                #endregion
 
-            #region Save Sovereign update Data.
+                #region Save Sovereign update Data.
 
-            ClassLog.WriteLine("Save Sovereign Update(s) data..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                ClassLog.WriteLine("Save Sovereign Update(s) data..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-            if (ClassSovereignUpdateDatabase.SaveSovereignUpdateObjectData(out int totalSaved))
-                ClassLog.WriteLine("Save " + totalSaved + " Sovereign Update(s) data successfully done.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-            else
-                ClassLog.WriteLine("Save Sovereign Update(s) data failed.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                if (ClassSovereignUpdateDatabase.SaveSovereignUpdateObjectData(out int totalSaved))
+                    ClassLog.WriteLine("Save " + totalSaved + " Sovereign Update(s) data successfully done.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                else
+                    ClassLog.WriteLine("Save Sovereign Update(s) data failed.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-            #endregion
+                #endregion
 
-            #region Save Mem Pool Data.
+                #region Save Mem Pool Data.
 
-            ClassLog.WriteLine("Save MemPool data..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                ClassLog.WriteLine("Save MemPool data..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-            if (ClassMemPoolDatabase.SaveMemPoolDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject))
-                ClassLog.WriteLine("MemPool data saved.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-            else
-                ClassLog.WriteLine("MemPool data saved failed.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                if (ClassMemPoolDatabase.SaveMemPoolDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject))
+                    ClassLog.WriteLine("MemPool data saved.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                else
+                    ClassLog.WriteLine("MemPool data saved failed.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
 
-            #endregion
+                #endregion
 
-            #region Save Blockchain Data.
+                #region Save Blockchain Data.
 
-            ClassLog.WriteLine("Save Blockchain data..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                ClassLog.WriteLine("Save Blockchain data..", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
-            if (ClassBlockchainDatabase.SaveBlockchainDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject).Result)
-            {
-                await ClassBlockchainDatabase.CloseBlockchainDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject);
-                ClassLog.WriteLine("Blockchain data saved.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-            }
-            else
-                ClassLog.WriteLine("Blockchain data saved failed.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                if (ClassBlockchainDatabase.SaveBlockchainDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject).Result)
+                {
+#if DEBUG
+                    Debug.WriteLine("Blockchain data saved.");
+#endif
+                    await ClassBlockchainDatabase.CloseBlockchainDatabase(PeerSettingObject.PeerBlockchainDatabaseSettingObject);
+                    ClassLog.WriteLine("Blockchain data saved.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                }
+                else
+                    ClassLog.WriteLine("Blockchain data saved failed.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
 
-            #endregion
+                #endregion
 
-            PeerToolStatus = false;
-
-
-            if (!forceClose && !isWallet)
-            {
                 ClassLog.CloseLogStreams();
-                ClassLog.WriteLine("Peer tool successfully closed. Press a key to exit.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-                Console.ReadLine();
+
+#if DEBUG
+                Debug.WriteLine("Log system closed.");
+#endif
+
+                closeCompleted = true;
+
+                if (!isWallet)
+                    PeerToolStatus = false;
+
+            }).ConfigureAwait(false);
+
+
+            while (!closeCompleted)
+                Thread.Sleep(1);
+
+
+#if DEBUG
+            Debug.WriteLine("Node instance closed successfully.");
+#endif
+            if (!isWallet)
+            {
+                if (!forceClose)
+                {
+#if DEBUG
+                    Debug.WriteLine("Peer tool successfully closed.");
+#endif
+                    ClassLog.WriteLine("Peer tool successfully closed. Press a key to exit.", ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                    Console.ReadLine();
+                }
             }
 
             if (!isWallet || forceClose)
                 Process.GetCurrentProcess().Kill();
-
         }
 
         #endregion
@@ -386,7 +414,7 @@ namespace SeguraChain_Lib.Instance.Node
 
         #region OpenNAT.
 
-        #if !NET5_0_OR_GREATER
+#if !NET5_0_OR_GREATER
         
                 /// <summary>
                 /// Open Peer port with NAT to get the port available to the public network.
@@ -456,7 +484,7 @@ namespace SeguraChain_Lib.Instance.Node
 
                 }
 
-        #endif
+#endif
 
         #endregion
 

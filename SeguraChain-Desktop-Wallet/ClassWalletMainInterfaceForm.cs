@@ -2879,8 +2879,9 @@ namespace SeguraChain_Desktop_Wallet
 
         }
 
-        private void ClassWalletMainInterfaceForm_FormClosed(object sender, FormClosedEventArgs e)
+        private void ClassWalletMainInterfaceForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            e.Cancel = true;
             if (!_cancellationTokenTaskUpdateWalletListFilesFound.IsCancellationRequested)
                 _cancellationTokenTaskUpdateWalletListFilesFound.Cancel();
 
@@ -2888,7 +2889,6 @@ namespace SeguraChain_Desktop_Wallet
             Hide();
             StopTaskUpdateWallet();
             _startupInternalForm.OnCloseDesktopWallet();
-
         }
     }
 }

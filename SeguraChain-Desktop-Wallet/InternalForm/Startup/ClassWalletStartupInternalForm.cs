@@ -8,6 +8,7 @@ using SeguraChain_Desktop_Wallet.Components;
 using SeguraChain_Desktop_Wallet.Language.Enum;
 using SeguraChain_Desktop_Wallet.Language.Object;
 using SeguraChain_Lib.Blockchain.Setting;
+using Timer = System.Windows.Forms.Timer;
 
 
 namespace SeguraChain_Desktop_Wallet.InternalForm.Startup
@@ -51,13 +52,13 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Startup
             Text = BlockchainSetting.CoinName + walletStartupFormLanguageObject.FORM_TITLE_LOADING_TEXT;
             UpdateLabelStartupText(BlockchainSetting.CoinName + walletStartupFormLanguageObject.LABEL_STARTUP_DESKTOP_WALLET_LOADING_TEXT);
 
-            Task.Factory.StartNew(async () =>
+            new Thread(async () =>
             {
                 if (await ClassDesktopWalletCommonData.InitializeDesktopWalletCommonData())
                 {
                     UpdateLabelStartupText(walletStartupFormLanguageObject.LABEL_STARTUP_DESKTOP_WALLET_LOADING_SUCCESS_TEXT);
 
-                    await Task.Delay(1000);
+                    Thread.Sleep(1000);
 
 
                     _noWalletFile = ClassDesktopWalletCommonData.WalletDatabase.GetCountWalletFile == 0;
@@ -65,12 +66,15 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Startup
                     _canOpenMainInterface = true;
 
                 }
-            }).ConfigureAwait(false);
+            }).Start();
         }
 
         #endregion
 
         #region On close.
+
+        private bool _closeCompleted;
+        private bool _saveResult;
 
         /// <summary>
         /// Function executed on the close of the desktop wallet, close desktop wallet systems.
@@ -79,20 +83,46 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Startup
         {
             ClassWalletStartupFormLanguage walletStartupFormLanguageObject = ClassDesktopWalletCommonData.LanguageDatabase.GetLanguageContentObject<ClassWalletStartupFormLanguage>(ClassLanguageEnumType.LANGUAGE_TYPE_STARTUP_FORM);
             Show();
-
             Text = BlockchainSetting.CoinName + walletStartupFormLanguageObject.FORM_TITLE_CLOSING_TEXT;
 
             labelStartupDesktopWalletLoadingText.Text = walletStartupFormLanguageObject.LABEL_ON_CLOSE_DESKTOP_WALLET_PENDING_TEXT;
             labelStartupDesktopWalletLoadingText = ClassGraphicsUtility.AutoSetLocationAndResizeControl<Label>(labelStartupDesktopWalletLoadingText, this, 50d, false);
 
+            Refresh();
 
-            bool saveResult = ClassDesktopWalletCommonData.CloseDesktopWalletCommonData().Result;
+            new Thread(() => CheckCloseWallet()).Start();
 
-            labelStartupDesktopWalletLoadingText.Text = saveResult ? walletStartupFormLanguageObject.LABEL_ON_CLOSE_DESKTOP_WALLET_SUCCESS_TEXT : walletStartupFormLanguageObject.LABEL_ON_CLOSE_DESKTOP_WALLET_SUCCESS_TEXT;
-            labelStartupDesktopWalletLoadingText = ClassGraphicsUtility.AutoSetLocationAndResizeControl<Label>(labelStartupDesktopWalletLoadingText, this, 50d, false);
-            Process.GetCurrentProcess().Kill();
+            Thread.Sleep(5000);
+
+            _saveResult = ClassDesktopWalletCommonData.CloseDesktopWalletCommonData().Result;
+            _closeCompleted = true;
         }
 
+
+        /// <summary>
+        /// Timer check close wallet system.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CheckCloseWallet()
+        {
+            while(!_closeCompleted)
+                Thread.Sleep(1);
+
+            ClassWalletStartupFormLanguage walletStartupFormLanguageObject = ClassDesktopWalletCommonData.LanguageDatabase.GetLanguageContentObject<ClassWalletStartupFormLanguage>(ClassLanguageEnumType.LANGUAGE_TYPE_STARTUP_FORM);
+
+            MethodInvoker invoke = () =>
+            {
+                labelStartupDesktopWalletLoadingText.Text = _saveResult ? walletStartupFormLanguageObject.LABEL_ON_CLOSE_DESKTOP_WALLET_SUCCESS_TEXT : walletStartupFormLanguageObject.LABEL_ON_CLOSE_DESKTOP_WALLET_SUCCESS_TEXT;
+                labelStartupDesktopWalletLoadingText = ClassGraphicsUtility.AutoSetLocationAndResizeControl<Label>(labelStartupDesktopWalletLoadingText, this, 50d, false);
+                Refresh();
+             };
+            BeginInvoke(invoke);
+
+            Thread.Sleep(5000);
+
+            Process.GetCurrentProcess().Kill();
+        }
 
         #endregion
 

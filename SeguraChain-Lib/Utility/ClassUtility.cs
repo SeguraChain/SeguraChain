@@ -836,7 +836,7 @@ namespace SeguraChain_Lib.Utility
         /// </summary>
         public static void CleanGc()
         {
-            GC.Collect(0, GCCollectionMode.Forced, false, true);
+            GC.Collect(0, GCCollectionMode.Optimized, false, false);
             GC.WaitForPendingFinalizers();
             GC.Collect();
         }

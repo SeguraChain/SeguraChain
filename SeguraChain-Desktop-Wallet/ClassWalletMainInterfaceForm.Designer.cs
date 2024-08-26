@@ -1335,7 +1335,7 @@ namespace SeguraChain_Desktop_Wallet
             Padding = new System.Windows.Forms.Padding(0, 0, 6, 0);
             StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             Text = "FORM_TITLE_MAIN_INTERFACE_TEXT";
-            FormClosed += ClassWalletMainInterfaceForm_FormClosed;
+            FormClosing += ClassWalletMainInterfaceForm_FormClosing;
             Load += ClassWalletMainInterfaceForm_Load;
             ResizeBegin += ClassWalletMainInterfaceForm_ResizeBegin;
             ResizeEnd += ClassWalletMainInterfaceForm_ResizeEnd;

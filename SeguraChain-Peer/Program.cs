@@ -82,7 +82,7 @@ namespace SeguraChain_Peer
             }
 
             Trace.TraceError(exception.StackTrace);
-            _nodeInstance?.NodeStop(true).Wait();
+            _nodeInstance?.NodeStop(true);
             Environment.Exit(1);
         }
 

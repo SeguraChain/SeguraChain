@@ -204,7 +204,7 @@ namespace SeguraChain_Desktop_Wallet.Common
             await WalletSyncSystem.SaveSyncDatabaseCache(WalletSettingObject);
 
             // Stop the sync system.
-            await WalletSyncSystem.CloseSync();
+            WalletSyncSystem.CloseSync();
 
 #if DEBUG
             Debug.WriteLine("Task wallet sync stopped.");

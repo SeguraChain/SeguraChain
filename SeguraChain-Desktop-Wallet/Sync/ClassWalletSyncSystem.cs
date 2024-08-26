@@ -576,7 +576,7 @@ namespace SeguraChain_Desktop_Wallet.Sync
                 case ClassWalletSettingEnumSyncMode.EXTERNAL_PEER_SYNC_MODE:
                     {
                         if (NodeInstance != null)
-                            await NodeInstance.NodeStop(false, true);
+                            NodeInstance.NodeStop(false, true);
 
                         ServicePointManager.DefaultConnectionLimit = 65535;
                         ServicePointManager.Expect100Continue = false;
@@ -593,14 +593,14 @@ namespace SeguraChain_Desktop_Wallet.Sync
         /// <summary>
         /// Close the sync system.
         /// </summary>
-        public async Task CloseSync()
+        public void CloseSync()
         {
             switch (ClassDesktopWalletCommonData.WalletSettingObject.WalletSyncMode)
             {
                 case ClassWalletSettingEnumSyncMode.INTERNAL_PEER_SYNC_MODE:
                     {
                         if (NodeInstance != null)
-                            await NodeInstance.NodeStop(false, true);
+                            NodeInstance.NodeStop(false, true);
                     }
                     break;
                 case ClassWalletSettingEnumSyncMode.EXTERNAL_PEER_SYNC_MODE:

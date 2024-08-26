@@ -131,7 +131,11 @@ namespace SeguraChain_Lib.Blockchain.Database.Function
                                 countLine++;
                             }
                             error = countLine == 0;
+
+                            readerBlock.Close();
                         }
+
+                        fileStreamBlock.Close();
                     }
 
                     if (error)
