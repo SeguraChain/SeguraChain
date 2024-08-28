@@ -26,6 +26,13 @@ Everything has been developed in C#, and support NET5/NET6/NET7/NET8, a downgrad
 
 <b>Visual Studio 2022 is required.</b>
 
+<h3>If you want to donate to the project:</h3>
+<h4>just to tracking them, if possible please put the note: Donation</h4>
+
+> BTC: 39mUsJFhjU6GDrchCkQ4iJsmdvD8S2jpzU | Explorer: https://btc.com/39mUsJFhjU6GDrchCkQ4iJsmdvD8S2jpzU
+
+> Curecoin: B6V6mSNRDFzmDgiPcQKYhBer6GgbM5XJeR | Explorer: https://chainz.cryptoid.info/cure/address.dws?B6V6mSNRDFzmDgiPcQKYhBer6GgbM5XJeR.htm
+
  
 <h3>Libraries:</h3>
 
@@ -88,11 +95,5 @@ Discord: https://discord.gg/mvc7v9FDyJ
 Every devs and potential users can send me their returns about the project, potential fix, issues and more.
   
   
-<h3>If you want to donate to the project:</h3>
-<h4>just to tracking them, if possible please put the note: Donation</h4>
-
-> BTC: 39mUsJFhjU6GDrchCkQ4iJsmdvD8S2jpzU | Explorer: https://btc.com/39mUsJFhjU6GDrchCkQ4iJsmdvD8S2jpzU
-
-> Curecoin: B6V6mSNRDFzmDgiPcQKYhBer6GgbM5XJeR | Explorer: https://chainz.cryptoid.info/cure/address.dws?B6V6mSNRDFzmDgiPcQKYhBer6GgbM5XJeR.htm
 
 
