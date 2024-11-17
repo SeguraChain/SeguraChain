@@ -107,23 +107,28 @@ namespace SeguraChain_Solo_Miner.Setting.Function
 
             ClassLog.SimpleWriteLine("Write the ip of the peer target: ", ConsoleColor.Yellow);
             string peerIpTarget = Console.ReadLine();
-            int peerApiPortTarget = 0;
 
+            int peerApiPortTarget = 0;
+            
             while (!CheckPeerIpTarget(peerIpTarget, true))
                 peerIpTarget = Console.ReadLine();
             
             ClassLog.SimpleWriteLine("Write the API port of the Peer target: ", ConsoleColor.Yellow);
-
-            firstCheckDone = false;
-            while (!CheckPeerApiPortTarget(peerApiPortTarget, firstCheckDone))
+            if (!int.TryParse(Console.ReadLine(), out peerApiPortTarget))
             {
-                while (!int.TryParse(Console.ReadLine() ?? string.Empty, out peerApiPortTarget))
+                ClassLog.SimpleWriteLine("The input API port is invalid. Please try again:", ConsoleColor.Red);
+
+                peerApiPortTarget = -1;
+                firstCheckDone = false;
+                while (!CheckPeerApiPortTarget(peerApiPortTarget, firstCheckDone))
                 {
-                    ClassLog.SimpleWriteLine("The input API port is invalid. Please try again:", ConsoleColor.Red);
-                    firstCheckDone = true;
+                    while (!int.TryParse(Console.ReadLine() ?? string.Empty, out peerApiPortTarget))
+                    {
+                        ClassLog.SimpleWriteLine("The input API port is invalid. Please try again:", ConsoleColor.Red);
+                        firstCheckDone = true;
+                    }
                 }
             }
-
 
             soloMinerSettingObject = new ClassSoloMinerSettingObject(walletAddress, maxThread, threadPriority, peerIpTarget, peerApiPortTarget);
 
@@ -226,6 +231,7 @@ namespace SeguraChain_Solo_Miner.Setting.Function
             {
                 if (noticeError)
                     ClassLog.SimpleWriteLine("The peer api port target: " + peerApiPortTarget + " selected is invalid.", ConsoleColor.Red);
+                return false;
             }
 
             return true;
