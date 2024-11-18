@@ -1389,7 +1389,7 @@ namespace SeguraChain_Lib.Utility
 
             try
             {
-                if (networkStream == null)
+                if (networkStream == null || !networkStream.CanWrite)
                     return false;
 
                 if (packetBytesToSend.Length >= packetMaxSize && !singleWrite)
@@ -1398,6 +1398,9 @@ namespace SeguraChain_Lib.Utility
 
                     while (countPacketSendLength < packetBytesToSend.Length)
                     {
+                        if (!networkStream.CanWrite)
+                            return false;
+
                         int packetSize = 0;
 
                         if (countPacketSendLength + packetMaxSize >= packetBytesToSend.Length)
@@ -1425,8 +1428,12 @@ namespace SeguraChain_Lib.Utility
                 }
                 else
                 {
+                    if (!networkStream.CanWrite)
+                        return false;
+
                     await networkStream.WriteAsync(packetBytesToSend, 0, packetBytesToSend.Length, cancellation.Token);
                     await networkStream.FlushAsync(cancellation.Token);
+
                 }
             }
             catch
@@ -1488,13 +1495,17 @@ namespace SeguraChain_Lib.Utility
         {
             try
             {
-                await semaphore.WaitAsync(cancellation.Token);
-                return true;
+                while (!cancellation.IsCancellationRequested)
+                {
+                    if (await semaphore.WaitAsync(1000, cancellation.Token))
+                        return true;
+                }
             }
             catch
             {
-                return false;
+                // Ignored, catch the exception once the cancellation token is cancelled.
             }
+            return false;
         }
 
         /// <summary>

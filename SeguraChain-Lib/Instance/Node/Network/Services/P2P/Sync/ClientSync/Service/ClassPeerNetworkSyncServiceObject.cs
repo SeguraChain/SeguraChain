@@ -29,6 +29,7 @@ using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet.SubPacket.R
 using SeguraChain_Lib.Instance.Node.Setting.Object;
 using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Other.Object.List;
+using SeguraChain_Lib.TaskManager;
 using SeguraChain_Lib.Utility;
 using System;
 using System.Collections.Generic;
@@ -725,6 +726,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                             bool cancelCheck = false;
                                             int totalTask = listBlockNetworkUnconfirmed.Count;
+                                            long totalTime = TaskManager.TaskManager.CurrentTimestampMillisecond + ((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000 * Environment.ProcessorCount) * totalTask);
+
                                             int totalTaskDone = 0;
 
                                             foreach (long blockHeightToCheck in listBlockNetworkUnconfirmed.GetAll.OrderBy(x => x))
@@ -905,10 +908,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                                     ClearPeerTargetList(peerTargetList, true);
 
-                                                }, (blockSize > 0 ? blockSize : _peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000) * Environment.ProcessorCount, _cancellationTokenServiceSync);
+                                                }, _peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000 * Environment.ProcessorCount, _cancellationTokenServiceSync);
                                             }
 
-                                            while (totalTaskDone < totalTask)
+                                            while (totalTaskDone < totalTask && totalTime >= TaskManager.TaskManager.CurrentTimestampMillisecond)
                                                 await Task.Delay(1, _cancellationTokenServiceSync.Token);
 
                                             ClassLog.WriteLine("Increment " + listBlockNetworkUnconfirmed.Count + "  block check network confirmations done..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Cyan);
