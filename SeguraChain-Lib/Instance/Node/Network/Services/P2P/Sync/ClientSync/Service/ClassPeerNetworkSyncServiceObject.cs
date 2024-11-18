@@ -726,7 +726,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                             bool cancelCheck = false;
                                             int totalTask = listBlockNetworkUnconfirmed.Count;
-                                            long totalTime = TaskManager.TaskManager.CurrentTimestampMillisecond + ((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000 * Environment.ProcessorCount) * totalTask);
+                                            long totalTime = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000 * Environment.ProcessorCount);
 
                                             int totalTaskDone = 0;
 
