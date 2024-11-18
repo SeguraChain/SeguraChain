@@ -499,220 +499,226 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     {
                         while (IsAlive)
                         {
-
-                            ClassPeerObject peerObject = _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken];
-
-                            if (peerObject == null)
+                            try
                             {
-                                IsAlive = false;
-                                break;
-                            }
+                                ClassPeerObject peerObject = _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken];
 
-                            long lastBlockHeightUnlocked = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeightUnlocked(_peerCancellationToken);
-
-
-                            // Clean passed blocks mined.
-                            foreach (long blockHeight in _memPoolListBlockHeightTransactionReceived.Keys.ToArray())
-                            {
-                                if (blockHeight <= lastBlockHeightUnlocked)
+                                if (peerObject == null)
                                 {
-                                    _memPoolListBlockHeightTransactionReceived[blockHeight].Clear();
-                                    _memPoolListBlockHeightTransactionReceived.Remove(blockHeight);
+                                    IsAlive = false;
+                                    break;
                                 }
-                            }
+
+                                long lastBlockHeightUnlocked = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeightUnlocked(_peerCancellationToken);
 
 
-                            #region First ask the mem pool block height list and their transaction counts.
-
-                            ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId,
-                                peerObject.PeerInternPublicKey,
-                                peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
-                            {
-                                PacketOrder = ClassPeerEnumPacketSend.ASK_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE,
-                                PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskMemPoolBlockHeightList()
+                                // Clean passed blocks mined.
+                                foreach (long blockHeight in _memPoolListBlockHeightTransactionReceived.Keys.ToArray())
                                 {
-                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
-                                }),
-                            };
+                                    if (blockHeight <= lastBlockHeightUnlocked)
+                                    {
+                                        _memPoolListBlockHeightTransactionReceived[blockHeight].Clear();
+                                        _memPoolListBlockHeightTransactionReceived.Remove(blockHeight);
+                                    }
+                                }
 
 
-                            packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(_peerDatabase, packetSendObject, _peerIpTarget, _peerUniqueIdTarget, false, _peerNetworkSettingObject, _peerCancellationToken);
+                                #region First ask the mem pool block height list and their transaction counts.
 
-                            if (packetSendObject == null)
-                            {
-                                IsAlive = false;
-                                break;
-                            }
+                                ClassPeerPacketSendObject packetSendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId,
+                                    peerObject.PeerInternPublicKey,
+                                    peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                {
+                                    PacketOrder = ClassPeerEnumPacketSend.ASK_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE,
+                                    PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskMemPoolBlockHeightList()
+                                    {
+                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
+                                    }),
+                                };
 
-                            ClassPeerNetworkClientSyncObject peerNetworkClientSyncObject = new ClassPeerNetworkClientSyncObject(_peerDatabase, _peerIpTarget, _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken].PeerPort, _peerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
+
+                                packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(_peerDatabase, packetSendObject, _peerIpTarget, _peerUniqueIdTarget, false, _peerNetworkSettingObject, _peerCancellationToken);
+
+                                if (packetSendObject == null)
+                                {
+                                    IsAlive = false;
+                                    break;
+                                }
+
+                                ClassPeerNetworkClientSyncObject peerNetworkClientSyncObject = new ClassPeerNetworkClientSyncObject(_peerDatabase, _peerIpTarget, _peerDatabase[_peerIpTarget, _peerUniqueIdTarget, _peerCancellationToken].PeerPort, _peerUniqueIdTarget, _peerNetworkSettingObject, _peerFirewallSettingObject);
+
 
 #if DEBUG
                             Debug.WriteLine("Try to send ask MemPool block height list: " + _peerIpTarget + " request.");
 #endif
-                            ClassLog.WriteLine("Try to send ask MemPool block height list: " + _peerIpTarget + " request.", ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
+                                ClassLog.WriteLine("Try to send ask MemPool block height list: " + _peerIpTarget + " request.", ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
 
-                            if (!await peerNetworkClientSyncObject.TrySendPacketToPeerTarget(packetSendObject, true, peerObject.PeerPort, _peerUniqueIdTarget, _peerCancellationToken, ClassPeerEnumPacketResponse.SEND_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE, false, false))
-                            {
+                                if (!await peerNetworkClientSyncObject.TrySendPacketToPeerTarget(packetSendObject, true, peerObject.PeerPort, _peerUniqueIdTarget, _peerCancellationToken, ClassPeerEnumPacketResponse.SEND_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE, false, false))
+                                {
 #if DEBUG
                                 Debug.WriteLine("Try to send ask MemPool block height list: " + _peerIpTarget + " failed.");
 #endif
-                                ClassLog.WriteLine("Try to send ask MemPool block height list: " + _peerIpTarget + " failed.", ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
+                                    ClassLog.WriteLine("Try to send ask MemPool block height list: " + _peerIpTarget + " failed.", ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
 
-                                IsAlive = false;
-                                break;
-                            }
+                                    IsAlive = false;
+                                    break;
+                                }
 
-                            if (peerNetworkClientSyncObject.PeerPacketReceived == null)
-                            {
-                                IsAlive = false;
-                                break;
-                            }
+                                if (peerNetworkClientSyncObject.PeerPacketReceived == null)
+                                {
+                                    IsAlive = false;
+                                    break;
+                                }
 #if DEBUG
                             Debug.WriteLine("Request to ask MemPool block height list: " + _peerIpTarget + " done.");
 #endif
 
-                            ClassTranslatePacket<ClassPeerPacketSendMemPoolBlockHeightList> peerPacketMemPoolBlockHeightListTranslated = await TranslatePacketReceived<ClassPeerPacketSendMemPoolBlockHeightList>(peerNetworkClientSyncObject.PeerPacketReceived, ClassPeerEnumPacketResponse.SEND_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE, _peerCancellationToken);
+                                ClassTranslatePacket<ClassPeerPacketSendMemPoolBlockHeightList> peerPacketMemPoolBlockHeightListTranslated = await TranslatePacketReceived<ClassPeerPacketSendMemPoolBlockHeightList>(peerNetworkClientSyncObject.PeerPacketReceived, ClassPeerEnumPacketResponse.SEND_MEM_POOL_BLOCK_HEIGHT_LIST_BROADCAST_MODE, _peerCancellationToken);
 
-                            if (peerPacketMemPoolBlockHeightListTranslated.PacketTranslated == null)
-                            {
-                                IsAlive = false;
-                                break;
-                            }
+                                if (peerPacketMemPoolBlockHeightListTranslated.PacketTranslated == null)
+                                {
+                                    IsAlive = false;
+                                    break;
+                                }
 
-                            ClassLog.WriteLine("Request to ask MemPool block height list: " + _peerIpTarget + " done. Result: "+JsonConvert.SerializeObject(peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount), ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
+                                ClassLog.WriteLine("Request to ask MemPool block height list: " + _peerIpTarget + " done. Result: " + JsonConvert.SerializeObject(peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount), ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
 
 #if DEBUG
                             Debug.WriteLine("MemPool block height list received from: " + _peerIpTarget + " | " + JsonConvert.SerializeObject(peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount));
 #endif
 
-                            if (peerPacketMemPoolBlockHeightListTranslated == null || !peerPacketMemPoolBlockHeightListTranslated.Status)
-                            {
-                                IsAlive = false;
-                                break;
-                            }
-
-
-                            #endregion
-
-                            #region Check the packet of mempool block height lists.
-
-                            if (peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount == null)
-                            {
-                                IsAlive = false;
-                                break;
-                            }
-
-                            #endregion
-
-                            #region Then sync transaction by height.
-
-                            if (peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount.Count > 0)
-                            {
-                                bool failed = false;
-
-                                foreach (long blockHeight in peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount.Keys.OrderBy(x => x))
+                                if (peerPacketMemPoolBlockHeightListTranslated == null || !peerPacketMemPoolBlockHeightListTranslated.Status)
                                 {
-                                    if (_peerCancellationToken.IsCancellationRequested || failed)
-                                        break;
+                                    IsAlive = false;
+                                    break;
+                                }
 
-                                    if (ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeight < blockHeight)
+
+                                #endregion
+
+                                #region Check the packet of mempool block height lists.
+
+                                if (peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount == null)
+                                {
+                                    IsAlive = false;
+                                    break;
+                                }
+
+                                #endregion
+
+                                #region Then sync transaction by height.
+
+                                if (peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount.Count > 0)
+                                {
+                                    bool failed = false;
+
+                                    foreach (long blockHeight in peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount.Keys.OrderBy(x => x))
                                     {
-                                        int countAlreadySynced = 0;
+                                        if (_peerCancellationToken.IsCancellationRequested || failed)
+                                            break;
 
-                                        if (_memPoolListBlockHeightTransactionReceived.ContainsKey(blockHeight))
-                                            countAlreadySynced = _memPoolListBlockHeightTransactionReceived[blockHeight].Count;
-                                        else
-                                            _memPoolListBlockHeightTransactionReceived.Add(blockHeight, new HashSet<string>());
-
-
-                                        if (peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount[blockHeight] > 0)
+                                        if (ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeight < blockHeight)
                                         {
-                                            long lastBlockHeightUnlockedConfirmed = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeightTransactionConfirmationDone(_peerCancellationToken);
-                                            long lastBlockHeight = ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeight;
+                                            int countAlreadySynced = 0;
 
-                                            if (lastBlockHeightUnlockedConfirmed == blockHeight)
-                                                continue;
+                                            if (_memPoolListBlockHeightTransactionReceived.ContainsKey(blockHeight))
+                                                countAlreadySynced = _memPoolListBlockHeightTransactionReceived[blockHeight].Count;
+                                            else
+                                                _memPoolListBlockHeightTransactionReceived.Add(blockHeight, new HashSet<string>());
 
-                                            int countToSync = peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount[blockHeight];
 
-                                            if (countToSync != countAlreadySynced)
+                                            if (peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount[blockHeight] > 0)
                                             {
-                                                // Ensure to be compatible with most recent transactions sent.
+                                                long lastBlockHeightUnlockedConfirmed = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeightTransactionConfirmationDone(_peerCancellationToken);
+                                                long lastBlockHeight = ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeight;
 
-                                                packetSendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId,
-                                                    peerObject.PeerInternPublicKey,
-                                                    peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
+                                                if (lastBlockHeightUnlockedConfirmed == blockHeight)
+                                                    continue;
+
+                                                int countToSync = peerPacketMemPoolBlockHeightListTranslated.PacketTranslated.MemPoolBlockHeightListAndCount[blockHeight];
+
+                                                if (countToSync != countAlreadySynced)
                                                 {
-                                                    PacketOrder = ClassPeerEnumPacketSend.ASK_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE,
-                                                    PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskMemPoolTransactionList()
+                                                    // Ensure to be compatible with most recent transactions sent.
+
+                                                    packetSendObject = new ClassPeerPacketSendObject(_peerNetworkSettingObject.PeerUniqueId,
+                                                        peerObject.PeerInternPublicKey,
+                                                        peerObject.PeerClientLastTimestampPeerPacketSignatureWhitelist)
                                                     {
-                                                        BlockHeight = blockHeight,
-                                                        TotalTransactionProgress = 0,
-                                                        PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
-                                                    }),
-                                                };
-
-                                                packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(_peerDatabase, packetSendObject, _peerIpTarget, _peerUniqueIdTarget, false, _peerNetworkSettingObject, _peerCancellationToken);
-
-                                                if (!await peerNetworkClientSyncObject.TrySendPacketToPeerTarget(packetSendObject, true, peerObject.PeerPort, _peerUniqueIdTarget, _peerCancellationToken, ClassPeerEnumPacketResponse.SEND_MEM_POOL_END_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE, false, false))
-                                                {
-                                                    IsAlive = false;
-                                                    failed = true;
-                                                    break;
-                                                }
-
-
-                                                ClassTranslatePacket<ClassPeerPacketSendMemPoolTransaction> packetTranslated = await TranslatePacketReceived<ClassPeerPacketSendMemPoolTransaction>(peerNetworkClientSyncObject.PeerPacketReceived, ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE, _peerCancellationToken);
-
-                                                if (packetTranslated.Status && packetTranslated.PacketTranslated.ListTransactionObject.Count > 0)
-                                                {
-
-                                                    foreach (ClassTransactionObject transactionObject in packetTranslated.PacketTranslated.ListTransactionObject)
-                                                    {
-                                                        if (transactionObject != null)
+                                                        PacketOrder = ClassPeerEnumPacketSend.ASK_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE,
+                                                        PacketContent = ClassUtility.SerializeData(new ClassPeerPacketSendAskMemPoolTransactionList()
                                                         {
+                                                            BlockHeight = blockHeight,
+                                                            TotalTransactionProgress = 0,
+                                                            PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
+                                                        }),
+                                                    };
+
+                                                    packetSendObject = await ClassPeerNetworkBroadcastShortcutFunction.BuildSignedPeerSendPacketObject(_peerDatabase, packetSendObject, _peerIpTarget, _peerUniqueIdTarget, false, _peerNetworkSettingObject, _peerCancellationToken);
+
+                                                    if (!await peerNetworkClientSyncObject.TrySendPacketToPeerTarget(packetSendObject, true, peerObject.PeerPort, _peerUniqueIdTarget, _peerCancellationToken, ClassPeerEnumPacketResponse.SEND_MEM_POOL_END_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE, false, false))
+                                                    {
+                                                        IsAlive = false;
+                                                        failed = true;
+                                                        break;
+                                                    }
+
+
+                                                    ClassTranslatePacket<ClassPeerPacketSendMemPoolTransaction> packetTranslated = await TranslatePacketReceived<ClassPeerPacketSendMemPoolTransaction>(peerNetworkClientSyncObject.PeerPacketReceived, ClassPeerEnumPacketResponse.SEND_MEM_POOL_TRANSACTION_BY_BLOCK_HEIGHT_BROADCAST_MODE, _peerCancellationToken);
+
+                                                    if (packetTranslated.Status && packetTranslated.PacketTranslated.ListTransactionObject.Count > 0)
+                                                    {
+
+                                                        foreach (ClassTransactionObject transactionObject in packetTranslated.PacketTranslated.ListTransactionObject)
+                                                        {
+                                                            if (transactionObject != null)
+                                                            {
 
 #if DEBUG
                                                             Debug.WriteLine("Transaction object received from peer: " + _peerIpTarget + " | Data: " + JsonConvert.SerializeObject(transactionObject));
 #endif
-                                                            ClassLog.WriteLine("Transaction object received from peer: " + _peerIpTarget + " | Data: " + JsonConvert.SerializeObject(transactionObject), ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
+                                                                ClassLog.WriteLine("Transaction object received from peer: " + _peerIpTarget + " | Data: " + JsonConvert.SerializeObject(transactionObject), ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
 
-                                                            if (transactionObject.TransactionType != ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION &&
-                                                            transactionObject.TransactionType != ClassTransactionEnumType.DEV_FEE_TRANSACTION)
-                                                            {
-
-                                                                if (!_memPoolListBlockHeightTransactionReceived[blockHeight].Contains(transactionObject.TransactionHash))
+                                                                if (transactionObject.TransactionType != ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION &&
+                                                                transactionObject.TransactionType != ClassTransactionEnumType.DEV_FEE_TRANSACTION)
                                                                 {
-                                                                    bool canInsert = false;
 
-                                                                    if (transactionObject.BlockHeightTransaction > ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeight)
+                                                                    if (!_memPoolListBlockHeightTransactionReceived[blockHeight].Contains(transactionObject.TransactionHash))
                                                                     {
-                                                                        ClassTransactionEnumStatus checkTxResult = await ClassTransactionUtility.CheckTransactionWithBlockchainData(transactionObject, true, false, true, null, 0, listWalletAddressAndPublicKeyCache, true, _peerCancellationToken);
+                                                                        bool canInsert = false;
 
-                                                                        if (checkTxResult == ClassTransactionEnumStatus.VALID_TRANSACTION || checkTxResult == ClassTransactionEnumStatus.DUPLICATE_TRANSACTION_HASH)
-                                                                            canInsert = true;
-                                                                    }
+                                                                        if (transactionObject.BlockHeightTransaction > ClassBlockchainDatabase.BlockchainMemoryManagement.GetLastBlockHeight)
+                                                                        {
+                                                                            ClassTransactionEnumStatus checkTxResult = await ClassTransactionUtility.CheckTransactionWithBlockchainData(transactionObject, true, false, true, null, 0, listWalletAddressAndPublicKeyCache, true, _peerCancellationToken);
 
-                                                                    if (canInsert)
-                                                                    {
-                                                                        ClassMemPoolDatabase.InsertTxToMemPool(transactionObject);
-                                                                        _memPoolListBlockHeightTransactionReceived[blockHeight].Add(transactionObject.TransactionHash);
+                                                                            if (checkTxResult == ClassTransactionEnumStatus.VALID_TRANSACTION || checkTxResult == ClassTransactionEnumStatus.DUPLICATE_TRANSACTION_HASH)
+                                                                                canInsert = true;
+                                                                        }
+
+                                                                        if (canInsert)
+                                                                        {
+                                                                            ClassMemPoolDatabase.InsertTxToMemPool(transactionObject);
+                                                                            _memPoolListBlockHeightTransactionReceived[blockHeight].Add(transactionObject.TransactionHash);
+                                                                        }
                                                                     }
                                                                 }
                                                             }
                                                         }
                                                     }
                                                 }
+
                                             }
 
                                         }
-
                                     }
                                 }
+
+                                #endregion
                             }
-
-                            #endregion
-
+                            catch(Exception error)
+                            {
+                                ClassLog.WriteLine("Task to receive MemPool transaction failed from: " + _peerIpTarget + " | Exception. Result: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
+                            }
                             await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                         }
                     }
