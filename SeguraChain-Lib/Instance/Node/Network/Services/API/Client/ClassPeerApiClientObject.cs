@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using SeguraChain_Lib.Blockchain.Block.Enum;
+using SeguraChain_Lib.Blockchain.Block.Function;
 using SeguraChain_Lib.Blockchain.Block.Object.Structure;
 using SeguraChain_Lib.Blockchain.Database;
 using SeguraChain_Lib.Blockchain.MemPool.Database;
@@ -884,7 +885,16 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
             {
                 ClassPeerApiPacketResponseEnum typeResponse = ClassPeerApiPacketResponseEnum.OK;
 
-                switch (packetReceived)
+                string contentRequest = string.Empty;
+                string request = string.Empty;
+
+                if (packetReceived.Contains("/"))
+                {
+                    request = packetReceived.Split(new[] { "/" }, StringSplitOptions.None)[0];
+                    contentRequest = packetReceived.Split(new[] { "/" }, StringSplitOptions.None)[1];
+                }
+
+                switch (contentRequest.IsNullOrEmpty(false, out _) ? packetReceived : request)
                 {
                     case ClassPeerApiEnumGetRequest.GetAlive:
                         {
@@ -978,6 +988,79 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                     case ClassPeerApiEnumGetRequest.GetBlockchainExplorer:
                         {
                             if (!await SendApiResponse(GetBlockchainExplorerContent(), "text/html; charset=utf-8"))
+                                return false;
+                        }
+                        break;
+                    case ClassPeerApiEnumGetRequest.GetBlockFromHeight:
+                        {
+                            if (long.TryParse(contentRequest, out long blockHeight) &&
+                                blockHeight >= BlockchainSetting.GenesisBlockHeight &&
+                                blockHeight <= ClassBlockchainStats.GetLastBlockHeight())
+                            {
+                                ClassBlockObject blockObject = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(blockHeight, true, false, _cancellationTokenApiClient);
+
+                                if (blockObject == null)
+                                    return false;
+
+                                if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendBlock()
+                                {
+                                    Block = blockObject,
+                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
+                                }, ClassPeerApiPacketResponseEnum.SEND_MEMPOOL_TRANSACTION_COUNT)))
+                                    return false;
+                            }
+                            else
+                                return false;
+                        }
+                        break;
+                    case ClassPeerApiEnumGetRequest.GetBlockFromHash:
+                        {
+                            if (!contentRequest.IsNullOrEmpty(false, out _) &&
+                                ClassBlockUtility.GetBlockTemplateFromBlockHash(contentRequest, out ClassBlockTemplateObject blockTemplateObject) &&
+                                blockTemplateObject != null &&
+                                blockTemplateObject.BlockHeight >= BlockchainSetting.GenesisBlockHeight && blockTemplateObject.BlockHeight <= ClassBlockchainStats.GetLastBlockHeight())
+                            {
+                                
+                                ClassBlockObject blockObject = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(blockTemplateObject.BlockHeight, true, false, _cancellationTokenApiClient);
+
+                                if (blockObject == null)
+                                    return false;
+
+                                if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendBlock()
+                                {
+                                    Block = blockObject,
+                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
+                                }, ClassPeerApiPacketResponseEnum.SEND_MEMPOOL_TRANSACTION_COUNT)))
+                                    return false;
+                            }
+                            else
+                                return false;
+                        }
+                        break;
+                    case ClassPeerApiEnumGetRequest.GetTransactionFromHash:
+                        {
+                            if (contentRequest.IsNullOrEmpty(false, out _))
+                                return false;
+
+                            long blockHeight = ClassTransactionUtility.GetBlockHeightFromTransactionHash(contentRequest);
+
+                            if (blockHeight < BlockchainSetting.GenesisBlockHeight ||
+                                blockHeight > await ClassBlockchainStats.GetLastBlockHeightUnlocked(_cancellationTokenApiClient))
+                                return false;
+
+                            ClassBlockObject blockObject = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(blockHeight, true, false, _cancellationTokenApiClient);
+
+                            if (blockObject == null)
+                                return false;
+
+                            if (!blockObject.BlockTransactions.ContainsKey(contentRequest.ToUpper()))
+                                return false;
+
+                            if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendBlockTransaction()
+                            {
+                                BlockTransaction = blockObject.BlockTransactions[contentRequest.ToUpper()],
+                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
+                            }, ClassPeerApiPacketResponseEnum.SEND_MEMPOOL_TRANSACTION_COUNT)))
                                 return false;
                         }
                         break;

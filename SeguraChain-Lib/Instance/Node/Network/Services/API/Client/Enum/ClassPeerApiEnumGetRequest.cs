@@ -10,6 +10,9 @@
         public const string GetLastBlockHeightTransactionConfirmation = "get_last_block_height_transaction_confirmation";
         public const string GetMemPoolTransactionCount = "get_mem_pool_transaction_count";
         public const string GetMemPoolBlockHeights = "get_mem_pool_block_heights";
+        public const string GetBlockFromHeight = "get_block_from_height";
+        public const string GetBlockFromHash = "get_block_from_hash";
+        public const string GetTransactionFromHash = "get_transaction_from_hash";
         public const string GetBlockchainExplorer = "explorer";
     }
 }
