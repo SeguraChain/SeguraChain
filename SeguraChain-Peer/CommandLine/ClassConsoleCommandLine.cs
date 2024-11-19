@@ -11,7 +11,9 @@ using SeguraChain_Lib.Blockchain.Sovereign.Enum;
 using SeguraChain_Lib.Blockchain.Sovereign.Object;
 using SeguraChain_Lib.Blockchain.Stats.Function;
 using SeguraChain_Lib.Blockchain.Stats.Object;
+using SeguraChain_Lib.Blockchain.Wallet.Function;
 using SeguraChain_Lib.Blockchain.Wallet.Object.Blockchain;
+using SeguraChain_Lib.Blockchain.Wallet.Object.Wallet;
 using SeguraChain_Lib.Instance.Node;
 using SeguraChain_Lib.Instance.Node.Network.Database;
 using SeguraChain_Lib.Instance.Node.Network.Database.Manager;
@@ -44,6 +46,7 @@ namespace SeguraChain_Peer.CommandLine
         public const string ShowMiningStats = "show-mining-stats";
         public const string GetNodeInternalStats = "get-node-internal-stats";
         public const string GetTaskManagerStats = "get-task-manager-stats";
+        public const string CreateWallet = "create-wallet";
         public const string ClearConsoleCommand = "clear";
     }
 
@@ -124,6 +127,7 @@ namespace SeguraChain_Peer.CommandLine
                                 ClassLog.SimpleWriteLine(ClassConsoleCommandLineEnumeration.ShowMiningStats + " - Show your solo mining stats.");
                                 ClassLog.SimpleWriteLine(ClassConsoleCommandLineEnumeration.GetNodeInternalStats + " - Show your node internal stats. Show the active memory used and stats of the cache if enabled.");
                                 ClassLog.SimpleWriteLine(ClassConsoleCommandLineEnumeration.GetTaskManagerStats + "  - Show task manager stats.");
+                                ClassLog.SimpleWriteLine(ClassConsoleCommandLineEnumeration.CreateWallet + "  - Create a wallet.");
                                 ClassLog.SimpleWriteLine(ClassConsoleCommandLineEnumeration.ClearConsoleCommand + " - Clear the console.");
                             }
                             break;
@@ -485,6 +489,16 @@ namespace SeguraChain_Peer.CommandLine
                                 ClassLog.SimpleWriteLine("Active memory used from the block transaction cache: " + ClassUtility.ConvertBytesToMegabytes(_nodeInstance.NodeInternalStatsReportObject.NodeCacheTransactionMemoryUsage) + " on " + ClassUtility.ConvertBytesToMegabytes(_nodeInstance.NodeInternalStatsReportObject.NodeCacheTransactionMaxMemoryAllocation));
                                 ClassLog.SimpleWriteLine("Active memory used from the wallet index cache: " + ClassUtility.ConvertBytesToMegabytes(_nodeInstance.NodeInternalStatsReportObject.NodeCacheWalletIndexMemoryUsage) + " on " + ClassUtility.ConvertBytesToMegabytes(_nodeInstance.NodeInternalStatsReportObject.NodeCacheWalletIndexMaxMemoryAllocation));
                                 ClassLog.SimpleWriteLine("Whole active memory spend from the node: " + ClassUtility.ConvertBytesToMegabytes(_nodeInstance.NodeInternalStatsReportObject.NodeTotalMemoryUsage));
+                            }
+                            break;
+                        case ClassConsoleCommandLineEnumeration.CreateWallet:
+                            {
+                                ClassLog.SimpleWriteLine("Create your wallet, please wait a moment..");
+                                ClassWalletGeneratorObject walletGeneratorObject = ClassWalletUtility.GenerateWallet(string.Empty, true);
+
+                                ClassLog.SimpleWriteLine("Wallet Address: " + walletGeneratorObject.WalletAddress);
+                                ClassLog.SimpleWriteLine("Public key: " + walletGeneratorObject.WalletPublicKey);
+                                ClassLog.SimpleWriteLine("Private key: " + walletGeneratorObject.WalletPrivateKey);
                             }
                             break;
                         default:
