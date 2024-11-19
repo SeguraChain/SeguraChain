@@ -13,6 +13,7 @@
         public const string GetBlockFromHeight = "get_block_from_height";
         public const string GetBlockFromHash = "get_block_from_hash";
         public const string GetTransactionFromHash = "get_transaction_from_hash";
+        public const string GetTransactionFromId = "get_transaction_from_id";
         public const string GetBlockchainExplorer = "explorer";
     }
 }

@@ -1060,8 +1060,57 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                             {
                                 BlockTransaction = blockObject.BlockTransactions[contentRequest.ToUpper()],
                                 PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
-                            }, ClassPeerApiPacketResponseEnum.SEND_MEMPOOL_TRANSACTION_COUNT)))
+                            }, ClassPeerApiPacketResponseEnum.SEND_BLOCK_TRANSACTION)))
                                 return false;
+                        }
+                        break;
+                    case ClassPeerApiEnumGetRequest.GetTransactionFromId:
+                        {
+                            if (contentRequest.IsNullOrEmpty(false, out _))
+                                return false;
+
+                            if (!long.TryParse(contentRequest, out long transactionId))
+                                return false;
+
+                            long totalTransaction = 0;
+                            bool found = false;
+                            long lastBlockHeight = ClassBlockchainStats.GetLastBlockHeight();
+                            ClassBlockTransaction blockTransactionResult = null;
+
+                            for (long i = 1; i < lastBlockHeight; i++)
+                            {
+                                if (found)
+                                    break;
+
+                                ClassBlockObject blockObject = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(i, true, false, _cancellationTokenApiClient);
+
+                                if (blockObject == null || 
+                                    blockObject.BlockTransactions == null)
+                                    return false;
+
+                                foreach(ClassBlockTransaction blockTransaction in blockObject.BlockTransactions.Values)
+                                {
+                                    totalTransaction++;
+
+                                    if (totalTransaction == transactionId)
+                                    {
+                                        blockTransactionResult = blockTransaction;
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (blockTransactionResult == null)
+                                break;
+
+                            if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendBlockTransaction()
+                            {
+                                BlockTransaction = blockTransactionResult,
+                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
+                            }, ClassPeerApiPacketResponseEnum.SEND_BLOCK_TRANSACTION)))
+                                return false;
+
                         }
                         break;
                     default:

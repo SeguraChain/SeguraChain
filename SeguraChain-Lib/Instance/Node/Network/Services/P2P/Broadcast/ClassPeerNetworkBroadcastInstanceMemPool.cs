@@ -66,181 +66,143 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                 while (_peerNetworkBroadcastInstanceMemPoolStatus && !_cancellation.IsCancellationRequested)
                 {
-                    #region Generate sender/receiver broadcast instances by targetting public peers.
-
-                    if (_peerDatabase.Count > 0)
+                    try
                     {
-                        foreach (string peerIpTarget in _peerDatabase.Keys.ToArray())
+                        #region Generate sender/receiver broadcast instances by targetting public peers.
+
+                        if (_peerDatabase.Count > 0)
                         {
-
-                            if (peerIpTarget.IsNullOrEmpty(false, out _))
-                                continue;
-
-
-                            ConcurrentDictionary<string, ClassPeerObject> peerListObject = _peerDatabase[peerIpTarget, _cancellation];
-
-                            if (peerListObject == null)
-                                continue;
-
-                            foreach (string peerUniqueIdTarget in peerListObject.Keys.ToArray())
+                            foreach (string peerIpTarget in _peerDatabase.Keys.ToArray())
                             {
 
-                                if (peerUniqueIdTarget.IsNullOrEmpty(false, out _))
+                                if (peerIpTarget.IsNullOrEmpty(false, out _))
                                     continue;
 
-                                bool success = false;
 
-                                ClassPeerObject peerObject = _peerDatabase[peerIpTarget, peerUniqueIdTarget, _cancellation];
+                                ConcurrentDictionary<string, ClassPeerObject> peerListObject = _peerDatabase[peerIpTarget, _cancellation];
 
-                                if (peerObject.PeerIsPublic)
+                                if (peerListObject == null)
+                                    continue;
+
+                                foreach (string peerUniqueIdTarget in peerListObject.Keys.ToArray())
                                 {
 
+                                    if (peerUniqueIdTarget.IsNullOrEmpty(false, out _))
+                                        continue;
 
-                                    int peerPortTarget = peerObject.PeerPort;
+                                    bool success = false;
 
+                                    ClassPeerObject peerObject = _peerDatabase[peerIpTarget, peerUniqueIdTarget, _cancellation];
 
-                                    // Build receiver instance.
-                                    if (!_listPeerNetworkClientBroadcastMemPoolReceiver.ContainsKey(peerIpTarget))
-                                        _listPeerNetworkClientBroadcastMemPoolReceiver.Add(peerIpTarget, new Dictionary<string, ClassPeerNetworkClientBroadcastMemPool>());
-
-                                    if (!_listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].ContainsKey(peerUniqueIdTarget))
+                                    if (peerObject.PeerIsPublic)
                                     {
-                                        _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].Add(peerUniqueIdTarget, new ClassPeerNetworkClientBroadcastMemPool(
-                                                                                                                               _peerDatabase,
-                                                                                                                               _cancellation,
-                                                                                                                               peerIpTarget,
-                                                                                                                               peerUniqueIdTarget,
-                                                                                                                               false,
-                                                                                                                               _peerNetworkSettingObject,
-                                                                                                                               _peerFirewallSettingObject));
-                                        if (!RunPeerNetworkClientBroadcastMemPool(peerIpTarget, peerUniqueIdTarget, false))
+
+
+                                        int peerPortTarget = peerObject.PeerPort;
+
+
+                                        // Build receiver instance.
+                                        if (!_listPeerNetworkClientBroadcastMemPoolReceiver.ContainsKey(peerIpTarget))
+                                            _listPeerNetworkClientBroadcastMemPoolReceiver.Add(peerIpTarget, new Dictionary<string, ClassPeerNetworkClientBroadcastMemPool>());
+
+                                        if (!_listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].ContainsKey(peerUniqueIdTarget))
                                         {
-                                            if (!_listPeerNetworkClientBroadcastMemPoolReceiver.ContainsKey(peerIpTarget) ||
-                                                !_listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].ContainsKey(peerUniqueIdTarget))
-                                                continue;
+                                            _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].Add(peerUniqueIdTarget, new ClassPeerNetworkClientBroadcastMemPool(
+                                                                                                                                   _peerDatabase,
+                                                                                                                                   _cancellation,
+                                                                                                                                   peerIpTarget,
+                                                                                                                                   peerUniqueIdTarget,
+                                                                                                                                   false,
+                                                                                                                                   _peerNetworkSettingObject,
+                                                                                                                                   _peerFirewallSettingObject));
+                                            if (!RunPeerNetworkClientBroadcastMemPool(peerIpTarget, peerUniqueIdTarget, false))
+                                            {
+                                                if (!_listPeerNetworkClientBroadcastMemPoolReceiver.ContainsKey(peerIpTarget) ||
+                                                    !_listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].ContainsKey(peerUniqueIdTarget))
+                                                    continue;
 
-                                            _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].StopTaskAndDisconnect();
-                                            _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].Remove(peerUniqueIdTarget);
+                                                _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget][peerUniqueIdTarget].StopTaskAndDisconnect();
+                                                _listPeerNetworkClientBroadcastMemPoolReceiver[peerIpTarget].Remove(peerUniqueIdTarget);
 
-                                        }
-                                        else
-                                            success = true;
+                                            }
+                                            else
+                                                success = true;
 
 
 #if DEBUG
                                         Debug.WriteLine("Run Sync MemPool Receive Mode transaction from Peer: " + peerIpTarget + ":" + peerUniqueIdTarget + " | Status: " + (success ? "success" : "failed"));
 #endif
-                                        ClassLog.WriteLine("Run Sync MemPool Receive Mode transaction from Peer: " + peerIpTarget + ":" + peerUniqueIdTarget + " | Status: " + (success ? "success" : "failed") + ".", ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, success ? ConsoleColor.Green : ConsoleColor.Red);
-                                    }
-
-                                    if (!success)
-                                        continue;
-
-                                    // Build sender instance if the node is in public node.
-
-                                    if (!_listPeerNetworkClientBroadcastMemPoolSender.ContainsKey(peerIpTarget))
-                                        _listPeerNetworkClientBroadcastMemPoolSender.Add(peerIpTarget, new Dictionary<string, ClassPeerNetworkClientBroadcastMemPool>());
-
-                                    if (!_listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget].ContainsKey(peerUniqueIdTarget))
-                                    {
-                                        _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget].Add(peerUniqueIdTarget, new ClassPeerNetworkClientBroadcastMemPool(
-                                                                                                                               _peerDatabase,
-                                                                                                                               _cancellation,
-                                                                                                                               peerIpTarget,
-                                                                                                                               peerUniqueIdTarget,
-                                                                                                                               true,
-                                                                                                                               _peerNetworkSettingObject,
-                                                                                                                               _peerFirewallSettingObject));
-
-                                        bool successRunClientBroadcast = true;
-
-                                        if (!RunPeerNetworkClientBroadcastMemPool(peerIpTarget, peerUniqueIdTarget, true))
-                                        {
-                                            _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].StopTaskAndDisconnect();
-                                            _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget].Remove(peerUniqueIdTarget);
-                                            successRunClientBroadcast = false;
+                                            ClassLog.WriteLine("Run Sync MemPool Receive Mode transaction from Peer: " + peerIpTarget + ":" + peerUniqueIdTarget + " | Status: " + (success ? "success" : "failed") + ".", ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, success ? ConsoleColor.Green : ConsoleColor.Red);
                                         }
+
+                                        if (!success)
+                                            continue;
+
+                                        // Build sender instance if the node is in public node.
+
+                                        if (!_listPeerNetworkClientBroadcastMemPoolSender.ContainsKey(peerIpTarget))
+                                            _listPeerNetworkClientBroadcastMemPoolSender.Add(peerIpTarget, new Dictionary<string, ClassPeerNetworkClientBroadcastMemPool>());
+
+                                        if (!_listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget].ContainsKey(peerUniqueIdTarget))
+                                        {
+                                            _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget].Add(peerUniqueIdTarget, new ClassPeerNetworkClientBroadcastMemPool(
+                                                                                                                                   _peerDatabase,
+                                                                                                                                   _cancellation,
+                                                                                                                                   peerIpTarget,
+                                                                                                                                   peerUniqueIdTarget,
+                                                                                                                                   true,
+                                                                                                                                   _peerNetworkSettingObject,
+                                                                                                                                   _peerFirewallSettingObject));
+
+                                            bool successRunClientBroadcast = true;
+
+                                            if (!RunPeerNetworkClientBroadcastMemPool(peerIpTarget, peerUniqueIdTarget, true))
+                                            {
+                                                _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget][peerUniqueIdTarget].StopTaskAndDisconnect();
+                                                _listPeerNetworkClientBroadcastMemPoolSender[peerIpTarget].Remove(peerUniqueIdTarget);
+                                                successRunClientBroadcast = false;
+                                            }
 
 #if DEBUG
                                         Debug.WriteLine("Run Sync Sending Mode MemPool transaction from Peer: " + peerIpTarget + " | Status: " + (successRunClientBroadcast ? "success" : "failed") + ".");
 #endif
-                                        ClassLog.WriteLine("Run Sync Sending Mode MemPool transaction from Peer: " + peerIpTarget + " | Status: " + (successRunClientBroadcast ? "success" : "failed") + ".", ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, successRunClientBroadcast ? ConsoleColor.Green : ConsoleColor.Red);
+                                            ClassLog.WriteLine("Run Sync Sending Mode MemPool transaction from Peer: " + peerIpTarget + " | Status: " + (successRunClientBroadcast ? "success" : "failed") + ".", ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, successRunClientBroadcast ? ConsoleColor.Green : ConsoleColor.Red);
 
-                                    }
-
-                                }
-
-                            }
-                        }
-                    }
-                    #endregion
-
-                    #region Check Client MemPool broadcast launched.
-
-                    // Check receiver mode instances.
-                    if (_listPeerNetworkClientBroadcastMemPoolReceiver.Count > 0)
-                    {
-                        foreach (string peerIp in _listPeerNetworkClientBroadcastMemPoolReceiver.Keys.ToArray())
-                        {
-                            try
-                            {
-                                if (_listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Count > 0)
-                                {
-                                    foreach (string peerUniqueId in _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Keys.ToArray())
-                                    {
-                                        if (!_listPeerNetworkClientBroadcastMemPoolReceiver[peerIp][peerUniqueId].IsAlive)
-                                        {
-                                            _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp][peerUniqueId].StopTaskAndDisconnect();
-                                            _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Remove(peerUniqueId);
-#if DEBUG                                   
-                                            Debug.WriteLine("MemPool Broadcast instance receiver of peer " + peerIp + ":" + peerUniqueId + " is dead.");
-#endif
                                         }
-                                    }
-                                }
 
-                                if (_listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Count == 0)
-                                    _listPeerNetworkClientBroadcastMemPoolReceiver.Remove(peerIp);
-                            }
-                            catch
-                            {
-                                break;
+                                    }
+
+                                }
                             }
                         }
-                    }
+                        #endregion
 
-                    // Check sender mode instances if the node is in public mode.
-                    if (_peerNetworkSettingObject.PublicPeer)
-                    {
-                        if (_listPeerNetworkClientBroadcastMemPoolSender.Count > 0)
+                        #region Check Client MemPool broadcast launched.
+
+                        // Check receiver mode instances.
+                        if (_listPeerNetworkClientBroadcastMemPoolReceiver.Count > 0)
                         {
-                            foreach (string peerIp in _listPeerNetworkClientBroadcastMemPoolSender.Keys.ToArray())
+                            foreach (string peerIp in _listPeerNetworkClientBroadcastMemPoolReceiver.Keys.ToArray())
                             {
                                 try
                                 {
-                                    if (_listPeerNetworkClientBroadcastMemPoolSender[peerIp].Count > 0)
+                                    if (_listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Count > 0)
                                     {
-                                        foreach (string peerUniqueId in _listPeerNetworkClientBroadcastMemPoolSender[peerIp].Keys.ToArray())
+                                        foreach (string peerUniqueId in _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Keys.ToArray())
                                         {
-                                            try
+                                            if (!_listPeerNetworkClientBroadcastMemPoolReceiver[peerIp][peerUniqueId].IsAlive)
                                             {
-                                                if (!_listPeerNetworkClientBroadcastMemPoolSender[peerIp][peerUniqueId].IsAlive)
-                                                {
-                                                    _listPeerNetworkClientBroadcastMemPoolSender[peerIp][peerUniqueId].StopTaskAndDisconnect();
+                                                _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp][peerUniqueId].StopTaskAndDisconnect();
+                                                _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Remove(peerUniqueId);
 #if DEBUG
-                                                    Debug.WriteLine("MemPool Broadcast instance sender of peer "+peerIp+":"+peerUniqueId+" is dead.");
+                                            Debug.WriteLine("MemPool Broadcast instance receiver of peer " + peerIp + ":" + peerUniqueId + " is dead.");
 #endif
-                                                }
-                                            }
-                                            catch
-                                            {
-                                                break;
                                             }
                                         }
                                     }
 
-                                    if (_listPeerNetworkClientBroadcastMemPoolSender[peerIp].Count == 0)
-                                        _listPeerNetworkClientBroadcastMemPoolSender.Remove(peerIp);
+                                    if (_listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Count == 0)
+                                        _listPeerNetworkClientBroadcastMemPoolReceiver.Remove(peerIp);
                                 }
                                 catch
                                 {
@@ -248,11 +210,55 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                 }
                             }
                         }
+
+                        // Check sender mode instances if the node is in public mode.
+                        if (_peerNetworkSettingObject.PublicPeer)
+                        {
+                            if (_listPeerNetworkClientBroadcastMemPoolSender.Count > 0)
+                            {
+                                foreach (string peerIp in _listPeerNetworkClientBroadcastMemPoolSender.Keys.ToArray())
+                                {
+                                    try
+                                    {
+                                        if (_listPeerNetworkClientBroadcastMemPoolSender[peerIp].Count > 0)
+                                        {
+                                            foreach (string peerUniqueId in _listPeerNetworkClientBroadcastMemPoolSender[peerIp].Keys.ToArray())
+                                            {
+                                                try
+                                                {
+                                                    if (!_listPeerNetworkClientBroadcastMemPoolSender[peerIp][peerUniqueId].IsAlive)
+                                                    {
+                                                        _listPeerNetworkClientBroadcastMemPoolSender[peerIp][peerUniqueId].StopTaskAndDisconnect();
+#if DEBUG
+                                                    Debug.WriteLine("MemPool Broadcast instance sender of peer "+peerIp+":"+peerUniqueId+" is dead.");
+#endif
+                                                    }
+                                                }
+                                                catch
+                                                {
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                        if (_listPeerNetworkClientBroadcastMemPoolSender[peerIp].Count == 0)
+                                            _listPeerNetworkClientBroadcastMemPoolSender.Remove(peerIp);
+                                    }
+                                    catch
+                                    {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+
+
+                        #endregion
                     }
-
-
-                    #endregion
-
+                    catch(Exception error)
+                    {
+                        ClassLog.WriteLine("Error on generating MemPool instance. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_MEMPOOL_BROADCAST, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                    }
                     await Task.Delay(1000);
                 }
 
