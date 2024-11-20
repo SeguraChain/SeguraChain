@@ -65,7 +65,7 @@ namespace SeguraChain_Lib.TaskManager
         {
             TaskManagerEnabled = true;
 
-            SetThreadPoolValue(peerNetworkSettingObject);
+            //SetThreadPoolValue(peerNetworkSettingObject);
 
             #region Auto clean up dead tasks.
 
