@@ -718,7 +718,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                             {
                                 if (listBlockMissed.Count == 0)
                                 {
-                                    using (DisposableList<long> listBlockNetworkUnconfirmed = await ClassBlockchainStats.GetListBlockNetworkUnconfirmed(_cancellationTokenServiceSync, _peerNetworkSettingObject.PeerMaxRangeBlockToSyncPerRequest))
+                                    using (DisposableList<long> listBlockNetworkUnconfirmed = await ClassBlockchainStats.GetListBlockNetworkUnconfirmed(_cancellationTokenServiceSync,Environment.ProcessorCount > 10 ? Environment.ProcessorCount : 10))
                                     {
                                         if (listBlockNetworkUnconfirmed.Count > 0)
                                         {
@@ -726,7 +726,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                             bool cancelCheck = false;
                                             int totalTask = listBlockNetworkUnconfirmed.Count;
-                                            long totalTime = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000 * _peerNetworkSettingObject.PeerMaxRangeBlockToSyncPerRequest);
+                                            long totalTime = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000 * Environment.ProcessorCount > 10 ? Environment.ProcessorCount : 10);
 
                                             int totalTaskDone = 0;
 
