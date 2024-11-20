@@ -735,12 +735,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                 if (cancelCheck)
                                                     break;
 
-                                                ClassBlockObject blockObject = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(blockHeightToCheck, false, true, _cancellationTokenServiceSync);
 
-                                                long blockSize = ClassBlockUtility.GetIoBlockSizeOnMemory(blockObject);
 
                                                 await TaskManager.TaskManager.InsertTask(async () =>
                                                 {
+
                                                     var peerTargetList = GenerateOrUpdatePeerTargetList(null);
 
                                                     try
