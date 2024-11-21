@@ -505,7 +505,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                 }
 
-            }), 0, _cancellationTokenServiceSync).Wait();
+            }), 0, _cancellationTokenServiceSync);
 
         }
 
@@ -539,7 +539,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                 }
 
-            }), 0, _cancellationTokenServiceSync).Wait();
+            }), 0, _cancellationTokenServiceSync);
 
         }
 
@@ -687,7 +687,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 }
 
-            }), 0, _cancellationTokenServiceSync).Wait();
+            }), 0, _cancellationTokenServiceSync);
 
         }
 
@@ -754,7 +754,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                     try
                                                     {
 
-                                                        ClassLog.WriteLine("Start to check the block height: " + blockHeightToCheck + " with other peers..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
+                                                       // ClassLog.WriteLine("Start to check the block height: " + blockHeightToCheck + " with other peers..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
 
                                                         ClassBlockObject blockObjectToCheck = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(blockHeightToCheck, true, false, cancellationCheck);
 
@@ -896,7 +896,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                         }
                                                         else
                                                         {
-                                                            ClassLog.WriteLine("Can't check the block height: " + blockHeightToCheck + ", this one can't be retrieved successfully.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                                                           // ClassLog.WriteLine("Can't check the block height: " + blockHeightToCheck + ", this one can't be retrieved successfully.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
                                                             cancelCheck = true;
                                                         }
 
@@ -908,6 +908,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                             totalTaskDone++;
 
                                                         ClassLog.WriteLine("Error to check the block height: " + blockHeightToCheck + " | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+
+#if DEBUG
+                                                        Debug.WriteLine("Error to check the block height: " + blockHeightToCheck + " | Exception: " + error.Message);
+#endif
                                                         cancelCheck = true;
 
                                                     }
@@ -915,11 +919,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                     totalTaskDone++;
 
                                                     ClearPeerTargetList(peerTargetList, true);
-                                                }, (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000 * _peerNetworkSettingObject.PeerMaxRangeBlockToSyncPerRequest) + totalSize, cancellationCheck, null, false);
+                                                }, (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000 * _peerNetworkSettingObject.PeerMaxRangeBlockToSyncPerRequest) + totalSize, cancellationCheck, null, true);
                                             }
 
                                             while (totalTaskDone < totalTask && totalTime >= TaskManager.TaskManager.CurrentTimestampMillisecond && !cancellationCheck.IsCancellationRequested)
-                                                await Task.Delay(1, _cancellationTokenServiceSync.Token);
+                                                await Task.Delay(1000, _cancellationTokenServiceSync.Token);
 
 
                                             ClassLog.WriteLine("Increment " + listBlockNetworkUnconfirmed.Count + "  block check network confirmations done..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Cyan);
@@ -944,7 +948,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 }
 
 
-            }), 0, _cancellationTokenServiceSync).Wait();
+            }), 0, _cancellationTokenServiceSync);
 
         }
 
@@ -1007,7 +1011,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                 }
 
-            }), 0, _cancellationTokenServiceSync).Wait();
+            }), 0, _cancellationTokenServiceSync);
 
         }
 

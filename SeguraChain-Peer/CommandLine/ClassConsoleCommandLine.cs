@@ -282,9 +282,9 @@ namespace SeguraChain_Peer.CommandLine
                                                             if (_nodeInstance.PeerDatabase[peerIp, peerUniqueId, cancellation].PeerIsPublic)
                                                             {
                                                                 if (ClassPeerCheckManager.PeerHasSeedRank(_nodeInstance.PeerDatabase, peerIp, peerUniqueId, cancellation, out _, out var timestampRankDelay))
-                                                                    ClassLog.SimpleWriteLine("Peer: " + peerIp + ":" + _nodeInstance.PeerDatabase[peerIp, peerUniqueId, cancellation].PeerPort + " | Status: " + _nodeInstance.PeerDatabase[peerIp, peerUniqueId, cancellation].PeerStatus + " | Rank: Seed | Rank valid until: " + ClassUtility.GetDatetimeFromTimestamp(timestampRankDelay));
+                                                                    ClassLog.SimpleWriteLine("Peer: " + peerIp + ":" + _nodeInstance.PeerDatabase[peerIp, peerUniqueId, cancellation].PeerPort + " | Status: " + _nodeInstance.PeerDatabase[peerIp, peerUniqueId, cancellation].PeerStatus + " | Rank: Seed | Rank valid until: " + ClassUtility.GetDatetimeFromTimestamp(timestampRankDelay) + " | Height: "+ _nodeInstance.PeerDatabase[peerIp, peerUniqueId, cancellation].PeerClientLastBlockHeight);
                                                                 else
-                                                                    ClassLog.SimpleWriteLine("Peer: " + peerIp + ":" + _nodeInstance.PeerDatabase[peerIp, peerUniqueId, cancellation].PeerPort + " | Status: " + _nodeInstance.PeerDatabase[peerIp, peerUniqueId, cancellation].PeerStatus + " | Rank: Normal.");
+                                                                    ClassLog.SimpleWriteLine("Peer: " + peerIp + ":" + _nodeInstance.PeerDatabase[peerIp, peerUniqueId, cancellation].PeerPort + " | Status: " + _nodeInstance.PeerDatabase[peerIp, peerUniqueId, cancellation].PeerStatus + " | Rank: Normal. | Height: "+ _nodeInstance.PeerDatabase[peerIp, peerUniqueId, cancellation].PeerClientLastBlockHeight);
                                                             }
                                                         }
                                                     }
@@ -405,8 +405,8 @@ namespace SeguraChain_Peer.CommandLine
                                             decimal walletPendingBalanceDecimalsCalculated = 0;
                                             if (resultBalance.WalletBalance > 0)
                                             {
-                                                walletBalanceDecimalsCalculated = (decimal)resultBalance.WalletBalance / BlockchainSetting.CoinDecimal;
-                                                walletPendingBalanceDecimalsCalculated = (decimal)resultBalance.WalletPendingBalance / BlockchainSetting.CoinDecimal;
+                                                walletBalanceDecimalsCalculated = resultBalance.WalletBalance > 0 ?  (decimal)resultBalance.WalletBalance / BlockchainSetting.CoinDecimal : 0;
+                                                walletPendingBalanceDecimalsCalculated = resultBalance.WalletPendingBalance > 0 ? (decimal)resultBalance.WalletPendingBalance / BlockchainSetting.CoinDecimal : 0;
                                             }
 
                                             ClassLog.SimpleWriteLine("Confirmed Wallet Balance of " + walletAddress + " is: " + walletBalanceDecimalsCalculated.ToString("N" + BlockchainSetting.CoinDecimalNumber, CultureInfo.InvariantCulture) + " " + BlockchainSetting.CoinTickerName + ".");
