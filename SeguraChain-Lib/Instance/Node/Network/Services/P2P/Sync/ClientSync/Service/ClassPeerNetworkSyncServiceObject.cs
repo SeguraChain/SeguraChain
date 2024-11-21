@@ -738,9 +738,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                             int totalTaskDone = 0;
 
                                             CancellationTokenSource cancellationCheck = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, 
-                                                new CancellationTokenSource((int)((totalSize + 
+                                                new CancellationTokenSource((int)((
                                                 _peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 
-                                                1000 * _peerNetworkSettingObject.PeerMaxRangeBlockToSyncPerRequest))).Token);
+                                                1000 * _peerNetworkSettingObject.PeerMaxRangeBlockToSyncPerRequest)+totalSize)).Token);
 
                                             foreach (long blockHeightToCheck in listBlockNetworkUnconfirmed.GetAll.OrderBy(x => x))
                                             {
