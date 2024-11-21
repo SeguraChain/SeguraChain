@@ -199,7 +199,8 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Function
                     IsDedicatedServer = choose2.ToLower() == "y",
                     PeerUniqueId = ClassPeerKeysManager.GeneratePeerUniqueId(),
                     PeerNumericPrivateKey = numericPrivateKey,
-                    PeerNumericPublicKey = ClassPeerKeysManager.GeneratePeerPublicKeyFromPrivateKey(numericPrivateKey)
+                    PeerNumericPublicKey = ClassPeerKeysManager.GeneratePeerPublicKeyFromPrivateKey(numericPrivateKey),
+                    PeerMaxRangeBlockToSyncPerRequest = Environment.ProcessorCount * 2
                 },
                 PeerLogSettingObject =
                 {
