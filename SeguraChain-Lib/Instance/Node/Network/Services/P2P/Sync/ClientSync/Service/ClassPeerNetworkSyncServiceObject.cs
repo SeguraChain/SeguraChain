@@ -737,15 +737,19 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                             long totalTime = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000 * _peerNetworkSettingObject.PeerMaxRangeBlockToSyncPerRequest) + totalSize;
                                             int totalTaskDone = 0;
 
-                                            CancellationTokenSource cancellationCheck = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, 
-                                                new CancellationTokenSource((int)((
-                                                _peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 
-                                                1000 * _peerNetworkSettingObject.PeerMaxRangeBlockToSyncPerRequest)+totalSize)).Token);
-
+                                            
                                             foreach (long blockHeightToCheck in listBlockNetworkUnconfirmed.GetAll.OrderBy(x => x))
                                             {
                                                 if (cancelCheck)
                                                     break;
+
+                                                ClassBlockObject blockObjectToCheck = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(blockHeightToCheck, true, false, _cancellationTokenServiceSync);
+
+                                                long blockSize = ClassBlockUtility.GetIoBlockSizeOnMemory(blockObjectToCheck);
+
+                                                CancellationTokenSource cancellationCheck = CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token,
+                                                new CancellationTokenSource((int)((
+                                                1000 * _peerNetworkSettingObject.PeerMaxRangeBlockToSyncPerRequest) + blockSize)).Token);
 
                                                 await TaskManager.TaskManager.InsertTask(async () =>
                                                 {
@@ -756,7 +760,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                                        // ClassLog.WriteLine("Start to check the block height: " + blockHeightToCheck + " with other peers..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Yellow);
 
-                                                        ClassBlockObject blockObjectToCheck = await ClassBlockchainDatabase.BlockchainMemoryManagement.GetBlockDataStrategy(blockHeightToCheck, true, false, cancellationCheck);
 
                                                         if (blockObjectToCheck != null)
                                                         {
@@ -919,10 +922,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                     totalTaskDone++;
 
                                                     ClearPeerTargetList(peerTargetList, true);
-                                                }, (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000 * _peerNetworkSettingObject.PeerMaxRangeBlockToSyncPerRequest) + totalSize, cancellationCheck, null, true);
+                                                }, (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000 * _peerNetworkSettingObject.PeerMaxRangeBlockToSyncPerRequest) + blockSize, cancellationCheck, null, true);
                                             }
 
-                                            while (totalTaskDone < totalTask && totalTime >= TaskManager.TaskManager.CurrentTimestampMillisecond && !cancellationCheck.IsCancellationRequested)
+                                            while (totalTaskDone < totalTask && totalTime >= TaskManager.TaskManager.CurrentTimestampMillisecond)
                                                 await Task.Delay(1000, _cancellationTokenServiceSync.Token);
 
 
@@ -1510,7 +1513,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     }
 
                     totalTaskDone++;
-                }), 0, _cancellationTokenServiceSync);
+                }), 0, _cancellationTokenServiceSync, null, true);
             }
 
             while (totalTaskDone < totalTaskToDo)
