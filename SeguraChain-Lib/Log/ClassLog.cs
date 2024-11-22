@@ -441,44 +441,23 @@ namespace SeguraChain_Lib.Log
             {
                 if (LogWriterInitialized)
                 {
-
-
-                    bool locked = false;
-
                     try
                     {
-                        try
+                        if (_logListOnCollect.ContainsKey(logLevelType))
                         {
-                            locked = Monitor.TryEnter(_logListOnCollect[logLevelType]);
-                            if (locked)
+                            _logListOnCollect[logLevelType].Add(new ClassLogObject()
                             {
-                                if (_logListOnCollect.ContainsKey(logLevelType))
-                                {
-
-                                    _logListOnCollect[logLevelType].Add(new ClassLogObject()
-                                    {
-                                        LogContent = logLine,
-                                        Written = false,
-                                        Timestamp = TaskManager.TaskManager.CurrentTimestampSecond
-                                    });
-
-                                    Monitor.PulseAll(_logListOnCollect[logLevelType]);
-
-                                }
-                            }
-                        }
-                        catch (Exception error)
-                        {
-                            if (error is ArgumentOutOfRangeException)
-                                _logListOnCollect[logLevelType].Clear();
+                                LogContent = logLine,
+                                Written = false,
+                                Timestamp = TaskManager.TaskManager.CurrentTimestampSecond
+                            });
                         }
                     }
-                    finally
+                    catch (Exception error)
                     {
-                        if (locked)
-                            Monitor.Exit(_logListOnCollect[logLevelType]);
+                        if (error is ArgumentOutOfRangeException)
+                            _logListOnCollect[logLevelType].Clear();
                     }
-
                 }
             }
         }
