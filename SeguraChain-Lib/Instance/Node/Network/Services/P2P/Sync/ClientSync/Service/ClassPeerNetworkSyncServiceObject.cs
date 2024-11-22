@@ -737,7 +737,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                             long totalTime = TaskManager.TaskManager.CurrentTimestampMillisecond + (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000 * _peerNetworkSettingObject.PeerMaxRangeBlockToSyncPerRequest) + totalSize;
                                             int totalTaskDone = 0;
 
-                                            
+                                            var peerTargetList = GenerateOrUpdatePeerTargetList(null);
+
                                             foreach (long blockHeightToCheck in listBlockNetworkUnconfirmed.GetAll.OrderBy(x => x))
                                             {
                                                 if (cancelCheck)
@@ -751,9 +752,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                 new CancellationTokenSource((int)((
                                                 1000 * _peerNetworkSettingObject.PeerMaxRangeBlockToSyncPerRequest) + blockSize)).Token);
 
-                                                await TaskManager.TaskManager.InsertTask(async () =>
-                                                {
-                                                    var peerTargetList = GenerateOrUpdatePeerTargetList(null);
+                                                /*await TaskManager.TaskManager.InsertTask(async () =>
+                                                {*/
 
                                                     try
                                                     {
@@ -921,12 +921,13 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                                                     totalTaskDone++;
 
-                                                    ClearPeerTargetList(peerTargetList, true);
-                                                }, (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000 * _peerNetworkSettingObject.PeerMaxRangeBlockToSyncPerRequest) + blockSize, cancellationCheck, null, true);
+                                                //}, (_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000 * _peerNetworkSettingObject.PeerMaxRangeBlockToSyncPerRequest) + blockSize, cancellationCheck, null, true);
                                             }
 
-                                            while (totalTaskDone < totalTask && totalTime >= TaskManager.TaskManager.CurrentTimestampMillisecond)
-                                                await Task.Delay(1000, _cancellationTokenServiceSync.Token);
+                                            ClearPeerTargetList(peerTargetList, true);
+
+                                            /*while (totalTaskDone < totalTask && totalTime >= TaskManager.TaskManager.CurrentTimestampMillisecond)
+                                                await Task.Delay(1000, _cancellationTokenServiceSync.Token);*/
 
 
                                             ClassLog.WriteLine("Increment " + listBlockNetworkUnconfirmed.Count + "  block check network confirmations done..", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Cyan);
