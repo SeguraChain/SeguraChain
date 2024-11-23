@@ -766,13 +766,14 @@ namespace SeguraChain_Lib.Blockchain.Transaction.Utility
 
                 blockTransactionObject.TransactionSize = GetTransactionMemorySize(blockTransactionObject.TransactionObject, false);
 
-                return true;
             }
             catch
             {
                 blockTransactionObject = null;
-                return false;
+                //return false;
             }
+
+            return true;
         }
 
         #endregion

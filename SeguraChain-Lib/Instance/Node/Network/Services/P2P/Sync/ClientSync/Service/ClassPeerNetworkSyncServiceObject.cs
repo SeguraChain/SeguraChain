@@ -2235,6 +2235,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                                 if (success)
                                                                     isEqual = true;
                                                             }
+#if DEBUG
+                                                            else
+                                                                Debug.Write("Block height: " + blockObject.BlockHeight + " the amount of tx is different. " + blockDataReceived.BlockTransactions.Count + "/" + blockObject.BlockTransactions.Count);
+#endif
                                                         }
 #if DEBUG
                                                         else

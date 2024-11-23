@@ -47,7 +47,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Object
         {
             PeerIp = peerIp;
             PeerUniqueId = peerUniqueId;
-            _semaphoreCryptoObject = new SemaphoreSlim(1, 1);
+            _semaphoreCryptoObject = new SemaphoreSlim(1, Environment.ProcessorCount);
             UpdateEncryptionStream(key, iv, publicKey, privateKey, cancellation).Wait();
         }
 

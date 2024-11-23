@@ -411,10 +411,10 @@ namespace SeguraChain_Lib.Blockchain.Block.Function
                             if (previousBlockTransactionCount != blockTemplateObject.BlockPreviousTransactionCount)
                                 return false;
 
-
+                            /*
                             if (previousBlockObjectInformation.BlockWalletAddressWinner != blockTemplateObject.BlockPreviousWalletAddressWinner)
                                 return false;
-
+                            */
                             /*
                             if (await GenerateNextBlockDifficulty(previousBlockHeight, previousBlockObjectInformation.TimestampCreate, previousBlockObjectInformation.TimestampFound, previousBlockObjectInformation.BlockDifficulty, cancellation)
                                 != blockObject.BlockDifficulty)
