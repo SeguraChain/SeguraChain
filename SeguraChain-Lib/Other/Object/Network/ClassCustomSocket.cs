@@ -45,23 +45,41 @@ namespace SeguraChain_Lib.Other.Object.Network
 
         }
 
-        public bool Connect(string ip, int port, int delay)
+        public async Task<bool> Connect(string ip, int port, int delay, CancellationTokenSource cancellation)
         {
-            try
+            bool success = false;
+            bool done = false;
+
+            await TaskManager.TaskManager.InsertTask(async () =>
             {
-                var result = _socket.BeginConnect(ip, port, null, null);
+                try
+                {
+#if NET6_0_OR_GREATER
+                    await _socket.ConnectAsync(ip, port, cancellation.Token);
+#else
+                    await _socket.ConnectAsync(ip, port);
+#endif
+                    success = true;
+                }
+                catch
+                {
+                    // Ignored.
+                }
+                done = true;
+            }, delay * 1000, cancellation);
 
-                var success = result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(delay));
+            while (!done)
+            {
+                if (cancellation.IsCancellationRequested ||
+                    success)
+                    break;
 
-                if (_socket == null || !success)
-                    return false;
-
-                _networkStream = new NetworkStream(_socket);
+                await Task.Delay(1);
             }
-            catch
-            {
+            if (_socket == null || !success)
                 return false;
-            }
+
+            _networkStream = new NetworkStream(_socket);
             return true;
         }
 
@@ -174,9 +192,12 @@ namespace SeguraChain_Lib.Other.Object.Network
 
             try
             {
-                _socket?.Shutdown(shutdownType);
-                _socket?.Close();
-                _networkStream.Close();
+                if (_socket.Connected)
+                {
+                    _socket?.Shutdown(shutdownType);
+                    _socket?.Close();
+                    _networkStream.Close();
+                }
             }
             catch
             {

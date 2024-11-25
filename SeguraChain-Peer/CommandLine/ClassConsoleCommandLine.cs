@@ -388,37 +388,45 @@ namespace SeguraChain_Peer.CommandLine
                             break;
                         case ClassConsoleCommandLineEnumeration.GetWalletBalance:
                             {
-                                if (splitCommandLine.Length >= 2)
+                                try
                                 {
-                                    if (!splitCommandLine[1].IsNullOrEmpty(false, out _))
+                                    if (splitCommandLine.Length >= 2)
                                     {
-                                        string walletAddress = splitCommandLine[1];
-
-                                        if (ClassBase58.DecodeWithCheckSum(walletAddress, true) != null)
+                                        if (!splitCommandLine[1].IsNullOrEmpty(false, out _))
                                         {
-                                            ClassLog.SimpleWriteLine("Calculate confirmed balance, please wait a moment..");
+                                            string walletAddress = splitCommandLine[1];
 
-
-                                            ClassBlockchainWalletBalanceCalculatedObject resultBalance = await ClassBlockchainStats.GetWalletBalanceFromTransactionAsync(walletAddress, ClassBlockchainStats.GetLastBlockHeight(), true, false, false, true, new CancellationTokenSource());
-
-                                            decimal walletBalanceDecimalsCalculated = 0;
-                                            decimal walletPendingBalanceDecimalsCalculated = 0;
-                                            if (resultBalance.WalletBalance > 0)
+                                            if (ClassBase58.DecodeWithCheckSum(walletAddress, true) != null)
                                             {
-                                                walletBalanceDecimalsCalculated = resultBalance.WalletBalance > 0 ?  (decimal)resultBalance.WalletBalance / BlockchainSetting.CoinDecimal : 0;
-                                                walletPendingBalanceDecimalsCalculated = resultBalance.WalletPendingBalance > 0 ? (decimal)resultBalance.WalletPendingBalance / BlockchainSetting.CoinDecimal : 0;
-                                            }
+                                                ClassLog.SimpleWriteLine("Calculate confirmed balance, please wait a moment..");
 
-                                            ClassLog.SimpleWriteLine("Confirmed Wallet Balance of " + walletAddress + " is: " + walletBalanceDecimalsCalculated.ToString("N" + BlockchainSetting.CoinDecimalNumber, CultureInfo.InvariantCulture) + " " + BlockchainSetting.CoinTickerName + ".");
-                                            ClassLog.SimpleWriteLine("Pending Wallet Balance of " + walletAddress + " is: " + walletPendingBalanceDecimalsCalculated.ToString("N" + BlockchainSetting.CoinDecimalNumber, CultureInfo.InvariantCulture) + " " + BlockchainSetting.CoinTickerName + ".");
+
+                                                ClassBlockchainWalletBalanceCalculatedObject resultBalance = await ClassBlockchainStats.GetWalletBalanceFromTransactionAsync(walletAddress, ClassBlockchainStats.GetLastBlockHeight(), true, false, false, true, new CancellationTokenSource());
+
+                                                decimal walletBalanceDecimalsCalculated = 0;
+                                                decimal walletPendingBalanceDecimalsCalculated = 0;
+                                                if (resultBalance.WalletBalance > 0)
+                                                {
+                                                    walletBalanceDecimalsCalculated = resultBalance.WalletBalance > 0 ? (decimal)resultBalance.WalletBalance / BlockchainSetting.CoinDecimal : 0;
+                                                    walletPendingBalanceDecimalsCalculated = resultBalance.WalletPendingBalance > 0 ? (decimal)resultBalance.WalletPendingBalance / BlockchainSetting.CoinDecimal : 0;
+                                                }
+
+                                                ClassLog.SimpleWriteLine("Confirmed Wallet Balance of " + walletAddress + " is: " + walletBalanceDecimalsCalculated.ToString("N" + BlockchainSetting.CoinDecimalNumber, CultureInfo.InvariantCulture) + " " + BlockchainSetting.CoinTickerName + ".");
+                                                ClassLog.SimpleWriteLine("Pending Wallet Balance of " + walletAddress + " is: " + walletPendingBalanceDecimalsCalculated.ToString("N" + BlockchainSetting.CoinDecimalNumber, CultureInfo.InvariantCulture) + " " + BlockchainSetting.CoinTickerName + ".");
+
+                                            }
+                                            else
+                                                ClassLog.SimpleWriteLine(walletAddress + " is not a valid wallet address.", ConsoleColor.Red);
+
+                                            walletAddress.Clear();
                                         }
                                         else
-                                            ClassLog.SimpleWriteLine(walletAddress + " is not a valid wallet address.", ConsoleColor.Red);
-
-                                        walletAddress.Clear();
+                                            ClassLog.SimpleWriteLine("Empty wallet address.", ConsoleColor.Red);
                                     }
-                                    else
-                                        ClassLog.SimpleWriteLine("Empty wallet address.", ConsoleColor.Red);
+                                }
+                                catch (Exception error)
+                                {
+                                    ClassLog.WriteLine("Failed to retrieve back wallet balance. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_GENERAL, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
                                 }
                             }
                             break;

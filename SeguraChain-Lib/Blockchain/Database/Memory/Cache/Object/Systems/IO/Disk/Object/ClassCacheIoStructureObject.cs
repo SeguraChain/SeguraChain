@@ -1,6 +1,7 @@
 ﻿using SeguraChain_Lib.Blockchain.Block.Function;
 using SeguraChain_Lib.Blockchain.Block.Object.Structure;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Disk.Object
 {
@@ -164,16 +165,29 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
 
                 try
                 {
+                    bool isLocked = false;
 
-                    if (_blockObject.Disposed)
-                        return true;
+                    try
+                    {
+                        isLocked = Monitor.TryEnter(_blockObject);
 
-                    if (_blockObject.BlockTransactions == null)
-                        return true;
+                        if (!isLocked)
+                            return true;
 
-                    if (_blockObject.BlockTransactions.Count != _blockObject.TotalTransaction)
-                        return true;
+                        if (_blockObject.Disposed)
+                            return true;
 
+                        if (_blockObject.BlockTransactions == null)
+                            return true;
+
+                        if (_blockObject.BlockTransactions.Count != _blockObject.TotalTransaction)
+                            return true;
+                    }
+                    finally
+                    {
+                        if (isLocked)
+                            Monitor.Exit(_blockObject);
+                    }
                 }
                 catch
                 {

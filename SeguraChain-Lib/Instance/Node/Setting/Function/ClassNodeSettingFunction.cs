@@ -194,6 +194,7 @@ namespace SeguraChain_Lib.Instance.Node.Setting.Function
                 {
                     ListenIp = peerIp,
                     ListenPort = peerPort,
+                    ListenApiIp = peerIp,
                     ListenApiPort = peerApiPort,
                     PublicPeer = choose.ToLower() == "y",
                     IsDedicatedServer = choose2.ToLower() == "y",

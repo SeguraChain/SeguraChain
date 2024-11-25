@@ -350,6 +350,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
                 cancellation == null)
                 return;
 
+            if (peerDatabase[peerIp, peerUniqueId, cancellation] == null)
+                return;
+
             try
             {
                 peerDatabase[peerIp, peerUniqueId, cancellation].PeerLastPacketReceivedTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;

@@ -51,7 +51,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         {
             _blockchainDatabaseSetting = blockchainDatabaseSetting;
             _cacheIoDirectoryPath = _blockchainDatabaseSetting.GetBlockchainCacheDirectoryPath;
-            _semaphoreIoCacheIndexAccess = new SemaphoreSlim(1, ClassUtility.GetMaxAvailableProcessorCount());
+            _semaphoreIoCacheIndexAccess = new SemaphoreSlim(1, 1);
             _dictionaryCacheIoIndexObject = new Dictionary<string, ClassCacheIoIndexObject>();
         }
 

@@ -178,7 +178,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                 DisconnectFromTarget();
 
 
-                if (!await DoConnection())
+                if (!await DoConnection(_peerCancellationTokenMain))
                 {
 #if DEBUG
                     Debug.WriteLine("Failed to connect to peer " + PeerIpTarget + ":" + PeerPortTarget);
@@ -241,11 +241,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// Do connection.
         /// </summary>
         /// <returns></returns>
-        private async Task<bool> DoConnection()
+        private async Task<bool> DoConnection(CancellationTokenSource cancellation)
         {
             _peerSocketClient = new ClassCustomSocket(new Socket(ClassUtility.GetAddressFamily(PeerIpTarget), SocketType.Stream, ProtocolType.Tcp), false);
 
-            if (_peerSocketClient.Connect(PeerIpTarget, PeerPortTarget, _peerNetworkSetting.PeerMaxDelayToConnectToTarget))
+            if (await _peerSocketClient.Connect(PeerIpTarget, PeerPortTarget, _peerNetworkSetting.PeerMaxDelayToConnectToTarget, cancellation))
                 return true;
             else _peerSocketClient?.Kill(SocketShutdown.Both);
 

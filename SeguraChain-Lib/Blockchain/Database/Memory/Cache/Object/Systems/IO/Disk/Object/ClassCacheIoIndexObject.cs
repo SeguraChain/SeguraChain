@@ -79,16 +79,12 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// <returns></returns>
         public async Task<Tuple<bool, HashSet<long>>> InitializeIoCacheObjectAsync()
         {
-            bool ioCacheFileExist = true;
             if (!File.Exists(_ioDataStructureFilePath))
-            {
-                ioCacheFileExist = false;
                 File.Create(_ioDataStructureFilePath).Close();
-            }
 
-            _ioDataStructureFileLockStream = new FileStream(_ioDataStructureFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.Read, _blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskReadStreamBufferSize, FileOptions.Asynchronous | FileOptions.RandomAccess);
+            _ioDataStructureFileLockStream = new FileStream(_ioDataStructureFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read, _blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskReadStreamBufferSize, FileOptions.Asynchronous | FileOptions.RandomAccess);
 
-            return ioCacheFileExist ? await RunIoDataIndexingAsync() : new Tuple<bool, HashSet<long>>(true, new HashSet<long>());
+            return File.Exists(_ioDataStructureFilePath) ? await RunIoDataIndexingAsync() : new Tuple<bool, HashSet<long>>(true, new HashSet<long>());
         }
 
         /// <summary>
@@ -1290,7 +1286,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
                 if (sizeByBlockToRead <= 0)
                     sizeByBlockToRead = _blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskMinReadByBlockSize;
 
-                if (readStatus)
+                if (readStatus && ioFileStream.CanRead)
                 {
 
                     while (size < data.Length)
@@ -1718,7 +1714,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// <returns></returns>
         private async Task<Tuple<bool, long>> WriteByBlock(byte[] data, CancellationTokenSource cancellation, FileStream ioFileStream)
         {
-            bool writeStatus = true;
+            bool writeStatus = _ioDataStructureFileLockStream.CanWrite;
             long dataSizeWritten = 0;
 
             int percentWrite = _blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskMinPercentWriteFromBlockDataSize;
