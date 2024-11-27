@@ -505,7 +505,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                 }
 
-            }), 0, _cancellationTokenServiceSync);
+            }), 0, _cancellationTokenServiceSync, null, true);
 
         }
 
@@ -539,7 +539,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                 }
 
-            }), 0, _cancellationTokenServiceSync);
+            }), 0, _cancellationTokenServiceSync, null, true);
 
         }
 
@@ -687,7 +687,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 }
 
-            }), 0, _cancellationTokenServiceSync);
+            }), 0, _cancellationTokenServiceSync, null, true);
 
         }
 
@@ -976,7 +976,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 }
 
 
-            }), 0, _cancellationTokenServiceSync);
+            }), 0, _cancellationTokenServiceSync, null, true);
 
         }
 
@@ -1039,7 +1039,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                 }
 
-            }), 0, _cancellationTokenServiceSync);
+            }), 0, _cancellationTokenServiceSync, null, true);
 
         }
 
