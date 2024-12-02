@@ -128,7 +128,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
             StartTaskSyncBlockAndTx();
 
             // Resync blocks and tx's who need to be corrected from other peers.
-            StartTaskSyncCheckBlockAndTx();
+            //StartTaskSyncCheckBlockAndTx();
 
             // Sync last network informations from other peers.
             StartTaskSyncNetworkInformations();
@@ -562,11 +562,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     {
                         long lastBlockHeight = ClassBlockchainStats.GetLastBlockHeight();
 
-                        peerTargetList = ClassPeerNetworkBroadcastFunction.GetLastPeerTargetSynced(_peerDatabase, peerTargetList, lastBlockHeight, _peerNetworkSettingObject.ListenIp, PeerOpenNatServerIp, string.Empty, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenServiceSync);
+                        peerTargetList = GenerateOrUpdatePeerTargetList(peerTargetList);
                         bool forceDisconnect = false;
 
                         // If true, run every peer check tasks functions.
-                        if (peerTargetList.Count > 0)
+                        if (peerTargetList.Count > 1)
                         {
 
                             #region Sync block objects and transaction(s).
@@ -624,6 +624,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                                     {
                                                                         if (listBlock[blockObject.BlockHeight - 1]?.BlockStatus == ClassBlockEnumStatus.UNLOCKED)
                                                                         {
+                                                                            
                                                                             if (await ClassBlockchainDatabase.BlockchainMemoryManagement.InsertOrUpdateBlockObjectToCache(listBlock[blockObject.BlockHeight - 1], true, _cancellationTokenServiceSync))
                                                                             {
                                                                                 await ClassMemPoolDatabase.RemoveMemPoolAllTxFromBlockHeightTarget(listBlock[blockObject.BlockHeight - 1].BlockHeight, _cancellationTokenServiceSync);
@@ -639,6 +640,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                                             break;
                                                         }
                                                     }
+
+                                                    blockObject.BlockUnlockValid = true;
+                                                    blockObject.BlockNetworkAmountConfirmations = BlockchainSetting.BlockAmountNetworkConfirmations;
 
                                                     if (await ClassBlockchainDatabase.BlockchainMemoryManagement.InsertOrUpdateBlockObjectToCache(blockObject, true, _cancellationTokenServiceSync))
                                                     {
