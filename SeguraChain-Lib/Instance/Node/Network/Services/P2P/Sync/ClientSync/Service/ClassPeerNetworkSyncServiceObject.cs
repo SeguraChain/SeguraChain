@@ -128,7 +128,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
             StartTaskSyncBlockAndTx();
 
             // Resync blocks and tx's who need to be corrected from other peers.
-            //StartTaskSyncCheckBlockAndTx();
+            StartTaskSyncCheckBlockAndTx();
 
             // Sync last network informations from other peers.
             StartTaskSyncNetworkInformations();
