@@ -505,7 +505,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                 }
 
-            }), 0, _cancellationTokenServiceSync, null, true);
+            }), 0, _cancellationTokenServiceSync).Wait();
 
         }
 
@@ -539,7 +539,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                 }
 
-            }), 0, _cancellationTokenServiceSync, null, true);
+            }), 0, _cancellationTokenServiceSync).Wait();
 
         }
 
@@ -563,7 +563,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         long lastBlockHeight = ClassBlockchainStats.GetLastBlockHeight();
 
                         peerTargetList = GenerateOrUpdatePeerTargetList(peerTargetList);
-                        bool forceDisconnect = false;
+                        bool forceDisconnect = true;
 
                         // If true, run every peer check tasks functions.
                         if (peerTargetList.Count > 1)
@@ -691,7 +691,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 }
 
-            }), 0, _cancellationTokenServiceSync, null, true);
+            }), 0, _cancellationTokenServiceSync).Wait();
 
         }
 
@@ -980,7 +980,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 }
 
 
-            }), 0, _cancellationTokenServiceSync, null, true);
+            }), 0, _cancellationTokenServiceSync).Wait();
 
         }
 
@@ -1043,7 +1043,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                 }
 
-            }), 0, _cancellationTokenServiceSync, null, true);
+            }), 0, _cancellationTokenServiceSync).Wait();
 
         }
 
