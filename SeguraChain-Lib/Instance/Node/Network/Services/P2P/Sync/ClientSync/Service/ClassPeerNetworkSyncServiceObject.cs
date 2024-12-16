@@ -563,7 +563,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         long lastBlockHeight = ClassBlockchainStats.GetLastBlockHeight();
 
                         peerTargetList = GenerateOrUpdatePeerTargetList(peerTargetList);
-                        bool forceDisconnect = true;
+                        bool forceDisconnect = false;
 
                         // If true, run every peer check tasks functions.
                         if (peerTargetList.Count > 1)
