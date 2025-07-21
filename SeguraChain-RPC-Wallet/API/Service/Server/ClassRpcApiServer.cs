@@ -1,6 +1,7 @@
 ﻿using SeguraChain_RPC_Wallet.API.Service.Client;
 using SeguraChain_RPC_Wallet.API.Service.Client.Sub;
 using SeguraChain_RPC_Wallet.Config;
+using SeguraChain_RPC_Wallet.Database;
 using SeguraChain_RPC_Wallet.Node.Client;
 using System.Collections.Concurrent;
 using System.Net;
@@ -16,6 +17,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Server
         private TcpListener _rpcListener;
         private ClassRpcConfig _rpcConfig;
         private ClassNodeApiClient _nodeApiClient;
+        private ClassWalletDatabase _walletDatabase;
         private CancellationTokenSource _cancellationApiServer;
         private ConcurrentDictionary<string, ClassRpcClientObject> _concurrentRpcApiClient;
 
@@ -24,11 +26,12 @@ namespace SeguraChain_RPC_Wallet.API.Service.Server
         /// </summary>
         /// <param name="rpcConfig"></param>
         /// <param name="nodeApiClient"></param>
-        public ClassRpcApiServer(ClassRpcConfig rpcConfig, ClassNodeApiClient nodeApiClient)
+        public ClassRpcApiServer(ClassRpcConfig rpcConfig, ClassNodeApiClient nodeApiClient, ClassWalletDatabase walletDatabase)
         {
             _rpcConfig = rpcConfig;
             _concurrentRpcApiClient = new ConcurrentDictionary<string, ClassRpcClientObject>();
             _nodeApiClient = nodeApiClient;
+            _walletDatabase = walletDatabase;
         }
 
         /// <summary>
@@ -43,9 +46,9 @@ namespace SeguraChain_RPC_Wallet.API.Service.Server
 
             try
             {
-                new TaskFactory().StartNew(async () =>
+                new System.Threading.Tasks.Task(async () =>
                 {
-                    while(_enableApiServer)
+                    while (_enableApiServer)
                     {
                         try
                         {
@@ -62,12 +65,12 @@ namespace SeguraChain_RPC_Wallet.API.Service.Server
 
                                 if (inserted)
                                 {
-                                    await new TaskFactory().StartNew(async () => 
+                                    new System.Threading.Tasks.Task(async () =>
                                     {
                                         if (!await HandleApiClientConnection(clientIp, tcpApiClient))
                                             CloseApiClientConnection(tcpApiClient);
+                                    }, _cancellationApiServer.Token).Start();
 
-                                    }, _cancellationApiServer.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
                                 }
                                 else
                                     CloseApiClientConnection(tcpApiClient);
@@ -78,7 +81,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Server
                             // Ignored, catch the exception once the incoming socket received has not been handled propertly.
                         }
                     }
-                }, _cancellationApiServer.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+                }, _cancellationApiServer.Token).Start();
             }
             catch
             {
@@ -117,14 +120,20 @@ namespace SeguraChain_RPC_Wallet.API.Service.Server
         /// <returns></returns>
         private async Task<bool> HandleApiClientConnection(string clientIp, TcpClient apiTcpClient)
         {
+            /*
             if (!await _concurrentRpcApiClient[clientIp]._semaphoreHandleRpcClient.WaitAsync(_rpcConfig.RpcApiSetting.RpcApiSemaphoreTimeout))
                 return false; // Semaphore is dead.
-
+            */
             int countApiClient = _concurrentRpcApiClient[clientIp]._listRpcClientObject.Count;
 
-            _concurrentRpcApiClient[clientIp]._listRpcClientObject.Add(new ClassRpcApiClient(_rpcConfig, apiTcpClient, _nodeApiClient, _cancellationApiServer));
+            _concurrentRpcApiClient[clientIp]._listRpcClientObject.Add(new ClassRpcApiClient(
+                _rpcConfig,
+                apiTcpClient, 
+                _nodeApiClient, 
+                _walletDatabase, 
+                _cancellationApiServer));
 
-            _concurrentRpcApiClient[clientIp]._listRpcClientObject[countApiClient].HandleApiClient();
+            await _concurrentRpcApiClient[clientIp]._listRpcClientObject[countApiClient].HandleApiClient();
 
             return true;
         }

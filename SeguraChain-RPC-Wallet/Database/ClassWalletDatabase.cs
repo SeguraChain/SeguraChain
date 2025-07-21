@@ -9,6 +9,7 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 
 namespace SeguraChain_RPC_Wallet.Database
 {
@@ -174,6 +175,63 @@ namespace SeguraChain_RPC_Wallet.Database
         /// Return the amount of wallet inside of the wallet database.
         /// </summary>
         public int GetWalletCount => _dictionaryWallet.Count;
+
+        /// <summary>
+        /// Return the total wallet balances stored.
+        /// </summary>
+        /// <returns></returns>
+        public BigInteger GetWalletTotalBalance () 
+        {
+            BigInteger walletTotalBalance = 0;
+
+            foreach (ClassWalletData walletData in _dictionaryWallet.Values)
+                walletTotalBalance += walletData.WalletBalance;
+
+            return walletTotalBalance;
+        }
+
+        /// <summary>
+        /// Return the total wallet pending balances stored.
+        /// </summary>
+        /// <returns></returns>
+        public BigInteger GetWalletTotalPendingBalance()
+        {
+            BigInteger walletTotalPendingBalance = 0;
+
+            foreach (ClassWalletData walletData in _dictionaryWallet.Values)
+                walletTotalPendingBalance += walletData.WalletPendingBalance;
+
+            return walletTotalPendingBalance;
+        }
+
+        /// <summary>
+        /// Return the total wallet pending balances stored.
+        /// </summary>
+        /// <returns></returns>
+        public long GetWalletTotalTransactions()
+        {
+            long walletTotalTransactions = 0;
+
+            foreach (ClassWalletData walletData in _dictionaryWallet.Values)
+                walletTotalTransactions += walletData.WalletTransactionList.Count;
+
+            return walletTotalTransactions;
+        }
+
+        /// <summary>
+        /// Return the total wallet fee balances stored.
+        /// </summary>
+        /// <returns></returns>
+        public BigInteger GetWalletTotalFeeBalance()
+        {
+            BigInteger walletTotalFeeBalance = 0;
+
+            foreach (ClassWalletData walletData in _dictionaryWallet.Values)
+                walletTotalFeeBalance += walletData.WalletPendingBalance;
+
+            return walletTotalFeeBalance;
+        }
+
 
         /// <summary>
         /// Return every wallet address as a disposable list from the wallet database.

@@ -2,8 +2,7 @@
 {
     public class ClassRpcApiResponsePacket
     {
-        public string packet_content;
-        public bool packet_encrypted;
+        public object packet_content;
         public long packet_timestamp;
     }
 }

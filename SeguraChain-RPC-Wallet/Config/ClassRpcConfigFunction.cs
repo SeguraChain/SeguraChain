@@ -29,43 +29,6 @@ namespace SeguraChain_RPC_Wallet.Config
             {
                 #region API Settings part.
 
-                #region Enable secret key part.
-
-                Console.WriteLine("Do you want to use a secret key ? [Y/N]");
-
-                rpcConfig.RpcApiSetting.RpcApiEnableSecretKey = Console.ReadLine().ToLower() == "y";
-
-                if (rpcConfig.RpcApiSetting.RpcApiEnableSecretKey)
-                {
-                    Console.WriteLine("Write a password, this one will be used a secret key for encrypt request:");
-
-                    bool initKey = false;
-
-                    while (!initKey)
-                    {
-                        string secretKey = Console.ReadLine();
-
-                        while (secretKey.IsNullOrEmpty(false, out _))
-                        {
-                            Console.WriteLine("The password is empty, please write a password:");
-                            secretKey = Console.ReadLine();
-                        }
-
-                        rpcConfig.RpcApiSetting.RpcApiSecretKey = secretKey;
-
-                        // Compute the API Secret Key if this one is initialized.
-                        if (ClassAes.GenerateKey(secretKey.GetByteArray(), true, out rpcConfig.RpcApiSetting.RpcApiSecretKeyArray))
-                        {
-                            rpcConfig.RpcApiSetting.RpcApiSecretIvArray = ClassAes.GenerateIv(rpcConfig.RpcApiSetting.RpcApiSecretKeyArray);
-                            initKey = true;
-                        }
-                        else
-                            Console.WriteLine("The API secret key build has failed, please set another password.");
-                    }
-                }
-
-                #endregion
-
                 #region Enable whitelist part.
 
                 Console.WriteLine("Do you want to enable the Whitelist System ? [Y/N]");
@@ -240,14 +203,6 @@ namespace SeguraChain_RPC_Wallet.Config
                 return ClassRpcEnumConfig.INVALID_CONFIG;
             }
 
-            if (rpcConfig.RpcApiSetting.RpcApiEnableSecretKey)
-            {
-                if (rpcConfig.RpcApiSetting.RpcApiSecretIvArray == null || rpcConfig.RpcApiSetting.RpcApiSecretKeyArray == null || !rpcConfig.RpcApiSetting.RpcApiSecretKey.IsNullOrEmpty(false, out _))
-                {
-                    Console.WriteLine("The RPC Wallet database encryption keys are empty.");
-                    return ClassRpcEnumConfig.INVALID_CONFIG;
-                }
-            }
 
             if (!IPAddress.TryParse(rpcConfig.RpcApiSetting.RpcApiIp, out _))
             {
@@ -282,17 +237,6 @@ namespace SeguraChain_RPC_Wallet.Config
                 return ClassRpcEnumConfig.INVALID_CONFIG;
             }
 
-            if (!rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabasePath.IsNullOrEmpty(false, out _))
-            {
-                Console.WriteLine("The RPC Wallet database directory path " + rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabasePath + " is null or empty.");
-                return ClassRpcEnumConfig.DATABASE_DIRECTORY_NOT_EXIST;
-            }
-
-            if (!rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabaseFilename.IsNullOrEmpty(false, out _))
-            {
-                Console.WriteLine("The RPC Wallet database filename " + rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabaseFilename + " is null or empty.");
-                return ClassRpcEnumConfig.DATABASE_FILE_NOT_EXIST;
-            }
 
             return ClassRpcEnumConfig.VALID_CONFIG;
         }

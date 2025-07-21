@@ -9,7 +9,7 @@ namespace SeguraChain_RPC_Wallet.Config
 {
     public class ClassRpcConfigPath
     {
-        public const string RpcConfigPath = "config.json";
+        public const string RpcConfigPath = "rpc_config.json";
     }
 
     public class ClassRpcConfig
@@ -37,7 +37,6 @@ namespace SeguraChain_RPC_Wallet.Config
     {
         public string RpcApiIp;
         public int RpcApiPort;
-        public bool RpcApiEnableSecretKey;
         public string RpcApiSecretKey;
         public bool RpcApiEnableWhitelist;
         public HashSet<string> RpcApiWhitelist;
@@ -55,7 +54,6 @@ namespace SeguraChain_RPC_Wallet.Config
         {
             RpcApiIp = "127.0.0.1";
             RpcApiPort = 3080;
-            RpcApiEnableSecretKey = false;
             RpcApiSecretKey = string.Empty;
             RpcApiEnableWhitelist = true; // Don't use whitelist.
             RpcApiWhitelist = new HashSet<string>() { "127.0.0.1" }; // Default whitelist.

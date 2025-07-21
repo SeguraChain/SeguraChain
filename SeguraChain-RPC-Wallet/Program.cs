@@ -107,7 +107,7 @@ namespace SeguraChain_RPC_Wallet
 
             #region Launch the RPC Wallet API Server.
 
-            _rpcApiServer = new ClassRpcApiServer(_rpcConfig, _rpcNodeApiClient);
+            _rpcApiServer = new ClassRpcApiServer(_rpcConfig, _rpcNodeApiClient, _rpcWalletDatabase); 
 
             _rpcApiServer.StartApiServer();
 

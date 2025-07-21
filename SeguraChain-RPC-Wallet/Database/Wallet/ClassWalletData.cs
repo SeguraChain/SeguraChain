@@ -4,7 +4,7 @@ using SeguraChain_Lib.Instance.Node.Network.Services.API.Utility;
 using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.Utility;
 using SeguraChain_RPC_Wallet.API.Service.Packet.Object.Request;
-using SeguraChain_RPC_Wallet.API.Service.Packet.Object.Response;
+using SeguraChain_RPC_Wallet.API.Service.Packet.Object.Response.POST;
 using SeguraChain_RPC_Wallet.Config;
 using SeguraChain_RPC_Wallet.Database.Object;
 using System;

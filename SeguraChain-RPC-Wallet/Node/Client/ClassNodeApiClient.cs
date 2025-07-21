@@ -8,7 +8,7 @@ using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.Utility;
 using SeguraChain_RPC_Wallet.API.Service.Packet.Object.Request;
-using SeguraChain_RPC_Wallet.API.Service.Packet.Object.Response;
+using SeguraChain_RPC_Wallet.API.Service.Packet.Object.Response.POST;
 using SeguraChain_RPC_Wallet.Config;
 using SeguraChain_RPC_Wallet.Database;
 using SeguraChain_RPC_Wallet.Database.Object;
@@ -176,75 +176,6 @@ namespace SeguraChain_RPC_Wallet.Node.Client
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Send a report of the rpc wallet stats.
-        /// </summary>
-        /// <param name="rpcApiGetWalletStats"></param>
-        /// <param name="cancellation"></param>
-        /// <returns></returns>
-        public ClassReportSendRpcWalletStats SendRpcWalletStats(ClassRpcApiGetWalletStats rpcApiGetWalletStats, CancellationTokenSource cancellation)
-        {
-            if (_blockchainNetworkStatsObject == null)
-                return null;
-
-            ClassReportSendRpcWalletStats reportSendRpcWalletStats = new ClassReportSendRpcWalletStats
-            {
-                total_wallet_count = _walletDatabaseObject.GetWalletCount,
-                current_block_height = _blockchainNetworkStatsObject.LastBlockHeight,
-                last_block_height_unlocked = _blockchainNetworkStatsObject.LastBlockHeightUnlocked,
-                current_block_hash = _blockchainNetworkStatsObject.LastBlockHash,
-                current_block_difficulty = _blockchainNetworkStatsObject.LastBlockDifficulty
-            };
-
-            if (rpcApiGetWalletStats.show_total_balance)
-            {
-                using(DisposableList<string> listWalletAddress = _walletDatabaseObject.GetListWalletAddress)
-                {
-                    foreach(string walletAddress in listWalletAddress.GetList)
-                    {
-                        if (cancellation.IsCancellationRequested)
-                            break;
-
-                        ClassWalletData walletData = _walletDatabaseObject.GetWalletDataFromWalletAddress(walletAddress);
-
-                        if (walletData == null)
-                            continue;
-
-                        reportSendRpcWalletStats.total_balance += walletData.WalletBalance;
-                        reportSendRpcWalletStats.total_pending_balance += walletData.WalletPendingBalance;
-                    }
-                }
-            }
-
-            return reportSendRpcWalletStats;
-        }
-
-        /// <summary>
-        /// Send a wallet data information packet.
-        /// </summary>
-        /// <param name="rpcApiGetWalletInformation"></param>
-        /// <returns></returns>
-        public ClassRpcApiSendWalletInformation SendRpcWalletInformation(ClassRpcApiGetWalletInformation rpcApiGetWalletInformation)
-        {
-            if (rpcApiGetWalletInformation == null)
-                return null;
-
-            ClassWalletData walletData = _walletDatabaseObject.GetWalletDataFromWalletAddress(rpcApiGetWalletInformation.wallet_address);
-
-            if (walletData == null)
-                return null;
-
-            return new ClassRpcApiSendWalletInformation()
-            {
-                wallet_address = walletData.WalletAddress,
-                wallet_balance = walletData.WalletBalance,
-                wallet_pending_balance = walletData.WalletPendingBalance,
-                wallet_private_key = walletData.WalletPrivateKey,
-                wallet_public_key = walletData.WalletPublicKey,
-                wallet_transaction_count = walletData.WalletTransactionList.Count
-            };
         }
 
         /// <summary>

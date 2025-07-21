@@ -7,7 +7,11 @@ using SeguraChain_Lib.Utility;
 using SeguraChain_RPC_Wallet.API.Service.Packet.Enum;
 using SeguraChain_RPC_Wallet.API.Service.Packet.Object;
 using SeguraChain_RPC_Wallet.API.Service.Packet.Object.Request;
+using SeguraChain_RPC_Wallet.API.Service.Packet.Object.Response.GET;
+using SeguraChain_RPC_Wallet.API.Service.Packet.Object.Response.POST;
 using SeguraChain_RPC_Wallet.Config;
+using SeguraChain_RPC_Wallet.Database;
+using SeguraChain_RPC_Wallet.Database.Wallet;
 using SeguraChain_RPC_Wallet.Node.Client;
 using System;
 using System.Diagnostics;
@@ -26,6 +30,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
         private bool _apiClientStatus;
         private TcpClient _apiTcpClient;
         private ClassNodeApiClient _nodeApiClient;
+        private ClassWalletDatabase _walletDatabase;
         private CancellationTokenSource _apiCancellationToken;
         private CancellationTokenSource _apiCheckerCancellationToken;
         private long _apiClientLastPacketTimestamp;
@@ -33,12 +38,18 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
         /// <summary>
         /// Constructor.
         /// </summary>
-        public ClassRpcApiClient(ClassRpcConfig apiRpcConfig, TcpClient apiTcpClient, ClassNodeApiClient nodeApiClient, CancellationTokenSource apiServerCancellationToken)
+        public ClassRpcApiClient(
+            ClassRpcConfig apiRpcConfig, 
+            TcpClient apiTcpClient,
+            ClassNodeApiClient nodeApiClient,
+            ClassWalletDatabase walletDatabase, 
+            CancellationTokenSource apiServerCancellationToken)
         {
             _apiRpcConfig = apiRpcConfig;
             _apiClientStatus = true;
             _apiTcpClient = apiTcpClient;
             _nodeApiClient = nodeApiClient;
+            _walletDatabase = walletDatabase;
             _apiCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(apiServerCancellationToken.Token);
             _apiCheckerCancellationToken = CancellationTokenSource.CreateLinkedTokenSource(apiServerCancellationToken.Token);
             _apiClientLastPacketTimestamp = ClassUtility.GetCurrentTimestampInSecond();
@@ -79,141 +90,143 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
         /// <summary>
         /// Handle the incoming api client connection.
         /// </summary>
-        public void HandleApiClient()
+        public async System.Threading.Tasks.Task HandleApiClient()
         {
             try
             {
-                new TaskFactory().StartNew(CheckApiClientAsync, _apiCheckerCancellationToken.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
+                new System.Threading.Tasks.Task(async() => await CheckApiClientAsync(), _apiCheckerCancellationToken.Token).Start();
+
             }
             catch
             {
                 // Ignored, catch the exception once the task is cancelled.
             }
-
+            
             try
             {
-                System.Threading.Tasks.Task.Factory.StartNew(async () =>
+
+                long packetSizeCount = 0;
+
+                using (DisposableList<byte[]> listPacket = new DisposableList<byte[]>())
                 {
-                    try
+                    if (_apiClientStatus)
                     {
-                        long packetSizeCount = 0;
-
-                        using (DisposableList<byte[]> listPacket = new DisposableList<byte[]>())
+                        try
                         {
-                            if (_apiClientStatus)
+                            bool continueReading = true;
+                            bool isPostRequest = false;
+                            bool isGetRequest = false;
+
+                            string packetReceived = string.Empty;
+
+                            using (NetworkStream networkStream = new NetworkStream(_apiTcpClient.Client))
                             {
-                                try
+                                while (continueReading && _apiClientStatus)
                                 {
-                                    bool continueReading = true;
-                                    bool isPostRequest = false;
+                                    if (_apiCancellationToken.IsCancellationRequested)
+                                        break;
 
-                                    string packetReceived = string.Empty;
+                                    byte[] packetBuffer = new byte[BlockchainSetting.PeerMaxPacketBufferSize];
 
-                                    using (NetworkStream networkStream = new NetworkStream(_apiTcpClient.Client))
+                                    int packetLength = await networkStream.ReadAsync(packetBuffer, 0, packetBuffer.Length, _apiCancellationToken.Token);
+
+                                    if (packetLength > 0)
+                                        listPacket.Add(packetBuffer);
+                                    else break;
+
+                                    packetSizeCount += packetLength;
+
+                                    _apiClientLastPacketTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+
+                                    if (listPacket.Count > 0)
                                     {
-                                        while (continueReading && _apiClientStatus)
+
+                                        foreach (byte dataByte in listPacket.GetList.SelectMany(x => x).ToArray())
                                         {
                                             if (_apiCancellationToken.IsCancellationRequested)
                                                 break;
 
-                                            byte[] packetBuffer = new byte[BlockchainSetting.PeerMaxPacketBufferSize];
+                                            char character = (char)dataByte;
 
-                                            int packetLength = await networkStream.ReadAsync(packetBuffer, 0, packetBuffer.Length, _apiCancellationToken.Token);
+                                            if (character != '\0')
+                                                packetReceived += character;
+                                        }
 
-                                            if (packetLength > 0)
-                                                listPacket.Add(packetBuffer);
-                                            else break;
+                                        // Control the post request content length, break the reading if the content length is reach.
+                                        if (packetReceived.Contains(ClassPeerApiEnumHttpPostRequestSyntax.HttpPostRequestType) &&
+                                            packetReceived.Contains(ClassPeerApiEnumHttpPostRequestSyntax.PostDataPosition1))
+                                        {
+                                            isPostRequest = true;
 
-                                            packetSizeCount += packetLength;
+                                            int indexPacket = packetReceived.IndexOf(ClassPeerApiEnumHttpPostRequestSyntax.PostDataPosition1, 0, StringComparison.Ordinal);
 
-                                            _apiClientLastPacketTimestamp = ClassUtility.GetCurrentTimestampInSecond();
+                                            string[] packetInfoSplitted = packetReceived.Substring(indexPacket).Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
 
-                                            if (listPacket.Count > 0)
+                                            if (packetInfoSplitted.Length == 2)
                                             {
+                                                int packetContentLength = 0;
 
-                                                foreach (byte dataByte in listPacket.GetList.SelectMany(x => x).ToArray())
+                                                string contentLength = packetInfoSplitted[0].Replace(ClassPeerApiEnumHttpPostRequestSyntax.PostDataPosition1 + " ", "");
+
+                                                // Compare Content-length with content.
+                                                if (int.TryParse(contentLength, out packetContentLength))
                                                 {
-                                                    if (_apiCancellationToken.IsCancellationRequested)
-                                                        break;
-
-                                                    char character = (char)dataByte;
-
-                                                    if (character != '\0')
-                                                        packetReceived += character;
+                                                    if (packetContentLength == packetInfoSplitted[1].Length)
+                                                        continueReading = false;
                                                 }
-
-                                                // Control the post request content length, break the reading if the content length is reach.
-                                                if (packetReceived.Contains(ClassPeerApiEnumHttpPostRequestSyntax.HttpPostRequestType) &&
-                                                    packetReceived.Contains(ClassPeerApiEnumHttpPostRequestSyntax.PostDataPosition1))
-                                                {
-                                                    isPostRequest = true;
-
-                                                    int indexPacket = packetReceived.IndexOf(ClassPeerApiEnumHttpPostRequestSyntax.PostDataPosition1, 0, StringComparison.Ordinal);
-
-                                                    string[] packetInfoSplitted = packetReceived.Substring(indexPacket).Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
-
-                                                    if (packetInfoSplitted.Length == 2)
-                                                    {
-                                                        int packetContentLength = 0;
-
-                                                        string contentLength = packetInfoSplitted[0].Replace(ClassPeerApiEnumHttpPostRequestSyntax.PostDataPosition1 + " ", "");
-
-                                                        // Compare Content-length with content.
-                                                        if (int.TryParse(contentLength, out packetContentLength))
-                                                        {
-                                                            if (packetContentLength == packetInfoSplitted[1].Length)
-                                                                continueReading = false;
-                                                        }
-                                                    }
-                                                }
-                                                else if (packetReceived.Contains("GET /"))
-                                                    continueReading = false;
-
-                                                if (continueReading)
-                                                    packetReceived.Clear();
                                             }
                                         }
-                                    }
-
-                                    if (listPacket.Count > 0 && _apiClientStatus)
-                                    {
-                                        #region Take in count the common POST HTTP request syntax of data.
-
-                                        if (isPostRequest)
+                                        else if (packetReceived.Contains("GET /"))
                                         {
-                                            int indexPacket = packetReceived.IndexOf(ClassPeerApiEnumHttpPostRequestSyntax.PostDataTargetIndexOf, 0, StringComparison.Ordinal);
-
-                                            packetReceived = packetReceived.Substring(indexPacket);
-
-                                            await HandlePostPacket(packetReceived);
+                                            isGetRequest = true;
+                                            continueReading = false;
                                         }
-
-                                        #endregion
+                                        if (continueReading)
+                                            packetReceived.Clear();
                                     }
-
-                                    // Close the connection after to have receive the packet of the incoming connection.
-                                    _apiClientStatus = false;
-                                }
-                                catch
-                                {
-                                    _apiClientStatus = false;
                                 }
                             }
+
+                            if (listPacket.Count > 0 && _apiClientStatus)
+                            {
+                                #region Take in count the common POST HTTP request syntax of data.
+
+                                if (isPostRequest)
+                                {
+                                    int indexPacket = packetReceived.IndexOf(ClassPeerApiEnumHttpPostRequestSyntax.PostDataTargetIndexOf, 0, StringComparison.Ordinal);
+
+                                    packetReceived = packetReceived.Substring(indexPacket);
+
+                                    await HandlePostPacket(packetReceived);
+                                }
+
+                                #endregion
+                            }
+                            if (isGetRequest)
+                            {
+                                packetReceived = packetReceived.GetStringBetweenTwoStrings("GET /", "HTTP");
+                                packetReceived = packetReceived.Replace("%7C", "|"); // Translate special character | 
+                                packetReceived = packetReceived.Replace(" ", ""); // Remove empty,space characters
+                                await HandleGetPacket(packetReceived);
+                            }
+                            // Close the connection after to have receive the packet of the incoming connection.
+                           // _apiClientStatus = false;
+                        }
+                        catch
+                        {
+                            _apiClientStatus = false;
                         }
                     }
-                    catch
-                    {
-                        // Catch the exception pending to reading packet data received from the api client.
-                    }
+                }
 
-                    CloseApiClient(false);
 
-                }, _apiCancellationToken.Token, TaskCreationOptions.RunContinuationsAsynchronously, TaskScheduler.Current).ConfigureAwait(false);
             }
             catch
             {
                 // Ignored, catch the exception once the task is cancelled.
             }
+
+            CloseApiClient(false);
 
         }
 
@@ -296,12 +309,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
                 return string.Empty;
             }
 
-            if (rpcApiPostPacket.packet_encrypted != _apiRpcConfig.RpcApiSetting.RpcApiEnableSecretKey)
-            {
-                // Different response result.
-                await SendApiResponse("The packet content data received format is invalid. It seems to be " + (_apiRpcConfig.RpcApiSetting.RpcApiEnableSecretKey ? "unencrypted" : "encrypted"));
-                return string.Empty;
-            }
+            
 
             if (rpcApiPostPacket.packet_content.IsNullOrEmpty(false, out _))
             {
@@ -309,33 +317,54 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
                 return string.Empty;
             }
 
-            byte[] packetContentDecrypted = null;
-
-            if (_apiRpcConfig.RpcApiSetting.RpcApiEnableSecretKey)
-            {
-                if (!ClassUtility.CheckBase64String(rpcApiPostPacket.packet_content))
-                {
-                    await SendApiResponse("The packet content data received format is invalid. Please use the Base64 format.");
-                    return string.Empty;
-                }
-
-                if (!ClassAes.DecryptionProcess(Convert.FromBase64String(rpcApiPostPacket.packet_content), _apiRpcConfig.RpcApiSetting.RpcApiSecretKeyArray, _apiRpcConfig.RpcApiSetting.RpcApiSecretIvArray, out packetContentDecrypted))
-                {
-                    await SendApiResponse("Can't decrypt the packet content.");
-                    return string.Empty;
-                }
-
-                if (packetContentDecrypted == null || packetContentDecrypted?.Length == 0)
-                {
-                    await SendApiResponse("The packet content decrypted is empty.");
-                    return string.Empty;
-                }
-            }
-
-            return _apiRpcConfig.RpcApiSetting.RpcApiEnableSecretKey ? packetContentDecrypted.GetStringFromByteArrayUtf8() : rpcApiPostPacket.packet_content;
+            return rpcApiPostPacket.packet_content;
         }
 
         #endregion
+
+        /// <summary>
+        /// Handle GET packet data.
+        /// </summary>
+        /// <param name="packetRequest"></param>
+        /// <returns></returns>
+        private async Task<bool> HandleGetPacket(string packetRequest)
+        {
+#if DEBUG
+            Debug.WriteLine("Packet request received: " + packetRequest);
+#endif
+            try 
+            {
+                switch(packetRequest)
+                {
+                    case ClassRpcApiGetPacketEnum.GetRpcWalletStats:
+                        {
+                            return await SendApiResponse(new ClassRpcApiGetWalletStats()
+                            {
+                                wallet_count = _walletDatabase.GetWalletCount,
+                                wallet_total_amount = _walletDatabase.GetWalletTotalBalance(),
+                                wallet_total_pending_amount = _walletDatabase.GetWalletTotalPendingBalance(),
+                                wallet_total_fee_amount = _walletDatabase.GetWalletTotalFeeBalance(),
+                                wallet_total_transactions = _walletDatabase.GetWalletTotalTransactions()
+                            });
+                        }
+                    case ClassRpcApiGetPacketEnum.GetRpcCreateWallet:
+                        {
+                            return await SendApiResponse(new ClassRpcApiSendWalletInformation()
+                            {
+                                wallet_data = _walletDatabase.CreateWallet(string.Empty, true)
+                            });
+                        }
+                }
+            }
+            catch(Exception error)
+            {
+#if DEBUG
+                Debug.WriteLine("Exception on handle GET packet. Details: " + error.Message);
+#endif
+            }
+
+            return false;
+        }
 
         /// <summary>
         /// Handle the api post packet.
@@ -378,30 +407,19 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
                                 return false;
                         }
                         break;
-                    case ClassRpcApiPostPacketEnum.RpcApiGetWalletStats:
+                    case ClassRpcApiPostPacketEnum.RpcApiGetWallet:
                         {
-                            if (!ClassUtility.TryDeserialize(packetData, out ClassRpcApiGetWalletStats rpcApiGetWalletStats))
+                            if (!ClassUtility.TryDeserialize(packetData, out ClassRpcApiGetWalletInformation rpcApiGetWallet))
                             {
-                                await SendApiResponse("Can't deserialize the packet transaction content.");
+                                await SendApiResponse("Can't deserialize the packet wallmet content.");
                                 return false;
                             }
 
-                            if (!await SendApiResponse(_nodeApiClient.SendRpcWalletStats(rpcApiGetWalletStats, _apiCancellationToken)))
-                                return false;
-                        }
-                        break;
-                    case ClassRpcApiPostPacketEnum.RpcApiGetWalletInformation:
-                        {
-                            if (!ClassUtility.TryDeserialize(packetData, out ClassRpcApiGetWalletInformation rpcApiGetWalletInformation))
+                            return await SendApiResponse(new ClassRpcApiSendWalletInformation()
                             {
-                                await SendApiResponse("Can't deserialize the packet transaction content.");
-                                return false;
-                            }
-
-                            if (!await SendApiResponse(_nodeApiClient.SendRpcWalletInformation(rpcApiGetWalletInformation)))
-                                return false;
+                                wallet_data = _walletDatabase.GetWalletDataFromWalletAddress(rpcApiGetWallet.wallet_address)
+                            });
                         }
-                        break;
                     case ClassRpcApiPostPacketEnum.RpcApiGetWalletTransaction:
                         {
                             if (!ClassUtility.TryDeserialize(packetData, out ClassRpcApiGetWalletTransaction rpcApiGetWalletTransaction))
@@ -410,11 +428,8 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
                                 return false;
                             }
 
-                            if (!await SendApiResponse(_nodeApiClient.SendRpcWalletTransactionObject(rpcApiGetWalletTransaction, _apiCancellationToken)))
-                                return false;
+                            return await SendApiResponse(_nodeApiClient.SendRpcWalletTransactionObject(rpcApiGetWalletTransaction, _apiCancellationToken));
                         }
-                        break;
-
                     default:
                         {
 #if DEBUG
@@ -449,18 +464,10 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
 
             try
             {
-                string packetContentSerialized = JsonConvert.SerializeObject(packetContent);
-
-                if (_apiRpcConfig.RpcApiSetting.RpcApiEnableSecretKey)
-                {
-                    if (ClassAes.EncryptionProcess(packetContentSerialized.GetByteArray(), _apiRpcConfig.RpcApiSetting.RpcApiSecretKeyArray, _apiRpcConfig.RpcApiSetting.RpcApiSecretIvArray, out byte[] packetContentEncrypted))
-                        packetContentSerialized = Convert.ToBase64String(packetContentEncrypted);
-                }
 
                 string packetResponse = JsonConvert.SerializeObject(new ClassRpcApiResponsePacket
                 {
-                    packet_content = packetContentSerialized,
-                    packet_encrypted = _apiRpcConfig.RpcApiSetting.RpcApiEnableSecretKey,
+                    packet_content = packetContent,
                     packet_timestamp = ClassUtility.GetCurrentTimestampInSecond()
                 });
 
