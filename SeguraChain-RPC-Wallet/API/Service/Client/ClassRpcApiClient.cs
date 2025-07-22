@@ -126,6 +126,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
                                     if (_apiCancellationToken.IsCancellationRequested)
                                         break;
 
+
                                     byte[] packetBuffer = new byte[BlockchainSetting.PeerMaxPacketBufferSize];
 
                                     int packetLength = await networkStream.ReadAsync(packetBuffer, 0, packetBuffer.Length, _apiCancellationToken.Token);
@@ -135,6 +136,8 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
                                     else break;
 
                                     packetSizeCount += packetLength;
+
+                                    await networkStream.FlushAsync();
 
                                     _apiClientLastPacketTimestamp = ClassUtility.GetCurrentTimestampInSecond();
 
@@ -151,57 +154,81 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
                                             if (character != '\0')
                                                 packetReceived += character;
                                         }
+                                    }
 
-                                        // Control the post request content length, break the reading if the content length is reach.
-                                        if (packetReceived.Contains(ClassPeerApiEnumHttpPostRequestSyntax.HttpPostRequestType) &&
-                                            packetReceived.Contains(ClassPeerApiEnumHttpPostRequestSyntax.PostDataPosition1))
+#if DEBUG
+                                    Debug.WriteLine(packetReceived);
+#endif
+
+                                    #region From Node ? 
+
+                                    if (packetReceived.Contains("PacketContentObjectSerialized"))
+                                    {
+                                        _apiClientStatus = false;
+                                        break;
+                                    }
+                                    #endregion
+
+                                    // Control the post request content length, break the reading if the content length is reach.
+                                    if (packetReceived.Contains(ClassPeerApiEnumHttpPostRequestSyntax.HttpPostRequestType) &&
+                                        packetReceived.Contains(ClassPeerApiEnumHttpPostRequestSyntax.PostDataPosition1))
+                                    {
+                                        isPostRequest = true;
+
+                                        int indexPacket = packetReceived.IndexOf(ClassPeerApiEnumHttpPostRequestSyntax.PostDataPosition1, 0, StringComparison.Ordinal);
+
+                                        string[] packetInfoSplitted = packetReceived.Substring(indexPacket).Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+
+                                        if (packetInfoSplitted.Length >= 2)
                                         {
-                                            isPostRequest = true;
+                                            int packetContentLength = 0;
 
-                                            int indexPacket = packetReceived.IndexOf(ClassPeerApiEnumHttpPostRequestSyntax.PostDataPosition1, 0, StringComparison.Ordinal);
+                                            string contentLength = packetInfoSplitted[0].Replace(ClassPeerApiEnumHttpPostRequestSyntax.PostDataPosition1 + " ", "");
 
-                                            string[] packetInfoSplitted = packetReceived.Substring(indexPacket).Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
-
-                                            if (packetInfoSplitted.Length == 2)
+                                            // Compare Content-length with content.
+                                            if (int.TryParse(contentLength, out packetContentLength))
                                             {
-                                                int packetContentLength = 0;
-
-                                                string contentLength = packetInfoSplitted[0].Replace(ClassPeerApiEnumHttpPostRequestSyntax.PostDataPosition1 + " ", "");
-
-                                                // Compare Content-length with content.
-                                                if (int.TryParse(contentLength, out packetContentLength))
+                                                string packetInfo = string.Empty;
+                                                foreach(var stringPostData in packetInfoSplitted)
                                                 {
-                                                    if (packetContentLength == packetInfoSplitted[1].Length)
-                                                        continueReading = false;
+                                                    if (stringPostData.Contains(ClassPeerApiEnumHttpPostRequestSyntax.PostDataPosition1))
+                                                        continue;
+
+                                                    packetInfo += stringPostData;
+                                                }
+                                                if (packetContentLength >= packetInfo.Length)
+                                                {
+                                                    continueReading = false;
+                                                    packetReceived = packetInfo;
                                                 }
                                             }
                                         }
-                                        else if (packetReceived.Contains("GET /"))
-                                        {
-                                            isGetRequest = true;
-                                            continueReading = false;
-                                        }
-                                        if (continueReading)
-                                            packetReceived.Clear();
                                     }
+                                    else if (packetReceived.Contains("GET /") && !isPostRequest)
+                                    {
+                                        isGetRequest = true;
+                                        continueReading = false;
+                                    }
+                                    if (continueReading)
+                                        packetReceived.Clear();
+
                                 }
                             }
 
-                            if (listPacket.Count > 0 && _apiClientStatus)
+                            #region Take in count the common POST HTTP request syntax of data.
+
+                            if (isPostRequest)
                             {
-                                #region Take in count the common POST HTTP request syntax of data.
+                                int indexPacket = packetReceived.IndexOf(ClassPeerApiEnumHttpPostRequestSyntax.PostDataTargetIndexOf, 0, StringComparison.Ordinal);
 
-                                if (isPostRequest)
-                                {
-                                    int indexPacket = packetReceived.IndexOf(ClassPeerApiEnumHttpPostRequestSyntax.PostDataTargetIndexOf, 0, StringComparison.Ordinal);
-
+                                if (indexPacket >= 0)
                                     packetReceived = packetReceived.Substring(indexPacket);
 
-                                    await HandlePostPacket(packetReceived);
-                                }
-
-                                #endregion
+                                await HandlePostPacket(packetReceived);
                             }
+
+                            #endregion
+                            
                             if (isGetRequest)
                             {
                                 packetReceived = packetReceived.GetStringBetweenTwoStrings("GET /", "HTTP");
@@ -210,14 +237,15 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
                                 await HandleGetPacket(packetReceived);
                             }
                             // Close the connection after to have receive the packet of the incoming connection.
-                           // _apiClientStatus = false;
                         }
                         catch
                         {
-                            _apiClientStatus = false;
                         }
+
+                        _apiClientStatus = false;
                     }
                 }
+
 
 
             }
@@ -291,33 +319,35 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
         /// </summary>
         /// <param name="packetData"></param>
         /// <returns></returns>
-        private async Task<string> HandlePacketContent(string packetData)
+        private async Task<ClassRpcApiPostPacket> HandlePacketContent(string packetData)
         {
 
+
+
             if (packetData.IsNullOrEmpty(false, out _))
-                return string.Empty;
+                return null;
 
             if (!ClassUtility.TryDeserialize(packetData, out ClassRpcApiPostPacket rpcApiPostPacket))
             {
                 await SendApiResponse("Failed to deserialize the transaction data received. " + packetData);
-                return string.Empty;
+                return null;
             }
 
             if (rpcApiPostPacket.packet_timestamp + _apiRpcConfig.RpcApiSetting.RpcApiMaxConnectDelay >= ClassUtility.GetCurrentTimestampInSecond())
             {
                 await SendApiResponse("The packet content sent has expired.");
-                return string.Empty;
+                return null;
             }
 
             
 
-            if (rpcApiPostPacket.packet_content.IsNullOrEmpty(false, out _))
+            if (rpcApiPostPacket.packet_content.ToString().IsNullOrEmpty(false, out _))
             {
                 await SendApiResponse("The packet content data received is empty.");
-                return string.Empty;
+                return null;
             }
 
-            return rpcApiPostPacket.packet_content;
+            return rpcApiPostPacket;
         }
 
         #endregion
@@ -375,16 +405,16 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
         {
             try
             {
-                packetData = await HandlePacketContent(packetData);
+                ClassRpcApiPostPacket packetDataObject = await HandlePacketContent(packetData);
 
-                if (packetData.IsNullOrEmpty(false, out _))
+                if (packetDataObject == null) 
                     return false;
 
-                switch (packetData)
+                switch (packetDataObject.packet_type)
                 {
                     case ClassRpcApiPostPacketEnum.RpcApiPostTransaction:
                         {
-                            if (!ClassUtility.TryDeserialize(packetData, out ClassRpcApiPostTransactionObject rpcApiPostTransactionObject))
+                            if (!ClassUtility.TryDeserialize(packetDataObject.packet_content.ToString(), out ClassRpcApiPostTransactionObject rpcApiPostTransactionObject))
                             {
                                 await SendApiResponse("Can't deserialize the packet transaction content.");
                                 return false;
@@ -409,7 +439,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
                         break;
                     case ClassRpcApiPostPacketEnum.RpcApiGetWallet:
                         {
-                            if (!ClassUtility.TryDeserialize(packetData, out ClassRpcApiGetWalletInformation rpcApiGetWallet))
+                            if (!ClassUtility.TryDeserialize(packetDataObject.packet_content.ToString(), out ClassRpcApiGetWalletInformation rpcApiGetWallet))
                             {
                                 await SendApiResponse("Can't deserialize the packet wallmet content.");
                                 return false;
@@ -422,7 +452,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
                         }
                     case ClassRpcApiPostPacketEnum.RpcApiGetWalletTransaction:
                         {
-                            if (!ClassUtility.TryDeserialize(packetData, out ClassRpcApiGetWalletTransaction rpcApiGetWalletTransaction))
+                            if (!ClassUtility.TryDeserialize(packetDataObject.packet_content.ToString(), out ClassRpcApiGetWalletTransaction rpcApiGetWalletTransaction))
                             {
                                 await SendApiResponse("Can't deserialize the packet transaction content.");
                                 return false;
