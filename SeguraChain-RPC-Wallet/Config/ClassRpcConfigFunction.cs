@@ -151,9 +151,6 @@ namespace SeguraChain_RPC_Wallet.Config
                 Console.WriteLine("Do you want to enable the compression on the wallet database file? [Y/N]");
                 rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabaseEnableCompression = Console.ReadLine()?.ToLower() == "y";
 
-                Console.WriteLine("Do you want to enable the encryption on the wallet database file? [Y/N]");
-                rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabaseEnableEncryption = Console.ReadLine()?.ToLower() == "y";
-
                 Console.WriteLine("Do you want to enable the JSON format on the wallet database file? [Y/N]");
                 rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabaseEnableJsonFormat = Console.ReadLine()?.ToLower() == "y";
 

@@ -90,7 +90,6 @@ namespace SeguraChain_RPC_Wallet.Config
     {
         public string RpcWalletDatabasePath;
         public string RpcWalletDatabaseFilename;
-        public bool RpcWalletDatabaseEnableEncryption;
         public bool RpcWalletDatabaseEnableCompression;
         public bool RpcWalletDatabaseEnableJsonFormat;
 
@@ -101,7 +100,6 @@ namespace SeguraChain_RPC_Wallet.Config
         {
             RpcWalletDatabasePath = AppContext.BaseDirectory + "\\WalletDatabase\\";
             RpcWalletDatabaseFilename = "wallet.dat";
-            RpcWalletDatabaseEnableEncryption = false;
             RpcWalletDatabaseEnableCompression = false;
             RpcWalletDatabaseEnableJsonFormat = true;
         }

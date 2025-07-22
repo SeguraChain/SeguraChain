@@ -80,15 +80,10 @@ namespace SeguraChain_RPC_Wallet
             
             #region Load the RPC Wallet Database.
 
-            string rpcWalletDatabasePassword = string.Empty;
+             Console.WriteLine("Please input the RPC Wallet database password: ");
 
-            if (_rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabaseEnableEncryption)
-            {
-                Console.WriteLine("Please input the RPC Wallet database password: ");
-
-                rpcWalletDatabasePassword = Console.ReadLine();
-            }
-
+             string rpcWalletDatabasePassword = Console.ReadLine();
+            
             if (!_rpcWalletDatabase.LoadWalletDatabase(_rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabasePath, _rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabaseFilename, rpcWalletDatabasePassword))
             {
                 Console.WriteLine("Failed to read the RPC Wallet database.");
@@ -110,6 +105,14 @@ namespace SeguraChain_RPC_Wallet
             _rpcApiServer = new ClassRpcApiServer(_rpcConfig, _rpcNodeApiClient, _rpcWalletDatabase); 
 
             _rpcApiServer.StartApiServer();
+
+            #endregion
+
+            #region Launch the RPC Wallet Task System.
+
+            _rpcTaskSystem = new ClassRpcTaskSystem(_rpcWalletDatabase);
+            _rpcTaskSystem.EnableUpdateWallet(_rpcConfig);
+            _rpcTaskSystem.EnableAutoSaveWallet(_rpcConfig, rpcWalletDatabasePassword);
 
             #endregion
 

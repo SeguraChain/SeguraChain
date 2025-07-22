@@ -130,7 +130,7 @@ namespace SeguraChain_RPC_Wallet.Database
 
             using (FileStream fileStream = new FileStream(walletDatabasePath + walletFilename, FileMode.OpenOrCreate))
             {
-                using (StreamWriter writer = new StreamWriter(new LZ4Stream(fileStream, LZ4StreamMode.Decompress, LZ4StreamFlags.HighCompression)))
+                using (StreamWriter writer = new StreamWriter(new LZ4Stream(fileStream, LZ4StreamMode.Compress, LZ4StreamFlags.HighCompression)))
                 {
                     foreach (ClassWalletData walletData in _dictionaryWallet.Values)
                     {
@@ -138,6 +138,7 @@ namespace SeguraChain_RPC_Wallet.Database
                             continue;
 
                         writer.WriteLine(Convert.ToBase64String(walletDataEncrypted));
+                        writer.Flush();
                     }
                 }
             }

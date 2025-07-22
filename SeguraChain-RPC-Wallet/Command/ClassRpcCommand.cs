@@ -1,11 +1,9 @@
-﻿using SeguraChain_Lib.Other.Object.List;
-using SeguraChain_RPC_Wallet.API.Service.Packet.Object.Request;
+﻿
 using SeguraChain_RPC_Wallet.Command.Enum;
 using SeguraChain_RPC_Wallet.Config;
 using SeguraChain_RPC_Wallet.Database;
 using SeguraChain_RPC_Wallet.Database.Wallet;
 using System;
-using System.Numerics;
 using System.Threading;
 
 namespace SeguraChain_RPC_Wallet.Command
@@ -40,7 +38,8 @@ namespace SeguraChain_RPC_Wallet.Command
                     {
                         case ClassRpcEnumCommand.Help:
                             {
-
+                                Console.WriteLine(ClassRpcEnumCommand.ListWallet + " - List every wallets");
+                                Console.WriteLine(ClassRpcEnumCommand.Exit + " - Exit the wallet");
                             }
                             break;
                         case ClassRpcEnumCommand.ListWallet:
@@ -61,8 +60,30 @@ namespace SeguraChain_RPC_Wallet.Command
                                 }
                             }
                             break;
-                        default:
+                        case ClassRpcEnumCommand.Save:
+                            {
+                                Console.WriteLine("Please write the password to encrypt the database: ");
 
+                                _rpcWalletDatabase.SaveWalletDatabase(
+                                _rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabasePath,
+                                 _rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabaseFilename, Console.ReadLine());
+                            }
+                            break;
+                        case ClassRpcEnumCommand.Exit:
+                            {
+
+                                Console.WriteLine("Please write the password to encrypt the database: ");
+
+                                _rpcWalletDatabase.SaveWalletDatabase(
+                                    _rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabasePath,
+                                    _rpcConfig.RpcWalletDatabaseSetting.RpcWalletDatabaseFilename,
+                                    Console.ReadLine());
+
+                                _rpcConfig.RpcWalletEnabled = false;
+                            }
+                            break;
+                        default:
+                            Console.WriteLine("Command line not exist.");
                             break;
                     }
                 }
