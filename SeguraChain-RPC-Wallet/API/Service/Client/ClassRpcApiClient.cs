@@ -20,6 +20,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ClassRpcApiGetWalletStats = SeguraChain_RPC_Wallet.API.Service.Packet.Object.Response.GET.ClassRpcApiGetWalletStats;
 
 
 namespace SeguraChain_RPC_Wallet.API.Service.Client
