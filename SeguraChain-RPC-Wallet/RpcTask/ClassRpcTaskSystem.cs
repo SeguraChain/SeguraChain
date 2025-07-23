@@ -1,4 +1,5 @@
-﻿using SeguraChain_Lib.Blockchain.Block.Object.Structure;
+﻿using SeguraChain_Lib.Blockchain.Block.Enum;
+using SeguraChain_Lib.Blockchain.Block.Object.Structure;
 using SeguraChain_Lib.Blockchain.Setting;
 using SeguraChain_Lib.Blockchain.Stats.Object;
 using SeguraChain_Lib.Instance.Node.Network.Services.API.Utility;
@@ -8,6 +9,7 @@ using SeguraChain_RPC_Wallet.Database;
 using SeguraChain_RPC_Wallet.Database.Wallet;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -60,13 +62,14 @@ namespace SeguraChain_RPC_Wallet.RpcTask
                             ClassBlockObject blockInformation = await ClassApiClientUtility.GetBlockInformationFromExternalSyncMode(
                                rpcConfig.RpcNodeApiSetting.RpcNodeApiIp,
                                rpcConfig.RpcNodeApiSetting.RpcNodeApiPort,
+                               rpcConfig.RpcNodeApiSetting.RpcNodeApiMaxDelay * 1000,
                                i,
-                               rpcConfig.RpcNodeApiSetting.RpcNodeApiMaxDelay,
                                _cancellation);
 
                             if (blockInformation != null)
                             {
-
+                                if (blockInformation.BlockStatus == ClassBlockEnumStatus.LOCKED)
+                                    continue;
 
                                 DisposableList<ClassBlockTransaction> listBlockTransaction = await ClassApiClientUtility.GetBlockTransactionByRangeFromExternalSyncMode(
                                      rpcConfig.RpcNodeApiSetting.RpcNodeApiIp,
@@ -77,9 +80,25 @@ namespace SeguraChain_RPC_Wallet.RpcTask
                                      blockInformation.TotalTransaction,
                                      _cancellation);
 
-                                foreach (ClassBlockTransaction blockTransaction in listBlockTransaction.GetList)
+                                while (listBlockTransaction.Count == 0) // Callback them.
                                 {
-                                    if (_walletDatabase.GetListWalletAddress.Contains(blockTransaction.TransactionObject.WalletAddressSender))
+                                    listBlockTransaction = await ClassApiClientUtility.GetBlockTransactionByRangeFromExternalSyncMode(
+                                     rpcConfig.RpcNodeApiSetting.RpcNodeApiIp,
+                                     rpcConfig.RpcNodeApiSetting.RpcNodeApiPort,
+                                     rpcConfig.RpcNodeApiSetting.RpcNodeApiMaxDelay * 1000,
+                                     i,
+                                     0,
+                                     blockInformation.TotalTransaction,
+                                     _cancellation);
+
+#if DEBUG
+                                    Debug.WriteLine("Callback block transaction from height: " + blockInformation.BlockHeight + " | Count: " + blockInformation.TotalTransaction);
+#endif
+                                }
+
+                                foreach (ClassBlockTransaction blockTransaction in listBlockTransaction.GetList.ToList())
+                                {
+                                    if (_walletDatabase.GetListWalletAddress.GetList.Contains(blockTransaction.TransactionObject.WalletAddressSender))
                                     {
                                         ClassWalletData walletData = _walletDatabase.GetWalletDataFromWalletAddress(blockTransaction.TransactionObject.WalletAddressSender);
 #if DEBUG
@@ -88,7 +107,7 @@ namespace SeguraChain_RPC_Wallet.RpcTask
                                         walletData.WalletTransactionList.TryAdd(blockTransaction.TransactionObject.TransactionHash, blockTransaction);
                                     }
 
-                                    if (_walletDatabase.GetListWalletAddress.Contains(blockTransaction.TransactionObject.WalletAddressReceiver))
+                                    if (_walletDatabase.GetListWalletAddress.GetList.Contains(blockTransaction.TransactionObject.WalletAddressReceiver))
                                     {
                                         ClassWalletData walletData = _walletDatabase.GetWalletDataFromWalletAddress(blockTransaction.TransactionObject.WalletAddressReceiver);
 #if DEBUG
