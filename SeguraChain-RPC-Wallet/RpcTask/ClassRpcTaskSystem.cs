@@ -128,7 +128,12 @@ namespace SeguraChain_RPC_Wallet.RpcTask
                         foreach (string walletAddress in _walletDatabase.GetListWalletAddress.GetList)
                         {
                             ClassWalletData walletData = _walletDatabase.GetWalletDataFromWalletAddress(walletAddress);
+                            
+                            // Initialize back.
+                            walletData.WalletBalance = 0;
+                            walletData.WalletPendingBalance = 0;
 
+                            // Update block transactions synced according to block transaction confirmations from the network.
                             foreach (ClassBlockTransaction blockTransaction in walletData.WalletTransactionList.Values)
                             {
                                 ClassBlockTransaction blockTransactionUpdated = await ClassApiClientUtility.GetBlockTransactionByTransactionHashAndBlockHeightFromExternalSyncMode(
@@ -144,6 +149,19 @@ namespace SeguraChain_RPC_Wallet.RpcTask
 
                                 // Update transaction stored.
                                 walletData.WalletTransactionList[blockTransaction.TransactionObject.TransactionHash] = blockTransactionUpdated;
+
+#if DEBUG
+                                Debug.WriteLine("Update block transaction: " + blockTransaction.TransactionObject.TransactionHash + " | Wallet: " + walletData.WalletAddress);
+#endif
+                                if (blockTransaction.TransactionObject.WalletAddressSender == walletData.WalletAddress)
+                                    walletData.WalletBalance -= (blockTransaction.TransactionObject.Amount + blockTransaction.TransactionObject.Fee);
+                                else if (blockTransaction.TransactionObject.WalletAddressReceiver == walletData.WalletAddress)
+                                {
+                                    if (blockTransaction.TransactionTotalConfirmation >= BlockchainSetting.TransactionMandatoryMinBlockTransactionConfirmations)
+                                        walletData.WalletBalance += blockTransaction.TransactionObject.Amount;
+                                    else
+                                        walletData.WalletPendingBalance += blockTransaction.TransactionObject.Amount;
+                                }
                             }
                         }
 

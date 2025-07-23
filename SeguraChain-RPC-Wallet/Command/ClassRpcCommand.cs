@@ -1,4 +1,5 @@
 ﻿
+using SeguraChain_Lib.Blockchain.Setting;
 using SeguraChain_RPC_Wallet.Command.Enum;
 using SeguraChain_RPC_Wallet.Config;
 using SeguraChain_RPC_Wallet.Database;
@@ -52,7 +53,7 @@ namespace SeguraChain_RPC_Wallet.Command
 
                                         if (walletData != null)
                                         {
-                                            Console.WriteLine(walletData.WalletAddress + " | Wallet Balance: " + walletData.WalletBalance + " | Wallet Pending Balance: " + walletData.WalletPendingBalance);
+                                            Console.WriteLine(walletData.WalletAddress + " | Wallet Balance: " + (walletData.WalletBalance / BlockchainSetting.CoinDecimal) + " | Wallet Pending Balance: " + (walletData.WalletPendingBalance / BlockchainSetting.CoinDecimal));
                                             Console.WriteLine(walletData.WalletTransactionList.Count + " tx's count.");
                                         }
 
