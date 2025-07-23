@@ -63,7 +63,7 @@ Everything has been developed in C#, and support NET5/NET6/NET7/NET8, a downgrad
 
 > **Develop the IO Cache Network mode. [5%]**
 
-> **Develop the RPC Wallet. [50%]**
+> **Develop the RPC Wallet. [90%]**
 
 > **Develop an example of Mining Pool. [0%]**
 
