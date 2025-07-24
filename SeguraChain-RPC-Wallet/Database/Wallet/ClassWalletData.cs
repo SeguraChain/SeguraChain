@@ -84,19 +84,31 @@ namespace SeguraChain_RPC_Wallet.Database.Wallet
                         WalletTransactionList[blockTransactionHash].TransactionObject.Fee)
                         continue;
 
+                   
+
                     BigInteger difference = WalletTransactionList[blockTransactionHash].TransactionObject.Amount - WalletTransactionList[blockTransactionHash].TotalSpend;
 
-                    if (difference > 0)
+                    if (sendTransactionFeeCostCalculation.ListTransactionHashToSpend.ContainsKey(blockTransactionHash))
+                        difference -= sendTransactionFeeCostCalculation.ListTransactionHashToSpend[blockTransactionHash].Amount;
+
+                        if (difference > 0)
                     {
                         if (amountCalculated + difference <= amountTarget)
                             amountCalculated += difference;
                         else
                             amountCalculated += (amountTarget - amountCalculated);
 
-                        sendTransactionFeeCostCalculation.ListTransactionHashToSpend.Add(blockTransactionHash, new ClassTransactionHashSourceObject()
+                        if (sendTransactionFeeCostCalculation.ListTransactionHashToSpend.ContainsKey(blockTransactionHash))
+                            sendTransactionFeeCostCalculation.ListTransactionHashToSpend[blockTransactionHash].Amount +=
+                                amountCalculated + difference <= amountTarget ? difference : amountTarget;
+                        else
                         {
-                            Amount = amountCalculated + difference <= amountTarget ? difference : (amountTarget - amountCalculated)
-                        });
+
+                            sendTransactionFeeCostCalculation.ListTransactionHashToSpend.Add(blockTransactionHash, new ClassTransactionHashSourceObject()
+                            {
+                                Amount = amountCalculated + difference <= amountTarget ? difference : amountTarget
+                            });
+                        }
                     }
 
                     if (amountCalculated == amountTarget)
@@ -125,7 +137,11 @@ namespace SeguraChain_RPC_Wallet.Database.Wallet
                         WalletTransactionList[blockTransactionHash].TransactionObject.Fee)
                         continue;
 
+
                     BigInteger difference = WalletTransactionList[blockTransactionHash].TransactionObject.Amount - WalletTransactionList[blockTransactionHash].TotalSpend;
+                    
+                    if (sendTransactionFeeCostCalculation.ListTransactionHashToSpend.ContainsKey(blockTransactionHash))
+                        difference -= sendTransactionFeeCostCalculation.ListTransactionHashToSpend[blockTransactionHash].Amount;
 
                     if (difference > 0)
                     {
@@ -134,10 +150,16 @@ namespace SeguraChain_RPC_Wallet.Database.Wallet
                         else
                             feeCalculated += (feeTarget - feeCalculated);
 
-                        sendTransactionFeeCostCalculation.ListTransactionHashToSpend.Add(blockTransactionHash, new ClassTransactionHashSourceObject()
+                        if (sendTransactionFeeCostCalculation.ListTransactionHashToSpend.ContainsKey(blockTransactionHash))
+                            sendTransactionFeeCostCalculation.ListTransactionHashToSpend[blockTransactionHash].Amount +=
+                                feeCalculated + difference <= feeTarget ? difference :feeTarget;
+                        else
                         {
-                            Amount = feeCalculated + difference <= feeTarget ? difference : (feeTarget - feeCalculated)
-                        });
+                            sendTransactionFeeCostCalculation.ListTransactionHashToSpend.Add(blockTransactionHash, new ClassTransactionHashSourceObject()
+                            {
+                                Amount = feeCalculated + difference <= feeTarget ? difference : feeTarget
+                            });
+                        }
                     }
 
                     if (feeCalculated == feeTarget)
@@ -147,15 +169,15 @@ namespace SeguraChain_RPC_Wallet.Database.Wallet
 
             if (amountCalculated + feeCalculated == amountTarget + feeTarget)
             {
-
-
+                sendTransactionFeeCostCalculation.BlockHeight = blockHeightConfirmationStart;
+                sendTransactionFeeCostCalculation.BlockHeightTarget = blockHeightConfirmationTarget;
                 sendTransactionFeeCostCalculation.CalculationStatus = true;
                 sendTransactionFeeCostCalculation.AmountCalculed = amountCalculated;
                 sendTransactionFeeCostCalculation.FeeCalculated = feeCalculated;
             }
 
-                return sendTransactionFeeCostCalculation;
-            
+            return sendTransactionFeeCostCalculation;
+
         }
 
         /// <summary>

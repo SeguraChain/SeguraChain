@@ -123,59 +123,74 @@ namespace SeguraChain_RPC_Wallet.Node.Client
             if (walletDataReceiver == null && rpcApiPostTransactionObject.transfer)
                 return null;
 
-            using (ClassSendTransactionFeeCostCalculationObject sendTransactionFeeCostCalculationObject = await walletDataSender.GetWalletSendTransactionFeeCostCalculationObject(rpcApiPostTransactionObject.amount,
+            ClassBlockchainNetworkStatsObject blockchainNetworkStatsObject = await ClassApiClientUtility.GetBlockchainNetworkStatsFromExternalSyncMode(_rpcConfigObject.RpcNodeApiSetting.RpcNodeApiIp, _rpcConfigObject.RpcNodeApiSetting.RpcNodeApiPort, _rpcConfigObject.RpcNodeApiSetting.RpcNodeApiMaxDelay * 1000, cancellation);
+
+            if (blockchainNetworkStatsObject == null)
+                return null;
+
+            ClassSendTransactionFeeCostCalculationObject sendTransactionFeeCostCalculationObject = await walletDataSender.GetWalletSendTransactionFeeCostCalculationObject(rpcApiPostTransactionObject.amount,
                  rpcApiPostTransactionObject.fee,
                  _rpcConfigObject,
-                 _blockchainLastBlockHeightUnlocked,
-                 _blockchainBlockHeightTransactionStartConfirmation,
-                 _blockchainBlockHeightTransactionStartConfirmation + rpcApiPostTransactionObject.total_confirmation_target,
-                 cancellation))
+                 blockchainNetworkStatsObject.LastBlockHeight,
+                 blockchainNetworkStatsObject.LastBlockHeight,
+                  blockchainNetworkStatsObject.LastBlockHeight + rpcApiPostTransactionObject.total_confirmation_target,
+                 cancellation);
+
+
+            if (!sendTransactionFeeCostCalculationObject.CalculationStatus ||
+                sendTransactionFeeCostCalculationObject.ListTransactionHashToSpend.Count == 0 ||
+                sendTransactionFeeCostCalculationObject.AmountCalculed != rpcApiPostTransactionObject.amount ||
+                sendTransactionFeeCostCalculationObject.FeeCalculated != rpcApiPostTransactionObject.fee)
+                return null;
+
+            ClassTransactionObject transactionObject = ClassTransactionUtility.BuildTransaction(sendTransactionFeeCostCalculationObject.BlockHeight,
+                    sendTransactionFeeCostCalculationObject.BlockHeightTarget,
+                    walletDataSender.WalletAddress,
+                    walletDataSender.WalletPublicKey,
+                    rpcApiPostTransactionObject.transfer ? walletDataReceiver.WalletPublicKey : string.Empty,
+                    sendTransactionFeeCostCalculationObject.AmountCalculed,
+                    sendTransactionFeeCostCalculationObject.FeeCalculated,
+                    rpcApiPostTransactionObject.wallet_address_target,
+                    ClassUtility.GetCurrentTimestampInSecond(),
+                    rpcApiPostTransactionObject.transfer ? ClassTransactionEnumType.TRANSFER_TRANSACTION : ClassTransactionEnumType.NORMAL_TRANSACTION,
+                    rpcApiPostTransactionObject.payment_id,
+                    _blockchainLastBlockHash,
+                    string.Empty,
+                    walletDataSender.WalletPrivateKey,
+                    rpcApiPostTransactionObject.transfer ? walletDataReceiver.WalletPrivateKey : string.Empty,
+                    sendTransactionFeeCostCalculationObject.ListTransactionHashToSpend.GetList,
+                    _blockchainLastBlockHeightTimestampCreate,
+                    cancellation
+            );
+
+
+            if (await ClassApiClientUtility.SendTransactionByExternalSyncMode(_rpcConfigObject.RpcNodeApiSetting.RpcNodeApiIp,
+                                                                    _rpcConfigObject.RpcNodeApiSetting.RpcNodeApiPort,
+                                                                    _rpcConfigObject.RpcNodeApiSetting.RpcNodeApiMaxDelay * 1000, transactionObject, cancellation))
             {
-
-                if (!sendTransactionFeeCostCalculationObject.CalculationStatus ||
-                    sendTransactionFeeCostCalculationObject.ListTransactionHashToSpend.Count == 0 ||
-                    sendTransactionFeeCostCalculationObject.AmountCalculed != rpcApiPostTransactionObject.amount ||
-                    sendTransactionFeeCostCalculationObject.FeeCalculated != rpcApiPostTransactionObject.fee)
-                    return null;
-
-                ClassTransactionObject transactionObject = ClassTransactionUtility.BuildTransaction(sendTransactionFeeCostCalculationObject.BlockHeight,
-                        sendTransactionFeeCostCalculationObject.BlockHeightTarget,
-                        walletDataSender.WalletAddress,
-                        walletDataSender.WalletPublicKey,
-                        rpcApiPostTransactionObject.transfer ? walletDataReceiver.WalletPublicKey : string.Empty,
-                        sendTransactionFeeCostCalculationObject.AmountCalculed,
-                        sendTransactionFeeCostCalculationObject.FeeCalculated,
-                        rpcApiPostTransactionObject.wallet_address_target,
-                        ClassUtility.GetCurrentTimestampInSecond(),
-                        rpcApiPostTransactionObject.transfer ? ClassTransactionEnumType.TRANSFER_TRANSACTION : ClassTransactionEnumType.NORMAL_TRANSACTION,
-                        rpcApiPostTransactionObject.payment_id,
-                        _blockchainLastBlockHash,
-                        string.Empty,
-                        walletDataSender.WalletPrivateKey,
-                        rpcApiPostTransactionObject.transfer ? walletDataReceiver.WalletPrivateKey : string.Empty,
-                        sendTransactionFeeCostCalculationObject.ListTransactionHashToSpend.GetList,
-                        _blockchainLastBlockHeightTimestampCreate,
-                        cancellation
-                );
-
-
-                if (await ClassApiClientUtility.SendTransactionByExternalSyncMode(_rpcConfigObject.RpcNodeApiSetting.RpcNodeApiIp,
-                                                                        _rpcConfigObject.RpcNodeApiSetting.RpcNodeApiPort,
-                                                                        _rpcConfigObject.RpcNodeApiSetting.RpcNodeApiMaxDelay, transactionObject, cancellation))
+                return new ClassReportSendTransactionObject()
                 {
-                    return new ClassReportSendTransactionObject()
-                    {
-                        block_height = sendTransactionFeeCostCalculationObject.BlockHeight,
-                        block_height_confirmation_target = sendTransactionFeeCostCalculationObject.BlockHeightTarget,
-                        status = true,
-                        transaction_hash = transactionObject.TransactionHash,
-                        wallet_address_sender = rpcApiPostTransactionObject.wallet_address_src,
-                        wallet_address_target = rpcApiPostTransactionObject.wallet_address_target
-                    };
-                }
+                    block_height = sendTransactionFeeCostCalculationObject.BlockHeight,
+                    block_height_confirmation_target = sendTransactionFeeCostCalculationObject.BlockHeightTarget,
+                    status = true,
+                    transaction_hash = transactionObject.TransactionHash,
+                    transaction_object = transactionObject,
+                    wallet_address_sender = rpcApiPostTransactionObject.wallet_address_src,
+                    wallet_address_target = rpcApiPostTransactionObject.wallet_address_target
+                };
             }
 
-            return null;
+            return new ClassReportSendTransactionObject()
+            {
+                block_height = sendTransactionFeeCostCalculationObject.BlockHeight,
+                block_height_confirmation_target = sendTransactionFeeCostCalculationObject.BlockHeightTarget,
+                status = false,
+                transaction_hash = transactionObject.TransactionHash,
+                transaction_object = transactionObject,
+                wallet_address_sender = rpcApiPostTransactionObject.wallet_address_src,
+                wallet_address_target = rpcApiPostTransactionObject.wallet_address_target
+            };
+
         }
 
         /// <summary>
