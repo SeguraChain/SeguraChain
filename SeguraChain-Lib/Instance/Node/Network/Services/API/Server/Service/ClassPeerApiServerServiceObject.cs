@@ -114,9 +114,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Server.Service
                             {
                                 string clientIp = clientApiTcp.GetIp;
 
-                                ClassLog.WriteLine("Handle incoming connection from: " + clientIp + " to the API.", ClassEnumLogLevelType.LOG_LEVEL_API_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
-
-
                                 var client = new ClassPeerApiClientObject(_peerDatabase, clientApiTcp, clientIp, _peerNetworkSettingObject, _firewallSettingObject, _peerIpOpenNatServer, _cancellationTokenSourcePeerApiServer);
 
                                 client.HandleApiClientConnection();
