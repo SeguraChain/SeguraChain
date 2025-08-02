@@ -1,4 +1,5 @@
-﻿using SeguraChain_Lib.Blockchain.Setting;
+﻿using SeguraChain_Lib.Blockchain.Block.Object.Structure;
+using SeguraChain_Lib.Blockchain.Setting;
 using SeguraChain_Lib.Blockchain.Stats.Object;
 using SeguraChain_Lib.Blockchain.Transaction.Enum;
 using SeguraChain_Lib.Blockchain.Transaction.Object;
@@ -137,13 +138,15 @@ namespace SeguraChain_RPC_Wallet.Node.Client
                  cancellation);
 
 
-            if (!sendTransactionFeeCostCalculationObject.CalculationStatus ||
-                sendTransactionFeeCostCalculationObject.ListTransactionHashToSpend.Count == 0 ||
-                sendTransactionFeeCostCalculationObject.AmountCalculed != rpcApiPostTransactionObject.amount ||
-                sendTransactionFeeCostCalculationObject.FeeCalculated != rpcApiPostTransactionObject.fee)
+            if (!sendTransactionFeeCostCalculationObject.CalculationStatus)
                 return null;
 
-            ClassTransactionObject transactionObject = ClassTransactionUtility.BuildTransaction(sendTransactionFeeCostCalculationObject.BlockHeight,
+            ClassBlockObject blockObject = await ClassApiClientUtility.GetBlockInformationFromExternalSyncMode(_rpcConfigObject.RpcNodeApiSetting.RpcNodeApiIp, _rpcConfigObject.RpcNodeApiSetting.RpcNodeApiPort, _rpcConfigObject.RpcApiSetting.RpcApiMaxConnectDelay, _blockchainLastBlockHeightUnlocked, cancellation);
+
+            if (blockObject == null)
+                return null;
+
+            ClassTransactionObject transactionObject = ClassTransactionUtility.BuildTransaction(blockObject.BlockHeight,
                     sendTransactionFeeCostCalculationObject.BlockHeightTarget,
                     walletDataSender.WalletAddress,
                     walletDataSender.WalletPublicKey,
@@ -154,14 +157,16 @@ namespace SeguraChain_RPC_Wallet.Node.Client
                     ClassUtility.GetCurrentTimestampInSecond(),
                     rpcApiPostTransactionObject.transfer ? ClassTransactionEnumType.TRANSFER_TRANSACTION : ClassTransactionEnumType.NORMAL_TRANSACTION,
                     rpcApiPostTransactionObject.payment_id,
-                    _blockchainLastBlockHash,
-                    string.Empty,
+                    blockObject.BlockHash,
+                    blockObject.BlockFinalHashTransaction,
                     walletDataSender.WalletPrivateKey,
                     rpcApiPostTransactionObject.transfer ? walletDataReceiver.WalletPrivateKey : string.Empty,
                     sendTransactionFeeCostCalculationObject.ListTransactionHashToSpend.GetList,
-                    _blockchainLastBlockHeightTimestampCreate,
+                    blockObject.TimestampCreate,
                     cancellation
             );
+
+
 
 
             if (await ClassApiClientUtility.SendTransactionByExternalSyncMode(_rpcConfigObject.RpcNodeApiSetting.RpcNodeApiIp,

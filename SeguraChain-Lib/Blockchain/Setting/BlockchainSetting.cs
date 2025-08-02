@@ -171,9 +171,9 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int PeerMaxTimestampDelayPacket = 360; // Await a maximum of 360 seconds on the timestamp of a packet, above the packet is considered has expired.
         public const int PeerMaxDelayKeepAliveStats = 60; // Keep alive packet stats of a peer pending 60 seconds.
         public const int PeerMaxEarlierPacketDelay = 600; // A maximum of 600 seconds is accepted on timestamp of packets.
-        public const int PeerMaxDelayToConnectToTarget = 5; // A maximum of 5 seconds delay on connect to a peer.
+        public const int PeerMaxDelayToConnectToTarget = 2; // A maximum of 5 seconds delay on connect to a peer.
         public const int PeerServerPacketDelay = 30 * 1000; // 
-        public const int PeerMaxAttemptConnection = 20; // After 20 retries to connect to a peer, the peer target is set has dead pending a certain amount of time.
+        public const int PeerMaxAttemptConnection = 5; // After 5 retries to connect to a peer, the peer target is set has dead pending a certain amount of time.
         public const int PeerBanDelay = 30; // Ban delay pending 30 seconds.
         public const int PeerDeadDelay = 15; // Dead delay pending 15 seconds.
         public const int PeerMinValidPacket = 2; // Do not check packet signature after 2 valid packets sent.

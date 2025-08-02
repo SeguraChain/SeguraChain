@@ -59,121 +59,67 @@ namespace SeguraChain_RPC_Wallet.Database.Wallet
             ClassSendTransactionFeeCostCalculationObject sendTransactionFeeCostCalculation = new ClassSendTransactionFeeCostCalculationObject();
 
             BigInteger amountCalculated = 0;
-            BigInteger feeCalculated = 0;
 
             if (WalletTransactionList.Count == 0)
                 return sendTransactionFeeCostCalculation;
 
-            // Amount target calculation.
-            using (DisposableList<string> listBlockTransactionHash = new DisposableList<string>(false, 0, WalletTransactionList.Keys.ToArray()))
+            using (DisposableList<ClassBlockTransaction> listTransactionObject = new DisposableList<ClassBlockTransaction>())
             {
-                foreach (string blockTransactionHash in listBlockTransactionHash.GetList)
+                // Amount target calculation.
+                using (DisposableList<string> listBlockTransactionHash = new DisposableList<string>(false, 0, WalletTransactionList.Keys.ToArray()))
                 {
-                    // Ignore sent transaction.
-                    if (WalletTransactionList[blockTransactionHash].TransactionObject.WalletAddressSender == WalletAddress)
-                        continue;
+                    foreach (string blockTransactionHash in listBlockTransactionHash.GetList)
+                    {
+                        // Ignore sent transaction.
+                        if (WalletTransactionList[blockTransactionHash].TransactionObject.WalletAddressSender == WalletAddress)
+                            continue;
 
-                    if (!WalletTransactionList[blockTransactionHash].IsConfirmed ||
-                        !WalletTransactionList[blockTransactionHash].TransactionStatus ||
-                         WalletTransactionList[blockTransactionHash].Spent ||
-                         WalletTransactionList[blockTransactionHash].NeedUpdateAmountTransactionSource)
-                        continue;
+                        if (!WalletTransactionList[blockTransactionHash].IsConfirmed ||
+                            !WalletTransactionList[blockTransactionHash].TransactionStatus ||
+                             WalletTransactionList[blockTransactionHash].Spent ||
+                             WalletTransactionList[blockTransactionHash].NeedUpdateAmountTransactionSource)
+                            continue;
 
-                    if (WalletTransactionList[blockTransactionHash].TotalSpend >=
-                        WalletTransactionList[blockTransactionHash].TransactionObject.Amount +
-                        WalletTransactionList[blockTransactionHash].TransactionObject.Fee)
-                        continue;
+                        if (WalletTransactionList[blockTransactionHash].TotalSpend >=
+                            WalletTransactionList[blockTransactionHash].TransactionObject.Amount +
+                            WalletTransactionList[blockTransactionHash].TransactionObject.Fee)
+                            continue;
 
-                   
+                        BigInteger difference = WalletTransactionList[blockTransactionHash].TransactionObject.Amount - WalletTransactionList[blockTransactionHash].TotalSpend;
 
-                    BigInteger difference = WalletTransactionList[blockTransactionHash].TransactionObject.Amount - WalletTransactionList[blockTransactionHash].TotalSpend;
-
-                    if (sendTransactionFeeCostCalculation.ListTransactionHashToSpend.ContainsKey(blockTransactionHash))
-                        difference -= sendTransactionFeeCostCalculation.ListTransactionHashToSpend[blockTransactionHash].Amount;
+                        if (sendTransactionFeeCostCalculation.ListTransactionHashToSpend.ContainsKey(blockTransactionHash))
+                            difference -= sendTransactionFeeCostCalculation.ListTransactionHashToSpend[blockTransactionHash].Amount;
 
                         if (difference > 0)
-                    {
-                        if (amountCalculated + difference <= amountTarget)
-                            amountCalculated += difference;
-                        else
-                            amountCalculated += (amountTarget - amountCalculated);
-
-                        if (sendTransactionFeeCostCalculation.ListTransactionHashToSpend.ContainsKey(blockTransactionHash))
-                            sendTransactionFeeCostCalculation.ListTransactionHashToSpend[blockTransactionHash].Amount +=
-                                amountCalculated + difference <= amountTarget ? difference : amountTarget;
-                        else
-                        {
-
-                            sendTransactionFeeCostCalculation.ListTransactionHashToSpend.Add(blockTransactionHash, new ClassTransactionHashSourceObject()
-                            {
-                                Amount = amountCalculated + difference <= amountTarget ? difference : amountTarget
-                            });
-                        }
+                            listTransactionObject.Add(WalletTransactionList[blockTransactionHash]);
                     }
-
-                    if (amountCalculated == amountTarget)
-                        break;
                 }
-            }
 
 
-            // Fee target calculation.
-            using (DisposableList<string> listBlockTransactionHash = new DisposableList<string>(false, 0, WalletTransactionList.Keys.ToArray()))
-            {
-                foreach (string blockTransactionHash in listBlockTransactionHash.GetList)
+                foreach (ClassBlockTransaction blockTransaction in listTransactionObject.GetList)
                 {
-                    // Ignore sent transaction.
-                    if (WalletTransactionList[blockTransactionHash].TransactionObject.WalletAddressSender == WalletAddress)
-                        continue;
-
-                    if (!WalletTransactionList[blockTransactionHash].IsConfirmed ||
-                        !WalletTransactionList[blockTransactionHash].TransactionStatus ||
-                         WalletTransactionList[blockTransactionHash].Spent ||
-                         WalletTransactionList[blockTransactionHash].NeedUpdateAmountTransactionSource)
-                        continue;
-
-                    if (WalletTransactionList[blockTransactionHash].TotalSpend >=
-                        WalletTransactionList[blockTransactionHash].TransactionObject.Amount +
-                        WalletTransactionList[blockTransactionHash].TransactionObject.Fee)
-                        continue;
+                    BigInteger difference = blockTransaction.TransactionObject.Amount - blockTransaction.TotalSpend;
 
 
-                    BigInteger difference = WalletTransactionList[blockTransactionHash].TransactionObject.Amount - WalletTransactionList[blockTransactionHash].TotalSpend;
-                    
-                    if (sendTransactionFeeCostCalculation.ListTransactionHashToSpend.ContainsKey(blockTransactionHash))
-                        difference -= sendTransactionFeeCostCalculation.ListTransactionHashToSpend[blockTransactionHash].Amount;
-
-                    if (difference > 0)
+                    sendTransactionFeeCostCalculation.ListTransactionHashToSpend.Add(blockTransaction.TransactionObject.TransactionHash, new ClassTransactionHashSourceObject()
                     {
-                        if (feeCalculated + difference <= feeTarget)
-                            feeCalculated += difference;
-                        else
-                            feeCalculated += (feeTarget - feeCalculated);
+                        Amount = difference > amountTarget + feeTarget ? amountTarget + feeTarget : difference
+                    });
 
-                        if (sendTransactionFeeCostCalculation.ListTransactionHashToSpend.ContainsKey(blockTransactionHash))
-                            sendTransactionFeeCostCalculation.ListTransactionHashToSpend[blockTransactionHash].Amount +=
-                                feeCalculated + difference <= feeTarget ? difference :feeTarget;
-                        else
-                        {
-                            sendTransactionFeeCostCalculation.ListTransactionHashToSpend.Add(blockTransactionHash, new ClassTransactionHashSourceObject()
-                            {
-                                Amount = feeCalculated + difference <= feeTarget ? difference : feeTarget
-                            });
-                        }
-                    }
+                    amountCalculated += difference > amountTarget + feeTarget ? amountTarget + feeTarget : difference;
 
-                    if (feeCalculated == feeTarget)
+                    if (amountCalculated == amountTarget + feeTarget)
                         break;
                 }
             }
 
-            if (amountCalculated + feeCalculated == amountTarget + feeTarget)
+            if (amountCalculated  == amountTarget + feeTarget)
             {
                 sendTransactionFeeCostCalculation.BlockHeight = blockHeightConfirmationStart;
                 sendTransactionFeeCostCalculation.BlockHeightTarget = blockHeightConfirmationTarget;
                 sendTransactionFeeCostCalculation.CalculationStatus = true;
-                sendTransactionFeeCostCalculation.AmountCalculed = amountCalculated;
-                sendTransactionFeeCostCalculation.FeeCalculated = feeCalculated;
+                sendTransactionFeeCostCalculation.AmountCalculed = amountTarget;
+                sendTransactionFeeCostCalculation.FeeCalculated = feeTarget;
             }
 
             return sendTransactionFeeCostCalculation;
