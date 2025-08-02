@@ -132,51 +132,17 @@ namespace SeguraChain_RPC_Wallet.Database.Wallet
         /// <param name="rpcApiGetWalletTransaction"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        public ClassRpcApiSendWalletTransaction GetWalletSendTransactionObject(ClassRpcApiGetWalletTransaction rpcApiGetWalletTransaction, CancellationTokenSource cancellation)
+        public ClassRpcApiSendWalletTransaction GetWalletSendTransactionObject(ClassWalletData walletData, ClassRpcApiGetWalletTransaction rpcApiGetWalletTransaction, CancellationTokenSource cancellation)
         {
             if (rpcApiGetWalletTransaction == null)
                 return null;
 
-            if (rpcApiGetWalletTransaction.by_transaction_by_index)
+            return new ClassRpcApiSendWalletTransaction()
             {
-                if (rpcApiGetWalletTransaction.transaction_start_index < 0 || rpcApiGetWalletTransaction.transaction_end_index < 0 ||
-                    rpcApiGetWalletTransaction.transaction_start_index > WalletTransactionList.Count || rpcApiGetWalletTransaction.transaction_end_index > WalletTransactionList.Count)
-                    return null;
+                block_transaction_object = walletData.WalletTransactionList.Values.ToList(),
+                packet_timestamp = ClassUtility.GetCurrentTimestampInSecond()
+            };
 
-                ClassRpcApiSendWalletTransaction rpcApiSendWalletTransaction = new ClassRpcApiSendWalletTransaction();
-
-                using (DisposableList<string> transactionHashList = new DisposableList<string>(false, 0, WalletTransactionList.Keys.ToList()))
-                {
-                    for(int i = rpcApiGetWalletTransaction.transaction_start_index; i < rpcApiGetWalletTransaction.transaction_end_index; i++)
-                    {
-                        if (cancellation.IsCancellationRequested)
-                            break;
-
-                        rpcApiSendWalletTransaction.block_transaction_object.Add(WalletTransactionList[transactionHashList[i]]);
-                    }
-                }
-
-                rpcApiSendWalletTransaction.packet_timestamp = ClassUtility.GetCurrentTimestampInSecond();
-
-                return rpcApiSendWalletTransaction;
-            }
-
-            if (rpcApiGetWalletTransaction.by_transaction_by_hash)
-            {
-                if (WalletTransactionList.ContainsKey(rpcApiGetWalletTransaction.transaction_hash))
-                {
-                    return new ClassRpcApiSendWalletTransaction()
-                    {
-                        block_transaction_object = new List<ClassBlockTransaction>()
-                        {
-                            WalletTransactionList[rpcApiGetWalletTransaction.transaction_hash]
-                        },
-                        packet_timestamp = ClassUtility.GetCurrentTimestampInSecond()
-                    };
-                }
-            }
-
-            return null;
         }
     }
 }

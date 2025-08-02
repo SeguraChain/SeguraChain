@@ -214,7 +214,7 @@ namespace SeguraChain_RPC_Wallet.Node.Client
             if (walletData == null)
                 return null;
 
-            return walletData.GetWalletSendTransactionObject(rpcApiSendWalletTransaction, cancellation);
+            return walletData.GetWalletSendTransactionObject(walletData, rpcApiSendWalletTransaction, cancellation);
         }
     }
 }

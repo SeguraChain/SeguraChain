@@ -703,7 +703,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                                 if (await ClassBlockchainStats.CheckTransaction(apiPeerPacketPushWalletTransaction.TransactionObject, null, false, null, _cancellationTokenApiClient, true) == ClassTransactionEnumStatus.VALID_TRANSACTION)
                                                 {
 
-                                                    using (DisposableDictionary<string, ClassTransactionEnumStatus> transactionStatus = await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(_peerDatabase, _peerNetworkSettingObject.ListenApiIp, _apiServerOpenNatIp, _clientIp, new List<ClassTransactionObject>() { apiPeerPacketPushWalletTransaction.TransactionObject }, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenApiClient, true))
+                                                    DisposableDictionary<string, ClassTransactionEnumStatus> transactionStatus = await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(_peerDatabase, _peerNetworkSettingObject.ListenApiIp, _apiServerOpenNatIp, _clientIp, new List<ClassTransactionObject>() { apiPeerPacketPushWalletTransaction.TransactionObject }, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenApiClient, true);
                                                     {
                                                         if (transactionStatus.Count > 0)
                                                         {
