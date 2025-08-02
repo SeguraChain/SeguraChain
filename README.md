@@ -1,4 +1,4 @@
-<h2>SeguraChain is not complete, but almost every tools are completed.</h2>
+<h2>SeguraChain is complete to be use in production mode, but almost every tools are not completed.</h2>
 <h3> You can setup your own blockchain from ChatGPT or Claude AI or follow wikipages </h3>
 <h2>If you like the project, please provide a Star</h2>
 Summary: SeguraChain (Secured Chain translated from Spanish) is a technology developed mainly in C#,
@@ -59,11 +59,11 @@ Everything has been developed in C#, and support NET5/NET6/NET7/NET8, a downgrad
 
 > **Complete wallets balance checkpoint disk cache process. [40%]**
 
-> **Complete Desktop Wallet features and options. [99%]**
+> **Complete Desktop Wallet features and options. [100%]**
 
 > **Develop the IO Cache Network mode. [5%]**
 
-> **Develop the RPC Wallet. [90%]**
+> **Develop the RPC Wallet. [100]**
 
 > **Develop an example of Mining Pool. [0%]**
 
