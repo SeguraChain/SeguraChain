@@ -175,7 +175,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int PeerServerPacketDelay = 30 * 1000; // 
         public const int PeerMaxAttemptConnection = 5; // After 5 retries to connect to a peer, the peer target is set has dead pending a certain amount of time.
         public const int PeerBanDelay = 30; // Ban delay pending 30 seconds.
-        public const int PeerDeadDelay = 15; // Dead delay pending 15 seconds.
+        public const int PeerDeadDelay = 60; // Dead delay pending 60 seconds.
         public const int PeerMinValidPacket = 2; // Do not check packet signature after 2 valid packets sent.
         public const int PeerMaxWhiteListPacket = 1000; // Empty valid packet counter of a peer after to have ignoring packet signature 1000 of a peer.
         public const int PeerTaskSyncDelay = 10;
