@@ -342,11 +342,32 @@ namespace SeguraChain_Lib.TaskManager
                     }
                     else
                     {
+                        bool isLocked = false;
+                        try
+                        {
+                            isLocked = Monitor.TryEnter(_taskCollection, 1000);
 
-                        _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
-                        if (!_taskCollection[_taskCollection.Count - 1].Started)
-                            _taskCollection[_taskCollection.Count - 1].Run();
+                            while(!isLocked && !cancellationTask.IsCancellationRequested)
+                            {
+#if DEBUG
+                                Debug.WriteLine("Insert task count id: " + _taskCollection.Count+" in pending.");
+#endif
+                                await Task.Delay(1);
+                                isLocked = Monitor.TryEnter(_taskCollection, 1000);
+                            }
 
+                            if (isLocked)
+                            {
+                                _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
+                                if (!_taskCollection[_taskCollection.Count - 1].Started)
+                                    _taskCollection[_taskCollection.Count - 1].Run();
+                            }
+                        }
+                        finally
+                        {
+                            if (isLocked)
+                                Monitor.Exit(_taskCollection);
+                        }
                     }
                 }
 #if DEBUG
