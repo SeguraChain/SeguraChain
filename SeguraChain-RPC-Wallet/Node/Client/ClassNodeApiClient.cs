@@ -173,16 +173,19 @@ namespace SeguraChain_RPC_Wallet.Node.Client
                                                                     _rpcConfigObject.RpcNodeApiSetting.RpcNodeApiPort,
                                                                     _rpcConfigObject.RpcNodeApiSetting.RpcNodeApiMaxDelay * 1000, transactionObject, cancellation))
             {
-                return new ClassReportSendTransactionObject()
+                if (walletDataSender.WalletTransactionList.TryAdd(transactionObject.TransactionHash, new ClassBlockTransaction(walletDataSender.WalletTransactionList.Count, transactionObject)))
                 {
-                    block_height = sendTransactionFeeCostCalculationObject.BlockHeight,
-                    block_height_confirmation_target = sendTransactionFeeCostCalculationObject.BlockHeightTarget,
-                    status = true,
-                    transaction_hash = transactionObject.TransactionHash,
-                    transaction_object = transactionObject,
-                    wallet_address_sender = rpcApiPostTransactionObject.wallet_address_src,
-                    wallet_address_target = rpcApiPostTransactionObject.wallet_address_target
-                };
+                    return new ClassReportSendTransactionObject()
+                    {
+                        block_height = sendTransactionFeeCostCalculationObject.BlockHeight,
+                        block_height_confirmation_target = sendTransactionFeeCostCalculationObject.BlockHeightTarget,
+                        status = true,
+                        transaction_hash = transactionObject.TransactionHash,
+                        transaction_object = transactionObject,
+                        wallet_address_sender = rpcApiPostTransactionObject.wallet_address_src,
+                        wallet_address_target = rpcApiPostTransactionObject.wallet_address_target
+                    };
+                }
             }
 
             return new ClassReportSendTransactionObject()

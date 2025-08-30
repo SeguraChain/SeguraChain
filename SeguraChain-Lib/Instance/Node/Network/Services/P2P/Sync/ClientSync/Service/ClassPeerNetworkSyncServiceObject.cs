@@ -2481,9 +2481,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 if (!packetSendStatus)
                 {
                     ClassLog.WriteLine(peerIp + ":" + peerPort + " try to retrieve auth keys failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_LOWEST_PRIORITY);
-                   
+
                     if (targetExist)
-                        ClassPeerCheckManager.InputPeerClientNoPacketConnectionOpened(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenServiceSync);
+                        ClassPeerCheckManager.SetPeerBanState(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
 
                     return false;
                 }
@@ -2493,6 +2493,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                 if (peerNetworkClientSyncObject.PeerPacketReceived == null)
                 {
+                    if (targetExist)
+                        ClassPeerCheckManager.SetPeerBanState(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
+
                     ClassLog.WriteLine(peerIp + ":" + peerPort + " auth keys failed, the packet is empty.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_LOWEST_PRIORITY);
                     return false;
                 }
@@ -2507,7 +2510,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                             ClassLog.WriteLine(peerIp + ":" + peerPort + " can't handle peer auth keys from the packet received. Increment invalid packets.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
                             if (targetExist)
-                                ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenServiceSync);
+                                ClassPeerCheckManager.SetPeerBanState(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
+
                             return false;
                         }
 
@@ -2542,7 +2546,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         }
                         else
                         {
-                            ClassPeerCheckManager.SetPeerDeadState(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
+                            if (targetExist)
+                                ClassPeerCheckManager.SetPeerBanState(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
                             ClassLog.WriteLine(peerIp + ":" + peerPort + " failed to update auth keys.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                             return false;
                         }
@@ -2552,9 +2557,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                         ClassLog.WriteLine(peerIp + ":" + peerPort + " exception from packet received: " + error.Message + ", on receiving auth keys, increment invalid packets.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
 
                         if (targetExist)
-                        {
-                            ClassPeerCheckManager.InputPeerClientInvalidPacket(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
-                        }
+                            ClassPeerCheckManager.SetPeerBanState(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
+
                         return false;
                     }
 
@@ -2563,9 +2567,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 #endregion
 
                 ClassLog.WriteLine("Packet received type not expected: " + peerNetworkClientSyncObject.PeerPacketReceived.PacketOrder + " received.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                if (targetExist)
+                    ClassPeerCheckManager.SetPeerBanState(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
 
             }
-            catch(Exception error)
+            catch (Exception error)
             {
                 ClassLog.WriteLine("Can't ask auth keys from an error. Exception:  " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
             }
@@ -2665,7 +2671,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
 
                     if (await SendAskAuthPeerKeys(new ClassPeerNetworkClientSyncObject(_peerDatabase, packetPeerList.PeerIpList[i], packetPeerList.PeerPortList[i], packetPeerList.PeerUniqueIdList[i], _peerNetworkSettingObject, _peerFirewallSettingObject), CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenServiceSync.Token, new CancellationTokenSource((_peerNetworkSettingObject.PeerMaxDelayAwaitResponse * 1000)).Token), true))
                         ClassLog.WriteLine("New Peer: " + packetPeerList.PeerIpList[i] + ":" + packetPeerList.PeerPortList[i] + " successfully registered.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_HIGH_PRIORITY);
-
                 }
 
                 return true;
