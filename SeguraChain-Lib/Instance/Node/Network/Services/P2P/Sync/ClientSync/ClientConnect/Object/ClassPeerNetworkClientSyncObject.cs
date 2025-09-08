@@ -249,6 +249,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                 return true;
             else _peerSocketClient?.Kill(SocketShutdown.Both);
 
+
+            ClassPeerCheckManager.InputPeerClientAttemptConnect(_peerDatabase, PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject, cancellation);
+
             await Task.Delay(10);
 
             return false;
@@ -270,6 +273,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
             if (PeerPacketReceived == null)
             {
+                ClassPeerCheckManager.InputPeerClientNoPacketConnectionOpened(_peerDatabase, PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject, _peerCancellationTokenMain);
+
 #if DEBUG
                 Debug.WriteLine("Peer " + PeerIpTarget + "|" + PeerUniqueIdTarget + " don't send a response to the packet sent: " + System.Enum.GetName(typeof(ClassPeerEnumPacketResponse), PacketResponseExpected)+" | " + System.Enum.GetName(typeof(ClassPeerEnumPacketResponse), PeerPacketTypeReceived));
 #endif
