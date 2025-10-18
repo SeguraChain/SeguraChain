@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using LZ4;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Org.BouncyCastle.Asn1.Mozilla;
 using SeguraChain_Lib.Blockchain.Setting;
 using SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Packet;
 using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet.Model;
@@ -60,7 +61,13 @@ namespace SeguraChain_Lib.Utility
             '6',
             '7',
             '8',
-            '9'
+            '9',
+            'A',
+            'B',
+            'C',
+            'D',
+            'E',
+            'F'
         };
 
         private static readonly HashSet<char> ListOfBase64Characters = new HashSet<char>
@@ -446,6 +453,11 @@ namespace SeguraChain_Lib.Utility
         public static bool CharIsABase64Character(char base64Character)
         {
             return ListOfBase64Characters.Contains(base64Character);
+        }
+
+        public static bool CharIsHexCharacter(char charCharacter)
+        {
+            return ListOfHexCharacters.Contains(charCharacter);
         }
 
         #endregion
@@ -1187,6 +1199,23 @@ namespace SeguraChain_Lib.Utility
             result = listByte.ToArray();
             listByte.Clear();
             return result;
+        }
+
+        /// <summary>
+        /// Get byte array from hex string
+        /// </summary>
+        /// <param name="src"></param>
+        /// <returns></returns>
+        public static byte[] GetByteArrayFromHexString(this string src)
+        {
+#if NET5_0_OR_GREATER
+            return Convert.FromHexString(src);
+#else
+            return Enumerable.Range(0, src.Length)
+                      .Where(x => x % 2 == 0)
+                      .Select(x => Convert.ToByte(src.Substring(x, 2), 16))
+                      .ToArray();
+#endif
         }
 
 

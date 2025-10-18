@@ -364,7 +364,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                         try
                         {
-                            base64Packet = Convert.FromBase64String(listPacketReceived[listPacketReceived.Count - 1].Packet);
+                            base64Packet = listPacketReceived[listPacketReceived.Count - 1].Packet.GetByteArrayFromHexString();
                         }
                         catch
                         {
