@@ -195,7 +195,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                                 _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp][peerUniqueId].StopTaskAndDisconnect();
                                                 _listPeerNetworkClientBroadcastMemPoolReceiver[peerIp].Remove(peerUniqueId);
 #if DEBUG
-                                            Debug.WriteLine("MemPool Broadcast instance receiver of peer " + peerIp + ":" + peerUniqueId + " is dead.");
+                                                Debug.WriteLine("MemPool Broadcast instance receiver of peer " + peerIp + ":" + peerUniqueId + " is dead.");
 #endif
                                             }
                                         }

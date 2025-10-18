@@ -165,7 +165,7 @@ namespace SeguraChain_Lib.Instance.Node
                                 #endregion
 
                                 PeerNetworkBroadcastInstanceMemPoolObject = new ClassPeerNetworkBroadcastInstanceMemPool(PeerDatabase, PeerSettingObject.PeerNetworkSettingObject, PeerSettingObject.PeerFirewallSettingObject, PeerOpenNatPublicIp);
-                                PeerNetworkBroadcastInstanceMemPoolObject.RunNetworkBroadcastMemPoolInstanceTask();
+                                //PeerNetworkBroadcastInstanceMemPoolObject.RunNetworkBroadcastMemPoolInstanceTask();
 
                                 return true;
                             }

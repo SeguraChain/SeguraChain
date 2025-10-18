@@ -336,7 +336,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                         }
 
                                         totalTaskComplete++;
-                                    }), 0, null);
+                                    }), 0, _cancellationTokenServiceSync);
 
                                 }
                             }
@@ -429,7 +429,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                                 }
 
                                 totalTaskComplete++;
-                            }), 0, null);
+                            }), 0, _cancellationTokenServiceSync);
 
                         }
                     }
@@ -1542,7 +1542,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                     }
 
                     totalTaskDone++;
-                }), 0, _cancellationTokenServiceSync, null, true);
+                }), 0, _cancellationTokenServiceSync);
             }
 
             while (totalTaskDone < totalTaskToDo)
@@ -2482,8 +2482,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Ser
                 {
                     ClassLog.WriteLine(peerIp + ":" + peerPort + " try to retrieve auth keys failed.", ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_LOWEST_PRIORITY);
 
-                    if (targetExist)
-                        ClassPeerCheckManager.SetPeerBanState(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
+                    ClassPeerCheckManager.SetPeerBanState(_peerDatabase, peerIp, peerUniqueId, _peerNetworkSettingObject, _peerFirewallSettingObject, cancellation);
 
                     return false;
                 }

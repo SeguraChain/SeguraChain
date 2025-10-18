@@ -511,7 +511,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// <returns></returns>
         private async Task<bool> SendPeerPacket(byte[] packet, CancellationTokenSource cancellation)
         {
-            string packetData = Convert.ToBase64String(packet) + ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString();
+            string packetData = packet.GetHexStringFromByteArray() + ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString();
             return await _peerSocketClient.TrySendSplittedPacket(packetData.GetByteArray(), cancellation, _peerNetworkSetting.PeerMaxPacketSplitedSendSize, false);
         }
 

@@ -36,7 +36,8 @@ namespace SeguraChain_Lib.TaskManager.Object
         {
             try
             {
-                Task = Task.Factory.StartNew(_action, Cancellation.Token, TaskCreationOptions.DenyChildAttach, TaskScheduler.Current);
+                Task = new Task(_action, Cancellation.Token);
+                Task.RunSynchronously();
             }
             catch
             {
