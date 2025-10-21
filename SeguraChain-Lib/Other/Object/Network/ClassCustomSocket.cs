@@ -168,7 +168,7 @@ namespace SeguraChain_Lib.Other.Object.Network
 
                     if (!isHttp)
                     {
-                        if (ClassUtility.CharIsABase64Character((char)data) || ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
+                        if (ClassUtility.CharIsHexCharacter((char)data) || ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
                             listOfData.Add(data);
                     }
                     else listOfData.Add(data);
