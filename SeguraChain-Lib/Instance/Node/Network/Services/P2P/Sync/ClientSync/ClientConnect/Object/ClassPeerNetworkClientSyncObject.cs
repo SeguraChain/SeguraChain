@@ -20,6 +20,7 @@ using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.Other.Object.Network;
 using SeguraChain_Lib.Utility;
 using static SeguraChain_Lib.Other.Object.Network.ClassCustomSocket;
+using NwRfcNet;
 
 namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.ClientConnect.Object
 {
