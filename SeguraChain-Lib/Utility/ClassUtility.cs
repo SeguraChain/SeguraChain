@@ -1187,9 +1187,30 @@ namespace SeguraChain_Lib.Utility
         }
 
 
-        public static byte[] GetByteArray(this string src)
+        public static byte[] GetByteArray(this string src, bool ascii = false)
         {
-            return Encoding.GetEncoding("utf-8").GetBytes(src);
+
+            byte[] result;
+
+
+            List<byte> listByte = new List<byte>();
+
+
+            for (int i = 0; i < src.Length; i++)
+            {
+                if (i < src.Length)
+                    listByte.Add((byte)src[i]);
+            }
+
+
+            result = listByte.ToArray();
+
+
+            listByte.Clear();
+
+
+            return result;
+
         }
 
         /// <summary>

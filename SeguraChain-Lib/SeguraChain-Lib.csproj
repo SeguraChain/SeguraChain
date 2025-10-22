@@ -6,7 +6,7 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <TargetFrameworks>net8;net7.0;net6.0;net5.0;net48</TargetFrameworks>
+    <TargetFrameworks>net9.0;net8;net7.0;net6.0;net5.0;net48</TargetFrameworks>
     <RootNamespace>SeguraChain_Lib</RootNamespace>
     <Configurations>Debug;Release</Configurations>
   </PropertyGroup>
