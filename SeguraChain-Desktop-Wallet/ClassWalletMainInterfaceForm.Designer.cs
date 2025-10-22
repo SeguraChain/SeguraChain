@@ -295,7 +295,7 @@ namespace SeguraChain_Desktop_Wallet
             // pictureBoxLogo
             // 
             pictureBoxLogo.BackColor = System.Drawing.Color.Transparent;
-            pictureBoxLogo.BackgroundImage = (System.Drawing.Image)resources.GetObject("pictureBoxLogo.BackgroundImage");
+            pictureBoxLogo.BackgroundImage = Properties.Resources.logo_web_profil;
             pictureBoxLogo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             pictureBoxLogo.Location = new System.Drawing.Point(0, 27);
             pictureBoxLogo.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -359,8 +359,6 @@ namespace SeguraChain_Desktop_Wallet
             panelInternalNetworkStats.AutoSize = true;
             panelInternalNetworkStats.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             panelInternalNetworkStats.BackColor = System.Drawing.Color.AliceBlue;
-            panelInternalNetworkStats.BorderColor = System.Drawing.Color.DarkGray;
-            panelInternalNetworkStats.BorderSize = 1F;
             panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalCoinPendingText);
             panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalCoinSpreadText);
             panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalFeeCirculatingText);
@@ -380,7 +378,6 @@ namespace SeguraChain_Desktop_Wallet
             panelInternalNetworkStats.Location = new System.Drawing.Point(27, 147);
             panelInternalNetworkStats.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             panelInternalNetworkStats.Name = "panelInternalNetworkStats";
-            panelInternalNetworkStats.Radius = 10;
             panelInternalNetworkStats.Size = new System.Drawing.Size(577, 366);
             panelInternalNetworkStats.TabIndex = 11;
             // 
@@ -483,13 +480,10 @@ namespace SeguraChain_Desktop_Wallet
             // panelSyncInformationsSeperator
             // 
             panelSyncInformationsSeperator.BackColor = System.Drawing.Color.Black;
-            panelSyncInformationsSeperator.BorderColor = System.Drawing.Color.White;
-            panelSyncInformationsSeperator.BorderSize = 3F;
             panelSyncInformationsSeperator.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             panelSyncInformationsSeperator.Location = new System.Drawing.Point(8, 168);
             panelSyncInformationsSeperator.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             panelSyncInformationsSeperator.Name = "panelSyncInformationsSeperator";
-            panelSyncInformationsSeperator.Radius = 2;
             panelSyncInformationsSeperator.Size = new System.Drawing.Size(500, 2);
             panelSyncInformationsSeperator.TabIndex = 17;
             // 
@@ -610,14 +604,11 @@ namespace SeguraChain_Desktop_Wallet
             panelRecentTransactions.AutoSize = true;
             panelRecentTransactions.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             panelRecentTransactions.BackColor = System.Drawing.Color.FromArgb(216, 227, 240);
-            panelRecentTransactions.BorderColor = System.Drawing.Color.DarkGray;
-            panelRecentTransactions.BorderSize = 1F;
             panelRecentTransactions.Controls.Add(panelInternalRecentTransactions);
             panelRecentTransactions.Controls.Add(labelMainInterfaceRecentTransaction);
             panelRecentTransactions.Location = new System.Drawing.Point(660, 16);
             panelRecentTransactions.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             panelRecentTransactions.Name = "panelRecentTransactions";
-            panelRecentTransactions.Radius = 10;
             panelRecentTransactions.Size = new System.Drawing.Size(493, 463);
             panelRecentTransactions.TabIndex = 10;
             panelRecentTransactions.Paint += panelRecentTransactions_Paint;
@@ -625,12 +616,9 @@ namespace SeguraChain_Desktop_Wallet
             // panelInternalRecentTransactions
             // 
             panelInternalRecentTransactions.BackColor = System.Drawing.Color.FromArgb(245, 249, 252);
-            panelInternalRecentTransactions.BorderColor = System.Drawing.Color.FromArgb(91, 106, 128);
-            panelInternalRecentTransactions.BorderSize = 2F;
             panelInternalRecentTransactions.Location = new System.Drawing.Point(22, 85);
             panelInternalRecentTransactions.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             panelInternalRecentTransactions.Name = "panelInternalRecentTransactions";
-            panelInternalRecentTransactions.Radius = 10;
             panelInternalRecentTransactions.Size = new System.Drawing.Size(467, 375);
             panelInternalRecentTransactions.TabIndex = 2;
             panelInternalRecentTransactions.Click += panelInternalRecentTransactions_Click;
@@ -694,13 +682,10 @@ namespace SeguraChain_Desktop_Wallet
             // panelSeperatorBalanceLine
             // 
             panelSeperatorBalanceLine.BackColor = System.Drawing.Color.Black;
-            panelSeperatorBalanceLine.BorderColor = System.Drawing.Color.White;
-            panelSeperatorBalanceLine.BorderSize = 3F;
             panelSeperatorBalanceLine.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             panelSeperatorBalanceLine.Location = new System.Drawing.Point(30, 90);
             panelSeperatorBalanceLine.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             panelSeperatorBalanceLine.Name = "panelSeperatorBalanceLine";
-            panelSeperatorBalanceLine.Radius = 2;
             panelSeperatorBalanceLine.Size = new System.Drawing.Size(279, 2);
             panelSeperatorBalanceLine.TabIndex = 6;
             // 
@@ -751,8 +736,6 @@ namespace SeguraChain_Desktop_Wallet
             panelSendTransaction.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             panelSendTransaction.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             panelSendTransaction.BackColor = System.Drawing.Color.AliceBlue;
-            panelSendTransaction.BorderColor = System.Drawing.Color.Ivory;
-            panelSendTransaction.BorderSize = 2F;
             panelSendTransaction.Controls.Add(panelSendTransactionDetails);
             panelSendTransaction.Controls.Add(textBoxSendTransactionConfirmationsCountTarget);
             panelSendTransaction.Controls.Add(labelSendTransactionConfirmationTimeEstimated);
@@ -768,15 +751,12 @@ namespace SeguraChain_Desktop_Wallet
             panelSendTransaction.Location = new System.Drawing.Point(8, 6);
             panelSendTransaction.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             panelSendTransaction.Name = "panelSendTransaction";
-            panelSendTransaction.Radius = 10;
             panelSendTransaction.Size = new System.Drawing.Size(1145, 414);
             panelSendTransaction.TabIndex = 0;
             // 
             // panelSendTransactionDetails
             // 
             panelSendTransactionDetails.BackColor = System.Drawing.Color.FromArgb(70, 90, 120);
-            panelSendTransactionDetails.BorderColor = System.Drawing.Color.Ivory;
-            panelSendTransactionDetails.BorderSize = 1F;
             panelSendTransactionDetails.Controls.Add(labelSendTransactionAmountToSpend);
             panelSendTransactionDetails.Controls.Add(labelSendTransactionFeeSizeCost);
             panelSendTransactionDetails.Controls.Add(textBoxSendTransactionFeeCalculated);
@@ -790,7 +770,6 @@ namespace SeguraChain_Desktop_Wallet
             panelSendTransactionDetails.Location = new System.Drawing.Point(581, 15);
             panelSendTransactionDetails.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             panelSendTransactionDetails.Name = "panelSendTransactionDetails";
-            panelSendTransactionDetails.Radius = 10;
             panelSendTransactionDetails.Size = new System.Drawing.Size(538, 372);
             panelSendTransactionDetails.TabIndex = 23;
             panelSendTransactionDetails.Paint += panelSendTransactionDetails_Paint;
@@ -1089,13 +1068,10 @@ namespace SeguraChain_Desktop_Wallet
             panelQrCodeWalletAddress.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             panelQrCodeWalletAddress.BackColor = System.Drawing.Color.White;
             panelQrCodeWalletAddress.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            panelQrCodeWalletAddress.BorderColor = System.Drawing.Color.Ivory;
-            panelQrCodeWalletAddress.BorderSize = 1F;
             panelQrCodeWalletAddress.Location = new System.Drawing.Point(512, 74);
             panelQrCodeWalletAddress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             panelQrCodeWalletAddress.MinimumSize = new System.Drawing.Size(350, 350);
             panelQrCodeWalletAddress.Name = "panelQrCodeWalletAddress";
-            panelQrCodeWalletAddress.Radius = 30;
             panelQrCodeWalletAddress.Size = new System.Drawing.Size(350, 350);
             panelQrCodeWalletAddress.TabIndex = 0;
             panelQrCodeWalletAddress.Tag = "image";
@@ -1147,13 +1123,10 @@ namespace SeguraChain_Desktop_Wallet
             // 
             panelTransactionHistoryColumns.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             panelTransactionHistoryColumns.BackColor = System.Drawing.Color.FromArgb(70, 90, 120);
-            panelTransactionHistoryColumns.BorderColor = System.Drawing.Color.Transparent;
-            panelTransactionHistoryColumns.BorderSize = 1F;
             panelTransactionHistoryColumns.Location = new System.Drawing.Point(4, 3);
             panelTransactionHistoryColumns.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             panelTransactionHistoryColumns.MinimumSize = new System.Drawing.Size(300, 25);
             panelTransactionHistoryColumns.Name = "panelTransactionHistoryColumns";
-            panelTransactionHistoryColumns.Radius = 10;
             panelTransactionHistoryColumns.Size = new System.Drawing.Size(1153, 47);
             panelTransactionHistoryColumns.TabIndex = 11;
             panelTransactionHistoryColumns.Click += panelMainInterfaceTransactionHistoryColumns_Click;
@@ -1223,13 +1196,10 @@ namespace SeguraChain_Desktop_Wallet
             // 
             panelTransactionHistory.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             panelTransactionHistory.BackColor = System.Drawing.Color.FromArgb(70, 90, 120);
-            panelTransactionHistory.BorderColor = System.Drawing.Color.Transparent;
-            panelTransactionHistory.BorderSize = 1F;
             panelTransactionHistory.Location = new System.Drawing.Point(4, 56);
             panelTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             panelTransactionHistory.MinimumSize = new System.Drawing.Size(300, 300);
             panelTransactionHistory.Name = "panelTransactionHistory";
-            panelTransactionHistory.Radius = 10;
             panelTransactionHistory.Size = new System.Drawing.Size(1153, 430);
             panelTransactionHistory.TabIndex = 6;
             panelTransactionHistory.Click += panelTransactionHistory_Click;

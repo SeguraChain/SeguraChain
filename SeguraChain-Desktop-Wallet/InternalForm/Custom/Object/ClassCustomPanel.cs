@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using System.ComponentModel;
 
 namespace SeguraChain_Desktop_Wallet.InternalForm.Custom.Object
 {
@@ -21,6 +22,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Custom.Object
         }
 
         private float _borderSize = 3;
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public float BorderSize
         {
             get
@@ -34,6 +36,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Custom.Object
         }
 
         private Color _borderColor = Color.White;
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Color BorderColor
         {
             get
@@ -47,6 +50,7 @@ namespace SeguraChain_Desktop_Wallet.InternalForm.Custom.Object
         }
 
         private int _radius = 2;
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public int Radius
         {
             get

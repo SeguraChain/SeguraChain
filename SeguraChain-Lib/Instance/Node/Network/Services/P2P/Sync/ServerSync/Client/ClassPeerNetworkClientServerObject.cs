@@ -279,7 +279,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                                 try
                                 {
-                                    base64Packet = Convert.FromBase64String(listPacketReceived[index].Packet);
+                                    base64Packet = listPacketReceived[index].Packet.GetByteArrayFromHexString();
                                     failed = base64Packet == null || base64Packet.Length == 0;
                                 }
                                 catch
