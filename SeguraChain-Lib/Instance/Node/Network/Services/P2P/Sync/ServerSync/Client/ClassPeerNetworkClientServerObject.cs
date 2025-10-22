@@ -1929,7 +1929,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                 string packetData = packetSendObject.GetPacketData().GetHexStringFromByteArray() + ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString();
 
-                return await _clientSocket.TrySendSplittedPacket((packetData).GetByteArray(), _cancellationTokenListenPeerPacket, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize, false);
+                return await _clientSocket.TrySendSplittedPacket(packetData.GetByteArray(), _cancellationTokenListenPeerPacket, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize, false);
 
             }
             catch
