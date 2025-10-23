@@ -334,7 +334,7 @@ namespace SeguraChain_RPC_Wallet.API.Service.Client
                 return null;
             }
 
-            if (rpcApiPostPacket.packet_timestamp + _apiRpcConfig.RpcApiSetting.RpcApiMaxConnectDelay < ClassUtility.GetCurrentTimestampInSecond())
+            if (rpcApiPostPacket.packet_timestamp + _apiRpcConfig.RpcApiSetting.RpcApiMaxConnectDelay >= ClassUtility.GetCurrentTimestampInSecond())
             {
                 await SendApiResponse("The packet content sent has expired.");
                 return null;

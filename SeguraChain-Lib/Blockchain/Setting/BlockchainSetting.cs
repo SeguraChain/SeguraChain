@@ -65,9 +65,9 @@ namespace SeguraChain_Lib.Blockchain.Setting
         /// </summary>
         public const int MaxTransactionPerBlock = 300_000;
         public const int BlockRewardHalvingRange = 100_000;
-        public static readonly BigInteger BlockRewardStatic = 10 * CoinDecimal;
+		public static readonly BigInteger BlockRewardStatic = 10 * CoinDecimal;
         public const decimal BlockDevFeePercent = 0.005m;
-        public static readonly BigInteger MaxSupply = 26_000_000 * CoinDecimal;
+		public static readonly BigInteger MaxSupply = 26_000_000 * CoinDecimal;
 
         /// <summary>
         /// Task transaction confirmation settings.
@@ -84,8 +84,8 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public static string WalletAddressDevPublicKey(long timestampSovereignUpdate) => SovereignUpdateGetter.GetLastDevWalletPublicKey(timestampSovereignUpdate);
         public static string WalletAddressDev(long timestampSovereignUpdate) => SovereignUpdateGetter.GetLastDevWalletAddress(timestampSovereignUpdate);
 
-        public const string DefaultWalletAddressDevPublicKey = "YLcKX3tL4Q1PchGc4JHXt6oyAGK4qAG24jLTZyMAsjMw2WXbWXekwVy5d9wbUexG3gKcUvVsLvXigc4rJXmXmzdVqAyzZ5qC4i39hDJJCJkAyQm131v4w4cvwVyBbLcWrbNZr3k8xW6xLVjyNduNRErGnjDkM8ZKk6J3YaW4vLQFerppvvQyeNXzu2tiQNJDHj1vDyPi5t8gYnjtnkGsTFLmSDW";
-        public const string DefaultWalletAddressDev = "3pkVXPdEW94xkgXh73CH5pWDq5hsJ2gV9kdD15LKVZiazccGccM2f2fATZ9hK59U3gfm6NT5EkXuopp8NYaEHvUCgBA778zBwtJFAg79trr91o";
+		public const string DefaultWalletAddressDevPublicKey ="YLcKX3tL4Q1PchGc4JHXt6oyAGK4qAG24jLTZyMAsjMw2WXbWXekwVy5d9wbUexG3gKcUvVsLvXigc4rJXmXmzdVqAyzZ5qC4i39hDJJCJkAyQm131v4w4cvwVyBbLcWrbNZr3k8xW6xLVjyNduNRErGnjDkM8ZKk6J3YaW4vLQFerppvvQyeNXzu2tiQNJDHj1vDyPi5t8gYnjtnkGsTFLmSDW";
+		public const string DefaultWalletAddressDev ="3pkVXPdEW94xkgXh73CH5pWDq5hsJ2gV9kdD15LKVZiazccGccM2f2fATZ9hK59U3gfm6NT5EkXuopp8NYaEHvUCgBA778zBwtJFAg79trr91o";
 
         #endregion
 
@@ -105,8 +105,8 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int BlockDifficultyRangeCalculation = BlockExpectedPerDay / 3; // Use previous blocks for generate the new block difficulty.
         public const int BlockDifficultyPrecision = 100_000; // The precision put on the difficulty factor calculated.
         public const int GenesisBlockHeight = 1; // The genesis block height.
-        public static readonly BigInteger GenesisBlockAmount = 2_000_000 * CoinDecimal; // The genesis block amount reward has pre-mining.
-        public const string GenesisBlockFinalTransactionHash = "ABC10970B5CDC5EE5E8354EF8616C3471BDAC71909A2EFAD58413B5C0D15D62D10F718970E6D36B4E866249302702667052311D02B585CF656135DE99E84C2ED";
+		public static readonly BigInteger GenesisBlockAmount = 2_000_000 * CoinDecimal; // The genesis block amount reward has pre-mining.
+		public const string GenesisBlockFinalTransactionHash ="ABC10970B5CDC5EE5E8354EF8616C3471BDAC71909A2EFAD58413B5C0D15D62D10F718970E6D36B4E866249302702667052311D02B585CF656135DE99E84C2ED";
         public const int GenesisBlockTransactionCount = 1; // The maximum of transaction inserted on the genesis block.
         public const int BlockAmountNetworkConfirmations = 1; // The minimum amount of network checks on blocks to do with peers, before to enable the task of confirmations on the block.
         public const int BlockAmountSlowNetworkConfirmations = 1; // This amount increment another amount of network checks, once this one is reach, the network counter increment and this one return back to 0.
@@ -117,13 +117,13 @@ namespace SeguraChain_Lib.Blockchain.Setting
         /// Blockchain Properties.
         /// </summary>
 		public const string CoinName = "XENOPHYTE";
-        public const string CoinTickerName = "XENOP";
-        public const string CoinUrl = "https://xenophyte.com/";
+		public const string CoinTickerName = "XENOP";
+		public const string CoinUrl = "https://xenophyte.com/";
         public const string BlockchainVersion = "01"; // Version of the blockchain used on Base58.
         public static readonly byte[] BlockchainVersionByteArray = ClassUtility.GetByteArrayFromHexString(BlockchainVersion);
         public const int BlockchainChecksum = 16; // Checksum size used on Base58.
-        public const bool BlockchainDefaultEnableCompressingDatabase = false;
-        public const bool BlockchainDefaultDataFormatIsJson = false;
+		public const bool BlockchainDefaultEnableCompressingDatabase = false;
+		public const bool BlockchainDefaultDataFormatIsJson = false;
 
         /// <summary>
         /// Used on some parts of the code: Encryption, network and more..
@@ -171,11 +171,11 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int PeerMaxTimestampDelayPacket = 360; // Await a maximum of 360 seconds on the timestamp of a packet, above the packet is considered has expired.
         public const int PeerMaxDelayKeepAliveStats = 60; // Keep alive packet stats of a peer pending 60 seconds.
         public const int PeerMaxEarlierPacketDelay = 600; // A maximum of 600 seconds is accepted on timestamp of packets.
-        public const int PeerMaxDelayToConnectToTarget = 2; // A maximum of 5 seconds delay on connect to a peer.
+        public const int PeerMaxDelayToConnectToTarget = 5; // A maximum of 5 seconds delay on connect to a peer.
         public const int PeerServerPacketDelay = 30 * 1000; // 
-        public const int PeerMaxAttemptConnection = 5; // After 5 retries to connect to a peer, the peer target is set has dead pending a certain amount of time.
+        public const int PeerMaxAttemptConnection = 20; // After 20 retries to connect to a peer, the peer target is set has dead pending a certain amount of time.
         public const int PeerBanDelay = 30; // Ban delay pending 30 seconds.
-        public const int PeerDeadDelay = 60; // Dead delay pending 60 seconds.
+        public const int PeerDeadDelay = 15; // Dead delay pending 15 seconds.
         public const int PeerMinValidPacket = 2; // Do not check packet signature after 2 valid packets sent.
         public const int PeerMaxWhiteListPacket = 1000; // Empty valid packet counter of a peer after to have ignoring packet signature 1000 of a peer.
         public const int PeerTaskSyncDelay = 10;
@@ -201,7 +201,7 @@ namespace SeguraChain_Lib.Blockchain.Setting
         public const int PeerDefaultPort = 2400;
         public static readonly Dictionary<string, Dictionary<string, int>> BlockchainStaticPeerList = new Dictionary<string, Dictionary<string, int>>()
         {
-            { "51.222.207.219", new Dictionary<string, int>() { { "D0BFF4A56F062828939E40E6DFD8A5EF58E28A10CB69E9E281C90802632D0345618CB5DA20736C2BAAC458A1EB5239F012621847B40F76C0CD10EA05CC4FD184", 2400} }},
+			{ "51.222.207.219", new Dictionary<string, int>() { { "D0BFF4A56F062828939E40E6DFD8A5EF58E28A10CB69E9E281C90802632D0345618CB5DA20736C2BAAC458A1EB5239F012621847B40F76C0CD10EA05CC4FD184", 2400} }},
         }; // This is a static peer list who can't be updated, it's usually used once a peer don't have any peer list saved.
 
         /// <summary>

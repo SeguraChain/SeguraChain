@@ -10,7 +10,6 @@ using SeguraChain_RPC_Wallet.Database.Object;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Threading;
@@ -59,71 +58,73 @@ namespace SeguraChain_RPC_Wallet.Database.Wallet
             ClassSendTransactionFeeCostCalculationObject sendTransactionFeeCostCalculation = new ClassSendTransactionFeeCostCalculationObject();
 
             BigInteger amountCalculated = 0;
+            BigInteger feeCalculated = 0;
 
             if (WalletTransactionList.Count == 0)
                 return sendTransactionFeeCostCalculation;
 
-            using (DisposableList<ClassBlockTransaction> listTransactionObject = new DisposableList<ClassBlockTransaction>())
+            using (DisposableList<string> listBlockTransactionHash = new DisposableList<string>(false, 0, WalletTransactionList.Keys.ToArray()))
             {
-                // Amount target calculation.
-                using (DisposableList<string> listBlockTransactionHash = new DisposableList<string>(false, 0, WalletTransactionList.Keys.ToArray()))
+                foreach (string blockTransactionHash in listBlockTransactionHash.GetList)
                 {
-                    foreach (string blockTransactionHash in listBlockTransactionHash.GetList)
+                    // Ignore sent transaction.
+                    if (WalletTransactionList[blockTransactionHash].TransactionObject.WalletAddressSender == WalletAddress)
+                        continue;
+
+                    if (!WalletTransactionList[blockTransactionHash].IsConfirmed ||
+                        !WalletTransactionList[blockTransactionHash].TransactionStatus ||
+                         WalletTransactionList[blockTransactionHash].Spent ||
+                         WalletTransactionList[blockTransactionHash].NeedUpdateAmountTransactionSource)
+                        continue;
+
+                    if (WalletTransactionList[blockTransactionHash].TotalSpend >=
+                        WalletTransactionList[blockTransactionHash].TransactionObject.Amount +
+                        WalletTransactionList[blockTransactionHash].TransactionObject.Fee)
+                        continue;
+
+                    BigInteger difference = WalletTransactionList[blockTransactionHash].TransactionObject.Amount - WalletTransactionList[blockTransactionHash].TotalSpend;
+
+                    if (difference > 0)
                     {
-                        // Ignore sent transaction.
-                        if (WalletTransactionList[blockTransactionHash].TransactionObject.WalletAddressSender == WalletAddress)
-                            continue;
+                        if (amountCalculated + difference <= amountTarget)
+                            amountCalculated += difference;
+                        else
+                            amountCalculated += (amountTarget - amountCalculated);
 
-                        if (!WalletTransactionList[blockTransactionHash].IsConfirmed ||
-                            !WalletTransactionList[blockTransactionHash].TransactionStatus ||
-                             WalletTransactionList[blockTransactionHash].Spent ||
-                             WalletTransactionList[blockTransactionHash].NeedUpdateAmountTransactionSource)
-                            continue;
-
-                        if (WalletTransactionList[blockTransactionHash].TotalSpend >=
-                            WalletTransactionList[blockTransactionHash].TransactionObject.Amount +
-                            WalletTransactionList[blockTransactionHash].TransactionObject.Fee)
-                            continue;
-
-                        BigInteger difference = WalletTransactionList[blockTransactionHash].TransactionObject.Amount - WalletTransactionList[blockTransactionHash].TotalSpend;
-
-                        if (sendTransactionFeeCostCalculation.ListTransactionHashToSpend.ContainsKey(blockTransactionHash))
-                            difference -= sendTransactionFeeCostCalculation.ListTransactionHashToSpend[blockTransactionHash].Amount;
-
-                        if (difference > 0)
-                            listTransactionObject.Add(WalletTransactionList[blockTransactionHash]);
+                        sendTransactionFeeCostCalculation.ListTransactionHashToSpend.Add(blockTransactionHash, new ClassTransactionHashSourceObject()
+                        {
+                            Amount = amountCalculated + difference <= amountTarget ? difference : (amountTarget - amountCalculated)
+                        });
                     }
-                }
-
-
-                foreach (ClassBlockTransaction blockTransaction in listTransactionObject.GetList)
-                {
-                    BigInteger difference = blockTransaction.TransactionObject.Amount - blockTransaction.TotalSpend;
-
-
-                    sendTransactionFeeCostCalculation.ListTransactionHashToSpend.Add(blockTransaction.TransactionObject.TransactionHash, new ClassTransactionHashSourceObject()
-                    {
-                        Amount = difference > amountTarget + feeTarget ? amountTarget + feeTarget : difference
-                    });
-
-                    amountCalculated += difference > amountTarget + feeTarget ? amountTarget + feeTarget : difference;
 
                     if (amountCalculated == amountTarget + feeTarget)
                         break;
                 }
             }
 
-            if (amountCalculated  == amountTarget + feeTarget)
+            if (amountCalculated == amountTarget + feeTarget)
             {
-                sendTransactionFeeCostCalculation.BlockHeight = blockHeightConfirmationStart;
-                sendTransactionFeeCostCalculation.BlockHeightTarget = blockHeightConfirmationTarget;
+                Tuple<BigInteger, bool> calculationFeeCostConfirmation = await ClassApiClientUtility.GetFeeCostTransactionFromExternalSyncMode(
+                    rpcConfig.RpcNodeApiSetting.RpcNodeApiIp,
+                    rpcConfig.RpcNodeApiSetting.RpcNodeApiPort,
+                    rpcConfig.RpcNodeApiSetting.RpcNodeApiMaxDelay,
+                    lastBlockHeightUnlocked,
+                    blockHeightConfirmationStart,
+                    blockHeightConfirmationTarget,
+                    cancellation);
+
+                if (calculationFeeCostConfirmation.Item2)
+                    feeCalculated = calculationFeeCostConfirmation.Item1;
+            }
+
+            if (feeCalculated <= feeTarget && amountCalculated == amountTarget + feeTarget)
+            {
                 sendTransactionFeeCostCalculation.CalculationStatus = true;
-                sendTransactionFeeCostCalculation.AmountCalculed = amountTarget;
-                sendTransactionFeeCostCalculation.FeeCalculated = feeTarget;
+                sendTransactionFeeCostCalculation.AmountCalculed = amountCalculated;
+                sendTransactionFeeCostCalculation.FeeCalculated = feeCalculated;
             }
 
             return sendTransactionFeeCostCalculation;
-
         }
 
         /// <summary>
@@ -132,17 +133,51 @@ namespace SeguraChain_RPC_Wallet.Database.Wallet
         /// <param name="rpcApiGetWalletTransaction"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
-        public ClassRpcApiSendWalletTransaction GetWalletSendTransactionObject(ClassWalletData walletData, ClassRpcApiGetWalletTransaction rpcApiGetWalletTransaction, CancellationTokenSource cancellation)
+        public ClassRpcApiSendWalletTransaction GetWalletSendTransactionObject(ClassRpcApiGetWalletTransaction rpcApiGetWalletTransaction, CancellationTokenSource cancellation)
         {
             if (rpcApiGetWalletTransaction == null)
                 return null;
 
-            return new ClassRpcApiSendWalletTransaction()
+            if (rpcApiGetWalletTransaction.by_transaction_by_index)
             {
-                block_transaction_object = walletData.WalletTransactionList.Values.ToList(),
-                packet_timestamp = ClassUtility.GetCurrentTimestampInSecond()
-            };
+                if (rpcApiGetWalletTransaction.transaction_start_index < 0 || rpcApiGetWalletTransaction.transaction_end_index < 0 ||
+                    rpcApiGetWalletTransaction.transaction_start_index > WalletTransactionList.Count || rpcApiGetWalletTransaction.transaction_end_index > WalletTransactionList.Count)
+                    return null;
 
+                ClassRpcApiSendWalletTransaction rpcApiSendWalletTransaction = new ClassRpcApiSendWalletTransaction();
+
+                using (DisposableList<string> transactionHashList = new DisposableList<string>(false, 0, WalletTransactionList.Keys.ToList()))
+                {
+                    for(int i = rpcApiGetWalletTransaction.transaction_start_index; i < rpcApiGetWalletTransaction.transaction_end_index; i++)
+                    {
+                        if (cancellation.IsCancellationRequested)
+                            break;
+
+                        rpcApiSendWalletTransaction.block_transaction_object.Add(WalletTransactionList[transactionHashList[i]]);
+                    }
+                }
+
+                rpcApiSendWalletTransaction.packet_timestamp = ClassUtility.GetCurrentTimestampInSecond();
+
+                return rpcApiSendWalletTransaction;
+            }
+
+            if (rpcApiGetWalletTransaction.by_transaction_by_hash)
+            {
+                if (WalletTransactionList.ContainsKey(rpcApiGetWalletTransaction.transaction_hash))
+                {
+                    return new ClassRpcApiSendWalletTransaction()
+                    {
+                        block_transaction_object = new List<ClassBlockTransaction>()
+                        {
+                            WalletTransactionList[rpcApiGetWalletTransaction.transaction_hash]
+                        },
+                        packet_timestamp = ClassUtility.GetCurrentTimestampInSecond()
+                    };
+                }
+            }
+
+            return null;
         }
     }
 }

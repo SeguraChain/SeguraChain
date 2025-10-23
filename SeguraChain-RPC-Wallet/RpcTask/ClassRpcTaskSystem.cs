@@ -57,9 +57,6 @@ namespace SeguraChain_RPC_Wallet.RpcTask
                              rpcConfig.RpcNodeApiSetting.RpcNodeApiMaxDelay,
                              _cancellation);
 
-                        if (resultBlockchainNetworkStats == null)
-                            continue;
-
                         for (int i = BlockchainSetting.GenesisBlockHeight; i < resultBlockchainNetworkStats.LastBlockHeightUnlocked; i++)
                         {
                             ClassBlockObject blockInformation = await ClassApiClientUtility.GetBlockInformationFromExternalSyncMode(

@@ -703,28 +703,34 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                                 if (await ClassBlockchainStats.CheckTransaction(apiPeerPacketPushWalletTransaction.TransactionObject, null, false, null, _cancellationTokenApiClient, true) == ClassTransactionEnumStatus.VALID_TRANSACTION)
                                                 {
 
-                                                    DisposableDictionary<string, ClassTransactionEnumStatus> transactionStatus = await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(_peerDatabase, _peerNetworkSettingObject.ListenApiIp, _apiServerOpenNatIp, _clientIp, new List<ClassTransactionObject>() { apiPeerPacketPushWalletTransaction.TransactionObject }, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenApiClient, true);
+                                                    using (DisposableDictionary<string, ClassTransactionEnumStatus> transactionStatus = await ClassPeerNetworkBroadcastFunction.AskMemPoolTxVoteToPeerListsAsync(_peerDatabase, _peerNetworkSettingObject.ListenApiIp, _apiServerOpenNatIp, _clientIp, new List<ClassTransactionObject>() { apiPeerPacketPushWalletTransaction.TransactionObject }, _peerNetworkSettingObject, _peerFirewallSettingObject, _cancellationTokenApiClient, true))
                                                     {
                                                         if (transactionStatus.Count > 0)
                                                         {
+                                                            bool broadcastComplete = transactionStatus.ContainsKey(apiPeerPacketPushWalletTransaction.TransactionObject.TransactionHash) ?
+                                                                transactionStatus[apiPeerPacketPushWalletTransaction.TransactionObject.TransactionHash] == ClassTransactionEnumStatus.VALID_TRANSACTION : false;
 
-                                                            ClassBlockTransactionInsertEnumStatus blockTransactionInsertStatus = ClassBlockTransactionInsertEnumStatus.BLOCK_TRANSACTION_INVALID;
 
-                                                            if (!await ClassMemPoolDatabase.CheckTxHashExist(apiPeerPacketPushWalletTransaction.TransactionObject.TransactionHash, _cancellationTokenApiClient))
-                                                                blockTransactionInsertStatus = await ClassBlockchainDatabase.InsertTransactionToMemPool(apiPeerPacketPushWalletTransaction.TransactionObject, true, false, true, _cancellationTokenApiClient);
-                                                            else
-                                                                blockTransactionInsertStatus = ClassBlockTransactionInsertEnumStatus.BLOCK_TRANSACTION_HASH_ALREADY_EXIST;
-
-                                                            responseSent = true;
-
-                                                            if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendPushWalletTransactionResponse()
+                                                            if (broadcastComplete)
                                                             {
-                                                                BlockTransactionInsertStatus = blockTransactionInsertStatus,
-                                                                PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
-                                                            }, ClassPeerApiPacketResponseEnum.SEND_REPLY_WALLET_TRANSACTION_PUSHED)))
-                                                            {
-                                                                // Can't send packet.
-                                                                return false;
+                                                                ClassBlockTransactionInsertEnumStatus blockTransactionInsertStatus = ClassBlockTransactionInsertEnumStatus.BLOCK_TRANSACTION_INVALID;
+
+                                                                if (!await ClassMemPoolDatabase.CheckTxHashExist(apiPeerPacketPushWalletTransaction.TransactionObject.TransactionHash, _cancellationTokenApiClient))
+                                                                    blockTransactionInsertStatus = await ClassBlockchainDatabase.InsertTransactionToMemPool(apiPeerPacketPushWalletTransaction.TransactionObject, true, false, true, _cancellationTokenApiClient);
+                                                                else
+                                                                    blockTransactionInsertStatus = ClassBlockTransactionInsertEnumStatus.BLOCK_TRANSACTION_HASH_ALREADY_EXIST;
+
+                                                                responseSent = true;
+
+                                                                if (!await SendApiResponse(BuildPacketResponse(new ClassApiPeerPacketSendPushWalletTransactionResponse()
+                                                                {
+                                                                    BlockTransactionInsertStatus = blockTransactionInsertStatus,
+                                                                    PacketTimestamp = TaskManager.TaskManager.CurrentTimestampSecond
+                                                                }, ClassPeerApiPacketResponseEnum.SEND_REPLY_WALLET_TRANSACTION_PUSHED)))
+                                                                {
+                                                                    // Can't send packet.
+                                                                    return false;
+                                                                }
                                                             }
                                                         }
                                                     }

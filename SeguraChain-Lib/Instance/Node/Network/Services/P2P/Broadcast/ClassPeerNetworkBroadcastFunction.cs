@@ -924,6 +924,51 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
 
                         while (totalTaskDone < peerListTarget.Count)
                         {
+                            if (totalResponseOk >= peerListTarget.Count)
+                                break;
+
+                            try
+                            {
+                                if (onlyOneAgree)
+                                {
+
+                                    int totalAgree = 0;
+                                    foreach (var transaction in listTransactionObject)
+                                    {
+                                        bool agree = false;
+                                        if (dictionaryMemPoolTxVoteNormPeer.GetList.ContainsKey(transaction.TransactionHash))
+                                        {
+                                            if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash].ContainsKey(true))
+                                            {
+                                                if (dictionaryMemPoolTxVoteNormPeer[transaction.TransactionHash][true] > 0)
+                                                {
+                                                    totalAgree++;
+                                                    agree = true;
+                                                }
+                                            }
+                                        }
+
+                                        if (!agree)
+                                        {
+                                            if (dictionaryMemPoolTxVoteSeedPeer.GetList.ContainsKey(transaction.TransactionHash))
+                                            {
+                                                if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash].ContainsKey(true))
+                                                {
+                                                    if (dictionaryMemPoolTxVoteSeedPeer[transaction.TransactionHash][true] > 0)
+                                                        totalAgree++;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (totalAgree >= listTransactionObject.Count)
+                                        break;
+                                }
+                            }
+                            catch
+                            {
+                                break;
+                            }
                             try
                             {
                                 await Task.Delay(100, cancellationTokenSourceMemPoolTxVote.Token);
@@ -933,6 +978,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                                 break;
                             }
                         }
+
+                        cancellationTokenSourceMemPoolTxVote.Cancel();
 
                         #region Clean up contact peers.
 

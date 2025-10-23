@@ -20,7 +20,6 @@ using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.Other.Object.Network;
 using SeguraChain_Lib.Utility;
 using static SeguraChain_Lib.Other.Object.Network.ClassCustomSocket;
-using NwRfcNet;
 
 namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.ClientConnect.Object
 {
@@ -250,9 +249,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                 return true;
             else _peerSocketClient?.Kill(SocketShutdown.Both);
 
-
-            ClassPeerCheckManager.InputPeerClientAttemptConnect(_peerDatabase, PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject, cancellation);
-
             await Task.Delay(10);
 
             return false;
@@ -274,8 +270,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
             if (PeerPacketReceived == null)
             {
-                ClassPeerCheckManager.InputPeerClientNoPacketConnectionOpened(_peerDatabase, PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject, _peerCancellationTokenMain);
-
 #if DEBUG
                 Debug.WriteLine("Peer " + PeerIpTarget + "|" + PeerUniqueIdTarget + " don't send a response to the packet sent: " + System.Enum.GetName(typeof(ClassPeerEnumPacketResponse), PacketResponseExpected)+" | " + System.Enum.GetName(typeof(ClassPeerEnumPacketResponse), PeerPacketTypeReceived));
 #endif
@@ -365,7 +359,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                         try
                         {
-                            base64Packet = listPacketReceived[listPacketReceived.Count - 1].Packet.GetByteArrayFromHexString();
+                            base64Packet = Convert.FromBase64String(listPacketReceived[listPacketReceived.Count - 1].Packet);
                         }
                         catch
                         {
@@ -375,7 +369,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                         listPacketReceived[listPacketReceived.Count - 1].Packet.Clear();
 
                         if (failed)
-                            break;
                             break;
 
 

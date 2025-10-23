@@ -1,5 +1,12 @@
-﻿using Newtonsoft.Json;
-using Org.BouncyCastle.Bcpg;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net.Sockets;
+using System.Numerics;
+using System.Threading;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
 using SeguraChain_Lib.Algorithm;
 using SeguraChain_Lib.Blockchain.Block.Enum;
 using SeguraChain_Lib.Blockchain.Block.Object.Structure;
@@ -32,14 +39,6 @@ using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.Other.Object.Network;
 using SeguraChain_Lib.TaskManager;
 using SeguraChain_Lib.Utility;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net.Sockets;
-using System.Numerics;
-using System.Threading;
-using System.Threading.Tasks;
 using static SeguraChain_Lib.Other.Object.Network.ClassCustomSocket;
 
 namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Client
@@ -1927,9 +1926,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 if (peerObject?.GetClientCryptoStreamObject != null)
                     packetSendObject.PacketSignature = await peerObject.GetClientCryptoStreamObject.DoSignatureProcess(packetSendObject.PacketHash, peerObject.PeerInternPrivateKey, _cancellationTokenListenPeerPacket);
 
-                string packetData = Convert.ToBase64String(packetSendObject.GetPacketData()) + ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString();
 
-                return await _clientSocket.TrySendSplittedPacket(packetData.GetByteArray(), _cancellationTokenListenPeerPacket, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize, false);
+                return await _clientSocket.TrySendSplittedPacket((Convert.ToBase64String(packetSendObject.GetPacketData()) + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray(), _cancellationTokenListenPeerPacket, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize, false);
 
             }
             catch
@@ -2038,7 +2036,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 return null;
 
 
-            byte[] contentData = Convert.FromBase64String(content);
+            byte[] contentData = ClassUtility.GetByteArrayFromHexString(content);
 
             if (peerObject?.GetClientCryptoStreamObject != null)
                 return await peerObject.GetClientCryptoStreamObject.DecryptDataProcess(contentData, _cancellationTokenListenPeerPacket);
