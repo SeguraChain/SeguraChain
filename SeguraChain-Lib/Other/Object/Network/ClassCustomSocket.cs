@@ -141,9 +141,9 @@ namespace SeguraChain_Lib.Other.Object.Network
             try
             {
 #if NET5_0_OR_GREATER
-                await _networkStream.ReadAsync(readPacketData.Data.AsMemory(0, packetLength), CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, new CancellationTokenSource(delayReading).Token).Token);
+                await _networkStream.ReadAsync(readPacketData.Data.AsMemory(0, packetLength), CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, new CancellationTokenSource(delayReading).Token).Token).ConfigureAwait(false);
 #else
-                await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, new CancellationTokenSource(delayReading).Token).Token);
+                await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, new CancellationTokenSource(delayReading).Token).Token).ConfigureAwait(false);
 #endif
             }
             catch (Exception error)
@@ -151,7 +151,6 @@ namespace SeguraChain_Lib.Other.Object.Network
 #if DEBUG
                 Debug.WriteLine("Reading packet exception from " + GetIp + " | Exception: " + error.Message);
 #endif
-                return readPacketData;
             }
 
 
@@ -159,10 +158,6 @@ namespace SeguraChain_Lib.Other.Object.Network
             {
                 foreach (byte data in readPacketData.Data)
                 {
-
-                    if (cancellation.IsCancellationRequested)
-                        break;
-
                     if ((char)data == '\0')
                         continue;
 

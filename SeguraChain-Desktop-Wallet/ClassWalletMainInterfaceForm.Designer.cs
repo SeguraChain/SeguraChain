@@ -53,7 +53,28 @@ namespace SeguraChain_Desktop_Wallet
             timerRefreshTransactionHistory = new System.Windows.Forms.Timer(components);
             tabControlWallet = new System.Windows.Forms.TabControl();
             tabPageOverview = new System.Windows.Forms.TabPage();
-            panelInternalNetworkStats = new ClassCustomPanel();
+            labelMainInterfaceTotalBalanceAmountText = new System.Windows.Forms.Label();
+            labelMainInterfacePendingBalanceAmountText = new System.Windows.Forms.Label();
+            labelMainInterfaceAvailableBalanceAmountText = new System.Windows.Forms.Label();
+            labelMainInterfaceCurrentBalanceText = new System.Windows.Forms.Label();
+            tabPageSendTransaction = new System.Windows.Forms.TabPage();
+            buttonSendTransactionDoProcess = new System.Windows.Forms.Button();
+            tabPageReceiveTransaction = new System.Windows.Forms.TabPage();
+            buttonSaveQrCodeReceiveTransactionWalletAddress = new System.Windows.Forms.Button();
+            buttonPrintQrCodeReceiveTransactionWalletAddress = new System.Windows.Forms.Button();
+            labelWalletReceiveTransactionQrCodeText = new System.Windows.Forms.Label();
+            tabPageTransactionHistory = new System.Windows.Forms.TabPage();
+            buttonMainInterfaceSearchTransactionHistory = new System.Windows.Forms.Button();
+            textBoxTransactionHistorySearch = new System.Windows.Forms.TextBox();
+            textBoxMainInterfaceMaxPageTransactionHistory = new System.Windows.Forms.TextBox();
+            textBoxMainInterfaceCurrentPageTransactionHistory = new System.Windows.Forms.TextBox();
+            buttonMainInterfaceNextPageTransactionHistory = new System.Windows.Forms.Button();
+            buttonMainInterfaceBackPageTransactionHistory = new System.Windows.Forms.Button();
+            buttonMainInterfaceExportTransactionHistory = new System.Windows.Forms.Button();
+            tabPageStoreNetwork = new System.Windows.Forms.TabPage();
+            panel1 = new System.Windows.Forms.Panel();
+            listViewWebNode = new System.Windows.Forms.ListView();
+            panelStoreNetwork = new System.Windows.Forms.Panel();
             labelMainInterfaceNetworkStatsTotalCoinPendingText = new System.Windows.Forms.Label();
             labelMainInterfaceNetworkStatsTotalCoinSpreadText = new System.Windows.Forms.Label();
             labelMainInterfaceNetworkStatsTotalFeeCirculatingText = new System.Windows.Forms.Label();
@@ -62,7 +83,6 @@ namespace SeguraChain_Desktop_Wallet
             labelMainInterfaceNetworkStatsTotalTransactionConfirmedText = new System.Windows.Forms.Label();
             labelMainInterfaceNetworkStatsTotalTransactionText = new System.Windows.Forms.Label();
             labelMainInterfaceNetworkStatsTotalTransactionMemPoolText = new System.Windows.Forms.Label();
-            panelSyncInformationsSeperator = new ClassCustomPanel();
             labelMainInterfaceNetworkStatsInfoSyncText = new System.Windows.Forms.Label();
             labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText = new System.Windows.Forms.Label();
             labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText = new System.Windows.Forms.Label();
@@ -70,20 +90,7 @@ namespace SeguraChain_Desktop_Wallet
             labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText = new System.Windows.Forms.Label();
             labelMainInterfaceNetworkStatsCurrentDifficultyText = new System.Windows.Forms.Label();
             labelMainInterfaceNetworkStatsTitleText = new System.Windows.Forms.Label();
-            progressBarMainInterfaceSyncProgress = new ClassCustomProgressBar();
-            progressBarMainInterfaceConfirmProgress = new ClassCustomProgressBar();
-            panelRecentTransactions = new ClassCustomPanel();
-            panelInternalRecentTransactions = new ClassCustomPanel();
             labelMainInterfaceRecentTransaction = new System.Windows.Forms.Label();
-            labelMainInterfaceTotalBalanceAmountText = new System.Windows.Forms.Label();
-            labelMainInterfacePendingBalanceAmountText = new System.Windows.Forms.Label();
-            labelMainInterfaceAvailableBalanceAmountText = new System.Windows.Forms.Label();
-            panelSeperatorBalanceLine = new ClassCustomPanel();
-            labelMainInterfaceCurrentBalanceText = new System.Windows.Forms.Label();
-            tabPageSendTransaction = new System.Windows.Forms.TabPage();
-            buttonSendTransactionDoProcess = new System.Windows.Forms.Button();
-            panelSendTransaction = new ClassCustomPanel();
-            panelSendTransactionDetails = new ClassCustomPanel();
             labelSendTransactionAmountToSpend = new System.Windows.Forms.Label();
             labelSendTransactionFeeSizeCost = new System.Windows.Forms.Label();
             textBoxSendTransactionFeeCalculated = new System.Windows.Forms.TextBox();
@@ -105,36 +112,13 @@ namespace SeguraChain_Desktop_Wallet
             textBoxSendTransactionAmountSelected = new System.Windows.Forms.TextBox();
             labelSendTransactionWalletAddressTarget = new System.Windows.Forms.Label();
             textBoxSendTransactionWalletAddressTarget = new System.Windows.Forms.TextBox();
-            tabPageReceiveTransaction = new System.Windows.Forms.TabPage();
-            buttonSaveQrCodeReceiveTransactionWalletAddress = new System.Windows.Forms.Button();
-            buttonPrintQrCodeReceiveTransactionWalletAddress = new System.Windows.Forms.Button();
-            labelWalletReceiveTransactionQrCodeText = new System.Windows.Forms.Label();
-            panelQrCodeWalletAddress = new ClassCustomPanel();
-            tabPageTransactionHistory = new System.Windows.Forms.TabPage();
-            buttonMainInterfaceSearchTransactionHistory = new System.Windows.Forms.Button();
-            textBoxTransactionHistorySearch = new System.Windows.Forms.TextBox();
-            panelTransactionHistoryColumns = new ClassCustomPanel();
-            textBoxMainInterfaceMaxPageTransactionHistory = new System.Windows.Forms.TextBox();
-            textBoxMainInterfaceCurrentPageTransactionHistory = new System.Windows.Forms.TextBox();
-            buttonMainInterfaceNextPageTransactionHistory = new System.Windows.Forms.Button();
-            buttonMainInterfaceBackPageTransactionHistory = new System.Windows.Forms.Button();
-            buttonMainInterfaceExportTransactionHistory = new System.Windows.Forms.Button();
-            panelTransactionHistory = new ClassCustomPanel();
-            tabPageStoreNetwork = new System.Windows.Forms.TabPage();
-            panel1 = new System.Windows.Forms.Panel();
-            listViewWebNode = new System.Windows.Forms.ListView();
-            panelStoreNetwork = new System.Windows.Forms.Panel();
             labelWalletAddressReceiveTransactionTitle = new System.Windows.Forms.Label();
             labelWalletAddressReceiveTransaction = new System.Windows.Forms.Label();
             menuStripGeneralWallet.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxLogo).BeginInit();
             tabControlWallet.SuspendLayout();
             tabPageOverview.SuspendLayout();
-            panelInternalNetworkStats.SuspendLayout();
-            panelRecentTransactions.SuspendLayout();
             tabPageSendTransaction.SuspendLayout();
-            panelSendTransaction.SuspendLayout();
-            panelSendTransactionDetails.SuspendLayout();
             tabPageReceiveTransaction.SuspendLayout();
             tabPageTransactionHistory.SuspendLayout();
             tabPageStoreNetwork.SuspendLayout();
@@ -335,14 +319,9 @@ namespace SeguraChain_Desktop_Wallet
             // 
             tabPageOverview.BackColor = System.Drawing.Color.FromArgb(77, 104, 145);
             tabPageOverview.Controls.Add(labelMainInterfaceSyncProgress);
-            tabPageOverview.Controls.Add(panelInternalNetworkStats);
-            tabPageOverview.Controls.Add(progressBarMainInterfaceSyncProgress);
-            tabPageOverview.Controls.Add(progressBarMainInterfaceConfirmProgress);
-            tabPageOverview.Controls.Add(panelRecentTransactions);
             tabPageOverview.Controls.Add(labelMainInterfaceTotalBalanceAmountText);
             tabPageOverview.Controls.Add(labelMainInterfacePendingBalanceAmountText);
             tabPageOverview.Controls.Add(labelMainInterfaceAvailableBalanceAmountText);
-            tabPageOverview.Controls.Add(panelSeperatorBalanceLine);
             tabPageOverview.Controls.Add(labelMainInterfaceCurrentBalanceText);
             tabPageOverview.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             tabPageOverview.Location = new System.Drawing.Point(4, 34);
@@ -354,32 +333,284 @@ namespace SeguraChain_Desktop_Wallet
             tabPageOverview.Text = "TABPAG_OVERVIEW_TEXT";
             tabPageOverview.Paint += tabPageOverview_Paint;
             // 
-            // panelInternalNetworkStats
+            // labelMainInterfaceTotalBalanceAmountText
             // 
-            panelInternalNetworkStats.AutoSize = true;
-            panelInternalNetworkStats.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            panelInternalNetworkStats.BackColor = System.Drawing.Color.AliceBlue;
-            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalCoinPendingText);
-            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalCoinSpreadText);
-            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalFeeCirculatingText);
-            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalCoinCirculatingText);
-            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalBlockUnlockedCheckedText);
-            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalTransactionConfirmedText);
-            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalTransactionText);
-            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTotalTransactionMemPoolText);
-            panelInternalNetworkStats.Controls.Add(panelSyncInformationsSeperator);
-            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsInfoSyncText);
-            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsCurrentMiningLuckPercentText);
-            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsCurrentMiningLuckStatusText);
-            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsCurrentHashrateText);
-            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsCurrentBlockHeightSyncText);
-            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsCurrentDifficultyText);
-            panelInternalNetworkStats.Controls.Add(labelMainInterfaceNetworkStatsTitleText);
-            panelInternalNetworkStats.Location = new System.Drawing.Point(27, 147);
-            panelInternalNetworkStats.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            panelInternalNetworkStats.Name = "panelInternalNetworkStats";
-            panelInternalNetworkStats.Size = new System.Drawing.Size(577, 366);
-            panelInternalNetworkStats.TabIndex = 11;
+            labelMainInterfaceTotalBalanceAmountText.AutoSize = true;
+            labelMainInterfaceTotalBalanceAmountText.BackColor = System.Drawing.Color.Transparent;
+            labelMainInterfaceTotalBalanceAmountText.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceTotalBalanceAmountText.ForeColor = System.Drawing.Color.Ivory;
+            labelMainInterfaceTotalBalanceAmountText.Location = new System.Drawing.Point(27, 100);
+            labelMainInterfaceTotalBalanceAmountText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceTotalBalanceAmountText.Name = "labelMainInterfaceTotalBalanceAmountText";
+            labelMainInterfaceTotalBalanceAmountText.Size = new System.Drawing.Size(401, 15);
+            labelMainInterfaceTotalBalanceAmountText.TabIndex = 9;
+            labelMainInterfaceTotalBalanceAmountText.Text = "LABEL_MAIN_INTERFACE_TOTAL_BALANCE_AMOUNT_TEXT";
+            // 
+            // labelMainInterfacePendingBalanceAmountText
+            // 
+            labelMainInterfacePendingBalanceAmountText.AutoSize = true;
+            labelMainInterfacePendingBalanceAmountText.BackColor = System.Drawing.Color.Transparent;
+            labelMainInterfacePendingBalanceAmountText.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfacePendingBalanceAmountText.ForeColor = System.Drawing.Color.FromArgb(247, 229, 72);
+            labelMainInterfacePendingBalanceAmountText.Location = new System.Drawing.Point(27, 67);
+            labelMainInterfacePendingBalanceAmountText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfacePendingBalanceAmountText.Name = "labelMainInterfacePendingBalanceAmountText";
+            labelMainInterfacePendingBalanceAmountText.Size = new System.Drawing.Size(421, 15);
+            labelMainInterfacePendingBalanceAmountText.TabIndex = 8;
+            labelMainInterfacePendingBalanceAmountText.Text = "LABEL_MAIN_INTERFACE_PENDING_BALANCE_AMOUNT_TEXT";
+            // 
+            // labelMainInterfaceAvailableBalanceAmountText
+            // 
+            labelMainInterfaceAvailableBalanceAmountText.AutoSize = true;
+            labelMainInterfaceAvailableBalanceAmountText.BackColor = System.Drawing.Color.Transparent;
+            labelMainInterfaceAvailableBalanceAmountText.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceAvailableBalanceAmountText.ForeColor = System.Drawing.Color.LimeGreen;
+            labelMainInterfaceAvailableBalanceAmountText.Location = new System.Drawing.Point(27, 40);
+            labelMainInterfaceAvailableBalanceAmountText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceAvailableBalanceAmountText.Name = "labelMainInterfaceAvailableBalanceAmountText";
+            labelMainInterfaceAvailableBalanceAmountText.Size = new System.Drawing.Size(429, 15);
+            labelMainInterfaceAvailableBalanceAmountText.TabIndex = 7;
+            labelMainInterfaceAvailableBalanceAmountText.Text = "LABEL_MAIN_INTERFACE_AVAILABLE_BALANCE_AMOUNT_TEXT";
+            // 
+            // labelMainInterfaceCurrentBalanceText
+            // 
+            labelMainInterfaceCurrentBalanceText.AutoSize = true;
+            labelMainInterfaceCurrentBalanceText.BackColor = System.Drawing.Color.Transparent;
+            labelMainInterfaceCurrentBalanceText.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            labelMainInterfaceCurrentBalanceText.ForeColor = System.Drawing.Color.Ivory;
+            labelMainInterfaceCurrentBalanceText.Location = new System.Drawing.Point(27, 16);
+            labelMainInterfaceCurrentBalanceText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelMainInterfaceCurrentBalanceText.Name = "labelMainInterfaceCurrentBalanceText";
+            labelMainInterfaceCurrentBalanceText.Size = new System.Drawing.Size(397, 16);
+            labelMainInterfaceCurrentBalanceText.TabIndex = 4;
+            labelMainInterfaceCurrentBalanceText.Text = "LABEL_MAIN_INTERFACE_CURRENT_BALANCE_TEXT";
+            // 
+            // tabPageSendTransaction
+            // 
+            tabPageSendTransaction.BackColor = System.Drawing.Color.FromArgb(77, 104, 145);
+            tabPageSendTransaction.Controls.Add(buttonSendTransactionDoProcess);
+            tabPageSendTransaction.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            tabPageSendTransaction.Location = new System.Drawing.Point(4, 34);
+            tabPageSendTransaction.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabPageSendTransaction.Name = "tabPageSendTransaction";
+            tabPageSendTransaction.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabPageSendTransaction.Size = new System.Drawing.Size(1161, 604);
+            tabPageSendTransaction.TabIndex = 1;
+            tabPageSendTransaction.Text = "TABPAGE_SEND_TRANSACTION_TEXT";
+            tabPageSendTransaction.Paint += tabPageSendTransaction_Paint;
+            // 
+            // buttonSendTransactionDoProcess
+            // 
+            buttonSendTransactionDoProcess.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
+            buttonSendTransactionDoProcess.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            buttonSendTransactionDoProcess.ForeColor = System.Drawing.Color.Black;
+            buttonSendTransactionDoProcess.Location = new System.Drawing.Point(332, 416);
+            buttonSendTransactionDoProcess.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            buttonSendTransactionDoProcess.Name = "buttonSendTransactionDoProcess";
+            buttonSendTransactionDoProcess.Size = new System.Drawing.Size(495, 36);
+            buttonSendTransactionDoProcess.TabIndex = 5;
+            buttonSendTransactionDoProcess.Text = "BUTTON_SEND_TRANSACTION_DO_PROCESS_TEXT";
+            buttonSendTransactionDoProcess.UseVisualStyleBackColor = false;
+            buttonSendTransactionDoProcess.Click += buttonSendTransactionDoProcess_Click;
+            // 
+            // tabPageReceiveTransaction
+            // 
+            tabPageReceiveTransaction.BackColor = System.Drawing.Color.FromArgb(77, 104, 145);
+            tabPageReceiveTransaction.Controls.Add(buttonSaveQrCodeReceiveTransactionWalletAddress);
+            tabPageReceiveTransaction.Controls.Add(buttonPrintQrCodeReceiveTransactionWalletAddress);
+            tabPageReceiveTransaction.Controls.Add(labelWalletReceiveTransactionQrCodeText);
+            tabPageReceiveTransaction.Location = new System.Drawing.Point(4, 34);
+            tabPageReceiveTransaction.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabPageReceiveTransaction.Name = "tabPageReceiveTransaction";
+            tabPageReceiveTransaction.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabPageReceiveTransaction.Size = new System.Drawing.Size(1161, 604);
+            tabPageReceiveTransaction.TabIndex = 4;
+            tabPageReceiveTransaction.Text = "TABPAGE_RECEIVE_TRANSACTION_TEXT";
+            // 
+            // buttonSaveQrCodeReceiveTransactionWalletAddress
+            // 
+            buttonSaveQrCodeReceiveTransactionWalletAddress.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
+            buttonSaveQrCodeReceiveTransactionWalletAddress.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            buttonSaveQrCodeReceiveTransactionWalletAddress.ForeColor = System.Drawing.Color.Black;
+            buttonSaveQrCodeReceiveTransactionWalletAddress.Location = new System.Drawing.Point(453, 427);
+            buttonSaveQrCodeReceiveTransactionWalletAddress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            buttonSaveQrCodeReceiveTransactionWalletAddress.Name = "buttonSaveQrCodeReceiveTransactionWalletAddress";
+            buttonSaveQrCodeReceiveTransactionWalletAddress.Size = new System.Drawing.Size(475, 36);
+            buttonSaveQrCodeReceiveTransactionWalletAddress.TabIndex = 5;
+            buttonSaveQrCodeReceiveTransactionWalletAddress.Text = "BUTTON_MAIN_INTERFACE_SAVE_QR_CODE_TEXT";
+            buttonSaveQrCodeReceiveTransactionWalletAddress.UseVisualStyleBackColor = false;
+            buttonSaveQrCodeReceiveTransactionWalletAddress.Click += buttonSaveQrCodeReceiveTransactionWalletAddress_Click;
+            // 
+            // buttonPrintQrCodeReceiveTransactionWalletAddress
+            // 
+            buttonPrintQrCodeReceiveTransactionWalletAddress.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
+            buttonPrintQrCodeReceiveTransactionWalletAddress.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            buttonPrintQrCodeReceiveTransactionWalletAddress.ForeColor = System.Drawing.Color.Black;
+            buttonPrintQrCodeReceiveTransactionWalletAddress.Location = new System.Drawing.Point(453, 473);
+            buttonPrintQrCodeReceiveTransactionWalletAddress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            buttonPrintQrCodeReceiveTransactionWalletAddress.Name = "buttonPrintQrCodeReceiveTransactionWalletAddress";
+            buttonPrintQrCodeReceiveTransactionWalletAddress.Size = new System.Drawing.Size(475, 36);
+            buttonPrintQrCodeReceiveTransactionWalletAddress.TabIndex = 4;
+            buttonPrintQrCodeReceiveTransactionWalletAddress.Text = "BUTTON_MAIN_INTERFACE_PRINT_QR_CODE_TEXT";
+            buttonPrintQrCodeReceiveTransactionWalletAddress.UseVisualStyleBackColor = false;
+            buttonPrintQrCodeReceiveTransactionWalletAddress.Click += buttonPrintQrCodeReceiveTransactionWalletAddress_Click;
+            // 
+            // labelWalletReceiveTransactionQrCodeText
+            // 
+            labelWalletReceiveTransactionQrCodeText.AutoSize = true;
+            labelWalletReceiveTransactionQrCodeText.ForeColor = System.Drawing.Color.Ivory;
+            labelWalletReceiveTransactionQrCodeText.Location = new System.Drawing.Point(455, 36);
+            labelWalletReceiveTransactionQrCodeText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            labelWalletReceiveTransactionQrCodeText.Name = "labelWalletReceiveTransactionQrCodeText";
+            labelWalletReceiveTransactionQrCodeText.Size = new System.Drawing.Size(441, 16);
+            labelWalletReceiveTransactionQrCodeText.TabIndex = 3;
+            labelWalletReceiveTransactionQrCodeText.Text = "LABEL_MAIN_INTERFACE_QR_CODE_RECEIVE_TITLE_TEXT";
+            // 
+            // tabPageTransactionHistory
+            // 
+            tabPageTransactionHistory.BackColor = System.Drawing.Color.FromArgb(77, 104, 145);
+            tabPageTransactionHistory.Controls.Add(buttonMainInterfaceSearchTransactionHistory);
+            tabPageTransactionHistory.Controls.Add(textBoxTransactionHistorySearch);
+            tabPageTransactionHistory.Controls.Add(textBoxMainInterfaceMaxPageTransactionHistory);
+            tabPageTransactionHistory.Controls.Add(textBoxMainInterfaceCurrentPageTransactionHistory);
+            tabPageTransactionHistory.Controls.Add(buttonMainInterfaceNextPageTransactionHistory);
+            tabPageTransactionHistory.Controls.Add(buttonMainInterfaceBackPageTransactionHistory);
+            tabPageTransactionHistory.Controls.Add(buttonMainInterfaceExportTransactionHistory);
+            tabPageTransactionHistory.Location = new System.Drawing.Point(4, 34);
+            tabPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabPageTransactionHistory.Name = "tabPageTransactionHistory";
+            tabPageTransactionHistory.Size = new System.Drawing.Size(1161, 604);
+            tabPageTransactionHistory.TabIndex = 2;
+            tabPageTransactionHistory.Text = "TABPAGE_TRANSACTION_HISTORY_TEXT";
+            tabPageTransactionHistory.Paint += tabPageTransactionHistory_Paint;
+            // 
+            // buttonMainInterfaceSearchTransactionHistory
+            // 
+            buttonMainInterfaceSearchTransactionHistory.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
+            buttonMainInterfaceSearchTransactionHistory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            buttonMainInterfaceSearchTransactionHistory.ForeColor = System.Drawing.Color.Black;
+            buttonMainInterfaceSearchTransactionHistory.Location = new System.Drawing.Point(930, 508);
+            buttonMainInterfaceSearchTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            buttonMainInterfaceSearchTransactionHistory.Name = "buttonMainInterfaceSearchTransactionHistory";
+            buttonMainInterfaceSearchTransactionHistory.Size = new System.Drawing.Size(177, 25);
+            buttonMainInterfaceSearchTransactionHistory.TabIndex = 13;
+            buttonMainInterfaceSearchTransactionHistory.Text = "BUTTON_MAIN_INTERFACE_SEARCH_TRANSACTION_HISTORY_TEXT";
+            buttonMainInterfaceSearchTransactionHistory.UseVisualStyleBackColor = false;
+            buttonMainInterfaceSearchTransactionHistory.Click += buttonMainInterfaceSearchTransactionHistory_Click;
+            // 
+            // textBoxTransactionHistorySearch
+            // 
+            textBoxTransactionHistorySearch.Location = new System.Drawing.Point(600, 510);
+            textBoxTransactionHistorySearch.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxTransactionHistorySearch.Name = "textBoxTransactionHistorySearch";
+            textBoxTransactionHistorySearch.Size = new System.Drawing.Size(318, 22);
+            textBoxTransactionHistorySearch.TabIndex = 12;
+            textBoxTransactionHistorySearch.KeyDown += textBoxTransactionHistorySearch_KeyDown;
+            // 
+            // textBoxMainInterfaceMaxPageTransactionHistory
+            // 
+            textBoxMainInterfaceMaxPageTransactionHistory.Location = new System.Drawing.Point(482, 510);
+            textBoxMainInterfaceMaxPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxMainInterfaceMaxPageTransactionHistory.Name = "textBoxMainInterfaceMaxPageTransactionHistory";
+            textBoxMainInterfaceMaxPageTransactionHistory.ReadOnly = true;
+            textBoxMainInterfaceMaxPageTransactionHistory.Size = new System.Drawing.Size(92, 22);
+            textBoxMainInterfaceMaxPageTransactionHistory.TabIndex = 10;
+            // 
+            // textBoxMainInterfaceCurrentPageTransactionHistory
+            // 
+            textBoxMainInterfaceCurrentPageTransactionHistory.Location = new System.Drawing.Point(382, 510);
+            textBoxMainInterfaceCurrentPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            textBoxMainInterfaceCurrentPageTransactionHistory.Name = "textBoxMainInterfaceCurrentPageTransactionHistory";
+            textBoxMainInterfaceCurrentPageTransactionHistory.Size = new System.Drawing.Size(92, 22);
+            textBoxMainInterfaceCurrentPageTransactionHistory.TabIndex = 9;
+            textBoxMainInterfaceCurrentPageTransactionHistory.KeyDown += textBoxMainInterfaceCurrentPageTransactionHistory_KeyDown;
+            // 
+            // buttonMainInterfaceNextPageTransactionHistory
+            // 
+            buttonMainInterfaceNextPageTransactionHistory.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
+            buttonMainInterfaceNextPageTransactionHistory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            buttonMainInterfaceNextPageTransactionHistory.ForeColor = System.Drawing.Color.Black;
+            buttonMainInterfaceNextPageTransactionHistory.Location = new System.Drawing.Point(197, 509);
+            buttonMainInterfaceNextPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            buttonMainInterfaceNextPageTransactionHistory.Name = "buttonMainInterfaceNextPageTransactionHistory";
+            buttonMainInterfaceNextPageTransactionHistory.Size = new System.Drawing.Size(177, 28);
+            buttonMainInterfaceNextPageTransactionHistory.TabIndex = 8;
+            buttonMainInterfaceNextPageTransactionHistory.Text = "BUTTON_MAIN_INTERFACE_NEXT_PAGE_TRANSACTION_HISTORY_TEXT";
+            buttonMainInterfaceNextPageTransactionHistory.UseVisualStyleBackColor = false;
+            buttonMainInterfaceNextPageTransactionHistory.Click += buttonMainInterfaceNextPageTransactionHistory_Click;
+            // 
+            // buttonMainInterfaceBackPageTransactionHistory
+            // 
+            buttonMainInterfaceBackPageTransactionHistory.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
+            buttonMainInterfaceBackPageTransactionHistory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            buttonMainInterfaceBackPageTransactionHistory.ForeColor = System.Drawing.Color.Black;
+            buttonMainInterfaceBackPageTransactionHistory.Location = new System.Drawing.Point(13, 509);
+            buttonMainInterfaceBackPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            buttonMainInterfaceBackPageTransactionHistory.Name = "buttonMainInterfaceBackPageTransactionHistory";
+            buttonMainInterfaceBackPageTransactionHistory.Size = new System.Drawing.Size(177, 28);
+            buttonMainInterfaceBackPageTransactionHistory.TabIndex = 7;
+            buttonMainInterfaceBackPageTransactionHistory.Text = "BUTTON_MAIN_INTERFACE_BACK_PAGE_TRANSACTION_HISTORY_TEXT";
+            buttonMainInterfaceBackPageTransactionHistory.UseVisualStyleBackColor = false;
+            buttonMainInterfaceBackPageTransactionHistory.Click += buttonMainInterfaceBackPageTransactionHistory_Click;
+            // 
+            // buttonMainInterfaceExportTransactionHistory
+            // 
+            buttonMainInterfaceExportTransactionHistory.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
+            buttonMainInterfaceExportTransactionHistory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            buttonMainInterfaceExportTransactionHistory.ForeColor = System.Drawing.Color.Black;
+            buttonMainInterfaceExportTransactionHistory.Location = new System.Drawing.Point(1177, 509);
+            buttonMainInterfaceExportTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            buttonMainInterfaceExportTransactionHistory.Name = "buttonMainInterfaceExportTransactionHistory";
+            buttonMainInterfaceExportTransactionHistory.Size = new System.Drawing.Size(177, 28);
+            buttonMainInterfaceExportTransactionHistory.TabIndex = 5;
+            buttonMainInterfaceExportTransactionHistory.Text = "BUTTON_MAIN_INTERFACE_EXPORT_TRANSACTION_HISTORY_TEXT";
+            buttonMainInterfaceExportTransactionHistory.UseVisualStyleBackColor = false;
+            buttonMainInterfaceExportTransactionHistory.Click += buttonMainInterfaceExportTransactionHistory_Click;
+            // 
+            // tabPageStoreNetwork
+            // 
+            tabPageStoreNetwork.BackColor = System.Drawing.Color.FromArgb(77, 104, 145);
+            tabPageStoreNetwork.Controls.Add(panel1);
+            tabPageStoreNetwork.Location = new System.Drawing.Point(4, 34);
+            tabPageStoreNetwork.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabPageStoreNetwork.Name = "tabPageStoreNetwork";
+            tabPageStoreNetwork.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            tabPageStoreNetwork.Size = new System.Drawing.Size(1161, 604);
+            tabPageStoreNetwork.TabIndex = 3;
+            tabPageStoreNetwork.Text = "TABPAGE_STORE_NETWORK_TEXT";
+            // 
+            // panel1
+            // 
+            panel1.BackColor = System.Drawing.Color.White;
+            panel1.Controls.Add(listViewWebNode);
+            panel1.Controls.Add(panelStoreNetwork);
+            panel1.Location = new System.Drawing.Point(7, 6);
+            panel1.MinimumSize = new System.Drawing.Size(800, 1000);
+            panel1.Name = "panel1";
+            panel1.Size = new System.Drawing.Size(1356, 1000);
+            panel1.TabIndex = 0;
+            // 
+            // listViewWebNode
+            // 
+            listViewWebNode.Location = new System.Drawing.Point(24, 18);
+            listViewWebNode.Name = "listViewWebNode";
+            listViewWebNode.Size = new System.Drawing.Size(116, 581);
+            listViewWebNode.TabIndex = 2;
+            listViewWebNode.UseCompatibleStateImageBehavior = false;
+            listViewWebNode.View = System.Windows.Forms.View.List;
+            listViewWebNode.ItemCheck += listViewWebNode_ItemCheck;
+            listViewWebNode.ItemChecked += listViewWebNode_ItemChecked;
+            listViewWebNode.MouseClick += listViewWebNode_MouseClick;
+            // 
+            // panelStoreNetwork
+            // 
+            panelStoreNetwork.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            panelStoreNetwork.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            panelStoreNetwork.Location = new System.Drawing.Point(146, 18);
+            panelStoreNetwork.MinimumSize = new System.Drawing.Size(400, 300);
+            panelStoreNetwork.Name = "panelStoreNetwork";
+            panelStoreNetwork.Size = new System.Drawing.Size(1001, 581);
+            panelStoreNetwork.TabIndex = 1;
             // 
             // labelMainInterfaceNetworkStatsTotalCoinPendingText
             // 
@@ -477,16 +708,6 @@ namespace SeguraChain_Desktop_Wallet
             labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.TabIndex = 18;
             labelMainInterfaceNetworkStatsTotalTransactionMemPoolText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TOTAL_TRANSACTION_MEMPOOL_TEXT";
             // 
-            // panelSyncInformationsSeperator
-            // 
-            panelSyncInformationsSeperator.BackColor = System.Drawing.Color.Black;
-            panelSyncInformationsSeperator.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            panelSyncInformationsSeperator.Location = new System.Drawing.Point(8, 168);
-            panelSyncInformationsSeperator.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            panelSyncInformationsSeperator.Name = "panelSyncInformationsSeperator";
-            panelSyncInformationsSeperator.Size = new System.Drawing.Size(500, 2);
-            panelSyncInformationsSeperator.TabIndex = 17;
-            // 
             // labelMainInterfaceNetworkStatsInfoSyncText
             // 
             labelMainInterfaceNetworkStatsInfoSyncText.AutoSize = true;
@@ -571,63 +792,6 @@ namespace SeguraChain_Desktop_Wallet
             labelMainInterfaceNetworkStatsTitleText.TabIndex = 10;
             labelMainInterfaceNetworkStatsTitleText.Text = "LABEL_MAIN_INTERFACE_NETWORK_STATS_TITLE_TEXT";
             // 
-            // progressBarMainInterfaceSyncProgress
-            // 
-            progressBarMainInterfaceSyncProgress.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-            progressBarMainInterfaceSyncProgress.BackColor = System.Drawing.Color.GhostWhite;
-            progressBarMainInterfaceSyncProgress.ForeColor = System.Drawing.Color.Black;
-            progressBarMainInterfaceSyncProgress.Location = new System.Drawing.Point(412, 559);
-            progressBarMainInterfaceSyncProgress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            progressBarMainInterfaceSyncProgress.Maximum = 10000;
-            progressBarMainInterfaceSyncProgress.Name = "progressBarMainInterfaceSyncProgress";
-            progressBarMainInterfaceSyncProgress.Size = new System.Drawing.Size(348, 23);
-            progressBarMainInterfaceSyncProgress.Step = 1;
-            progressBarMainInterfaceSyncProgress.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
-            progressBarMainInterfaceSyncProgress.TabIndex = 5;
-            // 
-            // progressBarMainInterfaceConfirmProgress
-            // 
-            progressBarMainInterfaceConfirmProgress.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-            progressBarMainInterfaceConfirmProgress.BackColor = System.Drawing.Color.GhostWhite;
-            progressBarMainInterfaceConfirmProgress.ForeColor = System.Drawing.Color.Black;
-            progressBarMainInterfaceConfirmProgress.Location = new System.Drawing.Point(412, 582);
-            progressBarMainInterfaceConfirmProgress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            progressBarMainInterfaceConfirmProgress.Maximum = 10000;
-            progressBarMainInterfaceConfirmProgress.Name = "progressBarMainInterfaceConfirmProgress";
-            progressBarMainInterfaceConfirmProgress.Size = new System.Drawing.Size(348, 23);
-            progressBarMainInterfaceConfirmProgress.Step = 1;
-            progressBarMainInterfaceConfirmProgress.Style = System.Windows.Forms.ProgressBarStyle.Marquee;
-            progressBarMainInterfaceConfirmProgress.TabIndex = 5;
-            // 
-            // panelRecentTransactions
-            // 
-            panelRecentTransactions.AutoSize = true;
-            panelRecentTransactions.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            panelRecentTransactions.BackColor = System.Drawing.Color.FromArgb(216, 227, 240);
-            panelRecentTransactions.Controls.Add(panelInternalRecentTransactions);
-            panelRecentTransactions.Controls.Add(labelMainInterfaceRecentTransaction);
-            panelRecentTransactions.Location = new System.Drawing.Point(660, 16);
-            panelRecentTransactions.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            panelRecentTransactions.Name = "panelRecentTransactions";
-            panelRecentTransactions.Size = new System.Drawing.Size(493, 463);
-            panelRecentTransactions.TabIndex = 10;
-            panelRecentTransactions.Paint += panelRecentTransactions_Paint;
-            // 
-            // panelInternalRecentTransactions
-            // 
-            panelInternalRecentTransactions.BackColor = System.Drawing.Color.FromArgb(245, 249, 252);
-            panelInternalRecentTransactions.Location = new System.Drawing.Point(22, 85);
-            panelInternalRecentTransactions.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            panelInternalRecentTransactions.Name = "panelInternalRecentTransactions";
-            panelInternalRecentTransactions.Size = new System.Drawing.Size(467, 375);
-            panelInternalRecentTransactions.TabIndex = 2;
-            panelInternalRecentTransactions.Click += panelInternalRecentTransactions_Click;
-            panelInternalRecentTransactions.Paint += panelInternalRecentTransactions_Paint;
-            panelInternalRecentTransactions.MouseEnter += panelInternalRecentTransactions_MouseEnter;
-            panelInternalRecentTransactions.MouseLeave += panelInternalRecentTransactions_MouseLeave;
-            panelInternalRecentTransactions.MouseHover += panelInternalRecentTransactions_MouseHover;
-            panelInternalRecentTransactions.MouseMove += panelInternalRecentTransactions_MouseMove;
-            // 
             // labelMainInterfaceRecentTransaction
             // 
             labelMainInterfaceRecentTransaction.AutoSize = true;
@@ -639,140 +803,6 @@ namespace SeguraChain_Desktop_Wallet
             labelMainInterfaceRecentTransaction.TabIndex = 1;
             labelMainInterfaceRecentTransaction.Text = "LABEL_MAIN_INTERFACE_RECENT_TRANSACTION_TEXT";
             labelMainInterfaceRecentTransaction.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            // 
-            // labelMainInterfaceTotalBalanceAmountText
-            // 
-            labelMainInterfaceTotalBalanceAmountText.AutoSize = true;
-            labelMainInterfaceTotalBalanceAmountText.BackColor = System.Drawing.Color.Transparent;
-            labelMainInterfaceTotalBalanceAmountText.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            labelMainInterfaceTotalBalanceAmountText.ForeColor = System.Drawing.Color.Ivory;
-            labelMainInterfaceTotalBalanceAmountText.Location = new System.Drawing.Point(27, 100);
-            labelMainInterfaceTotalBalanceAmountText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            labelMainInterfaceTotalBalanceAmountText.Name = "labelMainInterfaceTotalBalanceAmountText";
-            labelMainInterfaceTotalBalanceAmountText.Size = new System.Drawing.Size(401, 15);
-            labelMainInterfaceTotalBalanceAmountText.TabIndex = 9;
-            labelMainInterfaceTotalBalanceAmountText.Text = "LABEL_MAIN_INTERFACE_TOTAL_BALANCE_AMOUNT_TEXT";
-            // 
-            // labelMainInterfacePendingBalanceAmountText
-            // 
-            labelMainInterfacePendingBalanceAmountText.AutoSize = true;
-            labelMainInterfacePendingBalanceAmountText.BackColor = System.Drawing.Color.Transparent;
-            labelMainInterfacePendingBalanceAmountText.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            labelMainInterfacePendingBalanceAmountText.ForeColor = System.Drawing.Color.FromArgb(247, 229, 72);
-            labelMainInterfacePendingBalanceAmountText.Location = new System.Drawing.Point(27, 67);
-            labelMainInterfacePendingBalanceAmountText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            labelMainInterfacePendingBalanceAmountText.Name = "labelMainInterfacePendingBalanceAmountText";
-            labelMainInterfacePendingBalanceAmountText.Size = new System.Drawing.Size(421, 15);
-            labelMainInterfacePendingBalanceAmountText.TabIndex = 8;
-            labelMainInterfacePendingBalanceAmountText.Text = "LABEL_MAIN_INTERFACE_PENDING_BALANCE_AMOUNT_TEXT";
-            // 
-            // labelMainInterfaceAvailableBalanceAmountText
-            // 
-            labelMainInterfaceAvailableBalanceAmountText.AutoSize = true;
-            labelMainInterfaceAvailableBalanceAmountText.BackColor = System.Drawing.Color.Transparent;
-            labelMainInterfaceAvailableBalanceAmountText.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            labelMainInterfaceAvailableBalanceAmountText.ForeColor = System.Drawing.Color.LimeGreen;
-            labelMainInterfaceAvailableBalanceAmountText.Location = new System.Drawing.Point(27, 40);
-            labelMainInterfaceAvailableBalanceAmountText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            labelMainInterfaceAvailableBalanceAmountText.Name = "labelMainInterfaceAvailableBalanceAmountText";
-            labelMainInterfaceAvailableBalanceAmountText.Size = new System.Drawing.Size(429, 15);
-            labelMainInterfaceAvailableBalanceAmountText.TabIndex = 7;
-            labelMainInterfaceAvailableBalanceAmountText.Text = "LABEL_MAIN_INTERFACE_AVAILABLE_BALANCE_AMOUNT_TEXT";
-            // 
-            // panelSeperatorBalanceLine
-            // 
-            panelSeperatorBalanceLine.BackColor = System.Drawing.Color.Black;
-            panelSeperatorBalanceLine.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            panelSeperatorBalanceLine.Location = new System.Drawing.Point(30, 90);
-            panelSeperatorBalanceLine.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            panelSeperatorBalanceLine.Name = "panelSeperatorBalanceLine";
-            panelSeperatorBalanceLine.Size = new System.Drawing.Size(279, 2);
-            panelSeperatorBalanceLine.TabIndex = 6;
-            // 
-            // labelMainInterfaceCurrentBalanceText
-            // 
-            labelMainInterfaceCurrentBalanceText.AutoSize = true;
-            labelMainInterfaceCurrentBalanceText.BackColor = System.Drawing.Color.Transparent;
-            labelMainInterfaceCurrentBalanceText.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            labelMainInterfaceCurrentBalanceText.ForeColor = System.Drawing.Color.Ivory;
-            labelMainInterfaceCurrentBalanceText.Location = new System.Drawing.Point(27, 16);
-            labelMainInterfaceCurrentBalanceText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            labelMainInterfaceCurrentBalanceText.Name = "labelMainInterfaceCurrentBalanceText";
-            labelMainInterfaceCurrentBalanceText.Size = new System.Drawing.Size(397, 16);
-            labelMainInterfaceCurrentBalanceText.TabIndex = 4;
-            labelMainInterfaceCurrentBalanceText.Text = "LABEL_MAIN_INTERFACE_CURRENT_BALANCE_TEXT";
-            // 
-            // tabPageSendTransaction
-            // 
-            tabPageSendTransaction.BackColor = System.Drawing.Color.FromArgb(77, 104, 145);
-            tabPageSendTransaction.Controls.Add(buttonSendTransactionDoProcess);
-            tabPageSendTransaction.Controls.Add(panelSendTransaction);
-            tabPageSendTransaction.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            tabPageSendTransaction.Location = new System.Drawing.Point(4, 34);
-            tabPageSendTransaction.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            tabPageSendTransaction.Name = "tabPageSendTransaction";
-            tabPageSendTransaction.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            tabPageSendTransaction.Size = new System.Drawing.Size(1161, 604);
-            tabPageSendTransaction.TabIndex = 1;
-            tabPageSendTransaction.Text = "TABPAGE_SEND_TRANSACTION_TEXT";
-            tabPageSendTransaction.Paint += tabPageSendTransaction_Paint;
-            // 
-            // buttonSendTransactionDoProcess
-            // 
-            buttonSendTransactionDoProcess.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
-            buttonSendTransactionDoProcess.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            buttonSendTransactionDoProcess.ForeColor = System.Drawing.Color.Black;
-            buttonSendTransactionDoProcess.Location = new System.Drawing.Point(332, 416);
-            buttonSendTransactionDoProcess.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            buttonSendTransactionDoProcess.Name = "buttonSendTransactionDoProcess";
-            buttonSendTransactionDoProcess.Size = new System.Drawing.Size(495, 36);
-            buttonSendTransactionDoProcess.TabIndex = 5;
-            buttonSendTransactionDoProcess.Text = "BUTTON_SEND_TRANSACTION_DO_PROCESS_TEXT";
-            buttonSendTransactionDoProcess.UseVisualStyleBackColor = false;
-            buttonSendTransactionDoProcess.Click += buttonSendTransactionDoProcess_Click;
-            // 
-            // panelSendTransaction
-            // 
-            panelSendTransaction.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-            panelSendTransaction.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            panelSendTransaction.BackColor = System.Drawing.Color.AliceBlue;
-            panelSendTransaction.Controls.Add(panelSendTransactionDetails);
-            panelSendTransaction.Controls.Add(textBoxSendTransactionConfirmationsCountTarget);
-            panelSendTransaction.Controls.Add(labelSendTransactionConfirmationTimeEstimated);
-            panelSendTransaction.Controls.Add(labelSendTransactionPaymentId);
-            panelSendTransaction.Controls.Add(textBoxSendTransactionPaymentId);
-            panelSendTransaction.Controls.Add(labelSendTransactionAvailableBalanceText);
-            panelSendTransaction.Controls.Add(buttonSendTransactionOpenContactList);
-            panelSendTransaction.Controls.Add(labelSendTransactionConfirmationCountTarget);
-            panelSendTransaction.Controls.Add(labelSendTransactionAmountSelected);
-            panelSendTransaction.Controls.Add(textBoxSendTransactionAmountSelected);
-            panelSendTransaction.Controls.Add(labelSendTransactionWalletAddressTarget);
-            panelSendTransaction.Controls.Add(textBoxSendTransactionWalletAddressTarget);
-            panelSendTransaction.Location = new System.Drawing.Point(8, 6);
-            panelSendTransaction.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            panelSendTransaction.Name = "panelSendTransaction";
-            panelSendTransaction.Size = new System.Drawing.Size(1145, 414);
-            panelSendTransaction.TabIndex = 0;
-            // 
-            // panelSendTransactionDetails
-            // 
-            panelSendTransactionDetails.BackColor = System.Drawing.Color.FromArgb(70, 90, 120);
-            panelSendTransactionDetails.Controls.Add(labelSendTransactionAmountToSpend);
-            panelSendTransactionDetails.Controls.Add(labelSendTransactionFeeSizeCost);
-            panelSendTransactionDetails.Controls.Add(textBoxSendTransactionFeeCalculated);
-            panelSendTransactionDetails.Controls.Add(textBoxSendTransactionFeeSizeCost);
-            panelSendTransactionDetails.Controls.Add(labelSendTransactionFeeCalculated);
-            panelSendTransactionDetails.Controls.Add(labelSendTransactionFeeConfirmationCost);
-            panelSendTransactionDetails.Controls.Add(textBoxSendTransactionAmountToSpend);
-            panelSendTransactionDetails.Controls.Add(textBoxSendTransactionFeeConfirmationCost);
-            panelSendTransactionDetails.Controls.Add(textBoxSendTransactionTotalAmountSource);
-            panelSendTransactionDetails.Controls.Add(labelSendTransactionTotalAmountSource);
-            panelSendTransactionDetails.Location = new System.Drawing.Point(581, 15);
-            panelSendTransactionDetails.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            panelSendTransactionDetails.Name = "panelSendTransactionDetails";
-            panelSendTransactionDetails.Size = new System.Drawing.Size(538, 372);
-            panelSendTransactionDetails.TabIndex = 23;
-            panelSendTransactionDetails.Paint += panelSendTransactionDetails_Paint;
             // 
             // labelSendTransactionAmountToSpend
             // 
@@ -1008,251 +1038,6 @@ namespace SeguraChain_Desktop_Wallet
             textBoxSendTransactionWalletAddressTarget.TextChanged += textBoxSendTransactionWalletAddressTarget_TextChanged;
             textBoxSendTransactionWalletAddressTarget.KeyDown += textBoxSendTransactionWalletAddressTarget_KeyDown;
             // 
-            // tabPageReceiveTransaction
-            // 
-            tabPageReceiveTransaction.BackColor = System.Drawing.Color.FromArgb(77, 104, 145);
-            tabPageReceiveTransaction.Controls.Add(buttonSaveQrCodeReceiveTransactionWalletAddress);
-            tabPageReceiveTransaction.Controls.Add(buttonPrintQrCodeReceiveTransactionWalletAddress);
-            tabPageReceiveTransaction.Controls.Add(labelWalletReceiveTransactionQrCodeText);
-            tabPageReceiveTransaction.Controls.Add(panelQrCodeWalletAddress);
-            tabPageReceiveTransaction.Location = new System.Drawing.Point(4, 34);
-            tabPageReceiveTransaction.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            tabPageReceiveTransaction.Name = "tabPageReceiveTransaction";
-            tabPageReceiveTransaction.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            tabPageReceiveTransaction.Size = new System.Drawing.Size(1161, 604);
-            tabPageReceiveTransaction.TabIndex = 4;
-            tabPageReceiveTransaction.Text = "TABPAGE_RECEIVE_TRANSACTION_TEXT";
-            // 
-            // buttonSaveQrCodeReceiveTransactionWalletAddress
-            // 
-            buttonSaveQrCodeReceiveTransactionWalletAddress.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
-            buttonSaveQrCodeReceiveTransactionWalletAddress.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            buttonSaveQrCodeReceiveTransactionWalletAddress.ForeColor = System.Drawing.Color.Black;
-            buttonSaveQrCodeReceiveTransactionWalletAddress.Location = new System.Drawing.Point(453, 427);
-            buttonSaveQrCodeReceiveTransactionWalletAddress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            buttonSaveQrCodeReceiveTransactionWalletAddress.Name = "buttonSaveQrCodeReceiveTransactionWalletAddress";
-            buttonSaveQrCodeReceiveTransactionWalletAddress.Size = new System.Drawing.Size(475, 36);
-            buttonSaveQrCodeReceiveTransactionWalletAddress.TabIndex = 5;
-            buttonSaveQrCodeReceiveTransactionWalletAddress.Text = "BUTTON_MAIN_INTERFACE_SAVE_QR_CODE_TEXT";
-            buttonSaveQrCodeReceiveTransactionWalletAddress.UseVisualStyleBackColor = false;
-            buttonSaveQrCodeReceiveTransactionWalletAddress.Click += buttonSaveQrCodeReceiveTransactionWalletAddress_Click;
-            // 
-            // buttonPrintQrCodeReceiveTransactionWalletAddress
-            // 
-            buttonPrintQrCodeReceiveTransactionWalletAddress.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
-            buttonPrintQrCodeReceiveTransactionWalletAddress.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            buttonPrintQrCodeReceiveTransactionWalletAddress.ForeColor = System.Drawing.Color.Black;
-            buttonPrintQrCodeReceiveTransactionWalletAddress.Location = new System.Drawing.Point(453, 473);
-            buttonPrintQrCodeReceiveTransactionWalletAddress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            buttonPrintQrCodeReceiveTransactionWalletAddress.Name = "buttonPrintQrCodeReceiveTransactionWalletAddress";
-            buttonPrintQrCodeReceiveTransactionWalletAddress.Size = new System.Drawing.Size(475, 36);
-            buttonPrintQrCodeReceiveTransactionWalletAddress.TabIndex = 4;
-            buttonPrintQrCodeReceiveTransactionWalletAddress.Text = "BUTTON_MAIN_INTERFACE_PRINT_QR_CODE_TEXT";
-            buttonPrintQrCodeReceiveTransactionWalletAddress.UseVisualStyleBackColor = false;
-            buttonPrintQrCodeReceiveTransactionWalletAddress.Click += buttonPrintQrCodeReceiveTransactionWalletAddress_Click;
-            // 
-            // labelWalletReceiveTransactionQrCodeText
-            // 
-            labelWalletReceiveTransactionQrCodeText.AutoSize = true;
-            labelWalletReceiveTransactionQrCodeText.ForeColor = System.Drawing.Color.Ivory;
-            labelWalletReceiveTransactionQrCodeText.Location = new System.Drawing.Point(455, 36);
-            labelWalletReceiveTransactionQrCodeText.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            labelWalletReceiveTransactionQrCodeText.Name = "labelWalletReceiveTransactionQrCodeText";
-            labelWalletReceiveTransactionQrCodeText.Size = new System.Drawing.Size(441, 16);
-            labelWalletReceiveTransactionQrCodeText.TabIndex = 3;
-            labelWalletReceiveTransactionQrCodeText.Text = "LABEL_MAIN_INTERFACE_QR_CODE_RECEIVE_TITLE_TEXT";
-            // 
-            // panelQrCodeWalletAddress
-            // 
-            panelQrCodeWalletAddress.AutoSize = true;
-            panelQrCodeWalletAddress.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            panelQrCodeWalletAddress.BackColor = System.Drawing.Color.White;
-            panelQrCodeWalletAddress.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
-            panelQrCodeWalletAddress.Location = new System.Drawing.Point(512, 74);
-            panelQrCodeWalletAddress.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            panelQrCodeWalletAddress.MinimumSize = new System.Drawing.Size(350, 350);
-            panelQrCodeWalletAddress.Name = "panelQrCodeWalletAddress";
-            panelQrCodeWalletAddress.Size = new System.Drawing.Size(350, 350);
-            panelQrCodeWalletAddress.TabIndex = 0;
-            panelQrCodeWalletAddress.Tag = "image";
-            // 
-            // tabPageTransactionHistory
-            // 
-            tabPageTransactionHistory.BackColor = System.Drawing.Color.FromArgb(77, 104, 145);
-            tabPageTransactionHistory.Controls.Add(buttonMainInterfaceSearchTransactionHistory);
-            tabPageTransactionHistory.Controls.Add(textBoxTransactionHistorySearch);
-            tabPageTransactionHistory.Controls.Add(panelTransactionHistoryColumns);
-            tabPageTransactionHistory.Controls.Add(textBoxMainInterfaceMaxPageTransactionHistory);
-            tabPageTransactionHistory.Controls.Add(textBoxMainInterfaceCurrentPageTransactionHistory);
-            tabPageTransactionHistory.Controls.Add(buttonMainInterfaceNextPageTransactionHistory);
-            tabPageTransactionHistory.Controls.Add(buttonMainInterfaceBackPageTransactionHistory);
-            tabPageTransactionHistory.Controls.Add(buttonMainInterfaceExportTransactionHistory);
-            tabPageTransactionHistory.Controls.Add(panelTransactionHistory);
-            tabPageTransactionHistory.Location = new System.Drawing.Point(4, 34);
-            tabPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            tabPageTransactionHistory.Name = "tabPageTransactionHistory";
-            tabPageTransactionHistory.Size = new System.Drawing.Size(1161, 604);
-            tabPageTransactionHistory.TabIndex = 2;
-            tabPageTransactionHistory.Text = "TABPAGE_TRANSACTION_HISTORY_TEXT";
-            tabPageTransactionHistory.Paint += tabPageTransactionHistory_Paint;
-            // 
-            // buttonMainInterfaceSearchTransactionHistory
-            // 
-            buttonMainInterfaceSearchTransactionHistory.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
-            buttonMainInterfaceSearchTransactionHistory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            buttonMainInterfaceSearchTransactionHistory.ForeColor = System.Drawing.Color.Black;
-            buttonMainInterfaceSearchTransactionHistory.Location = new System.Drawing.Point(930, 508);
-            buttonMainInterfaceSearchTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            buttonMainInterfaceSearchTransactionHistory.Name = "buttonMainInterfaceSearchTransactionHistory";
-            buttonMainInterfaceSearchTransactionHistory.Size = new System.Drawing.Size(177, 25);
-            buttonMainInterfaceSearchTransactionHistory.TabIndex = 13;
-            buttonMainInterfaceSearchTransactionHistory.Text = "BUTTON_MAIN_INTERFACE_SEARCH_TRANSACTION_HISTORY_TEXT";
-            buttonMainInterfaceSearchTransactionHistory.UseVisualStyleBackColor = false;
-            buttonMainInterfaceSearchTransactionHistory.Click += buttonMainInterfaceSearchTransactionHistory_Click;
-            // 
-            // textBoxTransactionHistorySearch
-            // 
-            textBoxTransactionHistorySearch.Location = new System.Drawing.Point(600, 510);
-            textBoxTransactionHistorySearch.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            textBoxTransactionHistorySearch.Name = "textBoxTransactionHistorySearch";
-            textBoxTransactionHistorySearch.Size = new System.Drawing.Size(318, 22);
-            textBoxTransactionHistorySearch.TabIndex = 12;
-            textBoxTransactionHistorySearch.KeyDown += textBoxTransactionHistorySearch_KeyDown;
-            // 
-            // panelTransactionHistoryColumns
-            // 
-            panelTransactionHistoryColumns.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            panelTransactionHistoryColumns.BackColor = System.Drawing.Color.FromArgb(70, 90, 120);
-            panelTransactionHistoryColumns.Location = new System.Drawing.Point(4, 3);
-            panelTransactionHistoryColumns.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            panelTransactionHistoryColumns.MinimumSize = new System.Drawing.Size(300, 25);
-            panelTransactionHistoryColumns.Name = "panelTransactionHistoryColumns";
-            panelTransactionHistoryColumns.Size = new System.Drawing.Size(1153, 47);
-            panelTransactionHistoryColumns.TabIndex = 11;
-            panelTransactionHistoryColumns.Click += panelMainInterfaceTransactionHistoryColumns_Click;
-            panelTransactionHistoryColumns.Paint += panelMainInterfaceTransactionHistoryColumns_Paint;
-            // 
-            // textBoxMainInterfaceMaxPageTransactionHistory
-            // 
-            textBoxMainInterfaceMaxPageTransactionHistory.Location = new System.Drawing.Point(482, 510);
-            textBoxMainInterfaceMaxPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            textBoxMainInterfaceMaxPageTransactionHistory.Name = "textBoxMainInterfaceMaxPageTransactionHistory";
-            textBoxMainInterfaceMaxPageTransactionHistory.ReadOnly = true;
-            textBoxMainInterfaceMaxPageTransactionHistory.Size = new System.Drawing.Size(92, 22);
-            textBoxMainInterfaceMaxPageTransactionHistory.TabIndex = 10;
-            // 
-            // textBoxMainInterfaceCurrentPageTransactionHistory
-            // 
-            textBoxMainInterfaceCurrentPageTransactionHistory.Location = new System.Drawing.Point(382, 510);
-            textBoxMainInterfaceCurrentPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            textBoxMainInterfaceCurrentPageTransactionHistory.Name = "textBoxMainInterfaceCurrentPageTransactionHistory";
-            textBoxMainInterfaceCurrentPageTransactionHistory.Size = new System.Drawing.Size(92, 22);
-            textBoxMainInterfaceCurrentPageTransactionHistory.TabIndex = 9;
-            textBoxMainInterfaceCurrentPageTransactionHistory.KeyDown += textBoxMainInterfaceCurrentPageTransactionHistory_KeyDown;
-            // 
-            // buttonMainInterfaceNextPageTransactionHistory
-            // 
-            buttonMainInterfaceNextPageTransactionHistory.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
-            buttonMainInterfaceNextPageTransactionHistory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            buttonMainInterfaceNextPageTransactionHistory.ForeColor = System.Drawing.Color.Black;
-            buttonMainInterfaceNextPageTransactionHistory.Location = new System.Drawing.Point(197, 509);
-            buttonMainInterfaceNextPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            buttonMainInterfaceNextPageTransactionHistory.Name = "buttonMainInterfaceNextPageTransactionHistory";
-            buttonMainInterfaceNextPageTransactionHistory.Size = new System.Drawing.Size(177, 28);
-            buttonMainInterfaceNextPageTransactionHistory.TabIndex = 8;
-            buttonMainInterfaceNextPageTransactionHistory.Text = "BUTTON_MAIN_INTERFACE_NEXT_PAGE_TRANSACTION_HISTORY_TEXT";
-            buttonMainInterfaceNextPageTransactionHistory.UseVisualStyleBackColor = false;
-            buttonMainInterfaceNextPageTransactionHistory.Click += buttonMainInterfaceNextPageTransactionHistory_Click;
-            // 
-            // buttonMainInterfaceBackPageTransactionHistory
-            // 
-            buttonMainInterfaceBackPageTransactionHistory.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
-            buttonMainInterfaceBackPageTransactionHistory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            buttonMainInterfaceBackPageTransactionHistory.ForeColor = System.Drawing.Color.Black;
-            buttonMainInterfaceBackPageTransactionHistory.Location = new System.Drawing.Point(13, 509);
-            buttonMainInterfaceBackPageTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            buttonMainInterfaceBackPageTransactionHistory.Name = "buttonMainInterfaceBackPageTransactionHistory";
-            buttonMainInterfaceBackPageTransactionHistory.Size = new System.Drawing.Size(177, 28);
-            buttonMainInterfaceBackPageTransactionHistory.TabIndex = 7;
-            buttonMainInterfaceBackPageTransactionHistory.Text = "BUTTON_MAIN_INTERFACE_BACK_PAGE_TRANSACTION_HISTORY_TEXT";
-            buttonMainInterfaceBackPageTransactionHistory.UseVisualStyleBackColor = false;
-            buttonMainInterfaceBackPageTransactionHistory.Click += buttonMainInterfaceBackPageTransactionHistory_Click;
-            // 
-            // buttonMainInterfaceExportTransactionHistory
-            // 
-            buttonMainInterfaceExportTransactionHistory.BackColor = System.Drawing.Color.FromArgb(247, 229, 72);
-            buttonMainInterfaceExportTransactionHistory.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            buttonMainInterfaceExportTransactionHistory.ForeColor = System.Drawing.Color.Black;
-            buttonMainInterfaceExportTransactionHistory.Location = new System.Drawing.Point(1177, 509);
-            buttonMainInterfaceExportTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            buttonMainInterfaceExportTransactionHistory.Name = "buttonMainInterfaceExportTransactionHistory";
-            buttonMainInterfaceExportTransactionHistory.Size = new System.Drawing.Size(177, 28);
-            buttonMainInterfaceExportTransactionHistory.TabIndex = 5;
-            buttonMainInterfaceExportTransactionHistory.Text = "BUTTON_MAIN_INTERFACE_EXPORT_TRANSACTION_HISTORY_TEXT";
-            buttonMainInterfaceExportTransactionHistory.UseVisualStyleBackColor = false;
-            buttonMainInterfaceExportTransactionHistory.Click += buttonMainInterfaceExportTransactionHistory_Click;
-            // 
-            // panelTransactionHistory
-            // 
-            panelTransactionHistory.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            panelTransactionHistory.BackColor = System.Drawing.Color.FromArgb(70, 90, 120);
-            panelTransactionHistory.Location = new System.Drawing.Point(4, 56);
-            panelTransactionHistory.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            panelTransactionHistory.MinimumSize = new System.Drawing.Size(300, 300);
-            panelTransactionHistory.Name = "panelTransactionHistory";
-            panelTransactionHistory.Size = new System.Drawing.Size(1153, 430);
-            panelTransactionHistory.TabIndex = 6;
-            panelTransactionHistory.Click += panelTransactionHistory_Click;
-            panelTransactionHistory.Paint += panelTransactionHistory_Paint;
-            panelTransactionHistory.DoubleClick += panelTransactionHistory_DoubleClick;
-            panelTransactionHistory.MouseLeave += panelTransactionHistory_MouseLeave;
-            panelTransactionHistory.MouseMove += panelTransactionHistory_MouseMove;
-            // 
-            // tabPageStoreNetwork
-            // 
-            tabPageStoreNetwork.BackColor = System.Drawing.Color.FromArgb(77, 104, 145);
-            tabPageStoreNetwork.Controls.Add(panel1);
-            tabPageStoreNetwork.Location = new System.Drawing.Point(4, 34);
-            tabPageStoreNetwork.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            tabPageStoreNetwork.Name = "tabPageStoreNetwork";
-            tabPageStoreNetwork.Padding = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            tabPageStoreNetwork.Size = new System.Drawing.Size(1161, 604);
-            tabPageStoreNetwork.TabIndex = 3;
-            tabPageStoreNetwork.Text = "TABPAGE_STORE_NETWORK_TEXT";
-            // 
-            // panel1
-            // 
-            panel1.BackColor = System.Drawing.Color.White;
-            panel1.Controls.Add(listViewWebNode);
-            panel1.Controls.Add(panelStoreNetwork);
-            panel1.Location = new System.Drawing.Point(7, 6);
-            panel1.MinimumSize = new System.Drawing.Size(800, 1000);
-            panel1.Name = "panel1";
-            panel1.Size = new System.Drawing.Size(1356, 1000);
-            panel1.TabIndex = 0;
-            // 
-            // listViewWebNode
-            // 
-            listViewWebNode.Location = new System.Drawing.Point(24, 18);
-            listViewWebNode.Name = "listViewWebNode";
-            listViewWebNode.Size = new System.Drawing.Size(116, 581);
-            listViewWebNode.TabIndex = 2;
-            listViewWebNode.UseCompatibleStateImageBehavior = false;
-            listViewWebNode.View = System.Windows.Forms.View.List;
-            listViewWebNode.ItemCheck += listViewWebNode_ItemCheck;
-            listViewWebNode.ItemChecked += listViewWebNode_ItemChecked;
-            listViewWebNode.MouseClick += listViewWebNode_MouseClick;
-            // 
-            // panelStoreNetwork
-            // 
-            panelStoreNetwork.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            panelStoreNetwork.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            panelStoreNetwork.Location = new System.Drawing.Point(146, 18);
-            panelStoreNetwork.MinimumSize = new System.Drawing.Size(400, 300);
-            panelStoreNetwork.Name = "panelStoreNetwork";
-            panelStoreNetwork.Size = new System.Drawing.Size(1001, 581);
-            panelStoreNetwork.TabIndex = 1;
-            // 
             // labelWalletAddressReceiveTransactionTitle
             // 
             labelWalletAddressReceiveTransactionTitle.AutoSize = true;
@@ -1316,15 +1101,7 @@ namespace SeguraChain_Desktop_Wallet
             tabControlWallet.ResumeLayout(false);
             tabPageOverview.ResumeLayout(false);
             tabPageOverview.PerformLayout();
-            panelInternalNetworkStats.ResumeLayout(false);
-            panelInternalNetworkStats.PerformLayout();
-            panelRecentTransactions.ResumeLayout(false);
-            panelRecentTransactions.PerformLayout();
             tabPageSendTransaction.ResumeLayout(false);
-            panelSendTransaction.ResumeLayout(false);
-            panelSendTransaction.PerformLayout();
-            panelSendTransactionDetails.ResumeLayout(false);
-            panelSendTransactionDetails.PerformLayout();
             tabPageReceiveTransaction.ResumeLayout(false);
             tabPageReceiveTransaction.PerformLayout();
             tabPageTransactionHistory.ResumeLayout(false);

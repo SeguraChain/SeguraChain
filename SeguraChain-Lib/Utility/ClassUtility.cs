@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 using LZ4;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Org.BouncyCastle.Asn1.Mozilla;
 using SeguraChain_Lib.Blockchain.Setting;
 using SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Packet;
 using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet.Model;
@@ -61,13 +60,7 @@ namespace SeguraChain_Lib.Utility
             '6',
             '7',
             '8',
-            '9',
-            'A',
-            'B',
-            'C',
-            'D',
-            'E',
-            'F'
+            '9'
         };
 
         private static readonly HashSet<char> ListOfBase64Characters = new HashSet<char>
@@ -453,11 +446,6 @@ namespace SeguraChain_Lib.Utility
         public static bool CharIsABase64Character(char base64Character)
         {
             return ListOfBase64Characters.Contains(base64Character);
-        }
-
-        public static bool CharIsHexCharacter(char charCharacter)
-        {
-            return ListOfHexCharacters.Contains(charCharacter);
         }
 
         #endregion
@@ -1165,7 +1153,6 @@ namespace SeguraChain_Lib.Utility
     public static class ClassUtilityStringExtension
     {
 
-
         /// <summary>
         /// Convert a string into a byte array object.
         /// </summary>
@@ -1189,45 +1176,16 @@ namespace SeguraChain_Lib.Utility
 
         public static byte[] GetByteArray(this string src, bool ascii = false)
         {
-
             byte[] result;
-
-
             List<byte> listByte = new List<byte>();
-
-
             for (int i = 0; i < src.Length; i++)
             {
                 if (i < src.Length)
                     listByte.Add((byte)src[i]);
             }
-
-
             result = listByte.ToArray();
-
-
             listByte.Clear();
-
-
             return result;
-
-        }
-
-        /// <summary>
-        /// Get byte array from hex string
-        /// </summary>
-        /// <param name="src"></param>
-        /// <returns></returns>
-        public static byte[] GetByteArrayFromHexString(this string src)
-        {
-#if NET5_0_OR_GREATER
-            return Convert.FromHexString(src);
-#else
-            return Enumerable.Range(0, src.Length)
-                      .Where(x => x % 2 == 0)
-                      .Select(x => Convert.ToByte(src.Substring(x, 2), 16))
-                      .ToArray();
-#endif
         }
 
 
@@ -1379,19 +1337,6 @@ namespace SeguraChain_Lib.Utility
     /// </summary>
     public static class ClassUtilityByteArrayExtension
     {
-        /// <summary>
-        /// Get hex string from byte array.
-        /// </summary>
-        /// <param name="content"></param>
-        /// <returns></returns>
-        public static string GetHexStringFromByteArray(this byte[] content)
-        {
-#if NET5_0_OR_GREATER
-            return Convert.ToHexString(content);
-#else
-            return BitConverter.ToString(content).Replace("-", "");
-#endif
-        }
 
         /// <summary>
         /// Get a string from a byte array object.
@@ -1659,5 +1604,5 @@ namespace SeguraChain_Lib.Utility
 
 
     }
-#endregion
+    #endregion
 }
