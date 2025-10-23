@@ -51,7 +51,7 @@
             // 
             // pictureBoxDesktopWalletLogo
             // 
-            pictureBoxDesktopWalletLogo.BackgroundImage = Properties.Resources.logo_web_profil;
+            pictureBoxDesktopWalletLogo.BackgroundImage = (System.Drawing.Image)resources.GetObject("pictureBoxDesktopWalletLogo.BackgroundImage");
             pictureBoxDesktopWalletLogo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             pictureBoxDesktopWalletLogo.Location = new System.Drawing.Point(239, 12);
             pictureBoxDesktopWalletLogo.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
