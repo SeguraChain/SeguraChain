@@ -237,10 +237,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
                 #endregion
 
+
+
+                /*
                 bool handlePeerClientStatus = false;
                 try
                 {
-                    // Against flood.
                     handlePeerClientStatus = await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.TryWaitAsync(_peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay, CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSourcePeerServer.Token, new CancellationTokenSource(_peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay).Token));
 
                     if (handlePeerClientStatus)
@@ -257,6 +259,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     if (handlePeerClientStatus)
                         _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
                 }
+                */
+
+                await _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
+
 
             }
             catch (Exception error)
