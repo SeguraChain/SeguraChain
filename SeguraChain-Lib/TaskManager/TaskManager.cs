@@ -65,7 +65,7 @@ namespace SeguraChain_Lib.TaskManager
         {
             TaskManagerEnabled = true;
 
-            //SetThreadPoolValue(peerNetworkSettingObject);
+            SetThreadPoolValue(peerNetworkSettingObject);
 
             #region Auto clean up dead tasks.
 
@@ -174,6 +174,8 @@ namespace SeguraChain_Lib.TaskManager
             }), 0, _cancelTaskManager).Wait();
 
             #endregion
+
+
         }
 
         /// <summary>
@@ -345,7 +347,7 @@ namespace SeguraChain_Lib.TaskManager
                         bool isLocked = false;
                         try
                         {
-                            isLocked = Monitor.TryEnter(_taskCollection, 1000);
+                            isLocked = Monitor.TryEnter(_taskCollection, 60 * 1000);
 
                             while(!isLocked && !cancellationTask.IsCancellationRequested)
                             {
@@ -353,7 +355,7 @@ namespace SeguraChain_Lib.TaskManager
                                 Debug.WriteLine("Insert task count id: " + _taskCollection.Count+" in pending.");
 #endif
                                 await Task.Delay(1);
-                                isLocked = Monitor.TryEnter(_taskCollection, 1000);
+                                isLocked = Monitor.TryEnter(_taskCollection, 60* 1000);
                             }
 
                             if (isLocked)

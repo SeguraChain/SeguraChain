@@ -66,7 +66,7 @@ namespace SeguraChain_Lib.Other.Object.Network
                     // Ignored.
                 }
                 done = true;
-            }, delay * 1000, cancellation);
+            }, delay * 1000, cancellation, null, true);
 
             while (!done)
             {

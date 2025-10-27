@@ -79,12 +79,19 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Dis
         /// <returns></returns>
         public async Task<Tuple<bool, HashSet<long>>> InitializeIoCacheObjectAsync()
         {
-            if (!File.Exists(_ioDataStructureFilePath))
-                File.Create(_ioDataStructureFilePath).Close();
+            try
+            {
+                if (!File.Exists(_ioDataStructureFilePath))
+                    File.Create(_ioDataStructureFilePath).Close();
 
-            _ioDataStructureFileLockStream = new FileStream(_ioDataStructureFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read, _blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskReadStreamBufferSize, FileOptions.Asynchronous | FileOptions.RandomAccess);
+                _ioDataStructureFileLockStream = new FileStream(_ioDataStructureFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read, _blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskReadStreamBufferSize, FileOptions.Asynchronous | FileOptions.RandomAccess);
 
-            return File.Exists(_ioDataStructureFilePath) ? await RunIoDataIndexingAsync() : new Tuple<bool, HashSet<long>>(true, new HashSet<long>());
+                return File.Exists(_ioDataStructureFilePath) ? await RunIoDataIndexingAsync() : new Tuple<bool, HashSet<long>>(true, new HashSet<long>());
+            }
+            catch
+            {
+                return new Tuple<bool, HashSet<long>>(false, new HashSet<long>());
+            }
         }
 
         /// <summary>
