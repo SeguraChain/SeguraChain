@@ -1,8 +1,18 @@
-﻿using System;
+﻿using LZ4;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using SeguraChain_Lib.Blockchain.Setting;
+using SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Packet;
+using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet.Model;
+using SeguraChain_Lib.Other.Object.List;
+using SeguraChain_Lib.Other.Object.Network;
+using SeguraChain_Lib.Other.Object.SHA3;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -13,15 +23,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using LZ4;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using SeguraChain_Lib.Blockchain.Setting;
-using SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Packet;
-using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet.Model;
-using SeguraChain_Lib.Other.Object.List;
-using SeguraChain_Lib.Other.Object.Network;
-using SeguraChain_Lib.Other.Object.SHA3;
 
 namespace SeguraChain_Lib.Utility
 {
@@ -1392,14 +1393,15 @@ namespace SeguraChain_Lib.Utility
                 if (networkStream == null || !networkStream.CanWrite)
                     return false;
 
+                var mmf = MemoryMappedFile.CreateOrOpen("SharedBuffer", packetBytesToSend.Length);
+                var accessor = mmf.CreateViewAccessor();
+
                 if (packetBytesToSend.Length >= packetMaxSize && !singleWrite)
                 {
                     int countPacketSendLength = 0;
 
                     while (countPacketSendLength < packetBytesToSend.Length)
                     {
-                        if (!networkStream.CanWrite)
-                            return false;
 
                         int packetSize = 0;
 
@@ -1415,8 +1417,10 @@ namespace SeguraChain_Lib.Utility
 
                         //Array.Copy(packetBytesToSend, countPacketSendLength, dataBytes, 0, packetSize);
 
-                        await networkStream.WriteAsync(packetBytesToSend, countPacketSendLength, packetSize, cancellation.Token);
-                        await networkStream.FlushAsync(cancellation.Token);
+
+                        accessor.WriteArray(0, packetBytesToSend, 0, packetBytesToSend.Length);
+
+                        await networkStream.WriteAsync(packetBytesToSend, 0, packetBytesToSend.Length, cancellation.Token);
 
                         countPacketSendLength += packetSize;
 
@@ -1424,14 +1428,15 @@ namespace SeguraChain_Lib.Utility
                             break;
 
                     }
+                    await networkStream.FlushAsync(cancellation.Token);
 
                 }
                 else
                 {
-                    if (!networkStream.CanWrite)
-                        return false;
+                    accessor.WriteArray(0, packetBytesToSend, 0, packetBytesToSend.Length);
 
                     await networkStream.WriteAsync(packetBytesToSend, 0, packetBytesToSend.Length, cancellation.Token);
+
                     await networkStream.FlushAsync(cancellation.Token);
 
                 }

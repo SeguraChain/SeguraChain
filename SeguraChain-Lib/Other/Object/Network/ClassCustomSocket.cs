@@ -141,9 +141,9 @@ namespace SeguraChain_Lib.Other.Object.Network
             try
             {
 #if NET5_0_OR_GREATER
-                await _networkStream.ReadAsync(readPacketData.Data.AsMemory(0, packetLength), CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, new CancellationTokenSource(delayReading).Token).Token).ConfigureAwait(false);
+                await _networkStream.ReadAsync(readPacketData.Data.AsMemory(0, packetLength), CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, new CancellationTokenSource(delayReading).Token).Token);
 #else
-                await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, new CancellationTokenSource(delayReading).Token).Token).ConfigureAwait(false);
+                await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, new CancellationTokenSource(delayReading).Token).Token);
 #endif
             }
             catch (Exception error)
@@ -163,7 +163,8 @@ namespace SeguraChain_Lib.Other.Object.Network
 
                     if (!isHttp)
                     {
-                        if (ClassUtility.CharIsABase64Character((char)data) || ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
+                        if (ClassUtility.CharIsABase64Character((char)data) || 
+                            ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
                             listOfData.Add(data);
                     }
                     else listOfData.Add(data);

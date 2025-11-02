@@ -443,14 +443,28 @@ namespace SeguraChain_Lib.Log
                 {
                     try
                     {
-                        if (_logListOnCollect.ContainsKey(logLevelType))
+                        bool isLocked = false;
+                        try
                         {
-                            _logListOnCollect[logLevelType].Add(new ClassLogObject()
+                            isLocked = Monitor.TryEnter(_logListOnCollect);
+
+                            if (isLocked)
                             {
-                                LogContent = logLine,
-                                Written = false,
-                                Timestamp = TaskManager.TaskManager.CurrentTimestampSecond
-                            });
+                                if (_logListOnCollect.ContainsKey(logLevelType))
+                                {
+                                    _logListOnCollect[logLevelType].Add(new ClassLogObject()
+                                    {
+                                        LogContent = logLine,
+                                        Written = false,
+                                        Timestamp = TaskManager.TaskManager.CurrentTimestampSecond
+                                    });
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            if (isLocked)
+                                Monitor.Exit(_logListOnCollect);
                         }
                     }
                     catch (Exception error)
