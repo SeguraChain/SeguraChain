@@ -249,9 +249,11 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
                             #region Handle packet content received, split the data.
 
-                            ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, _cancellationTokenListenPeerPacket);
+                            ClassUtility.GetEachPacketSplitted(
+                                readPacketData.Data,
+                                listPacketReceived, _cancellationTokenListenPeerPacket);
 
-                            #endregion
+#endregion
 
                             if (listPacketReceived.GetList.Sum(x => x.Packet.Length) >= ClassPeerPacketSetting.PacketMaxLengthReceive)
                             {
@@ -369,7 +371,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
 
         }
 
-        #endregion
+#endregion
 
         #region Handle peer packet received.
 

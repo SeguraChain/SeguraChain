@@ -441,23 +441,41 @@ namespace SeguraChain_Lib.Log
             {
                 if (LogWriterInitialized)
                 {
+                   
+                    bool isLocked = false;
+
                     try
                     {
-                        if (_logListOnCollect.ContainsKey(logLevelType))
+                        isLocked = Monitor.TryEnter(_logListOnCollect);
+
+                        if (isLocked)
                         {
-                            _logListOnCollect[logLevelType].Add(new ClassLogObject()
+                            try
                             {
-                                LogContent = logLine,
-                                Written = false,
-                                Timestamp = TaskManager.TaskManager.CurrentTimestampSecond
-                            });
+                                if (_logListOnCollect.ContainsKey(logLevelType))
+                                {
+                                    _logListOnCollect[logLevelType].Add(new ClassLogObject()
+                                    {
+                                        LogContent = logLine,
+                                        Written = false,
+                                        Timestamp = TaskManager.TaskManager.CurrentTimestampSecond
+                                    });
+                                }
+
+                            }
+                            catch (Exception error)
+                            {
+                                if (error is ArgumentOutOfRangeException)
+                                    _logListOnCollect[logLevelType].Clear();
+                            }
                         }
                     }
-                    catch (Exception error)
+                    finally
                     {
-                        if (error is ArgumentOutOfRangeException)
-                            _logListOnCollect[logLevelType].Clear();
+                        if (isLocked)
+                            Monitor.Exit(_logListOnCollect);
                     }
+                   
                 }
             }
         }

@@ -3,6 +3,9 @@ using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.TaskManager;
 using SeguraChain_Lib.Utility;
 using System;
+#if NET5_0_OR_GREATER
+using System.Buffers;
+#endif
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -66,7 +69,7 @@ namespace SeguraChain_Lib.Other.Object.Network
                     // Ignored.
                 }
                 done = true;
-            }, delay * 1000, cancellation);
+            }, delay * 1000, cancellation, null, true);
 
             while (!done)
             {
@@ -135,15 +138,15 @@ namespace SeguraChain_Lib.Other.Object.Network
         public async Task<ReadPacketData> TryReadPacketData(int packetLength, int delayReading, bool isHttp, CancellationTokenSource cancellation)
         {
             ReadPacketData readPacketData = new ReadPacketData();
-            readPacketData.Data = new byte[packetLength];
 
+            readPacketData.Data = new byte[packetLength];
 
             try
             {
 #if NET5_0_OR_GREATER
-                await _networkStream.ReadAsync(readPacketData.Data.AsMemory(0, packetLength), CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, new CancellationTokenSource(delayReading).Token).Token).ConfigureAwait(false);
+                await _networkStream.ReadAsync(readPacketData.Data.AsMemory(0, readPacketData.Data.Length), CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, new CancellationTokenSource(delayReading).Token).Token);
 #else
-                await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, new CancellationTokenSource(delayReading).Token).Token).ConfigureAwait(false);
+                await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, new CancellationTokenSource(delayReading).Token).Token);
 #endif
             }
             catch (Exception error)
@@ -163,7 +166,8 @@ namespace SeguraChain_Lib.Other.Object.Network
 
                     if (!isHttp)
                     {
-                        if (ClassUtility.CharIsABase64Character((char)data) || ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
+                        if (ClassUtility.CharIsABase64Character((char)data) || 
+                            ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
                             listOfData.Add(data);
                     }
                     else listOfData.Add(data);
@@ -209,8 +213,8 @@ namespace SeguraChain_Lib.Other.Object.Network
         public class ReadPacketData : IDisposable
         {
             public bool Status;
-            public byte[] Data;
 
+            public byte[] Data;
             private bool _disposed;
 
 

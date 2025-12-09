@@ -254,7 +254,8 @@ namespace SeguraChain_Solo_Miner.Mining
                         try
                         {
                             // Wait blocktemplate and current mining setting.
-                            while (_miningNetworkStatsObject.GetBlockTemplateObject == null && _miningNetworkStatsObject.GetCurrentMiningPoWacSetting() == null) 
+                            while (_miningNetworkStatsObject.GetBlockTemplateObject == null &&
+                            _miningNetworkStatsObject.GetCurrentMiningPoWacSetting() == null) 
                             {
                                 GetSetMiningPauseStatus = true;
                                 await Task.Delay(100, _cancellationTokenMiningTasks.Token);
