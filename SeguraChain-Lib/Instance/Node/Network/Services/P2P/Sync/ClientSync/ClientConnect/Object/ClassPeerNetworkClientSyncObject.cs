@@ -321,7 +321,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                         try
                         {
-                            listPacketReceived = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, _peerCancellationTokenMain);
+                            listPacketReceived = ClassUtility.GetEachPacketSplitted(
+                                readPacketData.Data
+                                , listPacketReceived, _peerCancellationTokenMain);
                         }
                         catch
                         {
@@ -339,7 +341,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                             break;
                         }
 
-                        #endregion
+#endregion
 
                         int countCompleted = listPacketReceived.GetList.Count(x => x.Complete);
 
@@ -426,7 +428,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
         }
 
-        #endregion
+#endregion
 
         #region Enable Keep alive functions.
 

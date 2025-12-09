@@ -441,14 +441,16 @@ namespace SeguraChain_Lib.Log
             {
                 if (LogWriterInitialized)
                 {
+                   
+                    bool isLocked = false;
+
                     try
                     {
-                        bool isLocked = false;
-                        try
-                        {
-                            isLocked = Monitor.TryEnter(_logListOnCollect);
+                        isLocked = Monitor.TryEnter(_logListOnCollect);
 
-                            if (isLocked)
+                        if (isLocked)
+                        {
+                            try
                             {
                                 if (_logListOnCollect.ContainsKey(logLevelType))
                                 {
@@ -459,19 +461,21 @@ namespace SeguraChain_Lib.Log
                                         Timestamp = TaskManager.TaskManager.CurrentTimestampSecond
                                     });
                                 }
+
+                            }
+                            catch (Exception error)
+                            {
+                                if (error is ArgumentOutOfRangeException)
+                                    _logListOnCollect[logLevelType].Clear();
                             }
                         }
-                        finally
-                        {
-                            if (isLocked)
-                                Monitor.Exit(_logListOnCollect);
-                        }
                     }
-                    catch (Exception error)
+                    finally
                     {
-                        if (error is ArgumentOutOfRangeException)
-                            _logListOnCollect[logLevelType].Clear();
+                        if (isLocked)
+                            Monitor.Exit(_logListOnCollect);
                     }
+                   
                 }
             }
         }
