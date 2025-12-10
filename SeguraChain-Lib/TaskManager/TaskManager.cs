@@ -1,15 +1,15 @@
-﻿using SeguraChain_Lib.Instance.Node.Setting.Object;
+﻿﻿using SeguraChain_Lib.Instance.Node.Setting.Object;
 using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.Other.Object.Network;
 using SeguraChain_Lib.TaskManager.Object;
 using SeguraChain_Lib.Utility;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 #if DEBUG
 using System.Diagnostics;
-using System.Linq;
 #endif
 using System.Net.Sockets;
 using System.Threading;
@@ -17,46 +17,26 @@ using System.Threading.Tasks;
 
 namespace SeguraChain_Lib.TaskManager
 {
-
     public class TaskManager
     {
         private static bool TaskManagerEnabled;
         private static CancellationTokenSource _cancelTaskManager = new CancellationTokenSource();
 
-        /// <summary>
-        /// Store tasks, task id's to delete.
-        /// </summary>
-        private static List<ClassTaskObject> _taskCollection = new List<ClassTaskObject>();
-        private static DisposableList<long> _listTaskIdCompleted = new DisposableList<long>();
+        // Utilisation de ConcurrentDictionary pour éviter les locks explicites
+        private static readonly ConcurrentDictionary<long, ClassTaskObject> _taskCollection = new ConcurrentDictionary<long, ClassTaskObject>();
+        private static readonly ConcurrentQueue<long> _taskIdsToRemove = new ConcurrentQueue<long>();
         private const int MaxTaskClean = 10000;
+        private const int CleanupBatchSize = 1000;
 
-        /// <summary>
-        /// Current timestamp 
-        /// </summary>
-        public static long CurrentTimestampMillisecond { get; private set; }
-        public static long CurrentTimestampSecond { get; private set; }
+        // Cache des timestamps pour éviter les appels répétés
+        private static long _currentTimestampMillisecond;
+        private static long _currentTimestampSecond;
+
+        public static long CurrentTimestampMillisecond => _currentTimestampMillisecond;
+        public static long CurrentTimestampSecond => _currentTimestampSecond;
 
         public static int CountTask => _taskCollection.Count;
-        public static int CountTaskCompleted
-        {
-            get
-            {
-                int count = 0;
-                bool isLocked = false;
-                try
-                {
-                    isLocked = Monitor.TryEnter(_taskCollection);
-                    if (isLocked)
-                        count = _taskCollection.Count(x => x.Disposed == true);
-                }
-                finally
-                {
-                    if (isLocked)
-                        Monitor.Exit(_taskCollection);
-                }
-                return count;
-            }
-        }
+        public static int CountTaskCompleted => _taskCollection.Count(x => x.Value.Disposed);
 
         /// <summary>
         /// Enable the task manager. Check tasks, dispose them if they are faulted, completed, cancelled, or if a timestamp of end has been set and has been reached.
@@ -64,124 +44,61 @@ namespace SeguraChain_Lib.TaskManager
         public static void EnableTaskManager(ClassPeerNetworkSettingObject peerNetworkSettingObject)
         {
             TaskManagerEnabled = true;
-
             SetThreadPoolValue(peerNetworkSettingObject);
 
-            #region Auto clean up dead tasks.
-
-            InsertTask(new Action(async () =>
+            // Utilisation de Task.Run au lieu de InsertTask pour les tâches système
+            Task.Run(async () =>
             {
-
                 while (TaskManagerEnabled)
                 {
                     ManageTask(false);
-                    await Task.Delay(60 * 1000);
+                    await Task.Delay(60000, _cancelTaskManager.Token).ConfigureAwait(false);
                 }
+            }, _cancelTaskManager.Token);
 
-            }), 0, _cancelTaskManager).Wait();
-
-            #endregion
-
-            #region Auto update current timestamp in millisecond.
-
-            InsertTask(new Action(async () =>
+            Task.Run(async () =>
             {
                 while (TaskManagerEnabled)
                 {
-                    CurrentTimestampMillisecond = ClassUtility.GetCurrentTimestampInMillisecond();
-                    CurrentTimestampSecond = ClassUtility.GetCurrentTimestampInSecond();
-                    await Task.Delay(1);
+                    _currentTimestampMillisecond = ClassUtility.GetCurrentTimestampInMillisecond();
+                    _currentTimestampSecond = ClassUtility.GetCurrentTimestampInSecond();
+                    await Task.Delay(1, _cancelTaskManager.Token).ConfigureAwait(false);
                 }
-            }), 0, _cancelTaskManager).Wait();
+            }, _cancelTaskManager.Token);
 
-            #endregion
-
-            #region Auto clean up dead tasks.
-
-            InsertTask(new Action(async () =>
+            Task.Run(async () =>
             {
-
                 while (TaskManagerEnabled)
                 {
-                    if (_listTaskIdCompleted.Count >= MaxTaskClean)
+                    if (_taskIdsToRemove.Count >= MaxTaskClean)
                     {
-                        bool isLocked = false;
-                        bool cleaned = false;
-#if DEBUG
-                        long count = 0;
-#endif
-                        try
-                        {
-                            isLocked = Monitor.TryEnter(_taskCollection);
-
-                            if (isLocked)
-                            {
-
-                                using (DisposableList<long> listTaskToDelete = new DisposableList<long>(false, 0, _listTaskIdCompleted.GetList.ToArray()))
-                                {
-                                    foreach(long taskId in listTaskToDelete.GetList)
-                                    {
-
-                                        try
-                                        {
-                                            _taskCollection.RemoveAll(x => x != null && x.Id == taskId);
-                                            cleaned = true;
-
-                                            _listTaskIdCompleted.Remove(taskId);
-#if DEBUG
-                                            count++;
-#endif
-                                        }
-                                        catch
-                                        {
-                                            continue;
-                                        }
-                                    }
-                                }
-
-
-                                try
-                                {
-
-                                    if (cleaned)
-                                    {
-                                        _taskCollection.RemoveAll(x => x == null || x.Disposed);
-                                        _taskCollection.TrimExcess();
-                                    }
-                                }
-                                catch
-                                {
-                                    // Ignored.
-                                }
-                            }
-
-                        }
-                        finally
-                        {
-                            if (isLocked)
-                                Monitor.Exit(_taskCollection);
-                        }
-
-#if DEBUG
-                        Debug.WriteLine("Total dead task cleaned: " + count);
-#endif
+                        CleanupCompletedTasks();
                     }
-
-
-                    await Task.Delay(60 * 1000);
+                    await Task.Delay(60000, _cancelTaskManager.Token).ConfigureAwait(false);
                 }
-
-            }), 0, _cancelTaskManager).Wait();
-
-            #endregion
-
-
+            }, _cancelTaskManager.Token);
         }
 
-        /// <summary>
-        /// Set thread pools min values and max values.
-        /// </summary>
-        /// <param name="peerNetworkSettingObject"></param>
+        private static void CleanupCompletedTasks()
+        {
+            int cleaned = 0;
+            var idsToProcess = new List<long>(CleanupBatchSize);
+
+            // Traiter par lots pour améliorer les performances
+            while (_taskIdsToRemove.TryDequeue(out long taskId) && cleaned < CleanupBatchSize)
+            {
+                if (_taskCollection.TryRemove(taskId, out _))
+                {
+                    cleaned++;
+                }
+            }
+
+#if DEBUG
+            if (cleaned > 0)
+                Debug.WriteLine($"Total dead tasks cleaned: {cleaned}");
+#endif
+        }
+
         private static void SetThreadPoolValue(ClassPeerNetworkSettingObject peerNetworkSettingObject)
         {
             ThreadPool.SetMinThreads(peerNetworkSettingObject.PeerMinThreadsPool, peerNetworkSettingObject.PeerMinThreadsPoolCompletionPort);
@@ -191,191 +108,151 @@ namespace SeguraChain_Lib.TaskManager
         /// <summary>
         /// Manage every tasks stored into the TaskManager.
         /// </summary>
-        /// <returns></returns>
         private static void ManageTask(bool force)
         {
-            bool isLocked = false;
-            try
+            // Traitement parallèle des tâches avec Parallel.ForEach pour de meilleures performances
+            var tasksToCheck = _taskCollection.Values.Where(t => t != null && !t.Disposed && t.Started).ToList();
+
+            foreach (var taskObj in tasksToCheck)
             {
-                isLocked = Monitor.TryEnter(_taskCollection);
+                if (taskObj == null || taskObj.Task == null)
+                    continue;
 
-                if (isLocked)
+                try
                 {
-                    for (int i = 0; i < _taskCollection.Count; i++)
+                    bool doDispose = force;
+
+                    if (!force)
                     {
+                        // Vérifications optimisées
+                        if (taskObj.Task.IsCanceled || taskObj.Task.IsFaulted ||
+#if NET5_0_OR_GREATER
+                            taskObj.Task.IsCompletedSuccessfully)
+#else
+                            taskObj.Task.IsCompleted)
+#endif
+                        {
+                            doDispose = true;
+                        }
+                        else if (taskObj.TimestampEnd > 0 && taskObj.TimestampEnd < _currentTimestampMillisecond)
+                        {
+                            doDispose = true;
+                        }
+                        else if (taskObj.Cancellation?.IsCancellationRequested == true)
+                        {
+                            doDispose = true;
+                        }
 
-                        if (_taskCollection[i] == null || _taskCollection[i].Task == null || _taskCollection[i].Disposed || !_taskCollection[i].Started)
+                        if (!doDispose)
                             continue;
-
-
-
-                        try
-                        {
-                            bool doDispose = false;
-
-                            if (!force)
-                            {
-                                if (_taskCollection[i].Task != null && (_taskCollection[i].Task.IsCanceled ||
-#if NET5_0_OR_GREATER
-                                        _taskCollection[i].Task.IsCompletedSuccessfully ||
-#else
-                                        _taskCollection[i].Task.IsCompleted ||
-#endif
-
-                                    _taskCollection[i].Task.IsFaulted))
-                                    doDispose = true;
-
-                                if (_taskCollection[i].TimestampEnd > 0 && _taskCollection[i].TimestampEnd < CurrentTimestampMillisecond)
-                                    doDispose = true;
-
-                                try
-                                {
-                                    if (_taskCollection[i].Cancellation != null)
-                                    {
-                                        if (_taskCollection[i].Cancellation.IsCancellationRequested)
-                                            doDispose = true;
-                                    }
-                                }
-                                catch
-                                {
-                                    // Ignored.
-                                }
-
-                                if (!doDispose)
-                                    continue;
-                            }
-
-                            _taskCollection[i].Disposed = true;
-                            _taskCollection[i].Socket?.Kill(SocketShutdown.Both);
-
-                            try
-                            {
-                                if (_taskCollection[i].Cancellation != null)
-                                {
-                                    if (!_taskCollection[i].Cancellation.IsCancellationRequested)
-                                        _taskCollection[i].Cancellation.Cancel();
-                                }
-                            }
-                            catch
-                            {
-                                // Ignored.
-                            }
-
-
-                            try
-                            {
-
-
-                                if (_taskCollection[i].Task != null && (_taskCollection[i].Task.IsCanceled ||
-#if NET5_0_OR_GREATER
-                                        _taskCollection[i].Task.IsCompletedSuccessfully
-#else
-                                        _taskCollection[i].Task.IsCompleted
-#endif
-                                        ||
-                                    _taskCollection[i].Task.IsFaulted))
-                                    _taskCollection[i].Task?.Dispose();
-
-                            }
-                            catch
-                            {
-                                // Ignored, the task dispose can failed.
-                            }
-
-                            _listTaskIdCompleted.Add(_taskCollection[i].Id);
-                        }
-                        catch (Exception error)
-                        {
-                            ClassLog.WriteLine("Error on cleaning the task ID: " + i + " | Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_TASK_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
-                        }
                     }
+
+                    DisposeTask(taskObj);
+                }
+                catch (Exception error)
+                {
+                    ClassLog.WriteLine($"Error on cleaning task ID: {taskObj.Id} | Exception: {error.Message}",
+                        ClassEnumLogLevelType.LOG_LEVEL_TASK_MANAGER,
+                        ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY,
+                        false, ConsoleColor.Red);
                 }
             }
-            finally
+        }
+
+        private static void DisposeTask(ClassTaskObject taskObj)
+        {
+            taskObj.Disposed = true;
+           
+            try
             {
-                if (isLocked)
-                    Monitor.Exit(_taskCollection);
+                taskObj.Socket?.Kill(SocketShutdown.Both);
             }
+            catch { }
+
+            try
+            {
+                if (taskObj.Cancellation != null && !taskObj.Cancellation.IsCancellationRequested)
+                {
+                    taskObj.Cancellation.Cancel();
+                }
+            }
+            catch { }
+            try
+            {
+                if (taskObj.Task != null && (taskObj.Task.IsCanceled || taskObj.Task.IsFaulted ||
+#if NET5_0_OR_GREATER
+                    taskObj.Task.IsCompletedSuccessfully))
+#else
+                    taskObj.Task.IsCompleted))
+#endif
+                {
+                    taskObj.Task.Dispose();
+                }
+            }
+            catch { }
+
+            _taskIdsToRemove.Enqueue(taskObj.Id);
         }
 
         /// <summary>
         /// Insert task to manager.
         /// </summary>
-        /// <param name="action"></param>
-        /// <param name="timestampEnd"></param>
-        /// <param name="cancellation"></param>
-        /// <param name="socket"></param>
         public static async Task InsertTask(Action action, long timestampEnd, CancellationTokenSource cancellation, ClassCustomSocket socket = null, bool useFactory = false)
         {
-            if (TaskManagerEnabled)
+            if (!TaskManagerEnabled)
+                return;
+
+            long end = timestampEnd > 0 ? timestampEnd - _currentTimestampMillisecond : 0;
+            CancellationTokenSource cancellationTask = null;
+
+            try
             {
-                long end = timestampEnd - CurrentTimestampMillisecond;
+                if (cancellation != null && end > 0)
+                {
+                    cancellationTask = CancellationTokenSource.CreateLinkedTokenSource(
+                        cancellation.Token,
+                        new CancellationTokenSource((int)end).Token);
+                }
+                else if (end > 0)
+                {
+                    cancellationTask = new CancellationTokenSource((int)end);
+                }
+                else
+                {
+                    cancellationTask = cancellation ?? new CancellationTokenSource();
+                }
+            }
+            catch
+            {
+                return;
+            }
 
-                CancellationTokenSource cancellationTask = null;
+            if (cancellationTask.IsCancellationRequested)
+                return;
 
-                bool exception = false;
-
+            if (useFactory)
+            {
                 try
                 {
-
-                    cancellationTask =
-                        cancellation != null && end > 0 ?
-                        CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, new CancellationTokenSource((int)end).Token)
-                        : (end > 0 ? new CancellationTokenSource((int)end) : new CancellationTokenSource());
-
+                    await Task.Factory.StartNew(action, cancellationTask.Token,
+                        TaskCreationOptions.LongRunning, TaskScheduler.Current)
+                        .ConfigureAwait(false);
                 }
-                catch
+                catch { }
+            }
+            else
+            {
+                var taskObject = new ClassTaskObject(action, cancellationTask, timestampEnd, socket);
+
+                // Ajout non-bloquant avec ConcurrentDictionary
+                if (_taskCollection.TryAdd(taskObject.Id, taskObject))
                 {
-                    exception = true;
-                }
-
-                if (!exception && !cancellationTask.IsCancellationRequested)
-                {
-                    if (useFactory)
-                    {
-                        try
-                        {
-                            await Task.Factory.StartNew(action, cancellationTask.Token, TaskCreationOptions.LongRunning, TaskScheduler.Current).ConfigureAwait(false);
-                        }
-                        catch
-                        {
-                            // Ignored, catch the exception once the task is cancelled.
-                        }
-                    }
-                    else
-                    {
-                        bool isLocked = false;
-                        try
-                        {
-                            isLocked = Monitor.TryEnter(_taskCollection, 60 * 1000);
-
-                            while(!isLocked && !cancellationTask.IsCancellationRequested)
-                            {
-#if DEBUG
-                                Debug.WriteLine("Insert task count id: " + _taskCollection.Count+" in pending.");
-#endif
-                                await Task.Delay(1);
-                                isLocked = Monitor.TryEnter(_taskCollection, 60* 1000);
-                            }
-
-                            if (isLocked)
-                            {
-                                _taskCollection.Add(new ClassTaskObject(action, cancellationTask, timestampEnd, socket));
-                                if (!_taskCollection[_taskCollection.Count - 1].Started)
-                                    _taskCollection[_taskCollection.Count - 1].Run();
-                            }
-                        }
-                        finally
-                        {
-                            if (isLocked)
-                                Monitor.Exit(_taskCollection);
-                        }
-                    }
+                    taskObject.Run();
                 }
 #if DEBUG
                 else
                 {
-                    Debug.WriteLine("Can't insert new task. " + cancellationTask.IsCancellationRequested);
+                    Debug.WriteLine($"Failed to add task ID: {taskObject.Id}");
                 }
 #endif
             }
@@ -387,10 +264,21 @@ namespace SeguraChain_Lib.TaskManager
         public static void StopTaskManager()
         {
             TaskManagerEnabled = false;
-            if (!_cancelTaskManager.IsCancellationRequested)
-                _cancelTaskManager.Cancel();
+
+            try
+            {
+                if (!_cancelTaskManager.IsCancellationRequested)
+                    _cancelTaskManager.Cancel();
+            }
+            catch { }
 
             ManageTask(true);
+
+            // Nettoyage final
+            _taskCollection.Clear();
+
+            while (_taskIdsToRemove.TryDequeue(out _)) { }
         }
     }
+
 }

@@ -18,111 +18,146 @@ namespace SeguraChain_Lib.Other.Object.Network
     /// <summary>
     /// Custom socket class.
     /// </summary>
-    public class ClassCustomSocket
+    public class ClassCustomSocket : IDisposable
     {
         private Socket _socket;
         private NetworkStream _networkStream;
+        private readonly object _closeLock = new object();
+        private int _closeState = 0; // 0 = open, 1 = closing/closed
 
+        // Cache de l'IP pour éviter les appels répétés
+        private string _cachedIp;
 
-        public bool Closed { private set; get; }
+        public bool Closed => _closeState == 1;
 
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="socket"></param>
         public ClassCustomSocket(Socket socket, bool isServer)
         {
-            _socket = socket;
+            _socket = socket ?? throw new ArgumentNullException(nameof(socket));
 
             if (isServer)
             {
                 try
                 {
-                    _networkStream = new NetworkStream(_socket);
+                    _networkStream = new NetworkStream(_socket, ownsSocket: false);
+                    CacheIpAddress();
                 }
                 catch
                 {
                     Close(SocketShutdown.Both);
                 }
             }
+        }
 
+        private void CacheIpAddress()
+        {
+            try
+            {
+                _cachedIp = _socket?.RemoteEndPoint is IPEndPoint endpoint
+                    ? endpoint.Address.ToString()
+                    : string.Empty;
+            }
+            catch
+            {
+                _cachedIp = string.Empty;
+            }
         }
 
         public async Task<bool> Connect(string ip, int port, int delay, CancellationTokenSource cancellation)
         {
-            bool success = false;
-            bool done = false;
-
-            await TaskManager.TaskManager.InsertTask(async () =>
-            {
-                try
-                {
-#if NET6_0_OR_GREATER
-                    await _socket.ConnectAsync(ip, port, cancellation.Token);
-#else
-                    await _socket.ConnectAsync(ip, port);
-#endif
-                    success = true;
-                }
-                catch
-                {
-                    // Ignored.
-                }
-                done = true;
-            }, delay * 1000, cancellation, null, true);
-
-            while (!done)
-            {
-                if (cancellation.IsCancellationRequested ||
-                    success)
-                    break;
-
-                await Task.Delay(1);
-            }
-            if (_socket == null || !success)
+            if (string.IsNullOrEmpty(ip))
                 return false;
 
-            _networkStream = new NetworkStream(_socket);
-            return true;
-        }
+            bool success = false;
+            var tcs = new TaskCompletionSource<bool>();
 
-        public string GetIp
-        {
-            get
-            {
-                try
-                {
-                    return _socket?.RemoteEndPoint != null ? ((IPEndPoint)(_socket.RemoteEndPoint)).Address.ToString() : string.Empty;
-                }
-                catch
-                {
-                    return string.Empty;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Socket is connected.
-        /// </summary>
-        /// <returns></returns>
-        public bool IsConnected()
-        {
             try
             {
-                if ((Closed || _socket == null || !_socket.Connected || _networkStream == null))
-                    return false;
+                // Utilisation de TaskCompletionSource au lieu de polling actif
+                using (var timeoutCts = new CancellationTokenSource(delay * 1000))
+                using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, timeoutCts.Token))
+                {
+                    var connectTask = Task.Run(async () =>
+                    {
+                        try
+                        {
+#if NET6_0_OR_GREATER
+                            await _socket.ConnectAsync(ip, port, linkedCts.Token).ConfigureAwait(false);
+#else
+                            await _socket.ConnectAsync(ip, port).ConfigureAwait(false);
+#endif
+                            return true;
+                        }
+                        catch
+                        {
+                            return false;
+                        }
+                    }, linkedCts.Token);
 
-                return !((_socket.Poll(10, SelectMode.SelectRead) && (_socket.Available == 0)));
+                    success = await connectTask.ConfigureAwait(false);
+                }
             }
             catch
             {
                 return false;
             }
 
+            if (!success || _socket == null)
+                return false;
+
+            try
+            {
+                _networkStream = new NetworkStream(_socket, ownsSocket: false);
+                CacheIpAddress();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public string GetIp => _cachedIp ?? (_cachedIp = GetIpInternal());
+
+        private string GetIpInternal()
+        {
+            try
+            {
+                return _socket?.RemoteEndPoint is IPEndPoint endpoint
+                    ? endpoint.Address.ToString()
+                    : string.Empty;
+            }
+            catch
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Socket is connected.
+        /// </summary>
+        public bool IsConnected()
+        {
+            if (Closed || _socket == null || _networkStream == null)
+                return false;
+
+            try
+            {
+                // Vérification optimisée de la connexion
+                return _socket.Connected && !(_socket.Poll(10, SelectMode.SelectRead) && _socket.Available == 0);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         public async Task<bool> TrySendSplittedPacket(byte[] packetData, CancellationTokenSource cancellation, int packetPeerSplitSeperator, bool singleWrite)
         {
+            if (packetData == null || packetData.Length == 0)
+                return false;
 
             try
             {
@@ -130,57 +165,98 @@ namespace SeguraChain_Lib.Other.Object.Network
             }
             catch (Exception error)
             {
-                Debug.WriteLine("Sending packet exception to " + GetIp + " | Exception: " + error.Message);
+#if DEBUG
+                Debug.WriteLine($"Sending packet exception to {GetIp} | Exception: {error.Message}");
+#endif
             }
             return false;
         }
 
         public async Task<ReadPacketData> TryReadPacketData(int packetLength, int delayReading, bool isHttp, CancellationTokenSource cancellation)
         {
-            ReadPacketData readPacketData = new ReadPacketData();
+            if (packetLength <= 0)
+                return new ReadPacketData { Status = false, Data = Array.Empty<byte>() };
 
-            readPacketData.Data = new byte[packetLength];
+            var readPacketData = new ReadPacketData { Data = new byte[packetLength] };
 
             try
             {
+                using (var timeoutCts = new CancellationTokenSource(delayReading))
+                using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, timeoutCts.Token))
+                {
 #if NET5_0_OR_GREATER
-                await _networkStream.ReadAsync(readPacketData.Data.AsMemory(0, readPacketData.Data.Length), CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, new CancellationTokenSource(delayReading).Token).Token);
+                    await _networkStream.ReadAsync(readPacketData.Data.AsMemory(0, packetLength), linkedCts.Token).ConfigureAwait(false);
 #else
-                await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, new CancellationTokenSource(delayReading).Token).Token);
+                    await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, linkedCts.Token).ConfigureAwait(false);
 #endif
+                }
             }
             catch (Exception error)
             {
 #if DEBUG
-                Debug.WriteLine("Reading packet exception from " + GetIp + " | Exception: " + error.Message);
+                Debug.WriteLine($"Reading packet exception from {GetIp} | Exception: {error.Message}");
 #endif
+                readPacketData.Status = false;
+                return readPacketData;
             }
 
-
-            using (DisposableList<byte> listOfData = new DisposableList<byte>())
-            {
-                foreach (byte data in readPacketData.Data)
-                {
-                    if ((char)data == '\0')
-                        continue;
-
-                    if (!isHttp)
-                    {
-                        if (ClassUtility.CharIsABase64Character((char)data) || 
-                            ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
-                            listOfData.Add(data);
-                    }
-                    else listOfData.Add(data);
-                }
-                readPacketData.Data = listOfData.GetList.ToArray();
-            }
-            
-
+            // Filtrage optimisé des données
+            readPacketData.Data = FilterPacketData(readPacketData.Data, isHttp);
             readPacketData.Status = readPacketData.Data.Length > 0;
 
             return readPacketData;
         }
 
+        private byte[] FilterPacketData(byte[] data, bool isHttp)
+        {
+            if (isHttp)
+                return RemoveNullBytes(data);
+
+            // Utilisation d'un buffer réutilisable pour éviter les allocations
+            int writeIndex = 0;
+            byte separatorByte = (byte)ClassPeerPacketSetting.PacketPeerSplitSeperator;
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                byte b = data[i];
+
+                if (b == 0)
+                    continue;
+
+                if (ClassUtility.CharIsABase64Character((char)b) || b == separatorByte)
+                {
+                    data[writeIndex++] = b;
+                }
+            }
+
+            // Redimensionner uniquement si nécessaire
+            if (writeIndex == data.Length)
+                return data;
+
+            var result = new byte[writeIndex];
+            Array.Copy(data, result, writeIndex);
+            return result;
+        }
+
+        private byte[] RemoveNullBytes(byte[] data)
+        {
+            int writeIndex = 0;
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (data[i] != 0)
+                {
+                    data[writeIndex++] = data[i];
+                }
+            }
+
+            if (writeIndex == data.Length)
+                return data;
+
+            var result = new byte[writeIndex];
+            Array.Copy(data, result, writeIndex);
+            return result;
+        }
 
         public void Kill(SocketShutdown shutdownType)
         {
@@ -189,51 +265,64 @@ namespace SeguraChain_Lib.Other.Object.Network
 
         private void Close(SocketShutdown shutdownType)
         {
-            if (Closed)
+            // Utilisation d'Interlocked pour éviter les double-close
+            if (Interlocked.CompareExchange(ref _closeState, 1, 0) == 1)
                 return;
-
-            Closed = true;
 
             try
             {
-                if (_socket.Connected)
+                if (_socket?.Connected == true)
                 {
-                    _socket?.Shutdown(shutdownType);
-                    _socket?.Close();
-                    _networkStream.Close();
+                    _socket.Shutdown(shutdownType);
                 }
             }
             catch
             {
-                // Ignored, catch the exception once the task is cancelled.
+                // Ignored
             }
+
+            try
+            {
+                _networkStream?.Close();
+                _networkStream?.Dispose();
+            }
+            catch
+            {
+                // Ignored
+            }
+
+            try
+            {
+                _socket?.Close();
+                _socket?.Dispose();
+            }
+            catch
+            {
+                // Ignored
+            }
+
+            _networkStream = null;
+            _socket = null;
         }
 
+        public void Dispose()
+        {
+            Close(SocketShutdown.Both);
+        }
 
         public class ReadPacketData : IDisposable
         {
             public bool Status;
-
             public byte[] Data;
-            private bool _disposed;
-
+            private int _disposed = 0;
 
             public void Dispose()
             {
-                Dispose(true);
-            }
-
-
-            private void Dispose(bool dispose)
-            {
-                if (_disposed || !dispose)
+                if (Interlocked.CompareExchange(ref _disposed, 1, 0) == 1)
                     return;
 
                 Data = null;
-
                 Status = false;
-
-                _disposed = true;
             }
         }
     }

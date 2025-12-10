@@ -321,9 +321,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                         try
                         {
-                            listPacketReceived = ClassUtility.GetEachPacketSplitted(
+                            listPacketReceived.GetList = ClassUtility.GetEachPacketSplitted(
                                 readPacketData.Data
-                                , listPacketReceived, _peerCancellationTokenMain);
+                                , listPacketReceived, _peerCancellationTokenMain).GetList;
                         }
                         catch
                         {
