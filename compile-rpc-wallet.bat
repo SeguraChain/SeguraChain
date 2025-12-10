@@ -1,6 +1,9 @@
 dotnet publish SeguraChain-RPC-Wallet\SeguraChain-RPC-Wallet.csproj --configuration Debug --framework net9.0 --output Output\RPC\Linux\x64\Debug\Net9\ --runtime linux-x64 --verbosity quiet --self-contained true -p:PublishSingleFile=true
 dotnet publish SeguraChain-RPC-Wallet\SeguraChain-RPC-Wallet.csproj --configuration Debug --framework net9.0 --output Output\RPC\Windows\x64\Debug\Ne9\ --runtime win-x64 --verbosity quiet --self-contained true -p:PublishSingleFile=true
 
+dotnet publish SeguraChain-RPC-Wallet\SeguraChain-RPC-Wallet.csproj --configuration Release --framework net9.0 --output Output\RPC\Linux\x64\Release\Net9\ --runtime linux-x64 --verbosity quiet --self-contained true -p:PublishSingleFile=true
+dotnet publish SeguraChain-RPC-Wallet\SeguraChain-RPC-Wallet.csproj --configuration Release --framework net9.0 --output Output\RPC\Windows\x64\Release\Ne9\ --runtime win-x64 --verbosity quiet --self-contained true -p:PublishSingleFile=true
+
 dotnet publish SeguraChain-RPC-Wallet\SeguraChain-RPC-Wallet.csproj --configuration Debug --framework net8.0 --output Output\RPC\Linux\x64\Debug\Net8\ --runtime linux-x64 --verbosity quiet --self-contained true -p:PublishSingleFile=true
 dotnet publish SeguraChain-RPC-Wallet\SeguraChain-RPC-Wallet.csproj --configuration Debug --framework net8.0 --output Output\RPC\Windows\x64\Debug\Net8\ --runtime win-x64 --verbosity quiet --self-contained true -p:PublishSingleFile=true
 

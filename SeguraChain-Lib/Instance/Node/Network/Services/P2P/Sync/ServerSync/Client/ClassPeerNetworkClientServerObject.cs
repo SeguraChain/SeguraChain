@@ -291,7 +291,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                                 bool failed = false;
 
                                 try {
-                                    base64Packet = Convert.FromBase64String(listPacketReceived[index].Packet);
+                                    base64Packet = listPacketReceived[index].Packet.GetHexStringToByteArray();
                                     failed = base64Packet == null || base64Packet.Length == 0;
                                 }
                                 catch
@@ -1915,7 +1915,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Cli
                 if (peerObject?.GetClientCryptoStreamObject != null)
                     packetSendObject.PacketSignature = await peerObject.GetClientCryptoStreamObject.DoSignatureProcess(packetSendObject.PacketHash, peerObject.PeerInternPrivateKey, _cancellationTokenListenPeerPacket);
 
-                return await _clientSocket.TrySendSplittedPacket((Convert.ToBase64String(packetSendObject.GetPacketData()) + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray(), _cancellationTokenListenPeerPacket, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize, false);
+                return await _clientSocket.TrySendSplittedPacket((packetSendObject.GetPacketData().GetHexStringFromByteArray() + ClassPeerPacketSetting.PacketPeerSplitSeperator).GetByteArray(), _cancellationTokenListenPeerPacket, _peerNetworkSettingObject.PeerMaxPacketSplitedSendSize, false);
             }
             catch
             {

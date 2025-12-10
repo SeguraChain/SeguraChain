@@ -223,7 +223,7 @@ namespace SeguraChain_Lib.Other.Object.Network
                 if (b == 0)
                     continue;
 
-                if (ClassUtility.CharIsABase64Character((char)b) || b == separatorByte)
+                if (ClassUtility.CheckHexStringFormat(((char)b).ToString()) || b == separatorByte)
                 {
                     data[writeIndex++] = b;
                 }

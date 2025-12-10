@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -12,20 +13,19 @@ using SeguraChain_Lib.Blockchain.Setting;
 using SeguraChain_Lib.Blockchain.Transaction.Utility;
 using SeguraChain_Lib.Log;
 using SeguraChain_Lib.Other.Object.List;
-
 using SeguraChain_Lib.Utility;
 
 namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Main
 {
     public class ClassCacheIoSystem
     {
-
+        #region Private Fields
 
         /// <summary>
         /// Objects and settings of the IO cache in disk mode.
         /// </summary>
         private const string IoFileExtension = ".ioblock";
-        private Dictionary<string, ClassCacheIoIndexObject> _dictionaryCacheIoIndexObject;
+        private ConcurrentDictionary<string, ClassCacheIoIndexObject> _dictionaryCacheIoIndexObject;
         private string _cacheIoDirectoryPath;
 
         /// <summary>
@@ -34,14 +34,31 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         private ClassBlockchainDatabaseSetting _blockchainDatabaseSetting;
 
         /// <summary>
-        /// Multithreading settings.
+        /// Multithreading settings - verrouillage par fichier pour meilleure concurrence.
         /// </summary>
-        private SemaphoreSlim _semaphoreIoCacheIndexAccess;
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _fileLocks;
+        private readonly SemaphoreSlim _globalLock;
 
         /// <summary>
-        /// Save the last memory usage of the io cache system.
+        /// Cache de la consommation mémoire.
         /// </summary>
-        private long _totalIoCacheSystemMemoryUsage;
+        private long _cachedMemoryUsage;
+        private DateTime _lastMemoryCalculation;
+        private readonly TimeSpan _memoryCalculationInterval = TimeSpan.FromSeconds(5);
+
+        /// <summary>
+        /// Cache pour les noms de fichiers calculés.
+        /// </summary>
+        private readonly ConcurrentDictionary<long, string> _fileNameCache;
+
+        /// <summary>
+        /// Pool de listes pour réduire les allocations.
+        /// </summary>
+        private readonly ObjectPool<List<long>> _listPool;
+
+        #endregion
+
+        #region Constructor
 
         /// <summary>
         /// Constructor.
@@ -51,11 +68,17 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         {
             _blockchainDatabaseSetting = blockchainDatabaseSetting;
             _cacheIoDirectoryPath = _blockchainDatabaseSetting.GetBlockchainCacheDirectoryPath;
-            _semaphoreIoCacheIndexAccess = new SemaphoreSlim(1, 1);
-            _dictionaryCacheIoIndexObject = new Dictionary<string, ClassCacheIoIndexObject>();
+            _dictionaryCacheIoIndexObject = new ConcurrentDictionary<string, ClassCacheIoIndexObject>();
+            _fileLocks = new ConcurrentDictionary<string, SemaphoreSlim>();
+            _globalLock = new SemaphoreSlim(1, 1);
+            _fileNameCache = new ConcurrentDictionary<long, string>();
+            _listPool = new ObjectPool<List<long>>(() => new List<long>(100), list => list.Clear());
+            _lastMemoryCalculation = DateTime.MinValue;
         }
 
-        #region Manage IO Cache system.
+        #endregion
+
+        #region Manage IO Cache system
 
         /// <summary>
         /// Initialize the IO cache system.
@@ -66,19 +89,29 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
             HashSet<long> listBlockHeight = new HashSet<long>();
 
             if (!Directory.Exists(_cacheIoDirectoryPath))
+            {
                 Directory.CreateDirectory(_cacheIoDirectoryPath);
+            }
             else
             {
                 string[] cacheIoFileList = Directory.GetFiles(_cacheIoDirectoryPath, "*" + IoFileExtension);
 
                 if (cacheIoFileList.Length > 0)
                 {
-                    foreach (var ioFileName in cacheIoFileList)
-                    {
-                        Tuple<bool, HashSet<long>> result = await InitializeNewCacheIoIndex(Path.GetFileName(ioFileName));
+                    // Initialisation parallèle des fichiers
+                    var initTasks = cacheIoFileList.Select(ioFilePath =>
+                        InitializeNewCacheIoIndex(Path.GetFileName(ioFilePath))
+                    );
 
-                        foreach (long blockHeight in result.Item2)
-                            listBlockHeight.Add(blockHeight);
+                    var results = await Task.WhenAll(initTasks);
+
+                    foreach (var result in results)
+                    {
+                        if (result.Item1)
+                        {
+                            foreach (long blockHeight in result.Item2)
+                                listBlockHeight.Add(blockHeight);
+                        }
                     }
                 }
             }
@@ -95,29 +128,48 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         {
             HashSet<long> listBlockHeight = new HashSet<long>();
 
-            if (!_dictionaryCacheIoIndexObject.ContainsKey(ioFileName))
+            if (_dictionaryCacheIoIndexObject.ContainsKey(ioFileName))
+                return new Tuple<bool, HashSet<long>>(true, listBlockHeight);
+
+            var semaphore = GetFileLock(ioFileName);
+            bool semaphoreUsed = false;
+
+            try
             {
-                ClassCacheIoIndexObject cacheIoIndexObject = new ClassCacheIoIndexObject(ioFileName, _blockchainDatabaseSetting, this);
+                await semaphore.WaitAsync();
+                semaphoreUsed = true;
+
+                // Double-check après acquisition du lock
+                if (_dictionaryCacheIoIndexObject.ContainsKey(ioFileName))
+                    return new Tuple<bool, HashSet<long>>(true, listBlockHeight);
+
+                ClassCacheIoIndexObject cacheIoIndexObject = new ClassCacheIoIndexObject(
+                    ioFileName,
+                    _blockchainDatabaseSetting,
+                    this
+                );
 
                 Tuple<bool, HashSet<long>> result = await cacheIoIndexObject.InitializeIoCacheObjectAsync();
 
                 if (result.Item1)
                 {
-                    try
+                    if (_dictionaryCacheIoIndexObject.TryAdd(ioFileName, cacheIoIndexObject))
                     {
-                        _dictionaryCacheIoIndexObject.Add(ioFileName, cacheIoIndexObject);
-
                         foreach (long blockHeight in result.Item2)
                             listBlockHeight.Add(blockHeight);
                     }
-                    catch
+                    else
                     {
 #if DEBUG
-                        Debug.WriteLine("Cache IO System - Failed to index the new io cache file: " + ioFileName);
+                        Debug.WriteLine("Cache IO System - Failed to add the new io cache file to dictionary: " + ioFileName);
 #endif
-                        ClassLog.WriteLine("Cache IO System - Failed to index the new io cache file: " + ioFileName, ClassEnumLogLevelType.LOG_LEVEL_MEMORY_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
-
-                        return result;
+                        ClassLog.WriteLine(
+                            "Cache IO System - Failed to add the new io cache file to dictionary: " + ioFileName,
+                            ClassEnumLogLevelType.LOG_LEVEL_MEMORY_MANAGER,
+                            ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY,
+                            false,
+                            ConsoleColor.Red
+                        );
                     }
                 }
                 else
@@ -125,12 +177,22 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
 #if DEBUG
                     Debug.WriteLine("Cache IO System - Failed to initialize the new io cache file: " + ioFileName);
 #endif
-
-                    ClassLog.WriteLine("Cache IO System - Failed to initialize the new io cache file: " + ioFileName, ClassEnumLogLevelType.LOG_LEVEL_MEMORY_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                    ClassLog.WriteLine(
+                        "Cache IO System - Failed to initialize the new io cache file: " + ioFileName,
+                        ClassEnumLogLevelType.LOG_LEVEL_MEMORY_MANAGER,
+                        ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY,
+                        false,
+                        ConsoleColor.Red
+                    );
                 }
-            }
 
-            return new Tuple<bool, HashSet<long>>(true, listBlockHeight);
+                return new Tuple<bool, HashSet<long>>(result.Item1, listBlockHeight);
+            }
+            finally
+            {
+                if (semaphoreUsed)
+                    semaphore.Release();
+            }
         }
 
         /// <summary>
@@ -139,20 +201,47 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         /// <returns></returns>
         public async Task PurgeCacheIoSystem(CancellationTokenSource cancellation)
         {
-            if (_dictionaryCacheIoIndexObject.Count > 0)
+            if (_dictionaryCacheIoIndexObject.Count == 0)
+                return;
+
+            // Purge en parallèle avec limite de concurrence
+            var semaphore = new SemaphoreSlim(Environment.ProcessorCount);
+            var purgeTasks = new List<Task>();
+
+            foreach (string ioFileName in _dictionaryCacheIoIndexObject.Keys)
             {
+                await semaphore.WaitAsync(cancellation.Token);
 
-                foreach (string ioFileName in _dictionaryCacheIoIndexObject.Keys.ToArray())
-                        await _dictionaryCacheIoIndexObject[ioFileName].PurgeIoBlockDataMemory(false, cancellation, 0, false);
+                var task = Task.Run(async () =>
+                {
+                    try
+                    {
+                        if (_dictionaryCacheIoIndexObject.TryGetValue(ioFileName, out var indexObject))
+                        {
+                            await indexObject.PurgeIoBlockDataMemory(false, cancellation, 0, false);
+                        }
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                }, cancellation.Token);
 
-                long totalIoCacheMemoryUsage = GetIoCacheSystemMemoryConsumption(cancellation, out int totalBlockKeepAlive);
+                purgeTasks.Add(task);
+            }
 
+            await Task.WhenAll(purgeTasks);
+
+            long totalIoCacheMemoryUsage = GetIoCacheSystemMemoryConsumption(cancellation, out int totalBlockKeepAlive);
 
 #if DEBUG
-                Debug.WriteLine("Cache IO Index Object - Total block(s) keep alive: " + totalBlockKeepAlive + " | Total Memory usage from the cache: " + ClassUtility.ConvertBytesToMegabytes(totalIoCacheMemoryUsage));
+            Debug.WriteLine($"Cache IO Index Object - Total block(s) keep alive: {totalBlockKeepAlive} | Total Memory usage from the cache: {ClassUtility.ConvertBytesToMegabytes(totalIoCacheMemoryUsage)}");
 #endif
-                ClassLog.WriteLine("Cache IO Index Object - Total block(s) keep alive: " + totalBlockKeepAlive + " | Total Memory usage from the cache: " + ClassUtility.ConvertBytesToMegabytes(totalIoCacheMemoryUsage), ClassEnumLogLevelType.LOG_LEVEL_MEMORY_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
-            }
+            ClassLog.WriteLine(
+                $"Cache IO Index Object - Total block(s) keep alive: {totalBlockKeepAlive} | Total Memory usage from the cache: {ClassUtility.ConvertBytesToMegabytes(totalIoCacheMemoryUsage)}",
+                ClassEnumLogLevelType.LOG_LEVEL_MEMORY_MANAGER,
+                ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY
+            );
         }
 
         /// <summary>
@@ -164,16 +253,19 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
 
             try
             {
-                await _semaphoreIoCacheIndexAccess.WaitAsync();
+                await _globalLock.WaitAsync();
                 semaphoreUsed = true;
 
                 if (_dictionaryCacheIoIndexObject.Count > 0)
                 {
                     foreach (string ioFileName in _dictionaryCacheIoIndexObject.Keys.ToArray())
                     {
-
                         string ioFilePath = _blockchainDatabaseSetting.GetBlockchainCacheDirectoryPath + ioFileName;
-                        _dictionaryCacheIoIndexObject[ioFileName].CloseLockStream();
+
+                        if (_dictionaryCacheIoIndexObject.TryGetValue(ioFileName, out var indexObject))
+                        {
+                            indexObject.CloseLockStream();
+                        }
 
                         try
                         {
@@ -183,12 +275,11 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                         catch (Exception error)
                         {
 #if DEBUG
-                            Debug.WriteLine("Failed to delete the IO Cache file: " + ioFileName + "\n Exception: " + error.Message);
+                            Debug.WriteLine($"Failed to delete the IO Cache file: {ioFileName}\nException: {error.Message}");
 #endif
                         }
 
-                        _dictionaryCacheIoIndexObject.Remove(ioFilePath);
-
+                        _dictionaryCacheIoIndexObject.TryRemove(ioFileName, out _);
                     }
 
                     try
@@ -199,12 +290,15 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                     {
                         // Ignored.
                     }
+
+                    // Nettoyer les caches
+                    _fileNameCache.Clear();
                 }
             }
             finally
             {
                 if (semaphoreUsed)
-                    _semaphoreIoCacheIndexAccess.Release();
+                    _globalLock.Release();
             }
         }
 
@@ -212,6 +306,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         /// Do a purge of the io cache system from a io cache file index to except.
         /// </summary>
         /// <param name="ioFileNameSource"></param>
+        /// <param name="memoryAsked"></param>
         /// <param name="cancellation"></param>
         /// <returns></returns>
         public async Task<bool> DoPurgeFromIoCacheIndex(string ioFileNameSource, long memoryAsked, CancellationTokenSource cancellation)
@@ -220,18 +315,29 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                 return true;
 
             long totalMemoryRetrieved = 0;
+            var targetFiles = _dictionaryCacheIoIndexObject.Keys.Where(k => k != ioFileNameSource).ToArray();
 
-            foreach (string ioFileFileIndex in _dictionaryCacheIoIndexObject.Keys.ToArray())
+            foreach (string ioFileFileIndex in targetFiles)
             {
+                if (cancellation.IsCancellationRequested)
+                    break;
 
-                if (ioFileFileIndex != ioFileNameSource)
+                long restMemoryToTask = memoryAsked - totalMemoryRetrieved;
+
+                if (GetIoCacheSystemMemoryConsumption(cancellation, out _) + restMemoryToTask <=
+                    _blockchainDatabaseSetting.BlockchainCacheSetting.GlobalMaxActiveMemoryAllocationFromCache)
                 {
-                    long restMemoryToTask = memoryAsked - totalMemoryRetrieved;
+                    return true;
+                }
 
-                    if (GetIoCacheSystemMemoryConsumption(cancellation, out _) + restMemoryToTask <= _blockchainDatabaseSetting.BlockchainCacheSetting.GlobalMaxActiveMemoryAllocationFromCache)
-                        return true;
-
-                    long totalMemoryFreeRetrieved = await _dictionaryCacheIoIndexObject[ioFileFileIndex].PurgeIoBlockDataMemory(false, cancellation, restMemoryToTask, true);
+                if (_dictionaryCacheIoIndexObject.TryGetValue(ioFileFileIndex, out var indexObject))
+                {
+                    long totalMemoryFreeRetrieved = await indexObject.PurgeIoBlockDataMemory(
+                        false,
+                        cancellation,
+                        restMemoryToTask,
+                        true
+                    );
 
                     totalMemoryRetrieved += totalMemoryFreeRetrieved;
 
@@ -240,12 +346,12 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
                 }
             }
 
-            return false;
+            return totalMemoryRetrieved >= memoryAsked;
         }
 
         #endregion
 
-        #region Get/Set/Update IO Cache data.
+        #region Get/Set/Update IO Cache data
 
         /// <summary>
         /// Get io list block information objects by a list of block height from io cache files.
@@ -253,51 +359,87 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         /// <param name="listBlockHeight"></param>
         /// <param name="cancellationIoCache"></param>
         /// <returns></returns>
-        public async Task<SortedList<long, ClassBlockObject>> GetIoListBlockInformationObject(DisposableList<long> listBlockHeight, CancellationTokenSource cancellationIoCache)
+        public async Task<SortedList<long, ClassBlockObject>> GetIoListBlockInformationObject(
+            DisposableList<long> listBlockHeight,
+            CancellationTokenSource cancellationIoCache)
         {
-            SortedList<long, ClassBlockObject> listBlockInformation = new SortedList<long, ClassBlockObject>();
+            var listBlockInformation = new SortedList<long, ClassBlockObject>(listBlockHeight.Count);
 
-            if (listBlockHeight.Count > 0)
+            if (listBlockHeight.Count == 0)
+                return listBlockInformation;
+
+            var dictionaryRangeBlockHeightIoCacheFile = new Dictionary<string, List<long>>();
+
+            try
             {
-                if (listBlockHeight.Count > 0)
+                // Groupement des block heights par fichier
+                foreach (var blockHeight in listBlockHeight.GetList)
                 {
-                    using (DisposableDictionary<string, List<long>> dictionaryRangeBlockHeightIoCacheFile = new DisposableDictionary<string, List<long>>())
+                    string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
+
+                    if (_dictionaryCacheIoIndexObject.ContainsKey(ioFileName))
                     {
-
-                        #region Generate list of io cache file index name.
-
-                        foreach (var blockHeight in listBlockHeight.GetList)
+                        if (!dictionaryRangeBlockHeightIoCacheFile.TryGetValue(ioFileName, out var list))
                         {
-
-                            string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
-
-                            if (_dictionaryCacheIoIndexObject.ContainsKey(ioFileName))
-                            {
-                                if (!dictionaryRangeBlockHeightIoCacheFile.ContainsKey(ioFileName))
-                                    dictionaryRangeBlockHeightIoCacheFile.Add(ioFileName, new List<long>());
-
-                                dictionaryRangeBlockHeightIoCacheFile[ioFileName].Add(blockHeight);
-                            }
+                            list = _listPool.Get();
+                            dictionaryRangeBlockHeightIoCacheFile[ioFileName] = list;
                         }
+                        list.Add(blockHeight);
+                    }
+                }
 
-                        #endregion
+                if (dictionaryRangeBlockHeightIoCacheFile.Count == 0)
+                    return listBlockInformation;
 
-                        if (dictionaryRangeBlockHeightIoCacheFile.Count > 0)
+                // Traitement parallèle des fichiers
+                var fetchTasks = dictionaryRangeBlockHeightIoCacheFile.Select(kvp =>
+                    FetchBlocksFromFile(kvp.Key, kvp.Value, cancellationIoCache)
+                );
+
+                var results = await Task.WhenAll(fetchTasks);
+
+                // Agréger les résultats
+                foreach (var blocks in results)
+                {
+                    foreach (var blockObject in blocks)
+                    {
+                        if (blockObject != null && !listBlockInformation.ContainsKey(blockObject.BlockHeight))
                         {
-                            foreach (string ioFileName in dictionaryRangeBlockHeightIoCacheFile.GetList.Keys)
-                            {
-                                foreach (ClassBlockObject blockObject in await _dictionaryCacheIoIndexObject[ioFileName].GetIoListBlockDataInformationFromListBlockHeight(dictionaryRangeBlockHeightIoCacheFile[ioFileName], cancellationIoCache))
-                                {
-                                    if (blockObject != null)
-                                        listBlockInformation.Add(blockObject.BlockHeight, blockObject);
-                                }
-                            }
+                            listBlockInformation.Add(blockObject.BlockHeight, blockObject);
                         }
                     }
                 }
             }
+            finally
+            {
+                // Retourner les listes au pool
+                foreach (var list in dictionaryRangeBlockHeightIoCacheFile.Values)
+                {
+                    _listPool.Return(list);
+                }
+            }
 
             return listBlockInformation;
+        }
+
+        private async Task<List<ClassBlockObject>> FetchBlocksFromFile(
+            string ioFileName,
+            List<long> blockHeights,
+            CancellationTokenSource cancellation)
+        {
+            var result = new List<ClassBlockObject>();
+
+            if (_dictionaryCacheIoIndexObject.TryGetValue(ioFileName, out var indexObject))
+            {
+                var blocks = await indexObject.GetIoListBlockDataInformationFromListBlockHeight(
+                    blockHeights,
+                    cancellation
+                );
+
+                result.AddRange(blocks.Where(b => b != null));
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -310,7 +452,12 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         {
             string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
 
-            return _dictionaryCacheIoIndexObject.ContainsKey(ioFileName) ? await _dictionaryCacheIoIndexObject[ioFileName].GetIoBlockDataInformationFromBlockHeight(blockHeight, cancellationIoCache) : null;
+            if (_dictionaryCacheIoIndexObject.TryGetValue(ioFileName, out var indexObject))
+            {
+                return await indexObject.GetIoBlockDataInformationFromBlockHeight(blockHeight, cancellationIoCache);
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -323,7 +470,12 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         {
             string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
 
-            return _dictionaryCacheIoIndexObject.ContainsKey(ioFileName) ? await _dictionaryCacheIoIndexObject[ioFileName].GetIoBlockTransactionCountFromBlockHeight(blockHeight, cancellationIoCache) : 0;
+            if (_dictionaryCacheIoIndexObject.TryGetValue(ioFileName, out var indexObject))
+            {
+                return await indexObject.GetIoBlockTransactionCountFromBlockHeight(blockHeight, cancellationIoCache);
+            }
+
+            return 0;
         }
 
         /// <summary>
@@ -331,132 +483,124 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         /// </summary>
         /// <param name="blockHeight"></param>
         /// <param name="keepAlive">Keep alive or not the data retrieved into the active memory.</param>
+        /// <param name="clone"></param>
         /// <param name="cancellationIoCache"></param>
         /// <returns></returns>
-        public async Task<ClassBlockObject> GetIoBlockObject(long blockHeight, bool keepAlive, bool clone, CancellationTokenSource cancellationIoCache)
+        public async Task<ClassBlockObject> GetIoBlockObject(
+            long blockHeight,
+            bool keepAlive,
+            bool clone,
+            CancellationTokenSource cancellationIoCache)
         {
             string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
 
-            return _dictionaryCacheIoIndexObject.ContainsKey(ioFileName) ? await _dictionaryCacheIoIndexObject[ioFileName].GetIoBlockDataFromBlockHeight(blockHeight, keepAlive, clone, cancellationIoCache) : null;
+            if (_dictionaryCacheIoIndexObject.TryGetValue(ioFileName, out var indexObject))
+            {
+                return await indexObject.GetIoBlockDataFromBlockHeight(blockHeight, keepAlive, clone, cancellationIoCache);
+            }
+
+            return null;
         }
 
         /// <summary>
         /// Push or update a block object to the io cache object.
         /// </summary>
         /// <param name="blockObject"></param>
+        /// <param name="keepAlive"></param>
         /// <param name="cancellationIoCache"></param>
         /// <returns></returns>
-        public async Task<bool> PushOrUpdateIoBlockObject(ClassBlockObject blockObject, bool keepAlive, CancellationTokenSource cancellationIoCache)
+        public async Task<bool> PushOrUpdateIoBlockObject(
+            ClassBlockObject blockObject,
+            bool keepAlive,
+            CancellationTokenSource cancellationIoCache)
         {
             string ioFileName = GetIoFileNameFromBlockHeight(blockObject.BlockHeight);
 
-            bool existOrInsertIndex = _dictionaryCacheIoIndexObject.ContainsKey(ioFileName) ? true : (await InitializeNewCacheIoIndex(ioFileName)).Item1;
+            // Initialiser si nécessaire
+            if (!_dictionaryCacheIoIndexObject.ContainsKey(ioFileName))
+            {
+                var result = await InitializeNewCacheIoIndex(ioFileName);
+                if (!result.Item1)
+                    return false;
+            }
 
-            return existOrInsertIndex ? await _dictionaryCacheIoIndexObject[ioFileName].PushOrUpdateIoBlockData(blockObject, keepAlive, cancellationIoCache) : false;
+            if (_dictionaryCacheIoIndexObject.TryGetValue(ioFileName, out var indexObject))
+            {
+                return await indexObject.PushOrUpdateIoBlockData(blockObject, keepAlive, cancellationIoCache);
+            }
+
+            return false;
         }
 
         /// <summary>
         /// Push directly a list of object to insert/update directly to each io cache file indexed.
         /// </summary>
         /// <param name="blockObjectList"></param>
+        /// <param name="keepAlive"></param>
         /// <param name="cancellationIoCache"></param>
         /// <returns></returns>
-        public async Task<bool> PushOrUpdateListIoBlockObject(List<ClassBlockObject> blockObjectList, bool keepAlive, CancellationTokenSource cancellationIoCache)
+        public async Task<bool> PushOrUpdateListIoBlockObject(
+            List<ClassBlockObject> blockObjectList,
+            bool keepAlive,
+            CancellationTokenSource cancellationIoCache)
         {
-            bool result = true;
+            if (blockObjectList == null || blockObjectList.Count == 0)
+                return true;
 
-            using (DisposableDictionary<string, List<ClassBlockObject>> listBlockObject = new DisposableDictionary<string, List<ClassBlockObject>>())
+            // Groupement par fichier
+            var groupedBlocks = blockObjectList
+                .GroupBy(b => GetIoFileNameFromBlockHeight(b.BlockHeight))
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            // Initialiser les fichiers manquants en parallèle
+            var missingFiles = groupedBlocks.Keys.Where(f => !_dictionaryCacheIoIndexObject.ContainsKey(f)).ToList();
+
+            if (missingFiles.Count > 0)
             {
+                var initTasks = missingFiles.Select(InitializeNewCacheIoIndex);
+                var initResults = await Task.WhenAll(initTasks);
 
-                // Generate a list of block object linked to the io file index.
-                foreach (var blockObject in blockObjectList)
-                {
-
-                    string ioFileName = GetIoFileNameFromBlockHeight(blockObject.BlockHeight);
-
-                    if (!_dictionaryCacheIoIndexObject.ContainsKey(ioFileName))
-                    {
-                        Tuple<bool, HashSet<long>> resultInit = await InitializeNewCacheIoIndex(ioFileName);
-
-                        if (!resultInit.Item1)
-                        {
-                            result = false;
-
-                            break;
-                        }
-                    }
-
-                    if (!listBlockObject.ContainsKey(ioFileName))
-                    {
-                        listBlockObject.Add(ioFileName, new List<ClassBlockObject>()
-                        {
-                            blockObject
-                        });
-                    }
-                    else
-                        listBlockObject[ioFileName].Add(blockObject);
-                }
-
-                // Much faster insert/update.
-                if (listBlockObject.Count > 0 && result)
-                {
-                    string[] ioFileNameArray = listBlockObject.GetList.Keys.ToArray();
-                    int totalTaskToDo = ioFileNameArray.Length;
-                    int totalTaskDone = 0;
-
-                    using (CancellationTokenSource cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationIoCache.Token))
-                    {
-                        bool cancel = false;
-
-                        foreach (string ioFileName in ioFileNameArray)
-                        {
-                            if (_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask && ioFileNameArray.Length > 1)
-                            {
-                                await TaskManager.TaskManager.InsertTask(new Action(async () =>
-                                {
-                                    try
-                                    {
-                                        if (!cancel && listBlockObject.ContainsKey(ioFileName))
-                                            result = await _dictionaryCacheIoIndexObject[ioFileName].PushOrUpdateListIoBlockData(listBlockObject[ioFileName], keepAlive, cancellation);
-
-                                    }
-                                    catch
-                                    {
-                                        // The task has been cancelled.
-                                    }
-
-                                    totalTaskDone++;
-                                }), 0, cancellation);
-                            }
-                            else
-                            {
-                                if (!cancel && result)
-                                {
-                                    if (!await _dictionaryCacheIoIndexObject[ioFileName].PushOrUpdateListIoBlockData(listBlockObject[ioFileName], keepAlive, cancellation))
-                                    {
-                                        result = false;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
-
-                        if (_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask && ioFileNameArray.Length > 1)
-                        {
-                            while (totalTaskDone < totalTaskToDo)
-                            {
-                                if (cancel || !result || !cancellationIoCache.IsCancellationRequested)
-                                    break;
-
-                                await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskParallelTaskWaitDelay);
-                            }
-                        }
-                    }
-                }
+                if (initResults.Any(r => !r.Item1))
+                    return false;
             }
 
-            return result;
+            // Traitement parallèle avec limite de concurrence
+            int maxParallel = _blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask && groupedBlocks.Count > 1
+                ? Environment.ProcessorCount
+                : 1;
+
+            var semaphore = new SemaphoreSlim(maxParallel);
+            var tasks = new List<Task<bool>>();
+
+            foreach (var kvp in groupedBlocks)
+            {
+                await semaphore.WaitAsync(cancellationIoCache.Token);
+
+                var task = Task.Run(async () =>
+                {
+                    try
+                    {
+                        if (_dictionaryCacheIoIndexObject.TryGetValue(kvp.Key, out var indexObject))
+                        {
+                            return await indexObject.PushOrUpdateListIoBlockData(
+                                kvp.Value,
+                                keepAlive,
+                                cancellationIoCache
+                            );
+                        }
+                        return false;
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                }, cancellationIoCache.Token);
+
+                tasks.Add(task);
+            }
+
+            var results = await Task.WhenAll(tasks);
+            return results.All(r => r);
         }
 
         /// <summary>
@@ -467,28 +611,31 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         /// <returns></returns>
         public async Task<bool> TryDeleteIoBlockObject(long blockHeight, CancellationTokenSource cancellationIoCache)
         {
-            bool result = true;
+            string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
 
+            if (!_dictionaryCacheIoIndexObject.ContainsKey(ioFileName))
+                return false;
+
+            var semaphore = GetFileLock(ioFileName);
             bool semaphoreUsed = false;
 
             try
             {
-
-                await _semaphoreIoCacheIndexAccess.WaitAsync(cancellationIoCache.Token);
+                await semaphore.WaitAsync(cancellationIoCache.Token);
                 semaphoreUsed = true;
 
-                string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
+                if (_dictionaryCacheIoIndexObject.TryGetValue(ioFileName, out var indexObject))
+                {
+                    return await indexObject.TryDeleteIoBlockData(blockHeight, cancellationIoCache);
+                }
 
-                result = _dictionaryCacheIoIndexObject.ContainsKey(ioFileName) ? await _dictionaryCacheIoIndexObject[ioFileName].TryDeleteIoBlockData(blockHeight, cancellationIoCache) : false;
-
+                return false;
             }
             finally
             {
                 if (semaphoreUsed)
-                    _semaphoreIoCacheIndexAccess.Release();
+                    semaphore.Release();
             }
-
-            return result;
         }
 
         /// <summary>
@@ -501,7 +648,12 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         {
             string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
 
-            return _dictionaryCacheIoIndexObject.ContainsKey(ioFileName) ? await _dictionaryCacheIoIndexObject[ioFileName].ContainsIoBlockHeight(blockHeight, cancellationIoCache) : false;
+            if (_dictionaryCacheIoIndexObject.TryGetValue(ioFileName, out var indexObject))
+            {
+                return await indexObject.ContainsIoBlockHeight(blockHeight, cancellationIoCache);
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -509,125 +661,109 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         /// </summary>
         /// <param name="blockTransaction"></param>
         /// <param name="blockHeight"></param>
+        /// <param name="keepAlive"></param>
         /// <param name="cancellationIoCache"></param>
         /// <returns></returns>
-        public async Task<bool> InsertOrUpdateBlockTransactionObject(ClassBlockTransaction blockTransaction, long blockHeight, bool keepAlive, CancellationTokenSource cancellationIoCache)
+        public async Task<bool> InsertOrUpdateBlockTransactionObject(
+            ClassBlockTransaction blockTransaction,
+            long blockHeight,
+            bool keepAlive,
+            CancellationTokenSource cancellationIoCache)
         {
             if (blockHeight < BlockchainSetting.GenesisBlockHeight)
                 blockHeight = blockTransaction.TransactionBlockHeightInsert;
 
-            // If the block height is provided.
-            if (blockHeight >= BlockchainSetting.GenesisBlockHeight)
-            {
-                string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
+            if (blockHeight < BlockchainSetting.GenesisBlockHeight)
+                return false;
 
-                return _dictionaryCacheIoIndexObject.ContainsKey(ioFileName) ? await _dictionaryCacheIoIndexObject[ioFileName].PushOrUpdateTransactionOnIoBlockData(blockTransaction, blockHeight, keepAlive, cancellationIoCache) : false;
+            string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
+
+            if (_dictionaryCacheIoIndexObject.TryGetValue(ioFileName, out var indexObject))
+            {
+                return await indexObject.PushOrUpdateTransactionOnIoBlockData(
+                    blockTransaction,
+                    blockHeight,
+                    keepAlive,
+                    cancellationIoCache
+                );
             }
 
             return false;
         }
 
-
         /// <summary>
         /// Insert or update a block transaction directly to the io cache system.
         /// </summary>
         /// <param name="listBlockTransaction"></param>
+        /// <param name="keepAlive"></param>
         /// <param name="cancellationIoCache"></param>
         /// <returns></returns>
-        public async Task<bool> InsertOrUpdateListBlockTransactionObject(List<ClassBlockTransaction> listBlockTransaction, bool keepAlive, CancellationTokenSource cancellationIoCache)
+        public async Task<bool> InsertOrUpdateListBlockTransactionObject(
+            List<ClassBlockTransaction> listBlockTransaction,
+            bool keepAlive,
+            CancellationTokenSource cancellationIoCache)
         {
-            bool result = true;
+            if (listBlockTransaction == null || listBlockTransaction.Count == 0)
+                return true;
 
-            using (DisposableDictionary<string, List<ClassBlockTransaction>> listBlockTransactionToInsertOrUpdate = new DisposableDictionary<string, List<ClassBlockTransaction>>())
+            // Groupement par fichier
+            var groupedTransactions = listBlockTransaction
+                .GroupBy(t => GetIoFileNameFromBlockHeight(t.TransactionObject.BlockHeightTransaction))
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            // Initialiser les fichiers manquants
+            var missingFiles = groupedTransactions.Keys.Where(f => !_dictionaryCacheIoIndexObject.ContainsKey(f)).ToList();
+
+            if (missingFiles.Count > 0)
             {
+                var initTasks = missingFiles.Select(InitializeNewCacheIoIndex);
+                var initResults = await Task.WhenAll(initTasks);
 
-                // Generate a list of block transaction object linked to the io file index.
-                foreach (var blockTransaction in listBlockTransaction)
-                {
-
-                    string ioFileName = GetIoFileNameFromBlockHeight(blockTransaction.TransactionObject.BlockHeightTransaction);
-
-                    if (!_dictionaryCacheIoIndexObject.ContainsKey(ioFileName))
-                    {
-                        Tuple<bool, HashSet<long>> resultInit = await InitializeNewCacheIoIndex(ioFileName);
-
-                        if (!resultInit.Item1)
-                        {
-                            result = false;
-                            break;
-                        }
-                    }
-
-                    if (!listBlockTransactionToInsertOrUpdate.ContainsKey(ioFileName))
-                    {
-                        listBlockTransactionToInsertOrUpdate.Add(ioFileName, new List<ClassBlockTransaction>()
-                        {
-                             blockTransaction
-                        });
-                    }
-                    else
-                        listBlockTransactionToInsertOrUpdate[ioFileName].Add(blockTransaction);
-                }
-
-                // Much faster insert/update.
-                if (listBlockTransactionToInsertOrUpdate.Count > 0 && result)
-                {
-                    string[] ioFileNameArray = listBlockTransactionToInsertOrUpdate.GetList.Keys.ToArray();
-                    int totalTaskToDo = ioFileNameArray.Length;
-                    int totalTaskDone = 0;
-
-                    using (CancellationTokenSource cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationIoCache.Token))
-                    {
-                        bool cancel = false;
-
-                        foreach (string ioFileName in ioFileNameArray)
-                        {
-                            if (_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask && ioFileNameArray.Length > 1)
-                            {
-                                await TaskManager.TaskManager.InsertTask(new Action(async () =>
-                                {
-                                    if (!cancel)
-                                    {
-                                        try
-                                        {
-                                            result = await _dictionaryCacheIoIndexObject[ioFileName].PushOrUpdateListIoBlockTransactionData(listBlockTransactionToInsertOrUpdate[ioFileName], keepAlive, cancellation);
-                                        }
-
-#if !DEBUG
-                                        catch
-                                        {
-
-#else
-                                        catch (Exception error)
-                                        {
-                                            Debug.WriteLine("Failed to push the list of io block transaction data to the cache: " + error.Message);
-#endif
-                                        }
-                                    }
-                                    totalTaskDone++;
-
-                                }), 0, cancellation);
-                            }
-                            else
-                            {
-                                if (!await _dictionaryCacheIoIndexObject[ioFileName].PushOrUpdateListIoBlockTransactionData(listBlockTransactionToInsertOrUpdate[ioFileName], keepAlive, cancellation))
-                                {
-                                    result = false;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask && ioFileNameArray.Length > 1)
-                        {
-                            while (totalTaskDone < totalTaskToDo && !cancel && result || !cancellationIoCache.IsCancellationRequested)
-                                await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskParallelTaskWaitDelay);
-                        }
-                    }
-                }
+                if (initResults.Any(r => !r.Item1))
+                    return false;
             }
 
-            return result;
+            // Traitement parallèle
+            int maxParallel = _blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask && groupedTransactions.Count > 1
+                ? Environment.ProcessorCount
+                : 1;
+
+            var semaphore = new SemaphoreSlim(maxParallel);
+            var tasks = new List<Task<bool>>();
+
+            foreach (var kvp in groupedTransactions)
+            {
+                await semaphore.WaitAsync(cancellationIoCache.Token);
+
+                var task = Task.Run(async () =>
+                {
+                    try
+                    {
+                        if (_dictionaryCacheIoIndexObject.TryGetValue(kvp.Key, out var indexObject))
+                        {
+                            return await indexObject.PushOrUpdateListIoBlockTransactionData(
+                                kvp.Value,
+                                keepAlive,
+                                cancellationIoCache
+                            );
+                        }
+                        return false;
+                    }
+                    catch
+                    {
+                        return false;
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                }, cancellationIoCache.Token);
+
+                tasks.Add(task);
+            }
+
+            var results = await Task.WhenAll(tasks);
+            return results.All(r => r);
         }
 
         /// <summary>
@@ -637,49 +773,64 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         /// <param name="blockHeight"></param>
         /// <param name="cancellationIoCache"></param>
         /// <returns></returns>
-        public async Task<bool> CheckTransactionHashExistOnIoBlockCached(string transactionHash, long blockHeight, CancellationTokenSource cancellationIoCache)
+        public async Task<bool> CheckTransactionHashExistOnIoBlockCached(
+            string transactionHash,
+            long blockHeight,
+            CancellationTokenSource cancellationIoCache)
         {
-            bool result = false;
-
             long blockHeightFromTransactionHash = ClassTransactionUtility.GetBlockHeightFromTransactionHash(transactionHash);
 
             if (blockHeight != blockHeightFromTransactionHash || blockHeight < BlockchainSetting.GenesisBlockHeight)
                 blockHeight = blockHeightFromTransactionHash;
 
-            if (_dictionaryCacheIoIndexObject.Count > 0)
-            {
-                string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
+            if (_dictionaryCacheIoIndexObject.Count == 0)
+                return false;
 
-                return _dictionaryCacheIoIndexObject.ContainsKey(ioFileName) ? await _dictionaryCacheIoIndexObject[ioFileName].ContainIoBlockTransactionHash(transactionHash, blockHeight, cancellationIoCache) : false;
+            string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
+
+            if (_dictionaryCacheIoIndexObject.TryGetValue(ioFileName, out var indexObject))
+            {
+                return await indexObject.ContainIoBlockTransactionHash(transactionHash, blockHeight, cancellationIoCache);
             }
 
-            return result;
+            return false;
         }
 
         /// <summary>
         /// Retrieve every block transactions from a block object cached.
         /// </summary>
         /// <param name="blockHeight"></param>
+        /// <param name="keepAlive"></param>
         /// <param name="cancellationIoCache"></param>
         /// <returns></returns>
-        public async Task<SortedList<string, ClassBlockTransaction>> GetBlockTransactionListFromBlockHeightTarget(long blockHeight, bool keepAlive, CancellationTokenSource cancellationIoCache)
+        public async Task<SortedList<string, ClassBlockTransaction>> GetBlockTransactionListFromBlockHeightTarget(
+            long blockHeight,
+            bool keepAlive,
+            CancellationTokenSource cancellationIoCache)
         {
-            SortedList<string, ClassBlockTransaction> listBlockTransactions = new SortedList<string, ClassBlockTransaction>();
+            var listBlockTransactions = new SortedList<string, ClassBlockTransaction>();
 
+            if (blockHeight < BlockchainSetting.GenesisBlockHeight)
+                return listBlockTransactions;
 
-            if (blockHeight >= BlockchainSetting.GenesisBlockHeight)
+            string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
+
+            if (_dictionaryCacheIoIndexObject.TryGetValue(ioFileName, out var indexObject))
             {
-                string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
+                ClassBlockObject blockObject = await indexObject.GetIoBlockDataFromBlockHeight(
+                    blockHeight,
+                    keepAlive,
+                    false,
+                    cancellationIoCache
+                );
 
-                if (_dictionaryCacheIoIndexObject.ContainsKey(ioFileName))
+                if (blockObject?.BlockTransactions != null)
                 {
-                    ClassBlockObject blockObject = await _dictionaryCacheIoIndexObject[ioFileName].GetIoBlockDataFromBlockHeight(blockHeight, keepAlive, false, cancellationIoCache);
-
-                    if (blockObject != null)
-                        return new SortedList<string, ClassBlockTransaction>(blockObject.BlockTransactions.ToDictionary(x => x.Key, x => x.Value));
+                    return new SortedList<string, ClassBlockTransaction>(
+                        blockObject.BlockTransactions.ToDictionary(x => x.Key, x => x.Value)
+                    );
                 }
             }
-
 
             return listBlockTransactions;
         }
@@ -690,27 +841,37 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         /// <param name="listTransactionHash"></param>
         /// <param name="blockHeight"></param>
         /// <param name="keepAlive"></param>
+        /// <param name="cancellationIoCache"></param>
         /// <returns></returns>
-        public async Task<List<ClassBlockTransaction>> GetListBlockTransactionFromListTransactionHashAndBlockHeightTarget(List<string> listTransactionHash, long blockHeight, bool keepAlive, CancellationTokenSource cancellationIoCache)
+        public async Task<List<ClassBlockTransaction>> GetListBlockTransactionFromListTransactionHashAndBlockHeightTarget(
+            List<string> listTransactionHash,
+            long blockHeight,
+            bool keepAlive,
+            CancellationTokenSource cancellationIoCache)
         {
-            List<ClassBlockTransaction> listBlockTransaction = new List<ClassBlockTransaction>();
+            var listBlockTransaction = new List<ClassBlockTransaction>();
 
+            if (blockHeight < BlockchainSetting.GenesisBlockHeight)
+                return listBlockTransaction;
 
-            if (blockHeight >= BlockchainSetting.GenesisBlockHeight)
+            string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
+
+            if (_dictionaryCacheIoIndexObject.TryGetValue(ioFileName, out var indexObject))
             {
+                ClassBlockObject blockObject = await indexObject.GetIoBlockDataFromBlockHeight(
+                    blockHeight,
+                    keepAlive,
+                    false,
+                    cancellationIoCache
+                );
 
-                string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
-
-                if (_dictionaryCacheIoIndexObject.ContainsKey(ioFileName))
+                if (blockObject?.BlockTransactions != null)
                 {
-                    ClassBlockObject blockObject = await _dictionaryCacheIoIndexObject[ioFileName].GetIoBlockDataFromBlockHeight(blockHeight, keepAlive, false, cancellationIoCache);
-
-                    if (blockObject != null)
+                    foreach (string transactionHash in listTransactionHash)
                     {
-                        foreach (string transactionHash in listTransactionHash)
+                        if (blockObject.BlockTransactions.TryGetValue(transactionHash, out var transaction))
                         {
-                            if (blockObject.BlockTransactions.ContainsKey(transactionHash))
-                                listBlockTransaction.Add(blockObject.BlockTransactions[transactionHash].Clone());
+                            listBlockTransaction.Add(transaction.Clone());
                         }
                     }
                 }
@@ -724,16 +885,28 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         /// </summary>
         /// <param name="transactionHash"></param>
         /// <param name="blockHeight"></param>
+        /// <param name="keepAlive"></param>
         /// <param name="cancellationIoCache"></param>
         /// <returns></returns>
-        public async Task<ClassBlockTransaction> GetBlockTransactionFromTransactionHashOnIoBlockCached(string transactionHash, long blockHeight, bool keepAlive, CancellationTokenSource cancellationIoCache)
+        public async Task<ClassBlockTransaction> GetBlockTransactionFromTransactionHashOnIoBlockCached(
+            string transactionHash,
+            long blockHeight,
+            bool keepAlive,
+            CancellationTokenSource cancellationIoCache)
         {
-            // If the block height is provided.
-            if (blockHeight >= BlockchainSetting.GenesisBlockHeight)
-            {
-                string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
+            if (blockHeight < BlockchainSetting.GenesisBlockHeight)
+                return null;
 
-                return _dictionaryCacheIoIndexObject.ContainsKey(ioFileName) ? await _dictionaryCacheIoIndexObject[ioFileName].GetBlockTransactionFromIoBlockHeightByTransactionHash(blockHeight, transactionHash, keepAlive, cancellationIoCache) : null;
+            string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
+
+            if (_dictionaryCacheIoIndexObject.TryGetValue(ioFileName, out var indexObject))
+            {
+                return await indexObject.GetBlockTransactionFromIoBlockHeightByTransactionHash(
+                    blockHeight,
+                    transactionHash,
+                    keepAlive,
+                    cancellationIoCache
+                );
             }
 
             return null;
@@ -747,135 +920,117 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         /// <param name="listBlockHeightAlreadyCached"></param>
         /// <param name="listBlockAlreadyCached"></param>
         /// <param name="keepAlive"></param>
+        /// <param name="clone"></param>
         /// <param name="cancellationIoCache"></param>
         /// <returns></returns>
-        public async Task<SortedList<long, ClassBlockObject>> GetBlockObjectListFromBlockHeightRange(long blockHeightStart, long blockHeightEnd, HashSet<long> listBlockHeightAlreadyCached, SortedList<long, ClassBlockObject> listBlockAlreadyCached, bool keepAlive, bool clone, CancellationTokenSource cancellationIoCache)
+        public async Task<SortedList<long, ClassBlockObject>> GetBlockObjectListFromBlockHeightRange(
+            long blockHeightStart,
+            long blockHeightEnd,
+            HashSet<long> listBlockHeightAlreadyCached,
+            SortedList<long, ClassBlockObject> listBlockAlreadyCached,
+            bool keepAlive,
+            bool clone,
+            CancellationTokenSource cancellationIoCache)
         {
-            using (DisposableDictionary<string, List<long>> listBlockHeightIndexedByIoFile = new DisposableDictionary<string, List<long>>())
+            // Groupement par fichier optimisé
+            var blocksToFetch = new Dictionary<string, List<long>>();
+
+            for (long height = blockHeightStart; height <= blockHeightEnd; height++)
             {
-                bool error = false;
+                if (listBlockAlreadyCached.ContainsKey(height))
+                    continue;
 
-                for (long i = blockHeightStart - 1; i < blockHeightEnd; i++)
+                string ioFileName = GetIoFileNameFromBlockHeight(height);
+
+                if (!_dictionaryCacheIoIndexObject.ContainsKey(ioFileName))
+                    continue;
+
+                if (!blocksToFetch.TryGetValue(ioFileName, out var heights))
                 {
-                    long blockHeight = i + 1;
-
-                    if (blockHeight <= blockHeightEnd)
-                    {
-                        string ioFileName = GetIoFileNameFromBlockHeight(blockHeight);
-
-                        if (_dictionaryCacheIoIndexObject.ContainsKey(ioFileName))
-                        {
-                            if (!listBlockHeightIndexedByIoFile.ContainsKey(ioFileName))
-                                listBlockHeightIndexedByIoFile.Add(ioFileName, new List<long>());
-
-                            if (!listBlockAlreadyCached.ContainsKey(blockHeight))
-                                listBlockHeightIndexedByIoFile[ioFileName].Add(blockHeight);
-                        }
-                    }
-                    else
-                        break;
+                    heights = _listPool.Get();
+                    blocksToFetch[ioFileName] = heights;
                 }
-
-                if (listBlockHeightIndexedByIoFile.Count > 0)
-                {
-                    if (!error)
-                    {
-                        string[] ioFileNameArray = listBlockHeightIndexedByIoFile.GetList.Keys.ToArray();
-
-                        int totalTaskToDo = ioFileNameArray.Length;
-                        int totalTaskDone = 0;
-                        bool cancel = false;
-
-                        if (_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask && ioFileNameArray.Length > 1)
-                        {
-                            using (CancellationTokenSource cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationIoCache.Token))
-                            {
-
-                                foreach (string ioFileName in ioFileNameArray)
-                                {
-                                    await TaskManager.TaskManager.InsertTask(new Action(async () =>
-                                    {
-                                        try
-                                        {
-                                            if (listBlockHeightIndexedByIoFile[ioFileName].Count > 0 && !cancel)
-                                            {
-                                                using (DisposableList<ClassBlockObject> listBlockObject = await _dictionaryCacheIoIndexObject[ioFileName].GetIoListBlockDataFromListBlockHeight(new HashSet<long>(listBlockHeightIndexedByIoFile[ioFileName]), keepAlive, clone, cancellationIoCache))
-                                                {
-                                                    if (listBlockObject.Count > 0)
-                                                    {
-                                                        foreach (ClassBlockObject blockObject in listBlockObject.GetAll)
-                                                        {
-
-                                                            if (blockObject != null)
-                                                            {
-                                                                if (!listBlockAlreadyCached.ContainsKey(blockObject.BlockHeight) && !listBlockHeightAlreadyCached.Contains(blockObject.BlockHeight))
-                                                                    listBlockAlreadyCached.Add(blockObject.BlockHeight, blockObject);
-                                                            }
-                                                        }
-
-                                                    }
-                                                }
-                                            }
-                                        }
-#if !DEBUG
-                                        catch
-                                        {
-#else
-                                        catch (Exception exception)
-                                        {
-                                            Debug.WriteLine("Error to get the list of block data target by the block height range: " + blockHeightStart + "/" + blockHeightEnd + " | Exception: " + exception.Message);
-#endif
-                                            cancel = true;
-                                            // The task has been cancelled.
-                                        }
-
-                                        totalTaskDone++;
-                                    }), 0, cancellation);
-                                }
-
-                                while (totalTaskDone < totalTaskToDo && !cancel && !cancellationIoCache.IsCancellationRequested)
-                                    await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskParallelTaskWaitDelay);
-
-                            }
-                        }
-                        else
-                        {
-                            foreach (string ioFileName in ioFileNameArray)
-                            {
-
-                                if (listBlockHeightIndexedByIoFile[ioFileName].Count > 0)
-                                {
-                                    if (!cancel)
-                                    {
-                                        using (DisposableList<ClassBlockObject> listBlockObject = await _dictionaryCacheIoIndexObject[ioFileName].GetIoListBlockDataFromListBlockHeight(new HashSet<long>(listBlockHeightIndexedByIoFile[ioFileName]), keepAlive, clone, cancellationIoCache))
-                                        {
-                                            if (listBlockObject.Count > 0)
-                                            {
-                                                foreach (ClassBlockObject blockObject in listBlockObject.GetAll)
-                                                {
-
-                                                    if (blockObject != null)
-                                                    {
-                                                        if (!listBlockAlreadyCached.ContainsKey(blockObject.BlockHeight) && !listBlockHeightAlreadyCached.Contains(blockObject.BlockHeight))
-                                                            listBlockAlreadyCached.Add(blockObject.BlockHeight, blockObject);
-                                                    }
-                                                }
-
-                                            }
-                                        }
-                                    }
-                                    else
-                                        break;
-                                }
-                            }
-                        }
-
-                    }
-                }
-
-
-                return listBlockAlreadyCached;
+                heights.Add(height);
             }
+
+            if (blocksToFetch.Count == 0)
+                return listBlockAlreadyCached;
+
+            try
+            {
+                // Traitement parallèle avec gestion d'erreur
+                int maxParallel = _blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskEnableMultiTask && blocksToFetch.Count > 1
+                    ? Environment.ProcessorCount
+                    : 1;
+
+                var semaphore = new SemaphoreSlim(maxParallel);
+                var fetchTasks = new List<Task<(bool success, List<ClassBlockObject> blocks)>>();
+
+                foreach (var kvp in blocksToFetch)
+                {
+                    await semaphore.WaitAsync(cancellationIoCache.Token);
+
+                    var task = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            if (_dictionaryCacheIoIndexObject.TryGetValue(kvp.Key, out var indexObject))
+                            {
+                                using (var blockList = await indexObject.GetIoListBlockDataFromListBlockHeight(
+                                    new HashSet<long>(kvp.Value),
+                                    keepAlive,
+                                    clone,
+                                    cancellationIoCache))
+                                {
+                                    return (true, new List<ClassBlockObject>(blockList.GetAll.Where(b => b != null)));
+                                }
+                            }
+                            return (false, new List<ClassBlockObject>());
+                        }
+                        catch
+                        {
+                            return (false, new List<ClassBlockObject>());
+                        }
+                        finally
+                        {
+                            semaphore.Release();
+                        }
+                    }, cancellationIoCache.Token);
+
+                    fetchTasks.Add(task);
+                }
+
+                var results = await Task.WhenAll(fetchTasks);
+
+                // Agréger les résultats
+                lock (listBlockAlreadyCached)
+                {
+                    foreach (var result in results)
+                    {
+                        if (result.success)
+                        {
+                            foreach (var block in result.blocks)
+                            {
+                                if (!listBlockAlreadyCached.ContainsKey(block.BlockHeight) &&
+                                    !listBlockHeightAlreadyCached.Contains(block.BlockHeight))
+                                {
+                                    listBlockAlreadyCached.Add(block.BlockHeight, block);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                // Retourner les listes au pool
+                foreach (var list in blocksToFetch.Values)
+                {
+                    _listPool.Return(list);
+                }
+            }
+
+            return listBlockAlreadyCached;
         }
 
         /// <summary>
@@ -884,18 +1039,20 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         /// <returns></returns>
         public async Task<Tuple<long, long>> GetIoCacheBlockIndexes(CancellationTokenSource cancellation)
         {
-            using (DisposableList<string> listIndexes = new DisposableList<string>(true, 0, _dictionaryCacheIoIndexObject.Keys.ToList()))
-            {
-                var indexListFirst = await _dictionaryCacheIoIndexObject[listIndexes.GetList[0]].GetIoBlockHeightListIndexed(cancellation);
-                var indexListLast = await _dictionaryCacheIoIndexObject[listIndexes.GetList[listIndexes.Count - 1]].GetIoBlockHeightListIndexed(cancellation);
+            var fileNames = _dictionaryCacheIoIndexObject.Keys.OrderBy(k => k).ToArray();
 
-                return new Tuple<long, long>(indexListFirst.First(), indexListLast.Last());
-            }
+            if (fileNames.Length == 0)
+                return new Tuple<long, long>(0, 0);
+
+            var indexListFirst = await _dictionaryCacheIoIndexObject[fileNames[0]].GetIoBlockHeightListIndexed(cancellation);
+            var indexListLast = await _dictionaryCacheIoIndexObject[fileNames[fileNames.Length - 1]].GetIoBlockHeightListIndexed(cancellation);
+
+            return new Tuple<long, long>(indexListFirst.First(), indexListLast.Last());
         }
 
         #endregion
 
-        #region Functions dedicated to io files indexing.
+        #region Functions dedicated to io files indexing
 
         /// <summary>
         /// Return the io file name depending of the block height and the limit of max block inside a io cache file.
@@ -904,7 +1061,22 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         /// <returns></returns>
         private string GetIoFileNameFromBlockHeight(long blockHeight)
         {
-            return ((blockHeight / _blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskMaxBlockPerFile) + IoFileExtension);
+            // Utiliser le cache pour éviter les allocations répétées
+            return _fileNameCache.GetOrAdd(blockHeight, bh =>
+            {
+                long fileIndex = bh / _blockchainDatabaseSetting.BlockchainCacheSetting.IoCacheDiskMaxBlockPerFile;
+                return $"{fileIndex}{IoFileExtension}";
+            });
+        }
+
+        /// <summary>
+        /// Obtenir le verrou pour un fichier spécifique.
+        /// </summary>
+        /// <param name="ioFileName"></param>
+        /// <returns></returns>
+        private SemaphoreSlim GetFileLock(string ioFileName)
+        {
+            return _fileLocks.GetOrAdd(ioFileName, _ => new SemaphoreSlim(1, 1));
         }
 
         /// <summary>
@@ -913,28 +1085,76 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Cache.Object.Systems.IO.Mai
         /// <returns></returns>
         public long GetIoCacheSystemMemoryConsumption(CancellationTokenSource cancellation, out int totalBlockKeepAlive)
         {
-            totalBlockKeepAlive = 0; // Default.
+            totalBlockKeepAlive = 0;
 
-            if (_dictionaryCacheIoIndexObject.Count > 0)
+            if (_dictionaryCacheIoIndexObject.Count == 0)
+                return 0;
+
+            // Cache pendant l'intervalle défini
+            if (DateTime.UtcNow - _lastMemoryCalculation < _memoryCalculationInterval)
             {
-                long totalMemoryUsagePendingCalculation = 0;
-
-                using (DisposableList<string> listIoBlockFile = new DisposableList<string>(false, 0,_dictionaryCacheIoIndexObject.Keys.ToList()))
+                // Recalculer seulement totalBlockKeepAlive
+                foreach (var indexObject in _dictionaryCacheIoIndexObject.Values)
                 {
-                    foreach (string ioFileName in listIoBlockFile.GetList)
-                    {
-                        totalMemoryUsagePendingCalculation += _dictionaryCacheIoIndexObject[ioFileName].GetIoMemoryUsage(cancellation, out int indexTotalBlockKeepAlive);
-                        totalBlockKeepAlive += indexTotalBlockKeepAlive;
-                    }
+                    indexObject.GetIoMemoryUsage(cancellation, out int keepAlive);
+                    totalBlockKeepAlive += keepAlive;
                 }
-
-                _totalIoCacheSystemMemoryUsage = totalMemoryUsagePendingCalculation;
+                return _cachedMemoryUsage;
             }
 
+            // Calcul complet
+            long totalMemoryUsage = 0;
+            foreach (var indexObject in _dictionaryCacheIoIndexObject.Values)
+            {
+                totalMemoryUsage += indexObject.GetIoMemoryUsage(cancellation, out int keepAlive);
+                totalBlockKeepAlive += keepAlive;
+            }
 
-            return _totalIoCacheSystemMemoryUsage;
+            _cachedMemoryUsage = totalMemoryUsage;
+            _lastMemoryCalculation = DateTime.UtcNow;
+
+            return _cachedMemoryUsage;
         }
 
         #endregion
     }
+
+    #region Helper Classes
+
+    /// <summary>
+    /// Pool d'objets simple pour réutiliser les listes.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    internal class ObjectPool<T> where T : class
+    {
+        private readonly ConcurrentBag<T> _objects;
+        private readonly Func<T> _objectGenerator;
+        private readonly Action<T> _resetAction;
+
+        public ObjectPool(Func<T> objectGenerator, Action<T> resetAction = null)
+        {
+            _objects = new ConcurrentBag<T>();
+            _objectGenerator = objectGenerator ?? throw new ArgumentNullException(nameof(objectGenerator));
+            _resetAction = resetAction;
+        }
+
+        public T Get()
+        {
+            if (_objects.TryTake(out T item))
+                return item;
+
+            return _objectGenerator();
+        }
+
+        public void Return(T item)
+        {
+            if (item == null)
+                return;
+
+            _resetAction?.Invoke(item);
+            _objects.Add(item);
+        }
+    }
+
+    #endregion
 }

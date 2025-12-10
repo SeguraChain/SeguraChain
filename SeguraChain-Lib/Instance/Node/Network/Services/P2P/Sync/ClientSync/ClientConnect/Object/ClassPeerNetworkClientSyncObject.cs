@@ -38,7 +38,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         public int PeerPortTarget;
         public int PeerApiPortTarget;
         public string PeerUniqueIdTarget;
-     
+
 
         /// <summary>
         /// Packet received.
@@ -249,6 +249,9 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                 return true;
             else _peerSocketClient?.Kill(SocketShutdown.Both);
 
+
+            ClassPeerCheckManager.InputPeerClientAttemptConnect(_peerDatabase, PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject, cancellation);
+
             await Task.Delay(10);
 
             return false;
@@ -270,8 +273,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
             if (PeerPacketReceived == null)
             {
+                ClassPeerCheckManager.InputPeerClientNoPacketConnectionOpened(_peerDatabase, PeerIpTarget, PeerUniqueIdTarget, _peerNetworkSetting, _peerFirewallSettingObject, _peerCancellationTokenMain);
+
 #if DEBUG
-                Debug.WriteLine("Peer " + PeerIpTarget + "|" + PeerUniqueIdTarget + " don't send a response to the packet sent: " + System.Enum.GetName(typeof(ClassPeerEnumPacketResponse), PacketResponseExpected)+" | " + System.Enum.GetName(typeof(ClassPeerEnumPacketResponse), PeerPacketTypeReceived));
+                Debug.WriteLine("Peer " + PeerIpTarget + "|" + PeerUniqueIdTarget + " don't send a response to the packet sent: " + System.Enum.GetName(typeof(ClassPeerEnumPacketResponse), PacketResponseExpected) + " | " + System.Enum.GetName(typeof(ClassPeerEnumPacketResponse), PeerPacketTypeReceived));
 #endif
                 ClassLog.WriteLine("Peer " + PeerIpTarget + "|" + PeerUniqueIdTarget + " don't send a response to the packet sent: " + System.Enum.GetName(typeof(ClassPeerEnumPacketResponse), PacketResponseExpected) + " | " + System.Enum.GetName(typeof(ClassPeerEnumPacketResponse), PeerPacketTypeReceived), ClassEnumLogLevelType.LOG_LEVEL_PEER_TASK_SYNC, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_LOWEST_PRIORITY, true);
                 return PeerPacketReceivedStatus;
@@ -321,9 +326,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                         try
                         {
-                            listPacketReceived.GetList = ClassUtility.GetEachPacketSplitted(
-                                readPacketData.Data
-                                , listPacketReceived, _peerCancellationTokenMain).GetList;
+                            listPacketReceived = ClassUtility.GetEachPacketSplitted(readPacketData.Data, listPacketReceived, _peerCancellationTokenMain);
                         }
                         catch
                         {
@@ -336,12 +339,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                         if (listPacketReceived.GetList.Sum(x => x.Packet.Length) >= ClassPeerPacketSetting.PacketMaxLengthReceive)
                         {
 #if DEBUG
-                            Debug.WriteLine("Too huge packet data length from peer " + PeerIpTarget +" | "+ listPacketReceived.GetList.Sum(x => x.Packet.Length)+"/"+ ClassPeerPacketSetting.PacketMaxLengthReceive);
+                            Debug.WriteLine("Too huge packet data length from peer " + PeerIpTarget + " | " + listPacketReceived.GetList.Sum(x => x.Packet.Length) + "/" + ClassPeerPacketSetting.PacketMaxLengthReceive);
 #endif
                             break;
                         }
 
-#endregion
+                        #endregion
 
                         int countCompleted = listPacketReceived.GetList.Count(x => x.Complete);
 
@@ -361,7 +364,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
                         try
                         {
-                            base64Packet = Convert.FromBase64String(listPacketReceived[listPacketReceived.Count - 1].Packet);
+                            base64Packet = listPacketReceived[listPacketReceived.Count - 1].Packet.GetHexStringToByteArray();
                         }
                         catch
                         {
@@ -382,7 +385,8 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                             Debug.WriteLine("Can't build packet data from: " + _peerSocketClient.GetIp);
 #endif
                             break;
-                        };
+                        }
+                        ;
 
                         if (peerPacketReceived == null)
                             break;
@@ -393,10 +397,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
                         {
                             PeerPacketReceivedStatus = true;
 
-                            
+
                             if (_peerDatabase.ContainsPeerUniqueId(PeerIpTarget, PeerUniqueIdTarget, _peerCancellationTokenMain))
                                 _peerDatabase[PeerIpTarget, PeerUniqueIdTarget, _peerCancellationTokenMain].PeerTimestampSignatureWhitelist = peerPacketReceived.PeerLastTimestampSignatureWhitelist;
-                            
+
                             PeerPacketReceived = peerPacketReceived;
                         }
 
@@ -428,7 +432,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
 
         }
 
-#endregion
+        #endregion
 
         #region Enable Keep alive functions.
 
@@ -508,7 +512,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ClientSync.Cli
         /// <returns></returns>
         private async Task<bool> SendPeerPacket(byte[] packet, CancellationTokenSource cancellation)
         {
-            string packetData = Convert.ToBase64String(packet) + ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString();
+            string packetData = packet.GetHexStringFromByteArray() + ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString();
             return await _peerSocketClient.TrySendSplittedPacket(packetData.GetByteArray(), cancellation, _peerNetworkSetting.PeerMaxPacketSplitedSendSize, false);
         }
 
