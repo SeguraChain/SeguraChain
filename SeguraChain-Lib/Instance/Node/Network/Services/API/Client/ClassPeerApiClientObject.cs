@@ -145,12 +145,12 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
                                     {
 
                                         if (readPacketData.Status)
-                                            listPacket.Add(
-
-                                                readPacketData.Data
-                                                );
+                                            listPacket.Add(readPacketData.Data);
                                         else break;
 
+#if DEBUG
+                                        ClassLog.WriteLine("Packet data size received: " + readPacketData.Data.Length, ClassEnumLogLevelType.LOG_LEVEL_API_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.White); ;
+#endif
 
                                         packetSizeCount += _peerNetworkSettingObject.PeerMaxPacketBufferSize;
 
@@ -359,7 +359,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.API.Client
             _clientSocket?.Kill(SocketShutdown.Both);
         }
 
-#endregion
+        #endregion
 
         #region Manage Client API Packets
 

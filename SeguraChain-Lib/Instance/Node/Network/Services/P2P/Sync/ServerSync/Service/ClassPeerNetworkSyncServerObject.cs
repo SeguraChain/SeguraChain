@@ -103,41 +103,52 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
             NetworkPeerServerStatus = true;
             _cancellationTokenSourcePeerServer = new CancellationTokenSource();
 
-            Task.Run(async () =>
+            TaskManager.TaskManager.InsertTask(new Action(async () =>
             {
                 while (NetworkPeerServerStatus)
                 {
                     try
                     {
-                        var clientSocket = await _tcpListenerPeer.AcceptSocketAsync();
-                        ClassCustomSocket clientPeerTcp = new ClassCustomSocket(clientSocket, true);
+                        ClassCustomSocket clientPeerTcp = new ClassCustomSocket(await _tcpListenerPeer.AcceptSocketAsync(), true);
 
                         string clientIp = clientPeerTcp.GetIp;
 
-                        // Don't await this, let it run in the background.
-                        #pragma warning disable 4014
-                        Task.Run(async () =>
+                        await TaskManager.TaskManager.InsertTask(new Action(async () =>
                         {
                             ClassLog.WriteLine("Handle incoming connection from: " + clientIp, ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Green);
 
                             var handleResult = await HandleIncomingConnection(clientIp, clientPeerTcp, PeerIpOpenNatServer);
 
-                            if (handleResult != ClassPeerNetworkServerHandleConnectionEnum.VALID_HANDLE)
+                            switch (handleResult)
                             {
-                                ClassLog.WriteLine("Cannot handle incoming connection from: " + clientIp + " | Result: " + System.Enum.GetName(typeof(ClassPeerNetworkServerHandleConnectionEnum), handleResult), ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
-                                if (_firewallSettingObject.PeerEnableFirewallLink)
-                                    ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
-                                clientPeerTcp.Kill(SocketShutdown.Both);
+
+
+#if NET5_0_OR_GREATER
+                                case not ClassPeerNetworkServerHandleConnectionEnum.VALID_HANDLE:
+
+#else
+                                    case ClassPeerNetworkServerHandleConnectionEnum.BAD_CLIENT_STATUS:
+                                    case ClassPeerNetworkServerHandleConnectionEnum.HANDLE_CLIENT_EXCEPTION:
+                                    case ClassPeerNetworkServerHandleConnectionEnum.INSERT_CLIENT_IP_EXCEPTION:
+                                    case ClassPeerNetworkServerHandleConnectionEnum.TOO_MUCH_ACTIVE_CONNECTION_CLIENT:
+#endif
+
+                                    {
+                                        ClassLog.WriteLine("Cannot handle incoming connection from: " + clientIp + " | Result: " + System.Enum.GetName(typeof(ClassPeerNetworkServerHandleConnectionEnum), handleResult), ClassEnumLogLevelType.LOG_LEVEL_PEER_SERVER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
+                                        if (_firewallSettingObject.PeerEnableFirewallLink)
+                                            ClassPeerFirewallManager.InsertInvalidPacket(clientIp);
+                                        clientPeerTcp.Kill(SocketShutdown.Both);
+                                    }
+                                    break;
                             }
-                        }, _cancellationTokenSourcePeerServer.Token);
-                        #pragma warning restore 4014
+                        }), 0, _cancellationTokenSourcePeerServer, null);
                     }
                     catch
                     {
                         // Ignored, catch the exception once the task is cancelled.
                     }
                 }
-            }, _cancellationTokenSourcePeerServer.Token);
+            }), 0, _cancellationTokenSourcePeerServer).Wait();
 
 
             return true;
@@ -226,12 +237,10 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
 
                 #endregion
 
-
-
-                /*
                 bool handlePeerClientStatus = false;
                 try
                 {
+                    // Against flood.
                     handlePeerClientStatus = await _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.TryWaitAsync(_peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay, CancellationTokenSource.CreateLinkedTokenSource(_cancellationTokenSourcePeerServer.Token, new CancellationTokenSource(_peerNetworkSettingObject.PeerMaxSemaphoreConnectAwaitDelay).Token));
 
                     if (handlePeerClientStatus)
@@ -248,10 +257,6 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.ServerSync.Ser
                     if (handlePeerClientStatus)
                         _listPeerIncomingConnectionObject[clientIp].SemaphoreHandleConnection.Release();
                 }
-                */
-
-                await _listPeerIncomingConnectionObject[clientIp].ListPeerClientObject[randomId].HandlePeerClient();
-
 
             }
             catch (Exception error)

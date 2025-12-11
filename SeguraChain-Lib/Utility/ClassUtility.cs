@@ -1,13 +1,4 @@
-﻿using LZ4;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using SeguraChain_Lib.Blockchain.Setting;
-using SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Packet;
-using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet.Model;
-using SeguraChain_Lib.Other.Object.List;
-using SeguraChain_Lib.Other.Object.Network;
-using SeguraChain_Lib.Other.Object.SHA3;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -22,6 +13,15 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using LZ4;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using SeguraChain_Lib.Blockchain.Setting;
+using SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Packet;
+using SeguraChain_Lib.Instance.Node.Network.Services.P2P.Sync.Packet.Model;
+using SeguraChain_Lib.Other.Object.List;
+using SeguraChain_Lib.Other.Object.Network;
+using SeguraChain_Lib.Other.Object.SHA3;
 
 namespace SeguraChain_Lib.Utility
 {
@@ -30,6 +30,7 @@ namespace SeguraChain_Lib.Utility
         #region Constant objects.
 
         private const string Base64Regex = @"^[a-zA-Z0-9\+/]*={0,3}$";
+
 
         private static readonly List<string> ListOfCharacters = new List<string>
         {
@@ -44,20 +45,94 @@ namespace SeguraChain_Lib.Utility
 
         public static readonly HashSet<char> ListOfHexCharacters = new HashSet<char>
         {
-            'a','b','c','d','e','f','0','1','2','3','4','5','6','7','8','9'
+            'a',
+            'b',
+            'c',
+            'd',
+            'e',
+            'f',
+            '0',
+            '1',
+            '2',
+            '3',
+            '4',
+            '5',
+            '6',
+            '7',
+            '8',
+            '9'
         };
 
         private static readonly HashSet<char> ListOfBase64Characters = new HashSet<char>
         {
-            'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
-            'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
-            '0','1','2','3','4','5','6','7','8','9','+','/','='
+            'A',
+            'B',
+            'C',
+            'D',
+            'E',
+            'F',
+            'G',
+            'H',
+            'I',
+            'J',
+            'K',
+            'L',
+            'M',
+            'N',
+            'O',
+            'P',
+            'Q',
+            'R',
+            'S',
+            'T',
+            'U',
+            'V',
+            'W',
+            'X',
+            'Y',
+            'Z',
+            'a',
+            'b',
+            'c',
+            'd',
+            'e',
+            'f',
+            'g',
+            'h',
+            'i',
+            'j',
+            'k',
+            'l',
+            'm',
+            'n',
+            'o',
+            'p',
+            'q',
+            'r',
+            's',
+            't',
+            'u',
+            'v',
+            'w',
+            'x',
+            'y',
+            'z',
+            '0',
+            '1',
+            '2',
+            '3',
+            '4',
+            '5',
+            '6',
+            '7',
+            '8',
+            '9',
+            '+',
+            '/',
+            '='
         };
 
         private static readonly List<string> ListOfNumbers = new List<string> { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
-
-        // Hybrid mode - global secure RNG to avoid allocating per-call RNG objects.
-        private static readonly RandomNumberGenerator SecureRng = RandomNumberGenerator.Create();
 
         #endregion
 
@@ -66,10 +141,13 @@ namespace SeguraChain_Lib.Utility
         /// <summary>
         /// Generate a SHA 512 hash from a string.
         /// </summary>
+        /// <param name="sourceString"></param>
+        /// <returns></returns>
         public static string GenerateSha3512FromString(string sourceString)
         {
             using (var hash = new ClassSha3512DigestDisposable())
             {
+
                 hash.Compute(sourceString.GetByteArray(), out byte[] hashedInputBytes);
 
                 var hashedInputStringBuilder = new StringBuilder(BlockchainSetting.BlockchainSha512HexStringLength);
@@ -78,7 +156,9 @@ namespace SeguraChain_Lib.Utility
                     hashedInputStringBuilder.Append(b.ToString("X2"));
 
                 string hashToReturn = hashedInputStringBuilder.ToString();
-                // no need to Clear before returning
+
+                hashedInputStringBuilder.Clear();
+
                 return hashToReturn;
             }
         }
@@ -86,10 +166,13 @@ namespace SeguraChain_Lib.Utility
         /// <summary>
         /// Generate a SHA 256 hash from a string.
         /// </summary>
+        /// <param name="sourceString"></param>
+        /// <returns></returns>
         public static string GenerateSha256FromString(string sourceString)
         {
             using (var hash = SHA256.Create())
             {
+
                 byte[] hashedInputBytes = hash.ComputeHash(sourceString.GetByteArray());
 
                 var hashedInputStringBuilder = new StringBuilder(BlockchainSetting.BlockchainSha256HexStringLength);
@@ -97,13 +180,20 @@ namespace SeguraChain_Lib.Utility
                 foreach (var b in hashedInputBytes)
                     hashedInputStringBuilder.Append(b.ToString("X2"));
 
-                return hashedInputStringBuilder.ToString();
+                string hashToReturn = hashedInputStringBuilder.ToString();
+
+                hashedInputStringBuilder.Clear();
+
+                return hashToReturn;
             }
         }
+
 
         /// <summary>
         /// Generate a SHA 512 byte array from a byte array.
         /// </summary>
+        /// <param name="source"></param>
+        /// <returns></returns>
         public static byte[] GenerateSha512ByteArrayFromByteArray(byte[] source)
         {
             using (var hash = new ClassSha3512DigestDisposable())
@@ -115,67 +205,80 @@ namespace SeguraChain_Lib.Utility
         #region Static functions about Random Secure RNG.
 
         /// <summary>
-        /// Generate a random long number object between a range selected.
-        /// Uses a static RandomNumberGenerator to avoid allocations.
+        ///  Generate a random long number object between a range selected.
         /// </summary>
+        /// <param name="minimumValue"></param>
+        /// <param name="maximumValue"></param>
+        /// <returns></returns>
         public static long GetRandomBetweenLong(long minimumValue, long maximumValue)
         {
-            if (minimumValue > maximumValue)
-                throw new ArgumentException("minimumValue must be <= maximumValue");
+            using (RNGCryptoServiceProvider generator = new RNGCryptoServiceProvider())
+            {
+                var randomNumber = new byte[sizeof(long)];
 
-            ulong range = (ulong)(maximumValue - minimumValue + 1);
-            // generate 8 random bytes
-            var buffer = new byte[8];
-            SecureRng.GetBytes(buffer);
-            ulong rand = BitConverter.ToUInt64(buffer, 0);
-            long result = (long)(minimumValue + (long)(rand % range));
-            return result;
+                generator.GetBytes(randomNumber);
+
+                var asciiValueOfRandomCharacter = Convert.ToDouble(randomNumber[0]);
+
+                var multiplier = Math.Max(0, asciiValueOfRandomCharacter / 255d - 0.00000000001d);
+
+                var range = maximumValue - minimumValue + 1;
+
+                var randomValueInRange = Math.Floor(multiplier * range);
+
+                return (long)(minimumValue + randomValueInRange);
+            }
         }
 
         /// <summary>
-        /// Generate a random BigInteger between a double range (kept signature for compatibility).
+        ///  Generate a random long number object between a range selected.
         /// </summary>
+        /// <param name="minimumValue"></param>
+        /// <param name="maximumValue"></param>
+        /// <returns></returns>
         public static BigInteger GetRandomBetweenBigInteger(double minimumValue, double maximumValue)
         {
-            if (minimumValue > maximumValue)
-                throw new ArgumentException("minimumValue must be <= maximumValue");
+            using (RNGCryptoServiceProvider generator = new RNGCryptoServiceProvider())
+            {
+                var randomNumber = new byte[sizeof(double)];
 
-            // map to long range to be safe and fast
-            long min = (long)Math.Floor(minimumValue);
-            long max = (long)Math.Ceiling(maximumValue);
-            long r = GetRandomBetweenLong(min, max);
-            return new BigInteger(r);
+                generator.GetBytes(randomNumber);
+
+                var asciiValueOfRandomCharacter = Convert.ToDouble(randomNumber[0]);
+
+                var multiplier = Math.Max(0, asciiValueOfRandomCharacter / 255d - 0.00000000001d);
+
+                var range = maximumValue - minimumValue + 1;
+
+                var randomValueInRange = Math.Floor(multiplier * range);
+
+                return new BigInteger(minimumValue + randomValueInRange);
+            }
         }
 
         /// <summary>
-        /// Generate a random int number object between a range selected.
-        /// Uses RandomNumberGenerator.GetInt32 when available.
+        ///  Generate a random int number object between a range selected.
         /// </summary>
+        /// <param name="minimumValue"></param>
+        /// <param name="maximumValue"></param>
+        /// <returns></returns>
         public static int GetRandomBetweenInt(int minimumValue, int maximumValue)
         {
-            if (minimumValue > maximumValue)
-                throw new ArgumentException("minimumValue must be <= maximumValue");
+            using (RNGCryptoServiceProvider generator = new RNGCryptoServiceProvider())
+            {
+                var randomNumber = new byte[sizeof(int)];
 
-            // RandomNumberGenerator.GetInt32 is available in modern frameworks and is efficient.
-            try
-            {
-#if NETSTANDARD2_0 || NETFRAMEWORK
-                // Fallback for older frameworks
-                var buf = new byte[4];
-                SecureRng.GetBytes(buf);
-                uint val = BitConverter.ToUInt32(buf, 0);
-                return (int)(minimumValue + (int)(val % (uint)(maximumValue - minimumValue + 1)));
-#else
-                return RandomNumberGenerator.GetInt32(minimumValue, maximumValue + 1);
-#endif
-            }
-            catch
-            {
-                // graceful fallback
-                var buf = new byte[4];
-                SecureRng.GetBytes(buf);
-                uint val = BitConverter.ToUInt32(buf, 0);
-                return (int)(minimumValue + (int)(val % (uint)(maximumValue - minimumValue + 1)));
+                generator.GetBytes(randomNumber);
+
+                var asciiValueOfRandomCharacter = Convert.ToDouble(randomNumber[0]);
+
+                var multiplier = Math.Max(0, asciiValueOfRandomCharacter / 255d - 0.00000000001d);
+
+                var range = maximumValue - minimumValue + 1;
+
+                var randomValueInRange = Math.Floor(multiplier * range);
+
+                return (int)(minimumValue + randomValueInRange);
             }
         }
 
@@ -186,6 +289,8 @@ namespace SeguraChain_Lib.Utility
         /// <summary>
         /// Check if the string use only lowercase.
         /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static bool CheckStringUseLowercaseOnly(string value)
         {
             return value.All(t => !char.IsUpper(t));
@@ -194,6 +299,10 @@ namespace SeguraChain_Lib.Utility
 
         private static readonly uint[] Lookup32 = CreateLookup32();
 
+        /// <summary>
+        /// Create a lookup conversation for accelerate byte array conversion into hex string.
+        /// </summary>
+        /// <returns></returns>
         private static uint[] CreateLookup32()
         {
             var result = new uint[256];
@@ -209,6 +318,8 @@ namespace SeguraChain_Lib.Utility
         /// <summary>
         /// Convert a byte array to hex string.
         /// </summary>
+        /// <param name="bytes"></param>
+        /// <returns></returns>
         public static string GetHexStringFromByteArray(byte[] bytes)
         {
             var lookup32 = Lookup32;
@@ -227,14 +338,18 @@ namespace SeguraChain_Lib.Utility
         /// <summary>
         /// Return a long value from a hex string.
         /// </summary>
+        /// <param name="hexContent"></param>
+        /// <returns></returns>
         public static long GetLongFromHexString(string hexContent)
         {
             return Convert.ToInt64(hexContent, 16);
         }
 
         /// <summary>
-        /// Remove decimal point from decimal value.
+        /// RemoveFromCache decimal point from decimal value.
         /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static decimal RemoveDecimalPoint(decimal value)
         {
             string stringValue = value.ToString(CultureInfo.InvariantCulture);
@@ -256,19 +371,16 @@ namespace SeguraChain_Lib.Utility
         }
 
         /// <summary>
-        /// Convert a hex string into byte array. Uses Convert.FromHexString when available.
+        /// Convert a hex string into byte array.
         /// </summary>
+        /// <param name="hex"></param>
+        /// <returns></returns>
         public static byte[] GetByteArrayFromHexString(string hex)
         {
-            if (string.IsNullOrEmpty(hex))
-                return null;
-
             try
             {
-#if NET5_0_OR_GREATER
-                return Convert.FromHexString(hex);
-#else
-                byte[] ret = new byte[hex.Length / 2];
+                byte[] ret = new byte[hex.Length / 2]; // Hex to byte array size.
+
                 for (int i = 0; i < ret.Length; i++)
                 {
                     int high = hex[i * 2];
@@ -280,7 +392,6 @@ namespace SeguraChain_Lib.Utility
                 }
 
                 return ret;
-#endif
             }
             catch
             {
@@ -291,40 +402,42 @@ namespace SeguraChain_Lib.Utility
         /// <summary>
         /// Check if the hex string contain only hex characters.
         /// </summary>
+        /// <param name="hexString"></param>
+        /// <returns></returns>
         public static bool CheckHexStringFormat(string hexString)
         {
             if (hexString.IsNullOrEmpty(false, out _))
                 return false;
 
-            foreach (var c in hexString)
-            {
-                if (!ListOfHexCharacters.Contains(char.ToLowerInvariant(c)))
-                    return false;
-            }
-
-            return true;
+            return hexString.ToLower().Count(character => ListOfHexCharacters.Contains(character)) == hexString.Length;
         }
 
         /// <summary>
-        /// Remove every characters non-hex from a string.
+        /// Remove every characters no-hex from a string.
         /// </summary>
+        /// <param name="hexString"></param>
+        /// <returns></returns>
         public static string RemoveNoHexCharacterFromString(string hexString)
         {
-            if (hexString.IsNullOrEmpty(false, out _))
-                return string.Empty;
+            string newHexString = string.Empty;
 
-            var sb = new StringBuilder(hexString.Length);
-            foreach (var hexCharacter in hexString.ToLowerInvariant())
+            if (!hexString.IsNullOrEmpty(false, out _))
             {
-                if (ListOfHexCharacters.Contains(hexCharacter))
-                    sb.Append(hexCharacter);
+                foreach (var hexCharacter in hexString.ToLower())
+                {
+                    if (ListOfHexCharacters.Contains(hexCharacter))
+                        newHexString += hexCharacter;
+                }
             }
-            return sb.ToString();
+
+            return newHexString;
         }
 
         /// <summary>
         /// Check if the string is a base64 string.
         /// </summary>
+        /// <param name="base64String"></param>
+        /// <returns></returns>
         public static bool CheckBase64String(string base64String)
         {
             return (base64String.Length % 4 == 0) && Regex.IsMatch(base64String.Trim(), Base64Regex, RegexOptions.Compiled);
@@ -342,81 +455,130 @@ namespace SeguraChain_Lib.Utility
         /// <summary>
         /// Random word.
         /// </summary>
+        /// <param name="lengthTarget"></param>
+        /// <returns></returns>
         public static string GetRandomWord(int lengthTarget)
         {
-            if (lengthTarget <= 0)
-                return string.Empty;
-
-            var sb = new StringBuilder(lengthTarget);
-            var buffer = new byte[4];
+            string word = string.Empty;
 
             for (int i = 0; i < lengthTarget; i++)
             {
-                SecureRng.GetBytes(buffer);
-                int selector = BitConverter.ToInt32(buffer, 0);
-                selector = Math.Abs(selector);
+                var percent1 = GetRandomBetweenLong(1, 100); // Numbers.
+                var percent2 = GetRandomBetweenLong(1, 100); // Letters.
+                var percent3 = GetRandomBetweenLong(1, 100); // Special characters.
 
-                int percent1 = selector % 100 + 1;
-
-                if (percent1 <= 34) // numbers ~34%
+                if (percent1 >= percent2 && percent1 >= percent3) // Use numbers.
+                    word += ListOfNumbers[GetRandomBetweenInt(0, ListOfNumbers.Count - 1)];
+                else
                 {
-                    sb.Append(ListOfNumbers[selector % ListOfNumbers.Count]);
-                    continue;
-                }
+                    if (percent2 >= percent3) // Use letters.
+                    {
+                        percent1 = GetRandomBetweenLong(1, 100);
+                        percent2 = GetRandomBetweenLong(1, 100);
 
-                if (percent1 <= 67) // letters ~33%
-                {
-                    bool upper = (selector & 1) == 0;
-                    var ch = ListOfCharacters[selector % ListOfCharacters.Count];
-                    sb.Append(upper ? ch.ToUpperInvariant() : ch);
-                    continue;
+                        if (percent2 >= percent1) // use Uppercase.
+                            word += ListOfCharacters[GetRandomBetweenInt(0, ListOfCharacters.Count - 1)].ToUpper();
+                        else // use normal lowercase.
+                            word += ListOfCharacters[GetRandomBetweenInt(0, ListOfCharacters.Count - 1)];
+                    }
+                    else
+                    {
+                        if (percent3 >= percent1) // Use special characters.
+                            word += ListOfOtherCharacters[GetRandomBetweenInt(0, ListOfOtherCharacters.Count - 1)];
+                        else // Use numbers.
+                            word += ListOfNumbers[GetRandomBetweenInt(0, ListOfNumbers.Count - 1)];
+                    }
                 }
-
-                // else other characters
-                sb.Append(ListOfOtherCharacters[selector % ListOfOtherCharacters.Count]);
             }
 
-            return sb.ToString();
+            return word;
         }
 
         /// <summary>
         /// Random word into byte array object.
         /// </summary>
+        /// <param name="lengthTarget"></param>
+        /// <returns></returns>
         public static byte[] GetRandomByteArrayWord(int lengthTarget)
         {
-            var s = GetRandomWord(lengthTarget);
-            return Encoding.UTF8.GetBytes(s);
+            string word = string.Empty;
+
+            for (int i = 0; i < lengthTarget; i++)
+            {
+                var percent1 = GetRandomBetweenLong(1, 100);
+                var percent2 = GetRandomBetweenLong(1, 100);
+                if (percent1 >= percent2) // Use numbers.
+                    word += ListOfNumbers[GetRandomBetweenInt(0, ListOfNumbers.Count - 1)];
+                else // Use letters
+                {
+                    percent1 = GetRandomBetweenLong(1, 100);
+                    percent2 = GetRandomBetweenLong(1, 100);
+                    if (percent2 >= percent1) // use uppercase.
+                        word += ListOfCharacters[GetRandomBetweenInt(0, ListOfCharacters.Count - 1)].ToUpper();
+                    else // use normal lowercase.
+                        word += ListOfCharacters[GetRandomBetweenInt(0, ListOfCharacters.Count - 1)];
+                }
+            }
+
+            return word.GetByteArray(true);
         }
 
         #endregion
 
         #region Static functions about timestamp.
 
+        /// <summary>
+        /// Return the current timestamp in seconds.
+        /// </summary>
+        /// <returns></returns>
         public static long GetCurrentTimestampInSecond()
         {
             return DateTimeOffset.Now.ToUnixTimeSeconds();
         }
 
+        /// <summary>
+        /// Return the current timestamp in millisecond.
+        /// </summary>
+        /// <returns></returns>
         public static long GetCurrentTimestampInMillisecond()
         {
             return DateTimeOffset.Now.ToUnixTimeMilliseconds();
         }
 
+        /// <summary>
+        /// Check if the timestamp is not too late and not too early.
+        /// </summary>
+        /// <param name="timestampPacket"></param>
+        /// <param name="maxDelay"></param>
+        /// <param name="earlierDelay"></param>
+        /// <returns></returns>
         public static bool CheckPacketTimestamp(long timestampPacket, int maxDelay, int earlierDelay)
         {
             long currentTimestamp = GetCurrentTimestampInSecond();
+
+
             return timestampPacket + maxDelay >= currentTimestamp && (timestampPacket + maxDelay - currentTimestamp) <= earlierDelay ? true : false;
         }
 
+        /// <summary>
+        /// Convert a timestamp of seconds into a date.
+        /// </summary>
+        /// <param name="unixTimeStamp"></param>
+        /// <returns></returns>
         public static DateTime GetDatetimeFromTimestamp(long unixTimeStamp)
         {
-            return DateTimeOffset.FromUnixTimeSeconds(unixTimeStamp).ToLocalTime().DateTime;
+            return new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(unixTimeStamp).ToLocalTime();
         }
 
         #endregion
 
         #region Static functions about path.
 
+        /// <summary>
+        /// Convert the path for Linux/Unix system.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         public static string ConvertPath(string path)
         {
             return Environment.OSVersion.Platform == PlatformID.Unix ? path.Replace("\\", "/") : path;
@@ -426,6 +588,12 @@ namespace SeguraChain_Lib.Utility
 
         #region Static functions about the Blockchain.
 
+        /// <summary>
+        /// Insert a byte array on the first index
+        /// </summary>
+        /// <param name="baseByteArray"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
         public static void InsertBlockchainVersionToByteArray(byte[] baseByteArray, out string result)
         {
             result = BlockchainSetting.BlockchainVersion + GetHexStringFromByteArray(baseByteArray);
@@ -435,30 +603,69 @@ namespace SeguraChain_Lib.Utility
 
         #region Static function about Serialization/Deserialization.
 
+        /// <summary>
+        /// Try to deserialize an object.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="content"></param>
+        /// <param name="result"></param>
+        /// <param name="handling"></param>
         public static bool TryDeserialize<T>(string content, out T result, ObjectCreationHandling handling = ObjectCreationHandling.Auto)
         {
-            result = default;
-
-            if (content.IsNullOrEmpty(true, out string contentTrimmed) || contentTrimmed.Length == 0 || contentTrimmed.Contains("�"))
-                return false;
-
-            try
-            {
-                // single pass deserialize - avoids double parsing
-                result = JsonConvert.DeserializeObject<T>(contentTrimmed, new JsonSerializerSettings() { ObjectCreationHandling = handling });
-                return result != null;
-            }
-            catch
+            if (content.IsNullOrEmpty(true, out string contentTrimmed) || contentTrimmed.Length == 0 || 
+                contentTrimmed.Contains("�"))
             {
                 result = default;
                 return false;
             }
+
+            bool isNull = false;
+            try
+            {
+
+                result = JObject.Parse(contentTrimmed).ToObject<T>();
+
+                if (result == null)
+                    isNull = true;
+                else
+                    return true;
+            }
+            catch
+            {
+            }
+
+            if (isNull)
+            {
+
+                try
+                {
+                    result = JsonConvert.DeserializeObject<T>(contentTrimmed, new JsonSerializerSettings() { ObjectCreationHandling = handling });
+                    return true;
+                }
+                catch
+                {
+                    // Ignored.
+                }
+            }
+
+
+
+            result = default;
+            return false;
         }
 
+        /// <summary>
+        /// Serialize data as string.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="content"></param>
+        /// <param name="formatting"></param>
+        /// <returns></returns>
         public static string SerializeData<T>(T content, Formatting formatting = Formatting.None)
         {
             return content != null ? JsonConvert.SerializeObject(content, formatting) : string.Empty;
         }
+
 
         #endregion
 
@@ -485,69 +692,148 @@ namespace SeguraChain_Lib.Utility
             }
         }
 
+
         public static byte[] DecompressLz4(byte[] data)
         {
             using (MemoryStream memory = new MemoryStream(data))
-            using (MemoryStream memoryResult = new MemoryStream())
-            using (LZ4Stream lz4 = new LZ4Stream(memory, LZ4StreamMode.Decompress, LZ4StreamFlags.HighCompression))
             {
-                lz4.CopyTo(memoryResult);
-                return memoryResult.ToArray();
+                using (MemoryStream memoryResult = new MemoryStream())
+                {
+                    using (LZ4Stream lz4 = new LZ4Stream(memory, LZ4StreamMode.Decompress, LZ4StreamFlags.HighCompression))
+                    {
+                        lz4.CopyTo(memoryResult);
+                        return memoryResult.ToArray();
+                    }
+                }
             }
         }
 
-        private static readonly Dictionary<string, string> ListHexCombinaison = new Dictionary<string, string>()
+
+        private static Dictionary<string, string> ListHexCombinaison = new Dictionary<string, string>()
         {
-            { "00", "g" },{ "01", "h" },{ "02", "j" },{ "03", "k" },{ "04", "l" },{ "05", "m" },{ "06", "w" },{ "07", "z" },{ "08", "t" },{ "09", "u" },{ "10", "i" },{ "11", "p" },{ "12", "x" },{ "13", "n" },{ "14", "!" },{ "15", "~" },{ "16", "&" },{ "17", "'" },{ "18", "(" },{ "19", "[" },{ "20", "-" },{ "21", "|" },{ "22", "è" },{ "23", "`" },{ "24", "_" },{ "25", "ç" },{ "26", "^" },{ "27", "à" },{ "28", "@" },{ "29", ")" },{ "30", "]" },{ "31", "°" },{ "32", "+" },{ "33", "=" },{ "34", "}" }
+            { "00", "g" },
+            { "01", "h" },
+            { "02", "j" },
+            { "03", "k" },
+            { "04", "l" },
+            { "05", "m" },
+            { "06", "w" },
+            { "07", "z" },
+            { "08", "t" },
+            { "09", "u" },
+            { "10", "i" },
+            { "11", "p" },
+            { "12", "x" },
+            { "13", "n" },
+            { "14", "!" },
+            { "15", "~" },
+            { "16", "&" },
+            { "17", "'" },
+            { "18", "(" },
+            { "19", "[" },
+            { "20", "-" },
+            { "21", "|" },
+            { "22", "è" },
+            { "23", "`" },
+            { "24", "_" },
+            { "25", "ç" },
+            { "26", "^" },
+            { "27", "à" },
+            { "28", "@" },
+            { "29", ")" },
+            { "30", "]" },
+            { "31", "°" },
+            { "32", "+" },
+            { "33", "=" },
+            { "34", "}" },
         };
 
-        private static readonly Dictionary<char, string> ListHexCombinaisonReverted = new Dictionary<char, string>()
+        private static Dictionary<char, string> ListHexCombinaisonReverted = new Dictionary<char, string>()
         {
-            { 'g',  "00" },{ 'h',  "01" },{ 'j',  "02" },{ 'k',  "03" },{ 'l',  "04" },{ 'm',  "05" },{ 'w',  "06" },{ 'z',  "07" },{ 't',  "08" },{ 'u',  "09" },{ 'i',  "10" },{ 'p',  "11" },{ 'x',  "12" },{ 'n',  "13" },{ '!',  "14" },{ '~',  "15" },{ '&',  "16" },{ '\'',  "17" },{ '(',  "18" },{ '[',  "19" },{ '-',  "20" },{ '|',  "21" },{ 'è',  "22" },{ '`',  "23" },{ '_',  "24" },{ 'ç',  "25" },{ '^',  "26" },{ 'à',  "27" },{ '@',  "28" },{ ')',  "29" },{ ']',  "30" },{ '°',  "31" },{ '+',  "32" },{ '=',  "33" },{ '}',  "34" }
+            { 'g',  "00" },
+            { 'h',  "01" },
+            { 'j',  "02" },
+            { 'k',  "03" },
+            { 'l',  "04" },
+            { 'm',  "05" },
+            { 'w',  "06" },
+            { 'z',  "07" },
+            { 't',  "08" },
+            { 'u',  "09" },
+            { 'i',  "10" },
+            { 'p',  "11" },
+            { 'x',  "12" },
+            { 'n',  "13" },
+            { '!',  "14" },
+            { '~',  "15" },
+            { '&',  "16" },
+            { '\'',  "17" },
+            { '(',  "18" },
+            { '[',  "19" },
+            { '-',  "20" },
+            { '|',  "21" },
+            { 'è',  "22" },
+            { '`',  "23" },
+            { '_',  "24" },
+            { 'ç',  "25" },
+            { '^',  "26" },
+            { 'à',  "27" },
+            { '@',  "28" },
+            { ')',  "29" },
+            { ']',  "30" },
+            { '°',  "31" },
+            { '+',  "32" },
+            { '=',  "33" },
+            { '}',  "34" }
         };
 
+        /// <summary>
+        /// Compress hex string into a short hex string replaced by invalid hex characters.
+        /// </summary>
+        /// <param name="hexString"></param>
+        /// <returns></returns>
         public static string CompressHexString(string hexString)
         {
-            if (string.IsNullOrEmpty(hexString))
-                return string.Empty;
-
-            var sb = new StringBuilder(hexString.Length / 2);
+            string compressedHexString = string.Empty;
 
             for (int i = 0; i < hexString.Length / 2; i++)
             {
                 string hexCombinaison = hexString.Substring(i * 2, 2);
 
-                if (ListHexCombinaison.TryGetValue(hexCombinaison, out var replaced))
-                    sb.Append(replaced);
-                else
-                    sb.Append(hexCombinaison);
+                if (ListHexCombinaison.ContainsKey(hexCombinaison))
+                    compressedHexString += ListHexCombinaison[hexCombinaison];
+                else compressedHexString += hexCombinaison;
             }
 
-            return sb.ToString();
+            return compressedHexString;
         }
 
+        /// <summary>
+        /// Decompress hex string, replace invalid characters used by the compression into good hex combinaisons.
+        /// </summary>
+        /// <param name="compressedHexString"></param>
+        /// <returns></returns>
         public static string DecompressHexString(string compressedHexString)
         {
-            if (string.IsNullOrEmpty(compressedHexString))
-                return string.Empty;
+            string decompressedHexString = string.Empty;
 
-            var sb = new StringBuilder(compressedHexString.Length * 2);
-
-            foreach (char character in compressedHexString)
+            foreach(char character in compressedHexString)
             {
-                if (ListHexCombinaisonReverted.TryGetValue(character, out var hex))
-                    sb.Append(hex);
-                else
-                    sb.Append(character);
+                if (ListHexCombinaisonReverted.ContainsKey(character))
+                    decompressedHexString += ListHexCombinaisonReverted[character];
+                else decompressedHexString += character;
             }
-
-            return sb.ToString();
+           
+            return decompressedHexString;
         }
 
         #endregion
 
         #region Static functions about GC Collector
 
+        /// <summary>
+        /// Clean Garbage collector if it's possible.
+        /// </summary>
         public static void CleanGc()
         {
             GC.Collect(0, GCCollectionMode.Optimized, false, false);
@@ -555,6 +841,10 @@ namespace SeguraChain_Lib.Utility
             GC.Collect();
         }
 
+        /// <summary>
+        /// Return the amount of ram allocated from the process.
+        /// </summary>
+        /// <returns></returns>
         public static long GetMemoryAllocationFromProcess()
         {
             return Process.GetCurrentProcess().WorkingSet64;
@@ -564,6 +854,11 @@ namespace SeguraChain_Lib.Utility
 
         #region Static functions about Socket/TCPClient/Packets.
 
+        /// <summary>
+        /// Check if the tcp client socket is still connected.
+        /// </summary>
+        /// <param name="tcpClient"></param>
+        /// <returns></returns>
         public static bool TcpClientIsConnected(TcpClient tcpClient)
         {
             try
@@ -579,6 +874,11 @@ namespace SeguraChain_Lib.Utility
             }
         }
 
+        /// <summary>
+        /// Check if the tcp client socket is still connected.
+        /// </summary>
+        /// <param name="socket"></param>
+        /// <returns></returns>
         public static bool SocketIsConnected(Socket socket)
         {
             try
@@ -597,6 +897,10 @@ namespace SeguraChain_Lib.Utility
             }
         }
 
+        /// <summary>
+        /// Close TCP Client.
+        /// </summary>
+        /// <param name="tcpClient"></param>
         public static void CloseTcpClient(TcpClient tcpClient)
         {
             try
@@ -611,8 +915,11 @@ namespace SeguraChain_Lib.Utility
                         }
                         finally
                         {
-                            tcpClient?.Close();
-                            tcpClient?.Dispose();
+                            if (tcpClient != null)
+                            {
+                                tcpClient?.Close();
+                                tcpClient?.Dispose();
+                            }
                         }
                     }
                     else
@@ -624,17 +931,20 @@ namespace SeguraChain_Lib.Utility
             }
             catch
             {
+                // Ignored, the tcp client can be already closed, or disposed.
             }
         }
 
+
+        /// <summary>
+        /// Return each packet splitted received.
+        /// </summary>
+        /// <returns></returns>
         public static DisposableList<ClassReadPacketSplitted> GetEachPacketSplitted(byte[] packetBufferOnReceive, DisposableList<ClassReadPacketSplitted> listPacketReceived, CancellationTokenSource cancellation)
         {
-            if (packetBufferOnReceive == null || packetBufferOnReceive.Length == 0)
-                return listPacketReceived;
+            string packetData = packetBufferOnReceive.GetStringFromByteArrayUtf8().Replace("\0", "");
 
-            string packetData = Encoding.UTF8.GetString(packetBufferOnReceive).Replace("\0", "");
-
-            if (listPacketReceived == null || listPacketReceived.Disposed)
+            if (listPacketReceived.Disposed)
                 listPacketReceived = new DisposableList<ClassReadPacketSplitted>();
 
             if (listPacketReceived.Count == 0)
@@ -643,51 +953,43 @@ namespace SeguraChain_Lib.Utility
             if (packetData.Contains(ClassPeerPacketSetting.PacketPeerSplitSeperator))
             {
                 int countSeperator = packetData.Count(x => x == ClassPeerPacketSetting.PacketPeerSplitSeperator);
-                int completed = 0;
-                int start = 0;
 
-                for (int i = 0; i < packetData.Length; i++)
+                string[] splitPacketData = packetData.Split(new[] { ClassPeerPacketSetting.PacketPeerSplitSeperator }, StringSplitOptions.None);
+
+                int completed = 0;
+
+                foreach (string data in splitPacketData)
                 {
                     if (cancellation.IsCancellationRequested)
                         break;
 
-                    if (packetData[i] == ClassPeerPacketSetting.PacketPeerSplitSeperator)
+                    listPacketReceived[listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0].Packet += data.Replace(ClassPeerPacketSetting.PacketPeerSplitSeperator.ToString(), "");
+
+                    if (completed < countSeperator)
                     {
-                        int len = i - start;
-                        if (len > 0)
-                        {
-                            string part = packetData.Substring(start, len);
-                            var lastIndex = Math.Max(0, listPacketReceived.Count - 1);
-                            listPacketReceived[lastIndex].Packet += part;
-                        }
-
-                        // mark complete and prepare new packet
-                        var last = listPacketReceived[listPacketReceived.Count - 1];
-                        last.Complete = true;
-                        listPacketReceived.Add(new ClassReadPacketSplitted());
-
-                        start = i + 1;
-                        completed++;
+                        listPacketReceived[listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0].Complete = true;
+                        break;
                     }
-                }
 
-                // remainder
-                if (start < packetData.Length)
-                {
-                    string part = packetData.Substring(start);
-                    var lastIndex = Math.Max(0, listPacketReceived.Count - 1);
-                    listPacketReceived[lastIndex].Packet += part;
+                    completed++;
                 }
             }
             else
             {
-                int index = Math.Max(0, listPacketReceived.Count - 1);
-                listPacketReceived[index].Packet += packetData;
+                int index = listPacketReceived.Count > 0 ? listPacketReceived.Count - 1 : 0;
+
+                if (index < listPacketReceived.Count)
+                    listPacketReceived[index].Packet += packetData;
             }
 
             return listPacketReceived;
         }
 
+        /// <summary>
+        /// Do the padding of the data content.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
         public static byte[] DoPadding(byte[] data)
         {
             int basePaddingSize = 16;
@@ -700,6 +1002,7 @@ namespace SeguraChain_Lib.Utility
             }
 
             byte[] paddedBytes = new byte[data.Length + paddingSizeRequired];
+
             Array.Copy(data, 0, paddedBytes, 0, data.Length);
 
             for (int i = 0; i < paddingSizeRequired; i++)
@@ -708,9 +1011,14 @@ namespace SeguraChain_Lib.Utility
             return paddedBytes;
         }
 
+        /// <summary>
+        /// Remove the padding of the data content.
+        /// </summary>
+        /// <param name="paddedData"></param>
+        /// <returns></returns>
         public static byte[] UndoPadding(byte[] paddedData)
         {
-            if (paddedData == null || paddedData.Length == 0)
+            if (paddedData == null || paddedData?.Length == 0)
                 return null;
 
             int size = paddedData.Length - paddedData[paddedData.Length - 1];
@@ -719,12 +1027,18 @@ namespace SeguraChain_Lib.Utility
             {
                 byte[] packet = new byte[size];
                 Array.Copy(paddedData, 0, packet, 0, packet.Length);
+
                 return packet;
             }
 
             return null;
         }
 
+        /// <summary>
+        /// Get the address family from the IP.
+        /// </summary>
+        /// <param name="ip"></param>
+        /// <returns></returns>
         public static AddressFamily GetAddressFamily(string ip)
         {
             if (IPAddress.TryParse(ip, out IPAddress address))
@@ -737,6 +1051,11 @@ namespace SeguraChain_Lib.Utility
 
         #region Static functions about locking object.
 
+        /// <summary>
+        /// Lock and object to return
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="objectData"></param>
         [MethodImpl(MethodImplOptions.Synchronized)]
         public static T LockReturnObject<T>(T objectData)
         {
@@ -745,6 +1064,7 @@ namespace SeguraChain_Lib.Utility
 
             try
             {
+
                 if (!Monitor.IsEntered(objectData))
                     Monitor.TryEnter(objectData, ref locked);
                 else
@@ -770,10 +1090,15 @@ namespace SeguraChain_Lib.Utility
 
         #region Others static functions.
 
+        /// <summary>
+        /// Return the maximum of available processor count
+        /// </summary>
+        /// <returns></returns>
         public static int GetMaxAvailableProcessorCount()
         {
             return Environment.ProcessorCount;
         }
+
 
         private static readonly BigInteger KhStart = 1000;
         private static readonly BigInteger MhStart = BigInteger.Multiply(KhStart, 100);
@@ -781,6 +1106,12 @@ namespace SeguraChain_Lib.Utility
         private static readonly BigInteger PhStart = BigInteger.Multiply(ThStart, 100);
         private static readonly BigInteger EhStart = BigInteger.Multiply(PhStart, 100);
 
+
+        /// <summary>
+        /// Return the hashrate formatted by his power.
+        /// </summary>
+        /// <param name="hashrate"></param>
+        /// <returns></returns>
         public static string GetFormattedHashrate(BigInteger hashrate)
         {
             if (hashrate < KhStart)
@@ -801,6 +1132,11 @@ namespace SeguraChain_Lib.Utility
             return ((double)hashrate / (double)EhStart).ToString("N2", CultureInfo.InvariantCulture) + " EH/s";
         }
 
+        /// <summary>
+        /// Convert bytes count into megabytes.
+        /// </summary>
+        /// <param name="bytesCount"></param>
+        /// <returns></returns>
         public static string ConvertBytesToMegabytes(long bytesCount)
         {
             return bytesCount > 0 ? Math.Round((((double)bytesCount / 1024) / 1024), 2) + " MB(s)" : "0 MB(s)";
@@ -811,54 +1147,68 @@ namespace SeguraChain_Lib.Utility
 
     #region Extensions class's of generic objects.
 
+    /// <summary>
+    /// String extension class.
+    /// </summary>
     public static class ClassUtilityStringExtension
     {
-        public static byte[] GetHexStringToByteArray(this string hexString)
-        {
-            if (hexString.Length % 2 != 0)
-            {
-                throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "The binary key cannot have an odd number of digits: {0}", hexString));
-            }
 
-            byte[] data = new byte[hexString.Length / 2];
-            for (int index = 0; index < data.Length; index++)
-            {
-                string byteValue = hexString.Substring(index * 2, 2);
-                data[index] = byte.Parse(byteValue, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-            }
-
-            return data;
-        }
-
+        /// <summary>
+        /// Convert a string into a byte array object.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns></returns>
         private static byte[] GetByteArrayUtf8(this string content)
         {
             return new UTF8Encoding(true, true).GetBytes(content);
         }
 
+        /// <summary>
+        /// Convert a string into a byte array object.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns></returns>
         private static byte[] GetByteArrayAscii(this string content)
         {
             return Encoding.ASCII.GetBytes(content);
         }
 
+
         public static byte[] GetByteArray(this string src, bool ascii = false)
         {
-            return ascii ? Encoding.ASCII.GetBytes(src) : Encoding.UTF8.GetBytes(src);
+            byte[] result;
+            List<byte> listByte = new List<byte>();
+            for (int i = 0; i < src.Length; i++)
+            {
+                if (i < src.Length)
+                    listByte.Add((byte)src[i]);
+            }
+            result = listByte.ToArray();
+            listByte.Clear();
+            return result;
         }
 
+
+        /// <summary>
+        /// Copy a base58 string.
+        /// </summary>
+        /// <param name="base58String"></param>
+        /// <param name="isWalletAddress">Use limits of wallet base58 string length limits stated.</param>
+        /// <returns></returns>
         public static string CopyBase58String(this string base58String, bool isWalletAddress)
         {
-            var sb = new StringBuilder(base58String.Length);
+            string base58StringCopy = string.Empty;
             bool isValid = false;
 
             foreach (var character in base58String)
             {
                 if (ClassBase58.CharacterIsInsideBase58CharacterList(character))
-                    sb.Append(character);
+                    base58StringCopy += character;
 
-                if (isWalletAddress && sb.Length >= BlockchainSetting.WalletAddressWifLengthMin
-                    && sb.Length <= BlockchainSetting.WalletAddressWifLengthMax)
+                if (isWalletAddress && base58StringCopy.Length >= BlockchainSetting.WalletAddressWifLengthMin
+                    && base58StringCopy.Length <= BlockchainSetting.WalletAddressWifLengthMax)
                 {
-                    if (ClassBase58.DecodeWithCheckSum(sb.ToString(), true) != null)
+                    if (ClassBase58.DecodeWithCheckSum(base58StringCopy, true) != null)
                     {
                         isValid = true;
                         break;
@@ -867,19 +1217,28 @@ namespace SeguraChain_Lib.Utility
             }
 
             if (isValid)
-                return sb.ToString();
+                return base58StringCopy;
 
-            if (!isWalletAddress && ClassBase58.DecodeWithCheckSum(sb.ToString(), false) != null)
-                return sb.ToString();
+            if (!isWalletAddress && ClassBase58.DecodeWithCheckSum(base58StringCopy, false) != null)
+                return base58StringCopy;
 
             return string.Empty;
         }
 
+        /// <summary>
+        /// Deep copy of string, to keep out the string copied linked to the original one.
+        /// </summary>
+        /// <param name="srcString"></param>
+        /// <returns></returns>
         public static string DeepCopy(this string srcString)
         {
-            return new string(srcString.ToCharArray());
+            return srcString.AsEnumerable().ToString();
         }
 
+        /// <summary>
+        /// Extended unsafe function who permit to clear a string.
+        /// </summary>
+        /// <param name="s"></param>
         public static unsafe void Clear(this string s)
         {
             if (s != null)
@@ -892,6 +1251,13 @@ namespace SeguraChain_Lib.Utility
             }
         }
 
+        /// <summary>
+        /// Attempt to split faster a string.
+        /// </summary>
+        /// <param name="src"></param>
+        /// <param name="seperatorStr"></param>
+        /// <param name="countGetLimit"></param>
+        /// <returns></returns>
         public static DisposableList<string> DisposableSplit(this string src, string seperatorStr, int countGetLimit = 0)
         {
             DisposableList<string> listSplitted = new DisposableList<string>();
@@ -908,6 +1274,11 @@ namespace SeguraChain_Lib.Utility
             return listSplitted;
         }
 
+        /// <summary>
+        /// Check if the string is empty.
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
         public static bool IsNullOrEmpty(this string str, bool useTrim, out string strTrimmed)
         {
             strTrimmed = null;
@@ -916,6 +1287,7 @@ namespace SeguraChain_Lib.Utility
             if (str.Length == 0) return true;
             if (str == string.Empty) return true;
             if (str == "") return true;
+
 
             strTrimmed = useTrim ? str.TrimFast() : null;
 
@@ -933,19 +1305,24 @@ namespace SeguraChain_Lib.Utility
             int startIndex = 0;
             int endIndex = str.Length - 1;
 
-            while (startIndex < str.Length && char.IsWhiteSpace(str[startIndex]))
+            while (char.IsWhiteSpace(str[startIndex]))
                 startIndex += 1;
 
-            while (endIndex >= 0 && char.IsWhiteSpace(str[endIndex]))
+            while (char.IsWhiteSpace(str[endIndex]))
                 endIndex -= 1;
 
             endIndex += 1;
 
-            if (startIndex >= endIndex) return string.Empty;
-
             return str.Substring(startIndex, (endIndex - startIndex));
         }
 
+        /// <summary>
+        /// Get a specific string between two strings.
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="firstString"></param>
+        /// <param name="lastString"></param>
+        /// <returns></returns>
         public static string GetStringBetweenTwoStrings(this string str, string firstString, string lastString)
         {
             int pos1 = str.IndexOf(firstString, 0, StringComparison.Ordinal) + firstString.Length;
@@ -955,74 +1332,108 @@ namespace SeguraChain_Lib.Utility
         }
     }
 
+    /// <summary>
+    /// Byte array extension class
+    /// </summary>
     public static class ClassUtilityByteArrayExtension
     {
+
         /// <summary>
-        /// Get hex string from byte array.
+        /// Get a string from a byte array object.
         /// </summary>
         /// <param name="content"></param>
         /// <returns></returns>
-        public static string GetHexStringFromByteArray(this byte[] content)
-        {
-#if NET5_0_OR_GREATER
-            return Convert.ToHexString(content);
-#else
-            return BitConverter.ToString(content).Replace("-", "");
-#endif
-        }
-
         public static string GetStringFromByteArrayAscii(this byte[] content)
         {
-            return content != null && content.Length > 0 ? Encoding.ASCII.GetString(content) : null;
+            return content != null && content?.Length > 0 ? new ASCIIEncoding().GetString(content) : null;
         }
 
+        /// <summary>
+        /// Get a string from a byte array object.
+        /// </summary>
+        /// <param name="content"></param>
+        /// <returns></returns>
         public static string GetStringFromByteArrayUtf8(this byte[] content)
         {
-            return content != null && content.Length > 0 ? Encoding.UTF8.GetString(content) : null;
+            return content != null && content?.Length > 0 ? new UTF8Encoding().GetString(content) : null;
         }
 
+        /// <summary>
+        /// Compare the source array with another one.
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="compare"></param>
+        /// <returns></returns>
         public static bool CompareArray(this byte[] source, byte[] compare)
         {
             if (source != null)
-                return compare != null && source.Length == compare.Length && !source.Where((t, i) => t != compare[i]).Any();
+                return compare == null || source.Length != compare.Length ? false : !source.Where((t, i) => t != compare[i]).Any();
 
-            return compare == null;
+            return compare != null ? true : false;
         }
     }
 
     public static class ClassUtilityNetworkStreamExtension
     {
+        /// <summary>
+        /// Try to split a packet data to send and try to send it.
+        /// </summary>
+        /// <param name="networkStream"></param>
+        /// <param name="packetBytesToSend"></param>
+        /// <param name="cancellation"></param>
+        /// <param name="packetMaxSize"></param>
+        /// <param name="singleWrite"></param>
+        /// <returns></returns>
         public static async Task<bool> TrySendSplittedPacket(this NetworkStream networkStream, byte[] packetBytesToSend, CancellationTokenSource cancellation, int packetMaxSize, bool singleWrite = false)
         {
+
             try
             {
-                if (networkStream == null || !networkStream.CanWrite || packetBytesToSend == null)
+                if (networkStream == null || !networkStream.CanWrite)
                     return false;
 
                 if (packetBytesToSend.Length >= packetMaxSize && !singleWrite)
                 {
                     int countPacketSendLength = 0;
 
-                    while (countPacketSendLength < packetBytesToSend.Length && !cancellation.IsCancellationRequested)
+                    while (countPacketSendLength < packetBytesToSend.Length)
                     {
-                        int remaining = packetBytesToSend.Length - countPacketSendLength;
-                        int packetSize = remaining > packetMaxSize ? packetMaxSize : remaining;
+                        if (!networkStream.CanWrite)
+                            return false;
+
+                        int packetSize = 0;
+
+                        if (countPacketSendLength + packetMaxSize >= packetBytesToSend.Length)
+                            packetSize = packetMaxSize;
+                        else
+                            packetSize = packetBytesToSend.Length - countPacketSendLength;
 
                         if (packetSize <= 0)
                             break;
 
-                        await networkStream.WriteAsync(packetBytesToSend, countPacketSendLength, packetSize, cancellation.Token).ConfigureAwait(false);
+                        //byte[] dataBytes = new byte[packetSize];
+
+                        //Array.Copy(packetBytesToSend, countPacketSendLength, dataBytes, 0, packetSize);
+
+                        await networkStream.WriteAsync(packetBytesToSend, countPacketSendLength, packetSize, cancellation.Token);
+                        await networkStream.FlushAsync(cancellation.Token);
 
                         countPacketSendLength += packetSize;
+
+                        if (!cancellation.IsCancellationRequested)
+                            break;
+
                     }
 
-                    if (!cancellation.IsCancellationRequested)
-                        await networkStream.FlushAsync(cancellation.Token).ConfigureAwait(false);
                 }
                 else
                 {
-                    await networkStream.WriteAsync(packetBytesToSend, 0, packetBytesToSend.Length, cancellation.Token).ConfigureAwait(false);
-                    await networkStream.FlushAsync(cancellation.Token).ConfigureAwait(false);
+                    if (!networkStream.CanWrite)
+                        return false;
+
+                    await networkStream.WriteAsync(packetBytesToSend, 0, packetBytesToSend.Length, cancellation.Token);
+                    await networkStream.FlushAsync(cancellation.Token);
+
                 }
             }
             catch
@@ -1033,9 +1444,16 @@ namespace SeguraChain_Lib.Utility
             return true;
         }
     }
+    
 
-    public static class ClassUtilitySemaphoreExtension
+    public static class ClassUtilitySemaphoreExtension 
     {
+        /// <summary>
+        /// Try wait shortcut function.
+        /// </summary>
+        /// <param name="semaphore"></param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
         public static bool TryWait(this SemaphoreSlim semaphore, CancellationTokenSource cancellation)
         {
             try
@@ -1049,6 +1467,12 @@ namespace SeguraChain_Lib.Utility
             }
         }
 
+        /// <summary>
+        /// Try wait shortcut function.
+        /// </summary>
+        /// <param name="semaphore"></param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
         public static bool TryWaitWithDelay(this SemaphoreSlim semaphore, int delay, CancellationTokenSource cancellation)
         {
             try
@@ -1061,27 +1485,42 @@ namespace SeguraChain_Lib.Utility
             }
         }
 
+        /// <summary>
+        /// Try await async shortcut function.
+        /// </summary>
+        /// <param name="semaphore"></param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
         public static async Task<bool> TryWaitAsync(this SemaphoreSlim semaphore, CancellationTokenSource cancellation)
         {
             try
             {
                 while (!cancellation.IsCancellationRequested)
                 {
-                    if (await semaphore.WaitAsync(1000, cancellation.Token).ConfigureAwait(false))
+                    if (await semaphore.WaitAsync(1000, cancellation.Token))
                         return true;
                 }
             }
             catch
             {
+                // Ignored, catch the exception once the cancellation token is cancelled.
             }
             return false;
         }
 
+        /// <summary>
+        /// Try await async shortcut function.
+        /// </summary>
+        /// <param name="semaphore"></param>
+        /// <param name="delay"></param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
         public static async Task<bool> TryWaitAsync(this SemaphoreSlim semaphore, int delay, CancellationTokenSource cancellation)
         {
+
             try
             {
-                return await semaphore.WaitAsync(delay, cancellation.Token).ConfigureAwait(false);
+                return await semaphore.WaitAsync(delay, cancellation.Token);
             }
             catch
             {
@@ -1089,13 +1528,22 @@ namespace SeguraChain_Lib.Utility
             }
         }
 
+
+        /// <summary>
+        /// Try to get a semaphore access and execute the action.
+        /// </summary>
+        /// <param name="semaphore"></param>
+        /// <param name="action"></param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
         public static async Task<bool> TryWaitExecuteActionAsync(this SemaphoreSlim semaphore, Action action, CancellationTokenSource cancellation)
         {
             bool useSemaphore = false;
 
             try
             {
-                useSemaphore = await semaphore.TryWaitAsync(cancellation).ConfigureAwait(false);
+
+                useSemaphore = await semaphore.TryWaitAsync(cancellation);
 
                 if (!useSemaphore)
                     return false;
@@ -1117,12 +1565,22 @@ namespace SeguraChain_Lib.Utility
             }
         }
 
+
+
+        /// <summary>
+        /// Try to get a semaphore access and execute the action.
+        /// </summary>
+        /// <param name="semaphore"></param>
+        /// <param name="action"></param>
+        /// <param name="cancellation"></param>
+        /// <returns></returns>
         public static bool TryWaitExecuteAction(this SemaphoreSlim semaphore, Action action, CancellationTokenSource cancellation)
         {
             bool useSemaphore = false;
 
             try
             {
+
                 useSemaphore = semaphore.TryWait(cancellation);
 
                 if (!useSemaphore)
@@ -1143,6 +1601,8 @@ namespace SeguraChain_Lib.Utility
                     semaphore.Release();
             }
         }
+
+
     }
     #endregion
 }

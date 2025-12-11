@@ -728,7 +728,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                             await Task.Delay(_peerNetworkSettingObject.PeerTaskSyncDelay);
                         }
                     }
-                }), 0, _peerCancellationToken, null, true).Wait();
+                }), 0, _peerCancellationToken).Wait();
 
 #if DEBUG
                 Debug.WriteLine("Enable Receive Broadcast transaction MemPool from: " + _peerIpTarget + " done. " + IsAlive);
@@ -817,7 +817,7 @@ namespace SeguraChain_Lib.Instance.Node.Network.Services.P2P.Broadcast
                     }
 
 
-                }), 0, _peerCancellationToken, null, true).Wait();
+                }), 0, _peerCancellationToken).Wait();
 
 #if DEBUG
                 Debug.WriteLine("Enable Send Broadcast transaction MemPool from: " + _peerIpTarget + " done.");

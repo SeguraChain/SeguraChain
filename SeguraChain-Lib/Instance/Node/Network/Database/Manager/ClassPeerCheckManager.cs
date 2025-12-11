@@ -408,14 +408,24 @@ namespace SeguraChain_Lib.Instance.Node.Network.Database.Manager
         /// <param name="peerFirewallSettingObject"></param>
         public static void SetPeerBanState(ClassPeerDatabase peerDatabase, string peerIp, string peerUniqueId, ClassPeerNetworkSettingObject peerNetworkSettingObject, ClassPeerFirewallSettingObject peerFirewallSettingObject, CancellationTokenSource cancellation)
         {
-
-            peerDatabase[peerIp, peerUniqueId, cancellation].PeerStatus = ClassPeerEnumStatus.PEER_BANNED;
-            peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalInvalidPacket = peerNetworkSettingObject.PeerMaxInvalidPacket;
-            peerDatabase[peerIp, peerUniqueId, cancellation].PeerBanDate = TaskManager.TaskManager.CurrentTimestampSecond + peerNetworkSettingObject.PeerBanDelay;
-            peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientTotalValidPacket = 0;
-            peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientTotalPassedPeerPacketSignature = 0;
-            peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientLastTimestampPeerPacketSignatureWhitelist = 0;
-            ClassLog.WriteLine("Peer: " + peerIp + " | Unique ID: " + peerUniqueId + " state has been set to banned temporaly.", ClassEnumLogLevelType.LOG_LEVEL_PEER_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
+            if (!peerDatabase.ContainsPeerUniqueId(peerIp, peerUniqueId, cancellation))
+            {
+                if (peerFirewallSettingObject.PeerEnableFirewallLink)
+                    ClassPeerFirewallManager.InsertInvalidPacket(peerIp);
+            }
+            else
+            {
+                if (peerDatabase[peerIp, peerUniqueId, cancellation].PeerStatus != ClassPeerEnumStatus.PEER_BANNED)
+                {
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerStatus = ClassPeerEnumStatus.PEER_BANNED;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerTotalInvalidPacket = peerNetworkSettingObject.PeerMaxInvalidPacket;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerBanDate = TaskManager.TaskManager.CurrentTimestampSecond;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientTotalValidPacket = 0;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientTotalPassedPeerPacketSignature = 0;
+                    peerDatabase[peerIp, peerUniqueId, cancellation].PeerClientLastTimestampPeerPacketSignatureWhitelist = 0;
+                    ClassLog.WriteLine("Peer: " + peerIp + " | Unique ID: " + peerUniqueId + " state has been set to banned temporaly.", ClassEnumLogLevelType.LOG_LEVEL_PEER_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.DarkRed);
+                }
+            }
 
         }
 

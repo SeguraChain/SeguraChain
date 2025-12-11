@@ -29,58 +29,6 @@ using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 
-
-
-// ---- Thread-safe wrapper to act like a dictionary but backed by ConcurrentDictionary ----
-using System.Collections;
-using System.Collections.Concurrent;
-
-internal class ThreadSafeDictionaryWrapper<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
-{
-    private readonly ConcurrentDictionary<TKey, TValue> _dict;
-
-    public ThreadSafeDictionaryWrapper()
-    {
-        _dict = new ConcurrentDictionary<TKey, TValue>();
-    }
-
-    public bool TryAdd(TKey key, TValue value) => _dict.TryAdd(key, value);
-
-    public void Add(TKey key, TValue value)
-    {
-        // Mimic SortedDictionary.Add behaviour: throw if exists
-        if (!_dict.TryAdd(key, value))
-            throw new ArgumentException("An item with the same key has already been added.");
-    }
-
-    public bool Remove(TKey key) => _dict.TryRemove(key, out _);
-
-    public bool ContainsKey(TKey key) => _dict.ContainsKey(key);
-
-    public int Count => _dict.Count;
-
-    public ICollection<TKey> Keys => _dict.Keys.ToList();
-
-    public void Clear() => _dict.Clear();
-
-    public TValue this[TKey key]
-    {
-        get
-        {
-            return _dict[key]; // will throw if not present, similar to SortedDictionary
-        }
-        set
-        {
-            _dict.AddOrUpdate(key, value, (k, old) => value);
-        }
-    }
-
-    public bool TryGetValue(TKey key, out TValue value) => _dict.TryGetValue(key, out value);
-
-    public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator() => _dict.GetEnumerator();
-
-    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-}
 namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 {
     /// <summary>
@@ -104,7 +52,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         /// <summary>
         /// Database.
         /// </summary>
-        private ThreadSafeDictionaryWrapper<long, BlockchainMemoryObject> _dictionaryBlockObjectMemory;
+        private SortedDictionary<long, BlockchainMemoryObject> _dictionaryBlockObjectMemory;
         public BlockchainWalletIndexMemoryManagement BlockchainWalletIndexMemoryCacheObject; // Contains block height/transactions linked to a wallet address, usually used for provide an accurate sync of data.
 
         /// <summary>
@@ -114,17 +62,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         private SemaphoreSlim _semaphoreSlimMemoryAccess;
         private SemaphoreSlim _semaphoreSlimGetWalletBalance;
         private SemaphoreSlim _semaphoreSlimCacheBlockTransactionAccess;
-
-        /// <summary>
-        /// Reader/Writer lock for memory dictionary to allow concurrent reads.
-        /// </summary>
-        private System.Threading.ReaderWriterLockSlim _rwMemoryLock;
-
-        /// <summary>
-        /// Optional sharded locks to reduce contention (indexed by blockHeight % shardCount).
-        /// </summary>
-        private System.Threading.ReaderWriterLockSlim[] _shardedLocks;
-        private int _shardCount;
 
         /// <summary>
         /// Management of memory.
@@ -154,7 +91,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             // Cache status.
             _pauseMemoryManagement = false;
 
-            _dictionaryBlockObjectMemory = new ThreadSafeDictionaryWrapper<long, BlockchainMemoryObject>();
+            _dictionaryBlockObjectMemory = new SortedDictionary<long, BlockchainMemoryObject>();
             _listWalletAddressReservedForBlockTransactionCache = new HashSet<string>();
             BlockchainWalletIndexMemoryCacheObject = new BlockchainWalletIndexMemoryManagement(blockchainDatabaseSetting);
 
@@ -166,14 +103,6 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
             // Cancellation token of memory management.
             _cancellationTokenMemoryManagement = new CancellationTokenSource();
-
-            // Initialize reader/writer locks for improved concurrency.
-            _rwMemoryLock = new System.Threading.ReaderWriterLockSlim(System.Threading.LockRecursionPolicy.SupportsRecursion);
-            _shardCount = Math.Max(1, Environment.ProcessorCount * 2);
-            _shardedLocks = new System.Threading.ReaderWriterLockSlim[_shardCount];
-            for (int _si = 0; _si < _shardCount; _si++)
-                _shardedLocks[_si] = new System.Threading.ReaderWriterLockSlim(System.Threading.LockRecursionPolicy.NoRecursion);
-
         }
 
         #region Manage cache functions.
@@ -390,7 +319,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         if (!ContainsKey(value.BlockHeight - 1))
                             return false;
                     }
-
+                         
 
                     switch (insertEnumTypeStatus)
                     {
@@ -737,7 +666,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             {
                 foreach (long blockHeight in listBlockHeight.GetList.OrderBy(x => x))
                 {
-
+                    
 
                     ClassBlockObject blockObject = await GetBlockMirrorObject(blockHeight, cancellation);
 
@@ -780,7 +709,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
         {
             if (ContainsKey(blockHeight))
                 return _dictionaryBlockObjectMemory[blockHeight].Content != null ? true : false;
-
+            
             if (await CheckBlockHeightExistOnMemoryDataCache(blockHeight, cancellation))
             {
                 // Insert the block height.
@@ -894,7 +823,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     {
                         foreach (var blockObjectPair in listBlockObject.GetList)
                         {
-
+                            
 
                             if (blockObjectPair.Value != null)
                             {
@@ -1122,7 +1051,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     {
                         if (blockHeight < BlockchainSetting.GenesisBlockHeight || cancellation.IsCancellationRequested)
                             break;
-
+                        
                         bool found = false;
 
                         if (ContainsKey(blockHeight))
@@ -1388,7 +1317,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             if (cancellation.IsCancellationRequested)
                                 break;
 
-                            ClassBlockObject blockObject = await GetBlockMirrorObject(i + 1, cancellation);
+                            ClassBlockObject blockObject = await GetBlockMirrorObject(i +1, cancellation);
 
                             if (blockObject == null)
                             {
@@ -1442,7 +1371,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                 }
             }
-
+            
 
             return blockchainNetworkStatsObject;
         }
@@ -1842,7 +1771,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                     foreach (long blockHeight in listBlockHeightConfirmed)
                     {
-
+                        
 
                         try
                         {
@@ -1858,7 +1787,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                 !blockObjectInformations.BlockTransactionFullyConfirmed)
                                 continue;
 
-                            ClassBlockObject blockObjectUpdated = await GetBlockDataStrategy(blockHeight, true, true, cancellation);
+                            ClassBlockObject blockObjectUpdated =  await GetBlockDataStrategy(blockHeight, true, true, cancellation);
 
                             if (blockObjectUpdated == null)
                             {
@@ -1880,7 +1809,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             // Update block cached confirmed retrieved.
                             foreach (var txHash in blockObjectUpdated.BlockTransactions.Keys)
                             {
-
+                                
 
                                 if (lastBlockHeight != GetLastBlockHeight)
                                 {
@@ -2026,7 +1955,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                         foreach (var blockTxPair in blockObject.BlockTransactions.OrderBy(x => x.Value.TransactionObject.TimestampSend))
                                         {
 
-
+                                            
 
                                             string blockTransactionHash = blockTxPair.Key;
 
@@ -2080,7 +2009,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
 #if DEBUG
                                                                 if (blockObject.BlockTransactions[blockTransactionHash].TransactionObject.TransactionType == ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION)
-                                                                    Debug.WriteLine("Warning the block height is not reach for the transaction type: " + System.Enum.GetName(typeof(ClassTransactionEnumType), blockObject.BlockTransactions[blockTransactionHash].TransactionObject.TransactionType));
+                                                                    Debug.WriteLine("Warning the block height is not reach for the transaction type: "+System.Enum.GetName(typeof(ClassTransactionEnumType), blockObject.BlockTransactions[blockTransactionHash].TransactionObject.TransactionType));
 #endif
                                                                 blockObject.BlockTransactions[blockTransactionHash].TransactionStatus = false;
                                                                 blockObject.BlockTransactions[blockTransactionHash].TransactionInvalidRemoveTimestamp = blockObject.BlockTransactions[blockTransactionHash].TransactionObject.TimestampSend + BlockchainSetting.TransactionInvalidDelayRemove;
@@ -2167,7 +2096,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         foreach (var amountHashSourceObject in blockTransactionToCheck.TransactionObject.AmountTransactionSource)
                         {
 
-
+                           
                             long blockHeightSource = ClassTransactionUtility.GetBlockHeightFromTransactionHash(amountHashSourceObject.Key);
 
                             if (blockHeightSource < BlockchainSetting.GenesisBlockHeight || blockHeightSource > GetLastBlockHeight)
@@ -2506,7 +2435,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             {
                 foreach (var blockTransaction in blockData.BlockTransactions)
                 {
-
+                    
 
                     if (blockTransaction.Value.TransactionObject.TransactionType == ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION ||
                         blockTransaction.Value.TransactionObject.TransactionType == ClassTransactionEnumType.DEV_FEE_TRANSACTION)
@@ -2521,7 +2450,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     {
                         foreach (var blockTransaction in _dictionaryBlockObjectMemory[blockHeight].Content.BlockTransactions)
                         {
-
+                            
 
                             if (blockTransaction.Value.TransactionObject.TransactionType == ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION ||
                                 blockTransaction.Value.TransactionObject.TransactionType == ClassTransactionEnumType.DEV_FEE_TRANSACTION)
@@ -2543,7 +2472,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                 foreach (var tx in blockTransactions.GetList)
                 {
-
+                    
 
                     if (tx.Value.TransactionObject.TransactionType == ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION)
                     {
@@ -2579,7 +2508,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                 {
                     foreach (var tx in listMemPoolTransactionObject.GetList)
                     {
-
+                        
 
                         if (tx.TransactionType == ClassTransactionEnumType.BLOCK_REWARD_TRANSACTION)
                         {
@@ -2633,7 +2562,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
             foreach (string transactionHash in transactionObject.AmountTransactionSource.Keys)
             {
-
+                
 
                 long blockHeightSource = ClassTransactionUtility.GetBlockHeightFromTransactionHash(transactionHash);
 
@@ -3532,9 +3461,9 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             catch (Exception error)
                             {
 #if DEBUG
-                                Debug.WriteLine("Error on the memory update task. Exception: " + error.Message);
+                                    Debug.WriteLine("Error on the memory update task. Exception: " + error.Message);
 #endif
-                                ClassLog.WriteLine("Error on the memory update task. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_MEMORY_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
+                                    ClassLog.WriteLine("Error on the memory update task. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_MEMORY_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY);
                             }
                         }
                         finally
@@ -3552,14 +3481,14 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         }
                     }
 #if DEBUG
-                    else
+                        else
                         Debug.WriteLine("Memory management in pause status.");
 #endif
-                    await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.GlobalTaskManageMemoryInterval);
+                        await Task.Delay(_blockchainDatabaseSetting.BlockchainCacheSetting.GlobalTaskManageMemoryInterval);
                 }
 
             }), 0, _cancellationTokenMemoryManagement, null).Wait();
-
+            
         }
 
         /// <summary>
@@ -3803,7 +3732,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                 foreach (var blockTransaction in listBlockTransaction)
                 {
-
+                    
 
                     if (_dictionaryBlockObjectMemory[blockTransaction.TransactionBlockHeightInsert].Content != null)
                         _dictionaryBlockObjectMemory[blockTransaction.TransactionBlockHeightInsert].Content.BlockTransactions[blockTransaction.TransactionObject.TransactionHash] = blockTransaction;
@@ -3961,7 +3890,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
             {
                 foreach (ClassBlockObject blockObject in listBlockObjects)
                 {
-
+                    
 
                     if (_dictionaryBlockObjectMemory[blockObject.BlockHeight].Content != null)
                         _dictionaryBlockObjectMemory[blockObject.BlockHeight].Content = blockObject;
@@ -4191,7 +4120,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         {
                             foreach (ClassCacheIoBlockTransactionObject blockTransaction in getListBlockTransaction)
                             {
-
+                                
 
                                 if (blockTransaction.BlockTransaction != null)
                                 {
@@ -4227,7 +4156,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         {
                             foreach (var blockTransaction in await _cacheIoSystem.GetBlockTransactionListFromBlockHeightTarget(blockHeight, keepAlive, cancellation))
                             {
-
+                                
 
                                 if (blockTransaction.Value != null)
                                 {
@@ -4281,7 +4210,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     // Check if some data are in the active memory first.
                     for (long i = blockHeightStart - 1; i < blockHeightEnd; i++)
                     {
-
+                        
 
                         if (i <= blockHeightEnd)
                         {
@@ -4345,7 +4274,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                 // Check if some data are in the active memory first.
                 for (long i = blockHeightStart - 1; i < blockHeightEnd; i++)
                 {
-
+                    
 
                     if (i <= blockHeightEnd)
                     {
@@ -4384,7 +4313,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
                                 foreach (var blockPair in listBlockInformation.GetList)
                                 {
-
+                                    
                                     AddOrUpdateBlockMirrorObject(blockPair.Value);
                                 }
                             }
@@ -4415,7 +4344,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                             {
                                 foreach (var block in listBlockObject.GetList)
                                 {
-
+                                    
 
                                     if (block.Value != null)
                                     {
@@ -4586,7 +4515,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                     if (_dictionaryBlockObjectMemory[blockHeight].ContentMirror != null)
                         return _dictionaryBlockObjectMemory[blockHeight].ContentMirror;
                 }
-                catch (Exception error)
+                catch(Exception error)
                 {
                     ClassLog.WriteLine("Cannot found block height: " + blockHeight + " into Block object mirror. Exception: " + error.Message, ClassEnumLogLevelType.LOG_LEVEL_MEMORY_MANAGER, ClassEnumLogWriteLevel.LOG_WRITE_LEVEL_MANDATORY_PRIORITY, false, ConsoleColor.Red);
                 }
@@ -4934,7 +4863,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                 {
                                                                     foreach (string txHash in listTxHashToRemove.GetList)
                                                                         _dictionaryBlockObjectMemory[blockHeightIndex].BlockTransactionCache.TryRemove(txHash, out _);
-
+                                                                    
                                                                 }
                                                             }
                                                         }
@@ -5147,7 +5076,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                                                                         {
                                                                             foreach (var txHash in listBlockTransactionHash.GetList)
                                                                             {
-
+                                                                                
 
                                                                                 if (_dictionaryBlockObjectMemory[blockHeightIndex].BlockTransactionCache.TryGetValue(txHash, out var cacheIoBlockTransactionObject))
                                                                                 {
@@ -5363,7 +5292,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
                         long currentTimestamp = TaskManager.TaskManager.CurrentTimestampSecond;
                         foreach (string transactionHash in listTransactionHash)
                         {
-
+                            
 
                             if (_dictionaryBlockObjectMemory[blockHeight].BlockTransactionCache.ContainsKey(transactionHash))
                             {
@@ -5476,7 +5405,7 @@ namespace SeguraChain_Lib.Blockchain.Database.Memory.Main
 
             for (long i = 0; i < lastBlockHeightUnlocked; i++)
             {
-
+                
 
                 long blockHeight = i + 1;
 

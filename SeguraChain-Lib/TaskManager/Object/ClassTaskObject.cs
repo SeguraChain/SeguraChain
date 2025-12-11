@@ -1,4 +1,5 @@
 ﻿using SeguraChain_Lib.Other.Object.Network;
+using SeguraChain_Lib.Utility;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,31 +8,25 @@ namespace SeguraChain_Lib.TaskManager.Object
 {
     public class ClassTaskObject
     {
-        public long Id { get; }
-        public bool Started { get; private set; }
-        public bool Disposed { get; set; }
-
-        private readonly Action _action;
-        public Task Task { get; private set; }
-        public CancellationTokenSource Cancellation { get; }
-        public long TimestampEnd { get; }
-        public ClassCustomSocket Socket { get; }
-
-        // Générateur thread-safe d'IDs aléatoires
-        private static long _idCounter = 0;
+        public long Id;
+        public bool Started;
+        public bool Disposed;
+        private Action _action;
+        public Task Task;
+        public CancellationTokenSource Cancellation;
+        public long TimestampEnd;
+        public ClassCustomSocket Socket;
 
         /// <summary>
         /// Constructor.
         /// </summary>
         public ClassTaskObject(Action action, CancellationTokenSource cancellation, long timestampEnd, ClassCustomSocket socket)
         {
-            // Utilisation d'Interlocked pour générer des IDs uniques sans contention
-            Id = Interlocked.Increment(ref _idCounter);
-
-            _action = action ?? throw new ArgumentNullException(nameof(action));
+            Id = ClassUtility.GetRandomBetweenLong(0, long.MaxValue - 1);
             Cancellation = cancellation;
             TimestampEnd = timestampEnd;
             Socket = socket;
+            _action = action;
         }
 
         /// <summary>
@@ -39,24 +34,15 @@ namespace SeguraChain_Lib.TaskManager.Object
         /// </summary>
         public void Run()
         {
-            if (Started)
-                return;
-
             try
             {
-                Task = Task.Factory.StartNew(
-                    _action,
-                    Cancellation.Token,
-                    TaskCreationOptions.RunContinuationsAsynchronously,
-                    TaskScheduler.Current);
-
-                Started = true;
+                Task = Task.Factory.StartNew(_action, Cancellation.Token, TaskCreationOptions.DenyChildAttach, TaskScheduler.Current);
             }
             catch
             {
-                // Catch the exception, once the task is cancelled.
-                Started = true; // Marquer comme démarré même en cas d'erreur pour éviter les tentatives répétées
+                // Catch the exception, once the task is canelled.
             }
+            Started = true;
         }
     }
 }
