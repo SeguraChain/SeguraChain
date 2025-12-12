@@ -295,7 +295,7 @@ namespace SeguraChain_Desktop_Wallet
             // pictureBoxLogo
             // 
             pictureBoxLogo.BackColor = System.Drawing.Color.Transparent;
-            pictureBoxLogo.BackgroundImage = (System.Drawing.Image)resources.GetObject("pictureBoxLogo.BackgroundImage");
+            pictureBoxLogo.BackgroundImage = Properties.Resources.logo_web_profil;
             pictureBoxLogo.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
             pictureBoxLogo.Location = new System.Drawing.Point(0, 27);
             pictureBoxLogo.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);

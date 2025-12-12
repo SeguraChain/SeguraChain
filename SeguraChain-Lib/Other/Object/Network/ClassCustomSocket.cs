@@ -4,7 +4,6 @@ using SeguraChain_Lib.TaskManager;
 using SeguraChain_Lib.Utility;
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -13,61 +12,41 @@ using System.Threading.Tasks;
 namespace SeguraChain_Lib.Other.Object.Network
 {
     /// <summary>
-    /// Optimized custom socket class for .NET Framework 4.8.
-    /// - Sets TCP options (NoDelay, buffer sizes, keepalive) for throughput/latency tuning.
-    /// - Uses Begin/End async pattern wrapped in Task to stay compatible with .NET 4.8.
-    /// - Avoids Span/Memory/ValueTask APIs not available in .NET 4.8.
+    /// Custom socket class.
     /// </summary>
     public class ClassCustomSocket
     {
-        private readonly Socket _socket;
+        private Socket _socket;
         private NetworkStream _networkStream;
 
-        public bool Closed { get; private set; }
+        public bool Closed { private set; get; }
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="socket"></param>
         public ClassCustomSocket(Socket socket, bool isServer)
         {
-            _socket = socket ?? throw new ArgumentNullException(nameof(socket));
+            _socket = socket;
 
-            // TCP tuning: reduce latency (NoDelay) and increase buffers for throughput.
-            try
+            if (_socket != null)
             {
-                _socket.NoDelay = true; // disable Nagle for low-latency writes
-                _socket.SendBufferSize = 65536; // 64 KB send buffer
-                _socket.ReceiveBufferSize = 65536; // 64 KB receive buffer
-
-                // Enable KeepAlive and set timings (Windows SIO_KEEPALIVE_VALS)
+                // Optimisations TCP (net4.8 OK)
                 try
                 {
-                    _socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
-
-                    // KeepAlive values: on (uint 1), keepalive time (ms), keepalive interval (ms)
-                    var keepAliveTime = (uint)60000; // 60s idle before probes
-                    var keepAliveInterval = (uint)1000; // 1s between probes
-                    var inOptionValues = new byte[12];
-                    BitConverter.GetBytes((uint)1).CopyTo(inOptionValues, 0);
-                    BitConverter.GetBytes(keepAliveTime).CopyTo(inOptionValues, 4);
-                    BitConverter.GetBytes(keepAliveInterval).CopyTo(inOptionValues, 8);
-
-                    // IOControlCode.KeepAliveValues is available in .NET Framework on Windows
-                    _socket.IOControl(IOControlCode.KeepAliveValues, inOptionValues, null);
+                    ConfigureSocket(_socket);
                 }
                 catch
                 {
-                    // Ignore if platform doesn't support KeepAlive tuning
+                    // On ne casse pas le flux si certaines options ne sont pas supportées.
                 }
-            }
-            catch
-            {
-                // ignore socket option failures
             }
 
             if (isServer)
             {
                 try
                 {
-                    // NetworkStream(Socket, ownsSocket) exists in .NET 4.8
-                    _networkStream = new NetworkStream(_socket, false);
+                    _networkStream = new NetworkStream(_socket, ownsSocket: false);
                 }
                 catch
                 {
@@ -77,77 +56,106 @@ namespace SeguraChain_Lib.Other.Object.Network
         }
 
         /// <summary>
-        /// Connect using BeginConnect/EndConnect wrapped into a Task for .NET 4.8 compatibility.
-        /// delay is timeout in seconds for the attempt.
+        /// Configure TCP options (latency + robustness).
         /// </summary>
-        public async Task<bool> Connect(string ip, int port, int delay, CancellationTokenSource cancellation)
+        private static void ConfigureSocket(Socket socket)
         {
-            if (string.IsNullOrWhiteSpace(ip) || cancellation == null) return false;
+            // Latence plus faible (désactive Nagle)
+            socket.NoDelay = true;
 
-            var success = false;
+            // Buffers un peu plus grands (ajuste si besoin)
+            socket.SendBufferSize = 256 * 1024;
+            socket.ReceiveBufferSize = 256 * 1024;
 
-            // Wrap BeginConnect/EndConnect in a Task
-            Task connectTask = Task.Factory.StartNew(() =>
-            {
-                var tcs = new TaskCompletionSource<bool>();
-                try
-                {
-                    _socket.BeginConnect(ip, port, ar =>
-                    {
-                        try
-                        {
-                            _socket.EndConnect(ar);
-                            tcs.TrySetResult(true);
-                        }
-                        catch (Exception ex)
-                        {
-                            tcs.TrySetException(ex);
-                        }
-                    }, null);
-                }
-                catch (Exception ex)
-                {
-                    tcs.TrySetException(ex);
-                }
+            // Evite certains blocages si jamais une API sync est utilisée ailleurs
+            socket.SendTimeout = 10_000;
+            socket.ReceiveTimeout = 10_000;
 
-                // Wait synchronously on the tcs task inside this Task to keep the lexical scope simple.
-                try
-                {
-                    tcs.Task.Wait();
-                }
-                catch
-                {
-                    // swallow
-                }
-            }, cancellation.Token);
+            // Fermeture plus “nette”
+            socket.LingerState = new LingerOption(false, 0);
 
-            // Wait for either connect, cancellation, or timeout
-            var timeoutTask = Task.Delay(delay * 1000, cancellation.Token);
-            var finished = await Task.WhenAny(connectTask, timeoutTask).ConfigureAwait(false);
+            // KeepAlive (utile pour détecter un lien mort)
+            EnableKeepAlive(socket, timeMs: 30_000, intervalMs: 10_000);
+        }
 
-            if (finished == connectTask && !cancellation.IsCancellationRequested)
-            {
-                // check socket connected
-                if (_socket != null && _socket.Connected)
-                {
-                    success = true;
-                }
-            }
+        private static void EnableKeepAlive(Socket socket, uint timeMs, uint intervalMs)
+        {
+            // SIO_KEEPALIVE_VALS : [onOff(4)][time(4)][interval(4)]
+            byte[] inOptionValues = new byte[12];
+            BitConverter.GetBytes((uint)1).CopyTo(inOptionValues, 0);
+            BitConverter.GetBytes(timeMs).CopyTo(inOptionValues, 4);
+            BitConverter.GetBytes(intervalMs).CopyTo(inOptionValues, 8);
 
-            if (!success)
-                return false;
-
-            // Create network stream after successful connect
             try
             {
-                _networkStream = new NetworkStream(_socket, false);
+                socket.IOControl(IOControlCode.KeepAliveValues, inOptionValues, null);
             }
             catch
             {
+                // Selon OS/config, ça peut refuser : on ignore.
+            }
+        }
+
+        /// <summary>
+        /// Connect (delay is in seconds like original code).
+        /// </summary>
+        public async Task<bool> Connect(string ip, int port, int delay, CancellationTokenSource cancellation)
+        {
+            if (Closed || _socket == null)
                 return false;
+
+            // Si déjà connecté, on s'assure juste d'avoir le stream
+            if (_socket.Connected)
+            {
+                if (_networkStream == null)
+                    _networkStream = new NetworkStream(_socket, ownsSocket: false);
+                return true;
             }
 
-            return true;
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            // On conserve le comportement original : la tentative de connexion est planifiée via TaskManager
+            await TaskManager.TaskManager.InsertTask(async () =>
+            {
+                try
+                {
+                    // net4.8 : pas de token ici -> on gère l'annulation via WhenAny / fermeture socket
+                    await _socket.ConnectAsync(ip, port).ConfigureAwait(false);
+                    tcs.TrySetResult(true);
+                }
+                catch
+                {
+                    tcs.TrySetResult(false);
+                }
+            }, delay * 1000, cancellation);
+
+            // Attente propre (sans boucle active)
+            using (cancellation.Token.Register(() => tcs.TrySetCanceled()))
+            {
+                bool success;
+                try
+                {
+                    success = await tcs.Task.ConfigureAwait(false);
+                }
+                catch
+                {
+                    return false;
+                }
+
+                if (!success || _socket == null || !_socket.Connected)
+                    return false;
+
+                try
+                {
+                    _networkStream = new NetworkStream(_socket, ownsSocket: false);
+                    return true;
+                }
+                catch
+                {
+                    Close(SocketShutdown.Both);
+                    return false;
+                }
+            }
         }
 
         public string GetIp
@@ -156,10 +164,9 @@ namespace SeguraChain_Lib.Other.Object.Network
             {
                 try
                 {
-                    if (_socket != null && _socket.RemoteEndPoint != null)
-                        return ((IPEndPoint)_socket.RemoteEndPoint).Address.ToString();
-
-                    return string.Empty;
+                    return _socket?.RemoteEndPoint != null
+                        ? ((IPEndPoint)(_socket.RemoteEndPoint)).Address.ToString()
+                        : string.Empty;
                 }
                 catch
                 {
@@ -169,8 +176,7 @@ namespace SeguraChain_Lib.Other.Object.Network
         }
 
         /// <summary>
-        /// Lightweight connected check using Poll and Available.
-        /// Poll timeout reduced to 1ms to avoid blocking.
+        /// Socket is connected.
         /// </summary>
         public bool IsConnected()
         {
@@ -179,8 +185,8 @@ namespace SeguraChain_Lib.Other.Object.Network
                 if (Closed || _socket == null || !_socket.Connected || _networkStream == null)
                     return false;
 
-                // A small poll (1ms) — if readable and no data available, socket is closed
-                return !(_socket.Poll(1, SelectMode.SelectRead) && _socket.Available == 0);
+                // Poll+Available pour détecter une déconnexion propre
+                return !(_socket.Poll(10, SelectMode.SelectRead) && _socket.Available == 0);
             }
             catch
             {
@@ -190,17 +196,14 @@ namespace SeguraChain_Lib.Other.Object.Network
 
         public async Task<bool> TrySendSplittedPacket(byte[] packetData, CancellationTokenSource cancellation, int packetPeerSplitSeperator, bool singleWrite)
         {
-            if (packetData == null || _networkStream == null)
-                return false;
-
             try
-            {   
-                // Ensure write timeout does not block indefinitely
-                using (var writeCts = CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token))
-                {
-                    // If your NetworkStream extension honors cancellation token, pass it along.
-                    return await _networkStream.TrySendSplittedPacket(packetData, writeCts, packetPeerSplitSeperator, singleWrite).ConfigureAwait(false);
-                }
+            {
+                if (Closed || _networkStream == null || _socket == null || !_socket.Connected)
+                    return false;
+
+                return await _networkStream
+                    .TrySendSplittedPacket(packetData, cancellation, packetPeerSplitSeperator, singleWrite)
+                    .ConfigureAwait(false);
             }
             catch (Exception error)
             {
@@ -210,20 +213,54 @@ namespace SeguraChain_Lib.Other.Object.Network
         }
 
         /// <summary>
-        /// Read packet data compatible with .NET 4.8 ReadAsync(byte[],int,int,CancellationToken).
-        /// delayReading is a timeout in milliseconds.
+        /// Read exactly packetLength bytes (TCP can return partial reads).
+        /// delayReading is in ms like original code (CancellationTokenSource(delayReading)).
         /// </summary>
         public async Task<ReadPacketData> TryReadPacketData(int packetLength, int delayReading, bool isHttp, CancellationTokenSource cancellation)
         {
-            var readPacketData = new ReadPacketData { Data = new byte[packetLength] };
+            ReadPacketData readPacketData = new ReadPacketData
+            {
+                Data = new byte[packetLength]
+            };
+
+            if (Closed || _networkStream == null || _socket == null || !_socket.Connected)
+            {
+                readPacketData.Status = false;
+                readPacketData.Data = Array.Empty<byte>();
+                return readPacketData;
+            }
 
             try
             {
-                using (var delayCts = new CancellationTokenSource(delayReading))
-                using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, delayCts.Token))
+                using (var timeoutCts = new CancellationTokenSource(delayReading))
+                using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, timeoutCts.Token))
                 {
-                    // ReadAsync(byte[],int,int,CancellationToken) is available on .NET 4.8
-                    await _networkStream.ReadAsync(readPacketData.Data, 0, packetLength, linkedCts.Token).ConfigureAwait(false);
+                    int offset = 0;
+
+                    while (offset < packetLength)
+                    {
+                        int read = await _networkStream
+                            .ReadAsync(readPacketData.Data, offset, packetLength - offset, linkedCts.Token)
+                            .ConfigureAwait(false);
+
+                        // 0 = remote closed
+                        if (read == 0)
+                            break;
+
+                        offset += read;
+                    }
+
+                    // Si on a lu moins que demandé, on tronque
+                    if (offset <= 0)
+                    {
+                        readPacketData.Data = Array.Empty<byte>();
+                    }
+                    else if (offset < packetLength)
+                    {
+                        byte[] trimmed = new byte[offset];
+                        Buffer.BlockCopy(readPacketData.Data, 0, trimmed, 0, offset);
+                        readPacketData.Data = trimmed;
+                    }
                 }
             }
             catch (Exception error)
@@ -233,30 +270,33 @@ namespace SeguraChain_Lib.Other.Object.Network
 #endif
             }
 
-            using (var listOfData = new DisposableList<byte>())
+            // Filtrage identique à ton code (mais plus safe si Data est vide)
+            using (DisposableList<byte> listOfData = new DisposableList<byte>())
             {
-                for (int i = 0; i < readPacketData.Data.Length; i++)
+                if (readPacketData.Data != null)
                 {
-                    byte data = readPacketData.Data[i];
-                    if (data == 0) continue;
-
-                    char c = (char)data;
-
-                    if (!isHttp)
+                    foreach (byte data in readPacketData.Data)
                     {
-                        if (ClassUtility.CharIsABase64Character(c) || ClassPeerPacketSetting.PacketPeerSplitSeperator == c)
+                        if ((char)data == '\0')
+                            continue;
+
+                        if (!isHttp)
+                        {
+                            if (ClassUtility.CharIsABase64Character((char)data) ||
+                                ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
+                                listOfData.Add(data);
+                        }
+                        else
+                        {
                             listOfData.Add(data);
-                    }
-                    else
-                    {
-                        listOfData.Add(data);
+                        }
                     }
                 }
 
                 readPacketData.Data = listOfData.GetList.ToArray();
             }
 
-            readPacketData.Status = readPacketData.Data.Length > 0;
+            readPacketData.Status = readPacketData.Data != null && readPacketData.Data.Length > 0;
             return readPacketData;
         }
 
@@ -267,23 +307,37 @@ namespace SeguraChain_Lib.Other.Object.Network
 
         private void Close(SocketShutdown shutdownType)
         {
-            if (Closed) return;
+            if (Closed)
+                return;
 
             Closed = true;
 
             try
             {
-                if (_socket != null && _socket.Connected)
-                {
-                    try { _socket.Shutdown(shutdownType); } catch { }
-                    try { _socket.Close(); } catch { }
-                }
+                try { _networkStream?.Close(); } catch { }
+                try { _networkStream?.Dispose(); } catch { }
 
-                try { if (_networkStream != null) _networkStream.Close(); } catch { }
+                if (_socket != null)
+                {
+                    try
+                    {
+                        if (_socket.Connected)
+                            _socket.Shutdown(shutdownType);
+                    }
+                    catch { }
+
+                    try { _socket.Close(); } catch { }
+                    try { _socket.Dispose(); } catch { }
+                }
             }
             catch
             {
-                // ignore
+                // Ignored.
+            }
+            finally
+            {
+                _networkStream = null;
+                _socket = null;
             }
         }
 
@@ -301,7 +355,9 @@ namespace SeguraChain_Lib.Other.Object.Network
 
             private void Dispose(bool dispose)
             {
-                if (_disposed || !dispose) return;
+                if (_disposed || !dispose)
+                    return;
+
                 Data = null;
                 Status = false;
                 _disposed = true;
