@@ -1,5 +1,4 @@
 ﻿using SeguraChain_Lib.Instance.Node.Network.Enum.P2P.Packet;
-using SeguraChain_Lib.Other.Object.List;
 using SeguraChain_Lib.TaskManager;
 using SeguraChain_Lib.Utility;
 using System;
@@ -24,29 +23,19 @@ namespace SeguraChain_Lib.Other.Object.Network
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="socket"></param>
         public ClassCustomSocket(Socket socket, bool isServer)
         {
             _socket = socket;
 
-            if (_socket != null)
-            {
-                // Optimisations TCP (net4.8 OK)
-                try
-                {
-                    ConfigureSocket(_socket);
-                }
-                catch
-                {
-                    // On ne casse pas le flux si certaines options ne sont pas supportées.
-                }
-            }
+            // Optimisations TCP (P2P/HTTP) : à faire le plus tôt possible.
+            TryConfigureTcpSocket(_socket);
 
             if (isServer)
             {
                 try
                 {
-                    _networkStream = new NetworkStream(_socket, ownsSocket: false);
+                    if (_socket != null)
+                        _networkStream = new NetworkStream(_socket, true);
                 }
                 catch
                 {
@@ -56,106 +45,81 @@ namespace SeguraChain_Lib.Other.Object.Network
         }
 
         /// <summary>
-        /// Configure TCP options (latency + robustness).
-        /// </summary>
-        private static void ConfigureSocket(Socket socket)
-        {
-            // Latence plus faible (désactive Nagle)
-            socket.NoDelay = true;
-
-            // Buffers un peu plus grands (ajuste si besoin)
-            socket.SendBufferSize = 256 * 1024;
-            socket.ReceiveBufferSize = 256 * 1024;
-
-            // Evite certains blocages si jamais une API sync est utilisée ailleurs
-            socket.SendTimeout = 10_000;
-            socket.ReceiveTimeout = 10_000;
-
-            // Fermeture plus “nette”
-            socket.LingerState = new LingerOption(false, 0);
-
-            // KeepAlive (utile pour détecter un lien mort)
-            EnableKeepAlive(socket, timeMs: 30_000, intervalMs: 10_000);
-        }
-
-        private static void EnableKeepAlive(Socket socket, uint timeMs, uint intervalMs)
-        {
-            // SIO_KEEPALIVE_VALS : [onOff(4)][time(4)][interval(4)]
-            byte[] inOptionValues = new byte[12];
-            BitConverter.GetBytes((uint)1).CopyTo(inOptionValues, 0);
-            BitConverter.GetBytes(timeMs).CopyTo(inOptionValues, 4);
-            BitConverter.GetBytes(intervalMs).CopyTo(inOptionValues, 8);
-
-            try
-            {
-                socket.IOControl(IOControlCode.KeepAliveValues, inOptionValues, null);
-            }
-            catch
-            {
-                // Selon OS/config, ça peut refuser : on ignore.
-            }
-        }
-
-        /// <summary>
-        /// Connect (delay is in seconds like original code).
+        /// Connect with delay (seconds) using TaskManager. Compatible .NET Framework 4.8.
         /// </summary>
         public async Task<bool> Connect(string ip, int port, int delay, CancellationTokenSource cancellation)
         {
-            if (Closed || _socket == null)
-                return false;
+            bool success = false;
 
-            // Si déjà connecté, on s'assure juste d'avoir le stream
-            if (_socket.Connected)
-            {
-                if (_networkStream == null)
-                    _networkStream = new NetworkStream(_socket, ownsSocket: false);
-                return true;
-            }
+            // Utilise un TCS pour éviter le busy-wait.
+            var tcsDone = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-            // On conserve le comportement original : la tentative de connexion est planifiée via TaskManager
             await TaskManager.TaskManager.InsertTask(async () =>
             {
                 try
                 {
-                    // net4.8 : pas de token ici -> on gère l'annulation via WhenAny / fermeture socket
-                    await _socket.ConnectAsync(ip, port).ConfigureAwait(false);
-                    tcs.TrySetResult(true);
+                    if (cancellation == null || cancellation.IsCancellationRequested)
+                    {
+                        tcsDone.TrySetResult(false);
+                        return;
+                    }
+
+                    if (_socket == null)
+                    {
+                        tcsDone.TrySetResult(false);
+                        return;
+                    }
+
+                    TryConfigureTcpSocket(_socket);
+
+                    // .NET 4.8: pas de ConnectAsync avec CancellationToken => on "simule" via Task.WhenAny.
+                    var connectTask = _socket.ConnectAsync(ip, port);
+
+                    // Si le token est annulé, on se débloque.
+                    var cancelTask = WaitCancellationAsync(cancellation.Token);
+
+                    var completed = await Task.WhenAny(connectTask, cancelTask).ConfigureAwait(false);
+
+                    if (completed == cancelTask || cancellation.IsCancellationRequested)
+                    {
+                        // Forcer l'arrêt du connect si besoin.
+                        SafeKillSocket();
+                        tcsDone.TrySetResult(false);
+                        return;
+                    }
+
+                    // Propager les exceptions éventuelles.
+                    await connectTask.ConfigureAwait(false);
+
+                    success = _socket != null && _socket.Connected;
+                    if (success)
+                    {
+                        // Stream après connexion.
+                        _networkStream = new NetworkStream(_socket, true);
+                    }
+
+                    tcsDone.TrySetResult(success);
                 }
                 catch
                 {
-                    tcs.TrySetResult(false);
+                    SafeKillSocket();
+                    tcsDone.TrySetResult(false);
                 }
-            }, delay * 1000, cancellation);
+            }, System.Math.Max(0, delay) * 1000, cancellation);
 
-            // Attente propre (sans boucle active)
-            using (cancellation.Token.Register(() => tcs.TrySetCanceled()))
-            {
-                bool success;
-                try
-                {
-                    success = await tcs.Task.ConfigureAwait(false);
-                }
-                catch
-                {
-                    return false;
-                }
 
-                if (!success || _socket == null || !_socket.Connected)
-                    return false;
+           
+            return await tcsDone.Task.ConfigureAwait(false);
+        }
 
-                try
-                {
-                    _networkStream = new NetworkStream(_socket, ownsSocket: false);
-                    return true;
-                }
-                catch
-                {
-                    Close(SocketShutdown.Both);
-                    return false;
-                }
-            }
+        private static Task WaitCancellationAsync(CancellationToken token)
+        {
+            if (!token.CanBeCanceled)
+                return Task.Delay(Timeout.Infinite);
+
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            token.Register(() => tcs.TrySetResult(true));
+            return tcs.Task;
         }
 
         public string GetIp
@@ -164,9 +128,8 @@ namespace SeguraChain_Lib.Other.Object.Network
             {
                 try
                 {
-                    return _socket?.RemoteEndPoint != null
-                        ? ((IPEndPoint)(_socket.RemoteEndPoint)).Address.ToString()
-                        : string.Empty;
+                    var ep = _socket?.RemoteEndPoint as IPEndPoint;
+                    return ep != null ? ep.Address.ToString() : string.Empty;
                 }
                 catch
                 {
@@ -182,10 +145,13 @@ namespace SeguraChain_Lib.Other.Object.Network
         {
             try
             {
-                if (Closed || _socket == null || !_socket.Connected || _networkStream == null)
+                if (Closed || _socket == null || _networkStream == null)
                     return false;
 
-                // Poll+Available pour détecter une déconnexion propre
+                if (!_socket.Connected)
+                    return false;
+
+                // Poll + Available: check classique.
                 return !(_socket.Poll(10, SelectMode.SelectRead) && _socket.Available == 0);
             }
             catch
@@ -198,11 +164,10 @@ namespace SeguraChain_Lib.Other.Object.Network
         {
             try
             {
-                if (Closed || _networkStream == null || _socket == null || !_socket.Connected)
+                if (Closed || _networkStream == null || packetData == null || packetData.Length == 0)
                     return false;
 
-                return await _networkStream
-                    .TrySendSplittedPacket(packetData, cancellation, packetPeerSplitSeperator, singleWrite)
+                return await _networkStream.TrySendSplittedPacket(packetData, cancellation, packetPeerSplitSeperator, singleWrite)
                     .ConfigureAwait(false);
             }
             catch (Exception error)
@@ -212,54 +177,59 @@ namespace SeguraChain_Lib.Other.Object.Network
             return false;
         }
 
-        /// <summary>
-        /// Read exactly packetLength bytes (TCP can return partial reads).
-        /// delayReading is in ms like original code (CancellationTokenSource(delayReading)).
-        /// </summary>
         public async Task<ReadPacketData> TryReadPacketData(int packetLength, int delayReading, bool isHttp, CancellationTokenSource cancellation)
         {
-            ReadPacketData readPacketData = new ReadPacketData
+            var readPacketData = new ReadPacketData
             {
-                Data = new byte[packetLength]
+                Status = false,
+                Data = packetLength > 0 ? new byte[packetLength] : Array.Empty<byte>()
             };
 
-            if (Closed || _networkStream == null || _socket == null || !_socket.Connected)
-            {
-                readPacketData.Status = false;
-                readPacketData.Data = Array.Empty<byte>();
+            if (Closed || _networkStream == null || packetLength <= 0 || cancellation == null || cancellation.IsCancellationRequested)
                 return readPacketData;
-            }
+
+            CancellationTokenSource ctsDelay = null;
+            CancellationTokenSource ctsLinked = null;
 
             try
             {
-                using (var timeoutCts = new CancellationTokenSource(delayReading))
-                using (var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, timeoutCts.Token))
+                ctsDelay = delayReading > 0 ? new CancellationTokenSource(delayReading) : new CancellationTokenSource();
+                ctsLinked = CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, ctsDelay.Token);
+
+                // IMPORTANT: ReadAsync peut lire moins que packetLength => boucle pour remplir (ou timeout/annulation).
+                int offset = 0;
+                while (offset < packetLength)
                 {
-                    int offset = 0;
+                    int read;
+#if NET5_0_OR_GREATER
+                    read = await _networkStream.ReadAsync(readPacketData.Data.AsMemory(offset, packetLength - offset), ctsLinked.Token).ConfigureAwait(false);
+#else
+                    read = await _networkStream.ReadAsync(readPacketData.Data, offset, packetLength - offset, ctsLinked.Token).ConfigureAwait(false);
+#endif
+                    if (read <= 0)
+                        break;
 
-                    while (offset < packetLength)
+                    offset += read;
+
+                    // Optimisation: si HTTP, on peut sortir tôt si on a déjà \r\n\r\n (fin headers).
+                    // (Sans casser le comportement existant: ça ne force pas la sortie si pas trouvé.)
+                    if (isHttp && offset >= 4)
                     {
-                        int read = await _networkStream
-                            .ReadAsync(readPacketData.Data, offset, packetLength - offset, linkedCts.Token)
-                            .ConfigureAwait(false);
-
-                        // 0 = remote closed
-                        if (read == 0)
+                        // Recherche rapide uniquement sur la fenêtre utile.
+                        if (ContainsHttpHeaderTerminator(readPacketData.Data, offset))
                             break;
-
-                        offset += read;
                     }
+                }
 
-                    // Si on a lu moins que demandé, on tronque
-                    if (offset <= 0)
+                // Si on a lu moins, on réduit (évite de trim ensuite sur des zéros).
+                if (readPacketData.Data.Length != 0)
+                {
+                    int actualLen = GetActualLength(readPacketData.Data);
+                    if (actualLen != readPacketData.Data.Length)
                     {
-                        readPacketData.Data = Array.Empty<byte>();
-                    }
-                    else if (offset < packetLength)
-                    {
-                        byte[] trimmed = new byte[offset];
-                        Buffer.BlockCopy(readPacketData.Data, 0, trimmed, 0, offset);
-                        readPacketData.Data = trimmed;
+                        var resized = new byte[actualLen];
+                        Buffer.BlockCopy(readPacketData.Data, 0, resized, 0, actualLen);
+                        readPacketData.Data = resized;
                     }
                 }
             }
@@ -269,35 +239,81 @@ namespace SeguraChain_Lib.Other.Object.Network
                 Debug.WriteLine("Reading packet exception from " + GetIp + " | Exception: " + error.Message);
 #endif
             }
-
-            // Filtrage identique à ton code (mais plus safe si Data est vide)
-            using (DisposableList<byte> listOfData = new DisposableList<byte>())
+            finally
             {
-                if (readPacketData.Data != null)
-                {
-                    foreach (byte data in readPacketData.Data)
-                    {
-                        if ((char)data == '\0')
-                            continue;
-
-                        if (!isHttp)
-                        {
-                            if (ClassUtility.CharIsABase64Character((char)data) ||
-                                ClassPeerPacketSetting.PacketPeerSplitSeperator == (char)data)
-                                listOfData.Add(data);
-                        }
-                        else
-                        {
-                            listOfData.Add(data);
-                        }
-                    }
-                }
-
-                readPacketData.Data = listOfData.GetList.ToArray();
+                try { ctsLinked?.Dispose(); } catch { }
+                try { ctsDelay?.Dispose(); } catch { }
             }
 
+            // Filtrage/normalisation du buffer lu
+            readPacketData.Data = FilterReadBytes(readPacketData.Data, isHttp);
             readPacketData.Status = readPacketData.Data != null && readPacketData.Data.Length > 0;
+
             return readPacketData;
+        }
+
+        private static bool ContainsHttpHeaderTerminator(byte[] buffer, int length)
+        {
+            // Cherche \r\n\r\n dans [0..length)
+            // Optim: ne parcourt que jusqu'à length-4
+            for (int i = 0; i <= length - 4; i++)
+            {
+                if (buffer[i] == (byte)'\r' &&
+                    buffer[i + 1] == (byte)'\n' &&
+                    buffer[i + 2] == (byte)'\r' &&
+                    buffer[i + 3] == (byte)'\n')
+                    return true;
+            }
+            return false;
+        }
+
+        private static int GetActualLength(byte[] buffer)
+        {
+            // Coupe les \0 en fin si présents (cas fréquent si lecture partielle du buffer préalloué).
+            int end = buffer.Length;
+            while (end > 0 && buffer[end - 1] == 0)
+                end--;
+            return end;
+        }
+
+        private static byte[] FilterReadBytes(byte[] data, bool isHttp)
+        {
+            if (data == null || data.Length == 0)
+                return Array.Empty<byte>();
+
+            // On compacte en place dans un nouveau buffer de même taille puis Resize.
+            var tmp = new byte[data.Length];
+            int count = 0;
+            char sep = ClassPeerPacketSetting.PacketPeerSplitSeperator;
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                byte b = data[i];
+
+                // Ignore les \0.
+                if (b == 0)
+                    continue;
+
+                if (!isHttp)
+                {
+                    char c = (char)b;
+                    if (ClassUtility.CharIsABase64Character(c) || c == sep)
+                        tmp[count++] = b;
+                }
+                else
+                {
+                    tmp[count++] = b;
+                }
+            }
+
+            if (count == tmp.Length)
+                return tmp;
+
+            var result = new byte[count];
+            if (count > 0)
+                Buffer.BlockCopy(tmp, 0, result, 0, count);
+
+            return result;
         }
 
         public void Kill(SocketShutdown shutdownType)
@@ -314,8 +330,10 @@ namespace SeguraChain_Lib.Other.Object.Network
 
             try
             {
+                // Fermer le stream même si socket déjà tombé.
                 try { _networkStream?.Close(); } catch { }
                 try { _networkStream?.Dispose(); } catch { }
+                _networkStream = null;
 
                 if (_socket != null)
                 {
@@ -324,20 +342,70 @@ namespace SeguraChain_Lib.Other.Object.Network
                         if (_socket.Connected)
                             _socket.Shutdown(shutdownType);
                     }
-                    catch { }
+                    catch { /* ignore */ }
 
-                    try { _socket.Close(); } catch { }
-                    try { _socket.Dispose(); } catch { }
+                    try { _socket.Close(); } catch { /* ignore */ }
+                    try { _socket.Dispose(); } catch { /* ignore */ }
+
+                    _socket = null;
                 }
             }
             catch
             {
                 // Ignored.
             }
+        }
+
+        private void SafeKillSocket()
+        {
+            try
+            {
+                if (_socket != null)
+                {
+                    try { _socket.Close(); } catch { }
+                    try { _socket.Dispose(); } catch { }
+                }
+            }
+            catch { }
             finally
             {
-                _networkStream = null;
                 _socket = null;
+            }
+        }
+
+        /// <summary>
+        /// Centralise les options TCP utiles (P2P + HTTP).
+        /// Compatible .NET Framework 4.8.
+        /// </summary>
+        private static void TryConfigureTcpSocket(Socket socket)
+        {
+            if (socket == null)
+                return;
+
+            try
+            {
+                // Latence: désactive Nagle (utile P2P + petites trames HTTP).
+                socket.NoDelay = true;
+
+                // Buffers: ajustables selon ton workload (ici valeurs "raisonnables" sans exploser la RAM).
+                // Tu peux les pousser plus haut si tu envoies des gros blocs souvent.
+                if (socket.SendBufferSize < 256 * 1024)
+                    socket.SendBufferSize = 256 * 1024;
+
+                if (socket.ReceiveBufferSize < 256 * 1024)
+                    socket.ReceiveBufferSize = 256 * 1024;
+
+                // KeepAlive: aide à détecter des peers morts sur connexions longues.
+                // (Option simple; réglages fins via IOControl possibles mais pas indispensables ici.)
+                socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, true);
+
+                // Linger: évite de bloquer sur Close; 0 = envoi RST si données non envoyées.
+                // Pour du P2P (où on préfère libérer vite), c'est souvent souhaitable.
+                socket.LingerState = new LingerOption(true, 0);
+            }
+            catch
+            {
+                // Ignored.
             }
         }
 
