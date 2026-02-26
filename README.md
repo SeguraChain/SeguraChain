@@ -1,7 +1,7 @@
 <h2>SeguraChain is complete to be use in production mode, but almost every tools are not completed.</h2>
 <h3> You can setup your own blockchain from ChatGPT or Claude AI or follow wikipages </h3>
 <h2>If you like the project, please provide a Star</h2>
-Summary: SeguraChain (Secured Chain translated from Spanish) is a technology developed mainly in C#,
+Summary: SeguraChain (Secured Chain translated from Spanish) is a technology (A Blockchain Framework) developed mainly in C#,
 it allows to easily create and understand a decentralized blockchain process, it can be configured to support a sovereign update system,
 allowing to include updates on it without editing the content of the Blockchain. 
 
